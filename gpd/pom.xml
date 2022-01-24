@@ -17,6 +17,7 @@
 		<java.version>11</java.version>
 		<springdoc-version>1.6.4</springdoc-version>
 		<modelmapper-version>3.0.0</modelmapper-version>
+		<jackson-datatype-jsr310-version>2.13.1</jackson-datatype-jsr310-version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -66,6 +67,13 @@
       		<artifactId>modelmapper</artifactId>
       		<version>${modelmapper-version}</version>
     	</dependency>
+    	
+<dependency>
+    <groupId>com.h2database</groupId>
+    <artifactId>h2</artifactId>
+    <version>2.1.210</version>
+    <scope>test</scope>
+</dependency>
 	</dependencies>
 
 	<build>

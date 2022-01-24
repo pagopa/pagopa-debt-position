@@ -22,7 +22,6 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
-
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -60,7 +60,7 @@ public class Transfer implements Serializable {
 	@Column (name="remittance_information")
 	private String remittanceInformation; // causale
 	@NotNull
-	private String category; // taxonomy (TODO da decidere come validare)
+	private String category; // taxonomy
 	@NotNull
 	private String iban;
 	@Column (name="postal_iban")
@@ -70,7 +70,7 @@ public class Transfer implements Serializable {
     private TransferStatus status;  
 	
 	
-	@ManyToOne(targetEntity = PaymentOption.class, fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST})
+	@ManyToOne(targetEntity = PaymentOption.class, fetch = FetchType.LAZY, optional = false, cascade = {CascadeType.PERSIST})
     @JoinColumn(name = "payment_option_id")
     private PaymentOption paymentOption;
 }

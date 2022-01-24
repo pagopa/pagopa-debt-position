@@ -36,4 +36,12 @@ public class PaymentOptionDTO implements Serializable {
     private PaymentOptionStatus status;   
 
     private List<TransferDTO> transfer = new ArrayList<>();
+    
+    public void addTransfers(TransferDTO trans) {
+    	transfer.add(trans);
+    }
+
+    public void removeTransfers(TransferDTO trans) {
+    	transfer.remove(trans);
+    }
 }

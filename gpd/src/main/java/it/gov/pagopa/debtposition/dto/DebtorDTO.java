@@ -31,4 +31,12 @@ public class DebtorDTO implements Serializable {
 	private String phone;
   
     private List<PaymentPositionDTO> paymentPosition = new ArrayList<>();
+    
+    public void addPaymentPosition(PaymentPositionDTO paymentPos) {
+		paymentPosition.add(paymentPos);
+	}
+
+	public void removePaymentPosition(PaymentPositionDTO paymentPos) {
+		paymentPosition.remove(paymentPos);
+	}
 }

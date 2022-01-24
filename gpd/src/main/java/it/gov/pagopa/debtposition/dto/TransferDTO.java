@@ -19,7 +19,7 @@ public class TransferDTO implements Serializable {
     private String idTransfer;
     private long amount;
 	private String remittanceInformation; // causale
-	private String category; // taxonomy (TODO da decidere come validare)
+	private String category; // taxonomy
 	private String iban;
 	private String postalIban;
     private TransferStatus status;  
