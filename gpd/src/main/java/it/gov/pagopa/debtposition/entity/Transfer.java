@@ -70,7 +70,7 @@ public class Transfer implements Serializable {
     private TransferStatus status;  
 	
 	
-	@ManyToOne(targetEntity = PaymentOption.class, fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST})
+	@ManyToOne(targetEntity = PaymentOption.class, fetch = FetchType.LAZY, optional = false, cascade = {CascadeType.PERSIST})
     @JoinColumn(name = "payment_option_id")
     private PaymentOption paymentOption;
 }

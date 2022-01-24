@@ -23,6 +23,8 @@ public class PaymentPositionDTO implements Serializable {
     private String companyName; // es. Comune di Roma
     private String officeName; // es. Ufficio Tributi
     private LocalDateTime insertedDate;
+    private LocalDateTime publishDate;
+    private LocalDateTime validityDate;
     private DebtPositionStatus status;
 
     private List<PaymentOptionDTO> paymentOption = new ArrayList<>();

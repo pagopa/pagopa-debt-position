@@ -17,8 +17,10 @@ import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import it.gov.pagopa.debtposition.entity.Debtor;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.service.DebtPositionService;
 import it.gov.pagopa.debtposition.service.PaymentPositionService;
 import it.gov.pagopa.debtposition.util.HttpStatusExplainMessage;
@@ -43,19 +45,6 @@ public class DebtPositionController implements IDebtPositionController {
 		
 		// convert DTO to entity
 		Debtor debtPosition = modelMapper.map(debtPositionDTO, Debtor.class);
-		
-		for(PaymentPosition pp : debtPosition.getPaymentPosition()) {
-			pp.setOrganizationFiscalCode(organizationFiscalCode);
-			pp.setIupd(debtPositionNumber);
-			pp.setInsertedDate(LocalDateTime.now());
-			pp.setStatus(DebtPositionStatus.DRAFT);
-			pp.setDebtor(debtPosition);
-			for (PaymentOption po : pp.getPaymentOption()) {
-				po.setOrganizationFiscalCode(organizationFiscalCode);
-				po.setStatus(PaymentOptionStatus.PO_UNPAID);
-				po.setPaymentPosition(pp);
-			}
-		}
 		
 		Debtor createdDebtPos = debtPositionService.create(debtPosition, organizationFiscalCode, debtPositionNumber);
 		

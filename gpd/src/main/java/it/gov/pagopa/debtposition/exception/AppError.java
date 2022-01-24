@@ -7,8 +7,9 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum AppError {
  
-    DEBT_POSITION_CREATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "The debt position creation is failed",""),
-	DEBT_POSITION_ALREADY_EXIST  (HttpStatus.CONFLICT, "The debt position alredy exist", "A debt position for Organization Fiscal Code %s with %s or IUV %s already exists"),
+	DEBT_POSITION_INPUT_DATA_ERROR (HttpStatus.BAD_REQUEST, "Error in the debt position input data", "%s"),
+    DEBT_POSITION_CREATION_FAILED  (HttpStatus.INTERNAL_SERVER_ERROR, "The debt position creation is failed",""),
+	DEBT_POSITION_ALREADY_EXIST    (HttpStatus.CONFLICT, "The debt position alredy exist", "Already exists a debt position with Organization Fiscal Code %s and IUPD %s "),
 
     UNKNOWN(null, null, null);
 
