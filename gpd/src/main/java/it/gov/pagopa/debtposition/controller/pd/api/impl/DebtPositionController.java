@@ -35,28 +35,28 @@ public class DebtPositionController implements IDebtPositionController {
 	private PaymentPositionService paymentPositionService;
 	
 	@Override
-	public ResponseEntity<String> createDebtPosition(String organizationFiscalCode, String debtPositionNumber,
+	public ResponseEntity<String> createDebtPosition(String organizationFiscalCode,
 			@Valid DebtorDTO debtPositionDTO) {
 		
 		// convert DTO to entity
 		Debtor debtPosition = modelMapper.map(debtPositionDTO, Debtor.class);
 		
-		Debtor createdDebtPos = debtPositionService.create(debtPosition, organizationFiscalCode, debtPositionNumber);
+		Debtor createdDebtPos = debtPositionService.create(debtPosition, organizationFiscalCode);
 		
 		if (null != createdDebtPos) {
 			return new ResponseEntity<>(HttpStatusExplainMessage.DEBT_POSITION_CREATED, HttpStatus.CREATED);
 		}
 		
-		throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode, debtPositionNumber);
+		throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
 	}
 
 	@Override
-	public ResponseEntity<List<PaymentPositionDTO>> getPositionByNoticeNumber(String organizationFiscalCode,
-			String debtPositionNumber) {
+	public ResponseEntity<List<PaymentPositionDTO>> getDebtPositionByIUPD(String organizationFiscalCode,
+			String iupd) {
 		
 		// convert entity to DTO
 		List<PaymentPositionDTO> listOfPaymentPositionDTO = ObjectMapperUtils.mapAll(
-				paymentPositionService.getPositionByNoticeNumber(organizationFiscalCode, debtPositionNumber), 
+				paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd), 
 				PaymentPositionDTO.class);
 		
 		return new ResponseEntity<>(listOfPaymentPositionDTO, HttpStatus.OK);

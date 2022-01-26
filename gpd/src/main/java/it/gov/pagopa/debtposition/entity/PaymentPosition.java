@@ -79,6 +79,9 @@ public class PaymentPosition implements Serializable {
 	@NotNull
 	@Enumerated(EnumType.STRING)
 	private DebtPositionStatus status;
+	@NotNull
+	@Column (name="last_updated_date")
+	private LocalDateTime lastUpdatedDate;
 
 
 	@ManyToOne(targetEntity = Debtor.class, fetch = FetchType.LAZY, optional = false, cascade = {CascadeType.PERSIST})

@@ -80,6 +80,9 @@ public class PaymentOption implements Serializable {
     private LocalDateTime paymentDate;
     @Column (name="reporting_date")
     private LocalDateTime reportingDate;
+    @NotNull
+	@Column (name="inserted_date")
+	private LocalDateTime insertedDate;
     @Column (name="payment_method")
     private String paymentMethod;
     private long fee;
@@ -91,7 +94,10 @@ public class PaymentOption implements Serializable {
     private String idFlowReporting;
     @Column (nullable = false)
     @Enumerated(EnumType.STRING)
-    private PaymentOptionStatus status = PaymentOptionStatus.PO_UNPAID;    
+    private PaymentOptionStatus status;    
+    @NotNull
+	@Column (name="last_updated_date")
+	private LocalDateTime lastUpdatedDate;
     
     @ManyToOne(targetEntity = PaymentPosition.class, fetch = FetchType.LAZY, optional = false, cascade = {CascadeType.PERSIST})
     @JoinColumn(name = "payment_position_id")

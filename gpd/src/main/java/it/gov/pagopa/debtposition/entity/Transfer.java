@@ -1,6 +1,7 @@
 package it.gov.pagopa.debtposition.entity;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -66,8 +67,14 @@ public class Transfer implements Serializable {
 	@Column (name="postal_iban")
 	private String postalIban;
 	@NotNull
+	@Column (name="inserted_date")
+	private LocalDateTime insertedDate;
+	@NotNull
     @Enumerated(EnumType.STRING)
-    private TransferStatus status;  
+    private TransferStatus status; 
+	@NotNull
+	@Column (name="last_updated_date")
+	private LocalDateTime lastUpdatedDate;
 	
 	
 	@ManyToOne(targetEntity = PaymentOption.class, fetch = FetchType.LAZY, optional = false, cascade = {CascadeType.PERSIST})

@@ -4,6 +4,7 @@
 package it.gov.pagopa.debtposition.entity;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,6 +76,12 @@ public class Debtor implements Serializable {
 	private String country;
 	private String email;
 	private String phone;
+	@NotNull
+	@Column (name="inserted_date")
+	private LocalDateTime insertedDate;
+	@NotNull
+	@Column (name="last_updated_date")
+	private LocalDateTime lastUpdatedDate;
 
 	@OneToMany(targetEntity = PaymentPosition.class, fetch = FetchType.LAZY, mappedBy = "debtor", cascade = CascadeType.ALL)
 	private List<PaymentPosition> paymentPosition = new ArrayList<>();

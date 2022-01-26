@@ -55,7 +55,7 @@ public class DebtPositionValidation {
 				throw new ValidationException(
 						String.format(DUE_DATE_VALIDATION_ERROR, 
 								dateFormatter.format(po.getDueDate()), 
-								dateFormatter.format(pp.getValidityDate()),
+								(null != pp.getValidityDate() ? dateFormatter.format(pp.getValidityDate()) : null),
 								dateFormatter.format(today)
 								)
 						);
