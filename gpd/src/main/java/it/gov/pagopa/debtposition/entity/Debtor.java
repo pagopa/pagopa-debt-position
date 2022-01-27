@@ -53,7 +53,7 @@ public class Debtor implements Serializable {
 	@Id
 	@GeneratedValue (strategy = GenerationType.SEQUENCE, generator="DEBTOR_SEQ")
 	@SequenceGenerator(name="DEBTOR_SEQ", sequenceName="DEBTOR_SEQ", allocationSize=1)
-	private long id;
+	private Long id;
 
 	@NotNull
 	@Enumerated(EnumType.STRING)

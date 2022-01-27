@@ -47,7 +47,7 @@ public class Transfer implements Serializable {
 	@Id
 	@GeneratedValue (strategy = GenerationType.SEQUENCE, generator="TRANSFER_SEQ")
 	@SequenceGenerator(name="TRANSFER_SEQ", sequenceName="TRANSFER_SEQ", allocationSize=1)
-	private long id;
+	private Long id;
 	
 	@NotNull
 	@Column (name="organization_fiscal_code")

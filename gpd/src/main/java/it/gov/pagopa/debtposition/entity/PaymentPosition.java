@@ -24,6 +24,7 @@ import javax.validation.constraints.NotNull;
 
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -35,7 +36,7 @@ import lombok.Setter;
  *
  */
 
-
+@Builder (toBuilder = true)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -56,7 +57,7 @@ public class PaymentPosition implements Serializable {
 	@Id
 	@GeneratedValue (strategy = GenerationType.SEQUENCE, generator="PAYMENT_POS_SEQ")
 	@SequenceGenerator(name="PAYMENT_POS_SEQ", sequenceName="PAYMENT_POS_SEQ", allocationSize=1)
-	private long id;
+	private Long id;
 
 	@NotNull
 	private String iupd;
@@ -88,7 +89,7 @@ public class PaymentPosition implements Serializable {
 	@JoinColumn(name = "debtor_id")
 	private Debtor debtor;
 
-
+	@Builder.Default
 	@OneToMany(targetEntity = PaymentOption.class, fetch = FetchType.LAZY, mappedBy = "paymentPosition", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<PaymentOption> paymentOption = new ArrayList<>();
 

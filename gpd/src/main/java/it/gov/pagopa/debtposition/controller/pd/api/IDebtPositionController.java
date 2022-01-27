@@ -1,9 +1,12 @@
 package it.gov.pagopa.debtposition.controller.pd.api;
 
-import java.util.List;
+import java.time.LocalDate;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,6 +26,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import it.gov.pagopa.debtposition.dto.DebtorDTO;
 import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import it.gov.pagopa.debtposition.model.ProblemJson;
+import it.gov.pagopa.debtposition.model.filterandorder.Order;
+import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
 
 
 
@@ -46,7 +52,7 @@ public interface IDebtPositionController {
 
 
 
-	@Operation(summary = "Return the details of a specific debt position. ", operationId = "getPositionByNoticeNumber", tags={"Get Debt Positions"})
+	@Operation(summary = "Return the details of a specific debt position. ", operationId = "getOrganizationDebtPositionByIUPD", tags={"Get Debt Position"})
 	@ApiResponses(value = { 
 			@ApiResponse(responseCode = "200", description = "Obtained payment position details.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
 			@ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
@@ -54,11 +60,34 @@ public interface IDebtPositionController {
 			@ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))) })
 	@GetMapping(value = "/organizations/{organizationfiscalcode}/debtpositions/{iupd}",
 	produces = { "application/json" })
-	ResponseEntity<List<PaymentPositionDTO>> getDebtPositionByIUPD(
+	ResponseEntity<PaymentPositionDTO> getOrganizationDebtPositionByIUPD(
 			@Parameter(description = "Organization fiscal code, the fiscal code of the Organization.",required=true) 
 			@PathVariable("organizationfiscalcode") String organizationfiscalcode, 
 			@Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.",required=true) 
 			@PathVariable("iupd") String iupd);
+	
+	
+	
+	@Operation(summary = "Return the list of the organization debt positions.", operationId = "getOrganizationDebtPositions", tags={"Get Debt Positions List"})
+	@ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Obtained all organization payment positions.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = PaymentPositionsInfo.class))),
+            @ApiResponse(responseCode = "400", description = "Malformed request.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
+            @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
+            @ApiResponse(responseCode = "429", description = "Too many requests.", content = @Content(schema = @Schema())),
+            @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
+	@GetMapping(value = "/organizations/{organizationfiscalcode}/debtpositions",
+	produces = { "application/json" })
+	public ResponseEntity<PaymentPositionsInfo> getOrganizationDebtPositions(
+			@Parameter(description = "Organization fiscal code, the fiscal code of the Organization.",required=true) 
+			@PathVariable("organizationfiscalcode") String organizationfiscalcode,
+            @Positive @Parameter(description = "Number of elements on one page. Default = 50")           @RequestParam(required = false, defaultValue = "50") Integer limit,
+            @Positive @Parameter(description = "Page number. Page value starts from 0", required = true) @RequestParam Integer page,
+            @Valid    @Parameter(description = "Filter from due_date (if provided use the format yyyy-MM-dd)") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "due_date_from", required = false) LocalDate dueDateFrom,
+            @Valid    @Parameter(description = "Filter to due_date (if provided use the format yyyy-MM-dd)")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "due_date_to", required = false)   LocalDate dueDateTo,
+            @RequestParam(required = false, name = "orderby", defaultValue = "COMPANY_NAME") @Parameter(description = "Order by COMPANY_NAME, IUPD or STATUS") Order.PaymentPositionOrder orderBy,
+            @RequestParam(required = false, name = "ordering", defaultValue = "DESC") @Parameter(description = "Direction of ordering") Sort.Direction ordering);
+    
+    
 
 
 }
