@@ -28,7 +28,7 @@ import lombok.ToString;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PaymentPositionsInfo {
 	
-	@JsonProperty("payment_position_List")
+	@JsonProperty("payment_position_list")
     @Schema(required = true)
     @NotNull
     @Valid

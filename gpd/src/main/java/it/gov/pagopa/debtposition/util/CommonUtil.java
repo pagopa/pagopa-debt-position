@@ -7,6 +7,7 @@ import org.springframework.data.domain.Sort;
 
 import it.gov.pagopa.debtposition.model.PageInfo;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
+import it.gov.pagopa.debtposition.model.filterandorder.OrderType;
 import lombok.experimental.UtilityClass;
 
 

@@ -1,11 +1,18 @@
 package it.gov.pagopa.debtposition.controller;
 
 
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -15,6 +22,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
@@ -52,7 +60,7 @@ class DebtPositionControllerTest {
     @Test
     void createDebtPosition_Multiple_201() throws Exception {
         mvc.perform(post("/organizations/MULTIPLE_12345678901/debtpositions")
-                .content(TestUtil.toJson(DebtorDTOMock.getMultiplePPMock()))
+                .content(TestUtil.toJson(DebtorDTOMock.getMultiplePPMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
     }
@@ -113,6 +121,102 @@ class DebtPositionControllerTest {
         mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+    
+    // GET LIST DEBT POSITIONS
+    @Test
+    void getDebtPositionList() throws Exception {
+        // creo una posizione debitoria e la recupero
+        mvc.perform(post("/organizations/LIST_12345678901/debtpositions")
+                .content(TestUtil.toJson(DebtorDTOMock.getMultiplePPMock2()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+        
+        String url = "/organizations/LIST_12345678901/debtpositions?page=0";
+        mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(2)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[*].iuv").value(Matchers.hasSize(2)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[*].iuv").value(Matchers.hasSize(2)));
+    }
+    
+    @Test
+    void getDebtPositionListDueDateBetween() throws Exception {
+        // creo una posizione debitoria e la recupero
+        mvc.perform(post("/organizations/DUEDATEBETWEEN_12345678901/debtpositions")
+                .content(TestUtil.toJson(DebtorDTOMock.getMultiplePPMock4()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+        
+        
+        DateTimeFormatter df = DateTimeFormatter.ofPattern ("yyyy-MM-dd");
+        String url = "/organizations/DUEDATEBETWEEN_12345678901/debtpositions?page=0"
+                + "&due_date_from="+df.format(LocalDateTime.now(ZoneOffset.UTC))
+                + "&due_date_to="+df.format(LocalDateTime.now(ZoneOffset.UTC).plus(1, ChronoUnit.DAYS));
+        mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(2)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[*].iuv").value(Matchers.hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[*].iuv").value(Matchers.hasSize(2)));
+    }
+    
+    @Test
+    void getDebtPositionListDueDateGreaterThanOrEqual() throws Exception {
+        // creo una posizione debitoria e la recupero
+        mvc.perform(post("/organizations/DUEDATEGREATER_12345678901/debtpositions")
+                .content(TestUtil.toJson(DebtorDTOMock.getMultiplePPMock5()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+        
+        
+        DateTimeFormatter df = DateTimeFormatter.ofPattern ("yyyy-MM-dd");
+        String url = "/organizations/DUEDATEGREATER_12345678901/debtpositions?page=0"
+                + "&due_date_from="+df.format(LocalDateTime.now(ZoneOffset.UTC).plus(3, ChronoUnit.DAYS));
+        mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[*].iuv").value(Matchers.hasSize(1)));
+    }
+    
+    @Test
+    void getDebtPositionListDueDateLessThanOrEqual() throws Exception {
+        // creo una posizione debitoria e la recupero
+        mvc.perform(post("/organizations/DUEDATELESS_12345678901/debtpositions")
+                .content(TestUtil.toJson(DebtorDTOMock.getMultiplePPMock3()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+        
+        
+        DateTimeFormatter df = DateTimeFormatter.ofPattern ("yyyy-MM-dd");
+        String url = "/organizations/DUEDATELESS_12345678901/debtpositions?page=0"
+                + "&due_date_to="+df.format(LocalDateTime.now(ZoneOffset.UTC).plus(3, ChronoUnit.DAYS));
+        mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(2)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[*].iuv").value(Matchers.hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[*].iuv").value(Matchers.hasSize(2)));
+    }
+    
+    @Test
+    void getDebtPositionList_404() throws Exception {
+        String url = "/organizations/LIST404_12345678901/debtpositions";
+        mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+    
+    @Test
+    void getDebtPositionListDueDate_404() throws Exception {
+        DateTimeFormatter df = DateTimeFormatter.ofPattern ("dd-MM-yyyy");
+        String url = "/organizations/LIST404_12345678901/debtpositions?page=0"
+                + "&due_date_from="+df.format(LocalDateTime.now(ZoneOffset.UTC).plus(3, ChronoUnit.DAYS));
+        mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
 }

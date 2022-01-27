@@ -5,7 +5,6 @@ import java.util.Optional;
 import javax.validation.constraints.Positive;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +18,7 @@ import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByIUPD;
 import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByOrganizationFiscalCode;
+import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByDueDate;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 
 
@@ -28,7 +28,6 @@ public class PaymentPositionService {
 	
 	@Autowired
 	private PaymentPositionRepository paymentPositionRepository;
-	
 	
 	public PaymentPosition getDebtPositionByIUPD (String organizationFiscalCode,
 			String iupd) {
@@ -48,29 +47,15 @@ public class PaymentPositionService {
 	
 	public Page<PaymentPosition> getOrganizationDebtPositions (@Positive Integer limit, @Positive Integer pageNum, FilterAndOrder filterAndOrder){
 		
-		
 		Pageable pageable = PageRequest.of(pageNum, limit, CommonUtil.getSort(filterAndOrder));
 		
-		Example<PaymentPosition> filters = CommonUtil.getFilters(PaymentPosition.builder()
-                .organizationFiscalCode(filterAndOrder.getFilter().getOrganizationFiscalCode())
-                .build());
-		
-		// se è valorizzata solo la due_date_from
-		if (null != filterAndOrder.getFilter().getDueDateFrom() && null == filterAndOrder.getFilter().getDueDateTo()) {
-			return paymentPositionRepository.findByPaymentOptionDueDateGreaterThanEqual(filterAndOrder.getFilter().getDueDateFrom(), pageable);
-		}
-		// se è valorizzata solo la due_date_to
-		else if (null == filterAndOrder.getFilter().getDueDateFrom() && null != filterAndOrder.getFilter().getDueDateTo()) {
-			return paymentPositionRepository.findByPaymentOptionDueDateLessThanEqual(filterAndOrder.getFilter().getDueDateTo(), pageable);
-		}
-		// se sono valorizzate entrambe
-		else if (null != filterAndOrder.getFilter().getDueDateFrom() && null != filterAndOrder.getFilter().getDueDateTo()) {
-			return paymentPositionRepository.findByPaymentOptionDueDateBetween(filterAndOrder.getFilter().getDueDateFrom(),
-					filterAndOrder.getFilter().getDueDateTo(), pageable);
-		} 
-		else {
-			return paymentPositionRepository.findAll(filters, pageable);
-		}
-		
+		Specification<PaymentPosition> spec = Specification.where(
+                new PaymentPositionByOrganizationFiscalCode(filterAndOrder.getFilter().getOrganizationFiscalCode())
+                .and(new PaymentPositionByDueDate(
+                        filterAndOrder.getFilter().getDueDateFrom(),
+                        filterAndOrder.getFilter().getDueDateTo())));
+			
+		return paymentPositionRepository.findAll(spec, pageable);
+
 	}
 }

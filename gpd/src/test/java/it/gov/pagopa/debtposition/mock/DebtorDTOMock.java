@@ -1,7 +1,6 @@
 package it.gov.pagopa.debtposition.mock;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
@@ -106,7 +105,7 @@ public class DebtorDTOMock {
         return debtorMock;
     }
 
-    public final static DebtorDTO getMultiplePPMock() {
+    public final static DebtorDTO getMultiplePPMock1() {
         DebtorDTO debtorMock = new DebtorDTO();
         debtorMock.setFiscalCode("CPRPLL54H17D542L");
         debtorMock.setType(Type.F);
@@ -117,6 +116,86 @@ public class DebtorDTOMock {
         debtorMock.setProvince("RM");
         debtorMock.setCountry("IT");
         debtorMock.setEmail("marco@roma.it");
+        debtorMock.setPostalCode("00100");
+
+        debtorMock.addPaymentPosition(createPaymentPositionMultipleMock1());
+        debtorMock.addPaymentPosition(createPaymentPositionMultipleMock2());
+
+
+        return debtorMock;
+    }
+    
+    public final static DebtorDTO getMultiplePPMock2() {
+        DebtorDTO debtorMock = new DebtorDTO();
+        debtorMock.setFiscalCode("PIVA12345678");
+        debtorMock.setType(Type.G);
+        debtorMock.setFullName("Cipriani Srl");
+        debtorMock.setPhone("3330987654");
+        debtorMock.setStreetName("Via di novoli");
+        debtorMock.setCivicNumber("50/2");
+        debtorMock.setProvince("RM");
+        debtorMock.setCountry("IT");
+        debtorMock.setEmail("cipriani@roma.it");
+        debtorMock.setPostalCode("00100");
+
+        debtorMock.addPaymentPosition(createPaymentPositionMultipleMock1());
+        debtorMock.addPaymentPosition(createPaymentPositionMultipleMock2());
+
+
+        return debtorMock;
+    }
+    
+    public final static DebtorDTO getMultiplePPMock3() {
+        DebtorDTO debtorMock = new DebtorDTO();
+        debtorMock.setFiscalCode("PIVA0000000");
+        debtorMock.setType(Type.G);
+        debtorMock.setFullName("DGS Spa");
+        debtorMock.setPhone("3330987654");
+        debtorMock.setStreetName("Via di novoli");
+        debtorMock.setCivicNumber("50/2");
+        debtorMock.setProvince("RM");
+        debtorMock.setCountry("IT");
+        debtorMock.setEmail("dgs@roma.it");
+        debtorMock.setPostalCode("00100");
+
+        debtorMock.addPaymentPosition(createPaymentPositionMultipleMock1());
+        debtorMock.addPaymentPosition(createPaymentPositionMultipleMock2());
+
+
+        return debtorMock;
+    }
+    
+    public final static DebtorDTO getMultiplePPMock4() {
+        DebtorDTO debtorMock = new DebtorDTO();
+        debtorMock.setFiscalCode("BVNANT4H17D542L");
+        debtorMock.setType(Type.F);
+        debtorMock.setFullName("Antonino Benevento");
+        debtorMock.setPhone("3330987654");
+        debtorMock.setStreetName("Via di novoli");
+        debtorMock.setCivicNumber("50/2");
+        debtorMock.setProvince("RM");
+        debtorMock.setCountry("IT");
+        debtorMock.setEmail("antonino@roma.it");
+        debtorMock.setPostalCode("00100");
+
+        debtorMock.addPaymentPosition(createPaymentPositionMultipleMock1());
+        debtorMock.addPaymentPosition(createPaymentPositionMultipleMock2());
+
+
+        return debtorMock;
+    }
+    
+    public final static DebtorDTO getMultiplePPMock5() {
+        DebtorDTO debtorMock = new DebtorDTO();
+        debtorMock.setFiscalCode("PIVA1111111");
+        debtorMock.setType(Type.G);
+        debtorMock.setFullName("Mediacon Spa");
+        debtorMock.setPhone("3330987654");
+        debtorMock.setStreetName("Via di novoli");
+        debtorMock.setCivicNumber("50/2");
+        debtorMock.setProvince("RM");
+        debtorMock.setCountry("IT");
+        debtorMock.setEmail("mediacon@roma.it");
         debtorMock.setPostalCode("00100");
 
         debtorMock.addPaymentPosition(createPaymentPositionMultipleMock1());
@@ -229,7 +308,7 @@ public class DebtorDTOMock {
         PaymentOptionDTO pOMock = new PaymentOptionDTO();
         pOMock.setAmount(500);
         pOMock.setIuv("123456IUVMULTIPLEMOCK2");
-        pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.HOURS));
+        pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
         pOMock.setIsPartialPayment(Boolean.FALSE);
         pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
         pOMock.addTransfers(createTransfersMultipleMock2()); 

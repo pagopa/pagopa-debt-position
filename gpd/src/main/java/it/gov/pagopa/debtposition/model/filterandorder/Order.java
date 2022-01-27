@@ -1,11 +1,12 @@
 package it.gov.pagopa.debtposition.model.filterandorder;
 
+import javax.validation.constraints.NotNull;
+
+import org.springframework.data.domain.Sort;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import org.springframework.data.domain.Sort;
-
-import javax.validation.constraints.NotNull;
 
 @Getter
 @AllArgsConstructor

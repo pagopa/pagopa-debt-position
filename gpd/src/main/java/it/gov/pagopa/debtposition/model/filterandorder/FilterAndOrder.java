@@ -1,10 +1,10 @@
 package it.gov.pagopa.debtposition.model.filterandorder;
 
-import lombok.Builder;
-import lombok.Getter;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
 @Builder
