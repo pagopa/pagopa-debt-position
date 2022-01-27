@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# set local env
+export $(grep -v '^#' .env.local | xargs)
+
+# build & run db
+docker-compose -f ../docker-compose-postgresql.yml up --build -d
+
+# build
+# mvn package -DskipTests
+
+# run
+mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8085 -Dspring-boot.run.profiles=local &
+
+# check if GDP is UP and open api spec
+URL_CHECK="http://localhost:8085/v3/api-docs"
+CMD_CHECK=`curl -o /dev/null -s -w "%{http_code}\n" $URL_CHECK`
+while [ "$CMD_CHECK" != "200" ]
+do
+    sleep 3
+    echo -n "."
+    CMD_CHECK=`curl -o /dev/null -s -w "%{http_code}\n" $URL_CHECK`
+done
+open http://localhost:8085/swagger-ui/index.html

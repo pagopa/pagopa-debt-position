@@ -1,0 +1,5 @@
+\set user `echo "$POSTGRES_USER"`
+
+
+CREATE DATABASE apd;
+GRANT ALL PRIVILEGES ON DATABASE apd TO :user;
