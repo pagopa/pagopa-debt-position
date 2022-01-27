@@ -23,7 +23,7 @@ See the [OpenApi 3 here.](https://editor.swagger.io/?url=https://raw.githubuserc
 
 Under main project folder typing :
 `docker-compose up --build`
->**NOTE** : before that compile `gdp` sevice with `mvn package -DskipTests` command
+>**NOTE** : before that compile `gdp` sevice with `mvn package` command
 
 If all right, eventually you'll see something like that:
 ```sh
@@ -56,6 +56,24 @@ The easiest way to develop locally is start only db container and run spring-boo
 ```
 
 ### Testing 🧪
+
+Under `gpd` folder typing `mvn clean verify`, if all right you'll see following stuffs
+
+```sh
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO]
+[INFO] --- maven-jar-plugin:3.2.0:jar (default-jar) @ debt-position ---
+[INFO] Building jar: /Users/pasqualespica/my_data/__TEMP/pagopa-debt-position/gpd/target/debt-position-0.0.1-SNAPSHOT.jar
+[INFO]
+[INFO] --- spring-boot-maven-plugin:2.6.2:repackage (repackage) @ debt-position ---
+[INFO] Replacing main artifact with repackaged archive
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+```
+
 
 #### Unit testing
 
