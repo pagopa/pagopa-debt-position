@@ -25,91 +25,91 @@ import it.gov.pagopa.debtposition.service.DebtPositionService;
 @SpringBootTest(classes = DebtPositionApplication.class)
 @AutoConfigureMockMvc
 class DebtPositionControllerTest {
-	
-	@Autowired
+    
+    @Autowired
     private MockMvc mvc;
-	
-	@Mock
-	private ModelMapper modelMapperMock;
-	
-	@Mock
-	private DebtPositionService debtPositionService;
+    
+    @Mock
+    private ModelMapper modelMapperMock;
+    
+    @Mock
+    private DebtPositionService debtPositionService;
 
-	
-	@BeforeEach
+    
+    @BeforeEach
     void setUp() {
     }
-	
-	// CREATE DEBT POSITION 
-	@Test
+    
+    // CREATE DEBT POSITION 
+    @Test
     void createDebtPosition_201() throws Exception {
-		mvc.perform(post("/organizations/12345678901/debtpositions")
-	            .content(TestUtil.toJson(DebtorDTOMock.getMock1()))
-	            .contentType(MediaType.APPLICATION_JSON))
-	    .andExpect(status().isCreated());
-	}
-	
-	@Test
+        mvc.perform(post("/organizations/12345678901/debtpositions")
+                .content(TestUtil.toJson(DebtorDTOMock.getMock1()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+    }
+    
+    @Test
     void createDebtPosition_Multiple_201() throws Exception {
-		mvc.perform(post("/organizations/MULTIPLE_12345678901/debtpositions")
-	            .content(TestUtil.toJson(DebtorDTOMock.getMultiplePPMock()))
-	            .contentType(MediaType.APPLICATION_JSON))
-	    .andExpect(status().isCreated());
-	}
-	
-	@Test
+        mvc.perform(post("/organizations/MULTIPLE_12345678901/debtpositions")
+                .content(TestUtil.toJson(DebtorDTOMock.getMultiplePPMock()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+    }
+    
+    @Test
     void createDebtPosition_400() throws Exception {
-		mvc.perform(post("/organizations/400_12345678901/debtpositions")
-	            .content(TestUtil.toJson(DebtorDTOMock.get400Mock()))
-	            .contentType(MediaType.APPLICATION_JSON))
-	    .andExpect(status().isBadRequest())
-	    .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-	}
-	
-	@Test
+        mvc.perform(post("/organizations/400_12345678901/debtpositions")
+                .content(TestUtil.toJson(DebtorDTOMock.get400Mock()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+    
+    @Test
     void createDebtPosition_409() throws Exception {
-		mvc.perform(post("/organizations/409_12345678901/debtpositions")
-	            .content(TestUtil.toJson(DebtorDTOMock.getMock2()))
-	            .contentType(MediaType.APPLICATION_JSON))
-	    .andExpect(status().isCreated())
-	    .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-		
-		// provo a creare 2 posizioni debitorie con lo stesso organization_fiscal_code 
-		// => la seconda chiamata deve andare in errore con codice 409
-		mvc.perform(post("/organizations/409_12345678901/debtpositions")
-	            .content(TestUtil.toJson(DebtorDTOMock.getMock3()))
-	            .contentType(MediaType.APPLICATION_JSON))
-	    .andExpect(status().isConflict())
-	    .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-	}
-	
-	@Test
+        mvc.perform(post("/organizations/409_12345678901/debtpositions")
+                .content(TestUtil.toJson(DebtorDTOMock.getMock2()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+        
+        // provo a creare 2 posizioni debitorie con lo stesso organization_fiscal_code 
+        // => la seconda chiamata deve andare in errore con codice 409
+        mvc.perform(post("/organizations/409_12345678901/debtpositions")
+                .content(TestUtil.toJson(DebtorDTOMock.getMock3()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isConflict())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+    
+    @Test
     void createDebtPosition_500() throws Exception {
-		mvc.perform(post("/organizations/500_12345678901/debtpositions")
-	            .content(TestUtil.toJson(DebtorDTOMock.get500Mock1()))
-	            .contentType(MediaType.APPLICATION_JSON))
-	    .andExpect(status().isInternalServerError())
-	    .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-	}
-	
-	// GET DEBT POSITION BY IUPD
-	@Test
+        mvc.perform(post("/organizations/500_12345678901/debtpositions")
+                .content(TestUtil.toJson(DebtorDTOMock.get500Mock1()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isInternalServerError())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+    
+    // GET DEBT POSITION BY IUPD
+    @Test
     void getDebtPositionByIUPD() throws Exception {
-		// creo una posizione debitoria e la recupero
-		mvc.perform(post("/organizations/200_12345678901/debtpositions")
-	            .content(TestUtil.toJson(DebtorDTOMock.getMock4()))
-	            .contentType(MediaType.APPLICATION_JSON))
-	    .andExpect(status().isCreated());
-		
+        // creo una posizione debitoria e la recupero
+        mvc.perform(post("/organizations/200_12345678901/debtpositions")
+                .content(TestUtil.toJson(DebtorDTOMock.getMock4()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+        
         String url = "/organizations/200_12345678901/debtpositions/12345678901IUPDMOCK1";
         mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
-	
-	@Test
-	void getDebtPositionByIUPD_404() throws Exception {
-		String url = "/organizations/200_12345678901/debtpositions/12345678901IUPDNOTEXIST";
+    
+    @Test
+    void getDebtPositionByIUPD_404() throws Exception {
+        String url = "/organizations/200_12345678901/debtpositions/12345678901IUPDNOTEXIST";
         mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));

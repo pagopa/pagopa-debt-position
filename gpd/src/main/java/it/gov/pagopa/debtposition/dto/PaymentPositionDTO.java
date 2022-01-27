@@ -14,11 +14,11 @@ import lombok.NoArgsConstructor;
 public class PaymentPositionDTO implements Serializable {
 
     /**
-	 * generated serialVersionUID
-	 */
-	private static final long serialVersionUID = 6990851241801808964L;
-	
-	private String iupd;
+     * generated serialVersionUID
+     */
+    private static final long serialVersionUID = 6990851241801808964L;
+    
+    private String iupd;
     private String organizationFiscalCode;
     private String companyName; // es. Comune di Roma
     private String officeName; // es. Ufficio Tributi
@@ -30,10 +30,10 @@ public class PaymentPositionDTO implements Serializable {
     private List<PaymentOptionDTO> paymentOption = new ArrayList<>();
     
     public void addPaymentOptions(PaymentOptionDTO paymentOpt) {
-		paymentOption.add(paymentOpt);
-	}
+        paymentOption.add(paymentOpt);
+    }
 
-	public void removePaymentOptions(PaymentOptionDTO paymentOpt) {
-		paymentOption.remove(paymentOpt);
-	}
+    public void removePaymentOptions(PaymentOptionDTO paymentOpt) {
+        paymentOption.remove(paymentOpt);
+    }
 }

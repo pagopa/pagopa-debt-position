@@ -10,17 +10,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TransferDTO implements Serializable {
 
-	/**
-	 * generated serialVersionUID
-	 */
-	private static final long serialVersionUID = 7001055971430256321L;
-	
-	private String organizationFiscalCode;
+    /**
+     * generated serialVersionUID
+     */
+    private static final long serialVersionUID = 7001055971430256321L;
+    
+    private String organizationFiscalCode;
     private String idTransfer;
     private long amount;
-	private String remittanceInformation; // causale
-	private String category; // taxonomy
-	private String iban;
-	private String postalIban;
+    private String remittanceInformation; // causale
+    private String category; // taxonomy
+    private String iban;
+    private String postalIban;
     private TransferStatus status;  
 }

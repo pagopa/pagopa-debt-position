@@ -15,11 +15,11 @@ public class PaymentOptionDTO implements Serializable {
 
    
     /**
-	 * generated serialVersionUID
-	 */
-	private static final long serialVersionUID = -4792852695535892332L;
-	
-	private String iuv;
+     * generated serialVersionUID
+     */
+    private static final long serialVersionUID = -4792852695535892332L;
+    
+    private String iuv;
     private String organizationFiscalCode;
     private long amount;
     private String description;
@@ -38,10 +38,10 @@ public class PaymentOptionDTO implements Serializable {
     private List<TransferDTO> transfer = new ArrayList<>();
     
     public void addTransfers(TransferDTO trans) {
-    	transfer.add(trans);
+        transfer.add(trans);
     }
 
     public void removeTransfers(TransferDTO trans) {
-    	transfer.remove(trans);
+        transfer.remove(trans);
     }
 }

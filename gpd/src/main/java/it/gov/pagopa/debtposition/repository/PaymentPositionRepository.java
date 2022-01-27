@@ -22,7 +22,7 @@ JpaSpecificationExecutor<PaymentPosition>, PagingAndSortingRepository<PaymentPos
 			
 	public Page<PaymentPosition> findByPaymentOptionDueDateGreaterThanEqual(LocalDateTime dueDate, Pageable pageable);
 	public Page<PaymentPosition> findByPaymentOptionDueDateLessThanEqual   (LocalDateTime dueDate, Pageable pageable);
-	public Page<PaymentPosition> findByPaymentOptionDueDateBetween         (LocalDateTime dueDate, Pageable pageable);
+	public Page<PaymentPosition> findByPaymentOptionDueDateBetween         (LocalDateTime dueDateFrom, LocalDateTime dueDateTo, Pageable pageable);
 
 }
 

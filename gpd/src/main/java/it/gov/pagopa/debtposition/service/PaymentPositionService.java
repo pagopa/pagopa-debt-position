@@ -61,11 +61,12 @@ public class PaymentPositionService {
 		}
 		// se è valorizzata solo la due_date_to
 		else if (null == filterAndOrder.getFilter().getDueDateFrom() && null != filterAndOrder.getFilter().getDueDateTo()) {
-			return paymentPositionRepository.findByPaymentOptionDueDateLessThanEqual(filterAndOrder.getFilter().getDueDateFrom(), pageable);
+			return paymentPositionRepository.findByPaymentOptionDueDateLessThanEqual(filterAndOrder.getFilter().getDueDateTo(), pageable);
 		}
 		// se sono valorizzate entrambe
 		else if (null != filterAndOrder.getFilter().getDueDateFrom() && null != filterAndOrder.getFilter().getDueDateTo()) {
-			return paymentPositionRepository.findByPaymentOptionDueDateBetween(filterAndOrder.getFilter().getDueDateFrom(), pageable);
+			return paymentPositionRepository.findByPaymentOptionDueDateBetween(filterAndOrder.getFilter().getDueDateFrom(),
+					filterAndOrder.getFilter().getDueDateTo(), pageable);
 		} 
 		else {
 			return paymentPositionRepository.findAll(filters, pageable);

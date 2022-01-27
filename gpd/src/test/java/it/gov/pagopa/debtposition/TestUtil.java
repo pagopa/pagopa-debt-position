@@ -43,8 +43,8 @@ public class TestUtil {
      */
     public String toJson(Object object) throws JsonProcessingException {
         return new ObjectMapper()
-        		.registerModule(new JavaTimeModule())
-        		.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-        		.writeValueAsString(object);
+                .registerModule(new JavaTimeModule())
+                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                .writeValueAsString(object);
     }
 }
