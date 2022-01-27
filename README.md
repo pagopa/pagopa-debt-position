@@ -22,8 +22,8 @@ See the [OpenApi 3 here.](https://editor.swagger.io/?url=https://raw.githubuserc
 ### Run docker container
 
 Under main project folder typing :
-
 `docker-compose up --build`
+>**NOTE** : before that compile `gdp` sevice with `mvn package -DskipTests` command
 
 If all right, eventually you'll see something like that:
 ```sh
