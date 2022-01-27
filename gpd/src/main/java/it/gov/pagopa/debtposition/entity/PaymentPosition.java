@@ -42,63 +42,63 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table (name = "payment_position", uniqueConstraints={
-		@UniqueConstraint(name = "UniquePaymentPos", columnNames = {"iupd", "organization_fiscal_code"})
+        @UniqueConstraint(name = "UniquePaymentPos", columnNames = {"iupd", "organization_fiscal_code"})
 })
 public class PaymentPosition implements Serializable {
 
 
-	/**
-	 * generated serialVersionUID
-	 */
-	private static final long serialVersionUID = -8637183968286214359L;
+    /**
+     * generated serialVersionUID
+     */
+    private static final long serialVersionUID = -8637183968286214359L;
 
 
-	@Id
-	@GeneratedValue (strategy = GenerationType.SEQUENCE, generator="PAYMENT_POS_SEQ")
-	@SequenceGenerator(name="PAYMENT_POS_SEQ", sequenceName="PAYMENT_POS_SEQ", allocationSize=1)
-	private long id;
+    @Id
+    @GeneratedValue (strategy = GenerationType.SEQUENCE, generator="PAYMENT_POS_SEQ")
+    @SequenceGenerator(name="PAYMENT_POS_SEQ", sequenceName="PAYMENT_POS_SEQ", allocationSize=1)
+    private long id;
 
-	@NotNull
-	private String iupd;
-	@NotNull
-	@Column (name="organization_fiscal_code")
-	private String organizationFiscalCode;
+    @NotNull
+    private String iupd;
+    @NotNull
+    @Column (name="organization_fiscal_code")
+    private String organizationFiscalCode;
 
-	@NotNull
-	@Column (name="company_name")
-	private String companyName; // es. Comune di Roma
-	@Column (name="office_name")
-	private String officeName; // es. Ufficio Tributi
-	@NotNull
-	@Column (name="inserted_date")
-	private LocalDateTime insertedDate;
-	@Column (name="publish_date")
-	private LocalDateTime publishDate;
-	@Column (name="validity_date")
-	private LocalDateTime validityDate;
-	@NotNull
-	@Enumerated(EnumType.STRING)
-	private DebtPositionStatus status;
-	@NotNull
-	@Column (name="last_updated_date")
-	private LocalDateTime lastUpdatedDate;
-
-
-	@ManyToOne(targetEntity = Debtor.class, fetch = FetchType.LAZY, optional = false, cascade = {CascadeType.PERSIST})
-	@JoinColumn(name = "debtor_id")
-	private Debtor debtor;
+    @NotNull
+    @Column (name="company_name")
+    private String companyName; // es. Comune di Roma
+    @Column (name="office_name")
+    private String officeName; // es. Ufficio Tributi
+    @NotNull
+    @Column (name="inserted_date")
+    private LocalDateTime insertedDate;
+    @Column (name="publish_date")
+    private LocalDateTime publishDate;
+    @Column (name="validity_date")
+    private LocalDateTime validityDate;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private DebtPositionStatus status;
+    @NotNull
+    @Column (name="last_updated_date")
+    private LocalDateTime lastUpdatedDate;
 
 
-	@OneToMany(targetEntity = PaymentOption.class, fetch = FetchType.LAZY, mappedBy = "paymentPosition", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<PaymentOption> paymentOption = new ArrayList<>();
+    @ManyToOne(targetEntity = Debtor.class, fetch = FetchType.LAZY, optional = false, cascade = {CascadeType.PERSIST})
+    @JoinColumn(name = "debtor_id")
+    private Debtor debtor;
 
-	public void addPaymentOptions(PaymentOption paymentOpt) {
-		paymentOption.add(paymentOpt);
-		paymentOpt.setPaymentPosition(this);
-	}
 
-	public void removePaymentOptions(PaymentOption paymentOpt) {
-		paymentOption.remove(paymentOpt);
-		paymentOpt.setPaymentPosition(null);
-	}
+    @OneToMany(targetEntity = PaymentOption.class, fetch = FetchType.LAZY, mappedBy = "paymentPosition", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PaymentOption> paymentOption = new ArrayList<>();
+
+    public void addPaymentOptions(PaymentOption paymentOpt) {
+        paymentOption.add(paymentOpt);
+        paymentOpt.setPaymentPosition(this);
+    }
+
+    public void removePaymentOptions(PaymentOption paymentOpt) {
+        paymentOption.remove(paymentOpt);
+        paymentOpt.setPaymentPosition(null);
+    }
 }

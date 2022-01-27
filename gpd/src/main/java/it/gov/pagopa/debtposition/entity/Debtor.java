@@ -42,58 +42,58 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table (name = "debtor", uniqueConstraints={
-		@UniqueConstraint(name = "UniqueDebtor", columnNames = {"type", "fiscal_code"})
+        @UniqueConstraint(name = "UniqueDebtor", columnNames = {"type", "fiscal_code"})
 })
 public class Debtor implements Serializable {
-	/**
-	 * generated serialVersionUID
-	 */
-	private static final long serialVersionUID = -1005793427472544064L;
+    /**
+     * generated serialVersionUID
+     */
+    private static final long serialVersionUID = -1005793427472544064L;
 
-	@Id
-	@GeneratedValue (strategy = GenerationType.SEQUENCE, generator="DEBTOR_SEQ")
-	@SequenceGenerator(name="DEBTOR_SEQ", sequenceName="DEBTOR_SEQ", allocationSize=1)
-	private long id;
+    @Id
+    @GeneratedValue (strategy = GenerationType.SEQUENCE, generator="DEBTOR_SEQ")
+    @SequenceGenerator(name="DEBTOR_SEQ", sequenceName="DEBTOR_SEQ", allocationSize=1)
+    private long id;
 
-	@NotNull
-	@Enumerated(EnumType.STRING)
-	private Type type;
-	@NotNull
-	@Column (name="fiscal_code")
-	private String fiscalCode;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private Type type;
+    @NotNull
+    @Column (name="fiscal_code")
+    private String fiscalCode;
 
-	@NotNull
-	private String fullName;
-	@Column (name="street_name")
-	private String streetName;
-	@Column (name="civic_number")
-	private String civicNumber;
-	@Column (name="postal_code")
-	private String postalCode;
-	private String city;
-	private String province;
-	private String region;
-	private String country;
-	private String email;
-	private String phone;
-	@NotNull
-	@Column (name="inserted_date")
-	private LocalDateTime insertedDate;
-	@NotNull
-	@Column (name="last_updated_date")
-	private LocalDateTime lastUpdatedDate;
+    @NotNull
+    private String fullName;
+    @Column (name="street_name")
+    private String streetName;
+    @Column (name="civic_number")
+    private String civicNumber;
+    @Column (name="postal_code")
+    private String postalCode;
+    private String city;
+    private String province;
+    private String region;
+    private String country;
+    private String email;
+    private String phone;
+    @NotNull
+    @Column (name="inserted_date")
+    private LocalDateTime insertedDate;
+    @NotNull
+    @Column (name="last_updated_date")
+    private LocalDateTime lastUpdatedDate;
 
-	@OneToMany(targetEntity = PaymentPosition.class, fetch = FetchType.LAZY, mappedBy = "debtor", cascade = CascadeType.ALL)
-	private List<PaymentPosition> paymentPosition = new ArrayList<>();
+    @OneToMany(targetEntity = PaymentPosition.class, fetch = FetchType.LAZY, mappedBy = "debtor", cascade = CascadeType.ALL)
+    private List<PaymentPosition> paymentPosition = new ArrayList<>();
 
-	
-	public void addPaymentPosition(PaymentPosition paymentPos) {
-		paymentPosition.add(paymentPos);
-		paymentPos.setDebtor(this);
-	}
+    
+    public void addPaymentPosition(PaymentPosition paymentPos) {
+        paymentPosition.add(paymentPos);
+        paymentPos.setDebtor(this);
+    }
 
-	public void removePaymentPosition(PaymentPosition paymentPos) {
-		paymentPosition.remove(paymentPos);
-		paymentPos.setDebtor(null);
-	}
+    public void removePaymentPosition(PaymentPosition paymentPos) {
+        paymentPosition.remove(paymentPos);
+        paymentPos.setDebtor(null);
+    }
 }

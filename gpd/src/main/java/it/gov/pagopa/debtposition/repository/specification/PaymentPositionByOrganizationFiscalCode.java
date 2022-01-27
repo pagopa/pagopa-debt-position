@@ -16,18 +16,18 @@ import lombok.NoArgsConstructor;
 public class PaymentPositionByOrganizationFiscalCode implements Specification<PaymentPosition> {
 
     /**
-	 * generated serialVersionUID
-	 */
-	private static final long serialVersionUID = -2618936236986229586L;
-	
-	private String organizationFiscalCode;
+     * generated serialVersionUID
+     */
+    private static final long serialVersionUID = -2618936236986229586L;
+    
+    private String organizationFiscalCode;
 
     @Override
     public Predicate toPredicate(Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-	if (organizationFiscalCode == null) {
-	    return cb.isTrue(cb.literal(true)); // always true = no filtering
-	}
-	return cb.equal(root.get("organizationFiscalCode"), this.organizationFiscalCode);
+    if (organizationFiscalCode == null) {
+        return cb.isTrue(cb.literal(true)); // always true = no filtering
+    }
+    return cb.equal(root.get("organizationFiscalCode"), this.organizationFiscalCode);
     }
 
 }

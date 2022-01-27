@@ -14,7 +14,7 @@ import it.gov.pagopa.debtposition.entity.PaymentPosition;
 @Repository
 public interface PaymentPositionRepository extends JpaRepository<PaymentPosition, Long>, 
 JpaSpecificationExecutor<PaymentPosition>{
-	
+    
 
 }
 

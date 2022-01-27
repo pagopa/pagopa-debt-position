@@ -42,30 +42,30 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table (name = "payment_option", uniqueConstraints={
-	    @UniqueConstraint(name = "UniquePaymentOpt", columnNames = {"iuv", "organization_fiscal_code"})
-	    })
+        @UniqueConstraint(name = "UniquePaymentOpt", columnNames = {"iuv", "organization_fiscal_code"})
+        })
 public class PaymentOption implements Serializable {
 
     
     
     /**
-	 * generated serialVersionUID
-	 */
-	private static final long serialVersionUID = -2800191377721368418L;
+     * generated serialVersionUID
+     */
+    private static final long serialVersionUID = -2800191377721368418L;
 
-	@Id
-	@GeneratedValue (strategy = GenerationType.SEQUENCE, generator="PAYMENT_OPT_SEQ")
-	@SequenceGenerator(name="PAYMENT_OPT_SEQ", sequenceName="PAYMENT_OPT_SEQ", allocationSize=1)
-	private long id;
+    @Id
+    @GeneratedValue (strategy = GenerationType.SEQUENCE, generator="PAYMENT_OPT_SEQ")
+    @SequenceGenerator(name="PAYMENT_OPT_SEQ", sequenceName="PAYMENT_OPT_SEQ", allocationSize=1)
+    private long id;
     
-	@NotNull
+    @NotNull
     private String iuv;
-	@NotNull
+    @NotNull
     @Column (name="organization_fiscal_code")
     private String organizationFiscalCode;
     
     
-	@NotNull
+    @NotNull
     private long amount;
     private String description;
     @NotNull
@@ -81,8 +81,8 @@ public class PaymentOption implements Serializable {
     @Column (name="reporting_date")
     private LocalDateTime reportingDate;
     @NotNull
-	@Column (name="inserted_date")
-	private LocalDateTime insertedDate;
+    @Column (name="inserted_date")
+    private LocalDateTime insertedDate;
     @Column (name="payment_method")
     private String paymentMethod;
     private long fee;
@@ -96,8 +96,8 @@ public class PaymentOption implements Serializable {
     @Enumerated(EnumType.STRING)
     private PaymentOptionStatus status;    
     @NotNull
-	@Column (name="last_updated_date")
-	private LocalDateTime lastUpdatedDate;
+    @Column (name="last_updated_date")
+    private LocalDateTime lastUpdatedDate;
     
     @ManyToOne(targetEntity = PaymentPosition.class, fetch = FetchType.LAZY, optional = false, cascade = {CascadeType.PERSIST})
     @JoinColumn(name = "payment_position_id")
@@ -105,15 +105,15 @@ public class PaymentOption implements Serializable {
     
     
     @OneToMany(targetEntity = Transfer.class, fetch = FetchType.LAZY, mappedBy = "paymentOption", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Transfer> transfer = new ArrayList<>();
+    private List<Transfer> transfer = new ArrayList<>();
     
     public void addTransfers(Transfer trans) {
-    	transfer.add(trans);
+        transfer.add(trans);
         trans.setPaymentOption(this);
     }
 
     public void removeTransfers(Transfer trans) {
-    	transfer.remove(trans);
+        transfer.remove(trans);
         trans.setPaymentOption(null);
     }
     

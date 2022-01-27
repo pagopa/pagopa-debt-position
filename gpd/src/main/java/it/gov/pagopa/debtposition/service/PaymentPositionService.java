@@ -17,23 +17,23 @@ import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByOrga
 
 @Service
 public class PaymentPositionService {
-	
-	@Autowired
-	private PaymentPositionRepository paymentPositionRepository;
-	
-	public List<PaymentPosition> getDebtPositionByIUPD (String organizationFiscalCode,
-			String iupd) {
-		
-		Specification<PaymentPosition> spec = Specification.where(
-				new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
-				.and(new PaymentPositionByIUPD(iupd))
-				);
-		
-		List<PaymentPosition> ppList = paymentPositionRepository.findAll(spec);
-		if (ppList.isEmpty()) {
-			throw new AppException(AppError.DEBT_POSITION_NOT_FOUND, organizationFiscalCode, iupd);
-		}
-		
-		return ppList;
-	}
+    
+    @Autowired
+    private PaymentPositionRepository paymentPositionRepository;
+    
+    public List<PaymentPosition> getDebtPositionByIUPD (String organizationFiscalCode,
+            String iupd) {
+        
+        Specification<PaymentPosition> spec = Specification.where(
+                new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
+                .and(new PaymentPositionByIUPD(iupd))
+                );
+        
+        List<PaymentPosition> ppList = paymentPositionRepository.findAll(spec);
+        if (ppList.isEmpty()) {
+            throw new AppException(AppError.DEBT_POSITION_NOT_FOUND, organizationFiscalCode, iupd);
+        }
+        
+        return ppList;
+    }
 }

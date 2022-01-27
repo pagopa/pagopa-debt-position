@@ -8,17 +8,17 @@ import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 public class DebtPositionApplication {
-	
-	@Bean
-	public ModelMapper modelMapper() {
-		ModelMapper modelMapper = new ModelMapper();
-	    modelMapper.getConfiguration()
-	        .setMatchingStrategy(MatchingStrategies.STRICT);
-	    return modelMapper;
-	}
+    
+    @Bean
+    public ModelMapper modelMapper() {
+        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.getConfiguration()
+            .setMatchingStrategy(MatchingStrategies.STRICT);
+        return modelMapper;
+    }
 
-	public static void main(String[] args) {
-		SpringApplication.run(DebtPositionApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(DebtPositionApplication.class, args);
+    }
 
 }

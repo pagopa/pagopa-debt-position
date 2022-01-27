@@ -15,6 +15,6 @@ import it.gov.pagopa.debtposition.entity.Debtor;
 @Repository
 public interface DebtPositionRepository extends JpaRepository<Debtor, Long>, JpaSpecificationExecutor<Debtor>{
 
-	Debtor findByFiscalCode(String fiscalCode);
+    Debtor findByFiscalCode(String fiscalCode);
 }
 
