@@ -7,7 +7,7 @@ export $(grep -v '^#' .env.local | xargs)
 docker-compose -f ../docker-compose-postgresql.yml up --build -d
 
 # build
-# mvn package -DskipTests
+# mvn clean package -DskipTests
 
 # run
 mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8085 -Dspring-boot.run.profiles=local &

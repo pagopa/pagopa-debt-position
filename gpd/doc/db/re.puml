@@ -1,0 +1,80 @@
+@startuml ER-debtPosition
+left to right direction
+
+title ER - Debt Position
+
+entity debtor {
+  * id
+  --
+  * type
+  * fiscal_code
+  --
+  name
+  surname
+  street_name
+  civic_number
+  postal_code
+  city
+  state_province_region
+  country
+  email
+  phone
+}
+
+entity payment_position {
+  * id
+  --
+  * IUPD
+  --
+  * organization_fiscal_code (primary)
+  * company_name
+  * office_name
+  * inserted_date ( in fase di creazione )
+  * validity_date ( cron job )
+  * publish_date ( ACTION publish)
+  * status ( ENUM FSM - Debt Position)
+  ? total_options
+  ? paid_options
+  ? reported_options
+}
+
+entity payment_option {
+  * id
+  --
+  * IUV(creditorReferenceId)(notification_code)
+  * organization_fiscal_code(primary)
+  --
+  * amount
+  * fee
+  * description
+  * is_partial_payment
+  * duo_date
+  * retention_date ?
+  ' payment info
+  * payment_date
+  * payment_method
+  * psp_company
+  ' rendicontazione
+  * reporting_date
+  * id_flow_reporting
+  * receipt_id
+  * status ( ENUM FSM - Payment Option )
+
+}
+
+entity transfer {
+  * id
+  --
+  * idTransfer
+  * transferAmount
+  * fiscalCodeEC
+  * remittance_information
+  * transfer_category (taxonomy)
+  * iban
+  * postal_iban
+}
+
+debtor ||.|{ payment_position
+payment_position ||..|{ payment_option
+payment_option ||..|{ transfer
+@enduml
