@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import it.gov.pagopa.debtposition.entity.Debtor;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
@@ -32,37 +31,32 @@ public class DebtPositionService {
     private DebtPositionRepository debtPositionRepository;
     
     
-    public Debtor create (Debtor debtPosition, String organizationFiscalCode) {
-        Debtor savedDebtPosition = null;
+    public PaymentPosition create (PaymentPosition debtPosition, String organizationFiscalCode) {
+        PaymentPosition savedDebtPosition = null;
         try {
             
             // verifico la correttezza dei dati in input
-            DebtPositionValidation.checkPaymentPositionInputDataAccurancy(debtPosition.getPaymentPosition());
+            DebtPositionValidation.checkPaymentPositionInputDataAccurancy(debtPosition);
             
             // predispongo l'entity per l'inserimento
             LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
             debtPosition.setInsertedDate(currentDate);
             debtPosition.setLastUpdatedDate(currentDate);
-            for(PaymentPosition pp : debtPosition.getPaymentPosition()) {
-                    pp.setOrganizationFiscalCode(organizationFiscalCode);
-                    pp.setInsertedDate(LocalDateTime.now());
-                    pp.setLastUpdatedDate(currentDate);
-                    pp.setStatus(DebtPositionStatus.DRAFT);
-                    pp.setDebtor(debtPosition);
-                    for (PaymentOption po : pp.getPaymentOption()) {
-                        po.setOrganizationFiscalCode(organizationFiscalCode);
-                        po.setInsertedDate(currentDate);
-                        po.setLastUpdatedDate(currentDate);
-                        po.setStatus(PaymentOptionStatus.PO_UNPAID);
-                        po.setPaymentPosition(pp);
-                        for (Transfer t: po.getTransfer()) {
-                            t.setOrganizationFiscalCode(organizationFiscalCode);
-                            t.setInsertedDate(currentDate);
-                            t.setLastUpdatedDate(currentDate);
-                            t.setStatus(TransferStatus.T_UNREPORTED);
-                            t.setPaymentOption(po);
-                        }
-                    }
+            debtPosition.setOrganizationFiscalCode(organizationFiscalCode);
+            debtPosition.setStatus(DebtPositionStatus.DRAFT);
+            for (PaymentOption po : debtPosition.getPaymentOption()) {
+                po.setOrganizationFiscalCode(organizationFiscalCode);
+                po.setInsertedDate(currentDate);
+                po.setLastUpdatedDate(currentDate);
+                po.setStatus(PaymentOptionStatus.PO_UNPAID);
+                po.setPaymentPosition(debtPosition);
+                for (Transfer t: po.getTransfer()) {
+                    t.setOrganizationFiscalCode(organizationFiscalCode);
+                    t.setInsertedDate(currentDate);
+                    t.setLastUpdatedDate(currentDate);
+                    t.setStatus(TransferStatus.T_UNREPORTED);
+                    t.setPaymentOption(po);
+                }
             }
             
             // Inserisco la posizione debitoria

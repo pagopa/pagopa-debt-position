@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,11 +24,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import it.gov.pagopa.debtposition.dto.DebtorDTO;
-import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import it.gov.pagopa.debtposition.model.ProblemJson;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
+import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
+import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
 
 
 
@@ -35,12 +36,12 @@ import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
 @RequestMapping 
 public interface IDebtPositionController {
 
-	@Operation(summary = "The Organization creates a Debt Position ", operationId = "createPosition", tags={"Create Debt Positions"})
+	@Operation(summary = "The Organization creates a debt Position.", operationId = "createPosition", tags={"Create Debt Position"})
 	@ApiResponses(value = { 
 			@ApiResponse(responseCode  = "201", description  = "Request created."),
 			@ApiResponse(responseCode  = "400", description  = "Malformed request.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
 			@ApiResponse(responseCode  = "401", description  = "Wrong or missing function key.", content = @Content(schema = @Schema())),
-			@ApiResponse(responseCode  = "409", description  = "Conflict: duplicate request found.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
+			@ApiResponse(responseCode  = "409", description  = "Conflict: duplicate debt position found.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
 			@ApiResponse(responseCode  = "500", description  = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))) })
 	@PostMapping(value = "/organizations/{organizationfiscalcode}/debtpositions",
 	produces = { "application/json" }, 
@@ -48,19 +49,19 @@ public interface IDebtPositionController {
 	ResponseEntity<String> createDebtPosition(
 			@Parameter(description = "Organization fiscal code, the fiscal code of the Organization.",required=true) 
 			@PathVariable("organizationfiscalcode") String organizationFiscalCode, 
-			@Valid @RequestBody DebtorDTO debtPosition);
+			@Valid @RequestBody PaymentPositionModel paymentPositionModel);
 
 
 
-	@Operation(summary = "Return the details of a specific debt position. ", operationId = "getOrganizationDebtPositionByIUPD", tags={"Get Debt Position"})
+	@Operation(summary = "Return the details of a specific debt position.", operationId = "getOrganizationDebtPositionByIUPD", tags={"Get Debt Position"})
 	@ApiResponses(value = { 
-			@ApiResponse(responseCode = "200", description = "Obtained payment position details.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+			@ApiResponse(responseCode = "200", description = "Obtained debt position details.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema= @Schema(name="PaymentPositionResponse", implementation = PaymentPositionModelBaseResponse.class))),
 			@ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
-			@ApiResponse(responseCode = "404", description = "No payment found.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
+			@ApiResponse(responseCode = "404", description = "No debt position found.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
 			@ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))) })
 	@GetMapping(value = "/organizations/{organizationfiscalcode}/debtpositions/{iupd}",
 	produces = { "application/json" })
-	ResponseEntity<PaymentPositionDTO> getOrganizationDebtPositionByIUPD(
+	ResponseEntity<PaymentPositionModelBaseResponse> getOrganizationDebtPositionByIUPD(
 			@Parameter(description = "Organization fiscal code, the fiscal code of the Organization.",required=true) 
 			@PathVariable("organizationfiscalcode") String organizationfiscalcode, 
 			@Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.",required=true) 
@@ -85,9 +86,22 @@ public interface IDebtPositionController {
             @Valid    @Parameter(description = "Filter from due_date (if provided use the format yyyy-MM-dd)") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "due_date_from", required = false) LocalDate dueDateFrom,
             @Valid    @Parameter(description = "Filter to due_date (if provided use the format yyyy-MM-dd)")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "due_date_to", required = false)   LocalDate dueDateTo,
             @RequestParam(required = false, name = "orderby", defaultValue = "COMPANY_NAME") @Parameter(description = "Order by COMPANY_NAME, IUPD or STATUS") Order.PaymentPositionOrder orderBy,
-            @RequestParam(required = false, name = "ordering", defaultValue = "DESC") @Parameter(description = "Direction of ordering") Sort.Direction ordering);
-    
-    
+            @RequestParam(required = false, name = "ordering", defaultValue = "DESC") @Parameter(description = "Direction of ordering") Sort.Direction ordering);   
 
-
+	
+	@Operation(summary = "The Organization deletes a debt position", operationId = "deletePosition", tags={ "Delete Debt Position"})
+        @ApiResponses(value = { 
+            @ApiResponse(responseCode = "200", description = "Operation completed successfully."),
+            @ApiResponse(responseCode = "401", description = "Wrong or missing function key."),
+            @ApiResponse(responseCode = "404", description = "No debt position position found.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
+            @ApiResponse(responseCode = "409", description = "Conflict: existing related payment found.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
+            @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))) })
+        @DeleteMapping(value = "/organizations/{organizationfiscalcode}/debtpositions/{iupd}",
+            produces = { "application/json" }, 
+            consumes = { "application/json" })
+        ResponseEntity<String> deleteDebtPosition(
+                @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.",required=true) 
+                @PathVariable("organizationfiscalcode") String organizationfiscalcode, 
+                @Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.",required=true) 
+                @PathVariable("iupd") String iupd);
 }

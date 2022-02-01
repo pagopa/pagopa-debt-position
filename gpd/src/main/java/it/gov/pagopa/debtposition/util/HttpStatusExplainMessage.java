@@ -5,5 +5,6 @@ public class HttpStatusExplainMessage {
         super();
     }
 
-    public static final String DEBT_POSITION_CREATED         = "The debt is position created";
+    public static final String DEBT_POSITION_CREATED         = "The debt position was successfully created";
+    public static final String DEBT_POSITION_DELETED         = "The debt position was successfully deleted";
 }

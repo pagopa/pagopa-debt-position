@@ -94,7 +94,7 @@ public class PaymentOption implements Serializable {
     private String idReceipt;
     @Column (name="flow_reporting_id")
     private String idFlowReporting;
-    @Column (nullable = false)
+    @NotNull
     @Enumerated(EnumType.STRING)
     private PaymentOptionStatus status;    
     @NotNull
