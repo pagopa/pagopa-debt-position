@@ -14,8 +14,6 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -23,6 +21,7 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.Type;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -64,7 +63,31 @@ public class PaymentPosition implements Serializable {
 	@NotNull
 	@Column (name="organization_fiscal_code")
 	private String organizationFiscalCode;
+	
+	// Debtor properties
+	@NotNull
+    @Enumerated(EnumType.STRING)
+    private Type type;
+    @NotNull
+    @Column (name="fiscal_code")
+    private String fiscalCode;
+    @NotNull
+    @Column (name="full_name")
+    private String fullName;
+    @Column (name="street_name")
+    private String streetName;
+    @Column (name="civic_number")
+    private String civicNumber;
+    @Column (name="postal_code")
+    private String postalCode;
+    private String city;
+    private String province;
+    private String region;
+    private String country;
+    private String email;
+    private String phone;
 
+    // Payment Position properties
 	@NotNull
 	@Column (name="company_name")
 	private String companyName; // es. Comune di Roma
@@ -83,11 +106,6 @@ public class PaymentPosition implements Serializable {
 	@NotNull
 	@Column (name="last_updated_date")
 	private LocalDateTime lastUpdatedDate;
-
-
-	@ManyToOne(targetEntity = Debtor.class, fetch = FetchType.LAZY, optional = false, cascade = {CascadeType.PERSIST})
-	@JoinColumn(name = "debtor_id")
-	private Debtor debtor;
 
 	@Builder.Default
 	@OneToMany(targetEntity = PaymentOption.class, fetch = FetchType.LAZY, mappedBy = "paymentPosition", cascade = CascadeType.ALL, orphanRemoval = true)

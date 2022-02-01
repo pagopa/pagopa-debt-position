@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
-import it.gov.pagopa.debtposition.dto.DebtorDTO;
 import it.gov.pagopa.debtposition.dto.PaymentOptionDTO;
 import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import it.gov.pagopa.debtposition.dto.TransferDTO;
@@ -14,220 +13,68 @@ import it.gov.pagopa.debtposition.model.enumeration.Type;
 
 
 
-public class DebtorDTOMock {
-    public final static DebtorDTO getMock1() {
-        DebtorDTO debtorMock = new DebtorDTO();
-        debtorMock.setFiscalCode("MRDPLL54H17D542L");
-        debtorMock.setType(Type.F);
-        debtorMock.setFullName("Mario Rossi");
-        debtorMock.setPhone("3330987654");
-        debtorMock.setStreetName("Via di novoli");
-        debtorMock.setCivicNumber("50/2");
-        debtorMock.setProvince("FI");
-        debtorMock.setCountry("IT");
-        debtorMock.setEmail("mario@firenze.it");
-        debtorMock.setPostalCode("50100");
-
-        debtorMock.addPaymentPosition(createPaymentPositionMock1());
-
-        return debtorMock;
+public class DebtPositionMock {
+    public final static PaymentPositionDTO getMock1() {
+        return createPaymentPositionMock1();
     }
     
-    public final static DebtorDTO getMock2() {
-        DebtorDTO debtorMock = new DebtorDTO();
-        debtorMock.setFiscalCode("FRNPLL54H17D542L");
-        debtorMock.setType(Type.F);
-        debtorMock.setFullName("Francesco Rizzo");
-        debtorMock.setPhone("3330987654");
-        debtorMock.setStreetName("Via di novoli");
-        debtorMock.setCivicNumber("50/2");
-        debtorMock.setProvince("NA");
-        debtorMock.setCountry("IT");
-        debtorMock.setEmail("francesco@napoli.it");
-        debtorMock.setPostalCode("80100");
-
-        debtorMock.addPaymentPosition(createPaymentPositionMock1());
-
-        return debtorMock;
+    public final static PaymentPositionDTO getMock2() {
+        return createPaymentPositionMultipleMock1();
     }
     
-    public final static DebtorDTO getMock3() {
-        DebtorDTO debtorMock = new DebtorDTO();
-        debtorMock.setFiscalCode("GNAPLL54H17D542L");
-        debtorMock.setType(Type.F);
-        debtorMock.setFullName("Gina Pane");
-        debtorMock.setPhone("3330987654");
-        debtorMock.setStreetName("Via di novoli");
-        debtorMock.setCivicNumber("50/2");
-        debtorMock.setProvince("AQ");
-        debtorMock.setCountry("IT");
-        debtorMock.setEmail("gina@aquila.it");
-        debtorMock.setPostalCode("67100");
-
-        debtorMock.addPaymentPosition(createPaymentPositionMock1());
-
-        return debtorMock;
+    public final static PaymentPositionDTO getMock3() {
+        return createPaymentPositionMultipleMock2();
     }
     
-    public final static DebtorDTO getMock4() {
-        DebtorDTO debtorMock = new DebtorDTO();
-        debtorMock.setFiscalCode("JHNPLL54H17D542L");
-        debtorMock.setType(Type.F);
-        debtorMock.setFullName("John Cina");
-        debtorMock.setPhone("3330987654");
-        debtorMock.setStreetName("Via di novoli");
-        debtorMock.setCivicNumber("50/2");
-        debtorMock.setProvince("TO");
-        debtorMock.setCountry("IT");
-        debtorMock.setEmail("John@torino.it");
-        debtorMock.setPostalCode("10121");
-
-        debtorMock.addPaymentPosition(createPaymentPositionMock1());
-
-        return debtorMock;
+    
+    public final static PaymentPositionDTO get400Mock1() {
+        return createPaymentPosition400Mock1();
     }
     
-    public final static DebtorDTO get500Mock1() {
-        DebtorDTO debtorMock = new DebtorDTO();
-        // manca il codice fiscale => deve dare errore 500
-        debtorMock.setType(Type.F);
-        debtorMock.setFullName("Mario Rossi");
-        debtorMock.setPhone("3330987654");
-        debtorMock.setStreetName("Via di novoli");
-        debtorMock.setCivicNumber("50/2");
-        debtorMock.setProvince("FI");
-        debtorMock.setCountry("IT");
-        debtorMock.setEmail("mario@firenze.it");
-        debtorMock.setPostalCode("50100");
-
-        debtorMock.addPaymentPosition(createPaymentPositionMock1());
-
-        return debtorMock;
-    }
-
-    public final static DebtorDTO getMultiplePPMock1() {
-        DebtorDTO debtorMock = new DebtorDTO();
-        debtorMock.setFiscalCode("CPRPLL54H17D542L");
-        debtorMock.setType(Type.F);
-        debtorMock.setFullName("Marco Bianchi");
-        debtorMock.setPhone("3330987654");
-        debtorMock.setStreetName("Via di novoli");
-        debtorMock.setCivicNumber("50/2");
-        debtorMock.setProvince("RM");
-        debtorMock.setCountry("IT");
-        debtorMock.setEmail("marco@roma.it");
-        debtorMock.setPostalCode("00100");
-
-        debtorMock.addPaymentPosition(createPaymentPositionMultipleMock1());
-        debtorMock.addPaymentPosition(createPaymentPositionMultipleMock2());
-
-
-        return debtorMock;
-    }
-    
-    public final static DebtorDTO getMultiplePPMock2() {
-        DebtorDTO debtorMock = new DebtorDTO();
-        debtorMock.setFiscalCode("PIVA12345678");
-        debtorMock.setType(Type.G);
-        debtorMock.setFullName("Cipriani Srl");
-        debtorMock.setPhone("3330987654");
-        debtorMock.setStreetName("Via di novoli");
-        debtorMock.setCivicNumber("50/2");
-        debtorMock.setProvince("RM");
-        debtorMock.setCountry("IT");
-        debtorMock.setEmail("cipriani@roma.it");
-        debtorMock.setPostalCode("00100");
-
-        debtorMock.addPaymentPosition(createPaymentPositionMultipleMock1());
-        debtorMock.addPaymentPosition(createPaymentPositionMultipleMock2());
-
-
-        return debtorMock;
-    }
-    
-    public final static DebtorDTO getMultiplePPMock3() {
-        DebtorDTO debtorMock = new DebtorDTO();
-        debtorMock.setFiscalCode("PIVA0000000");
-        debtorMock.setType(Type.G);
-        debtorMock.setFullName("DGS Spa");
-        debtorMock.setPhone("3330987654");
-        debtorMock.setStreetName("Via di novoli");
-        debtorMock.setCivicNumber("50/2");
-        debtorMock.setProvince("RM");
-        debtorMock.setCountry("IT");
-        debtorMock.setEmail("dgs@roma.it");
-        debtorMock.setPostalCode("00100");
-
-        debtorMock.addPaymentPosition(createPaymentPositionMultipleMock1());
-        debtorMock.addPaymentPosition(createPaymentPositionMultipleMock2());
-
-
-        return debtorMock;
-    }
-    
-    public final static DebtorDTO getMultiplePPMock4() {
-        DebtorDTO debtorMock = new DebtorDTO();
-        debtorMock.setFiscalCode("BVNANT4H17D542L");
-        debtorMock.setType(Type.F);
-        debtorMock.setFullName("Antonino Benevento");
-        debtorMock.setPhone("3330987654");
-        debtorMock.setStreetName("Via di novoli");
-        debtorMock.setCivicNumber("50/2");
-        debtorMock.setProvince("RM");
-        debtorMock.setCountry("IT");
-        debtorMock.setEmail("antonino@roma.it");
-        debtorMock.setPostalCode("00100");
-
-        debtorMock.addPaymentPosition(createPaymentPositionMultipleMock1());
-        debtorMock.addPaymentPosition(createPaymentPositionMultipleMock2());
-
-
-        return debtorMock;
-    }
-    
-    public final static DebtorDTO getMultiplePPMock5() {
-        DebtorDTO debtorMock = new DebtorDTO();
-        debtorMock.setFiscalCode("PIVA1111111");
-        debtorMock.setType(Type.G);
-        debtorMock.setFullName("Mediacon Spa");
-        debtorMock.setPhone("3330987654");
-        debtorMock.setStreetName("Via di novoli");
-        debtorMock.setCivicNumber("50/2");
-        debtorMock.setProvince("RM");
-        debtorMock.setCountry("IT");
-        debtorMock.setEmail("mediacon@roma.it");
-        debtorMock.setPostalCode("00100");
-
-        debtorMock.addPaymentPosition(createPaymentPositionMultipleMock1());
-        debtorMock.addPaymentPosition(createPaymentPositionMultipleMock2());
-
-
-        return debtorMock;
-    }
-    
-    public final static DebtorDTO get400Mock() {
-        DebtorDTO debtorMock = new DebtorDTO();
-        debtorMock.setFiscalCode("VRDPLL54H17D542L");
-        debtorMock.setType(Type.F);
-        debtorMock.setFullName("Antonio Verdi");
-        debtorMock.setPhone("3330987654");
-        debtorMock.setStreetName("Via di novoli");
-        debtorMock.setCivicNumber("50/2");
-        debtorMock.setProvince("RM");
-        debtorMock.setCountry("IT");
-        debtorMock.setEmail("antonio@roma.it");
-        debtorMock.setPostalCode("00100");
-
-        debtorMock.addPaymentPosition(createPaymentPosition400Mock1());
-
-
-        return debtorMock;
+    public final static PaymentPositionDTO get400Mock2() {
+        return createPaymentPosition400Mock2();
     }
 
 
     public static PaymentPositionDTO createPaymentPositionMock1() {
-
+        
         PaymentPositionDTO pPMock = new PaymentPositionDTO();
+        // debtor properties
+        pPMock.setFiscalCode("MRDPLL54H17D542L");
+        pPMock.setType(Type.F);
+        pPMock.setFullName("Mario Rossi");
+        pPMock.setPhone("3330987654");
+        pPMock.setStreetName("Via di novoli");
+        pPMock.setCivicNumber("50/2");
+        pPMock.setProvince("FI");
+        pPMock.setCountry("IT");
+        pPMock.setEmail("mario@firenze.it");
+        pPMock.setPostalCode("50100");
+        // payment position properties
+        pPMock.setIupd("12345678901IUPDMOCK1");
+        pPMock.setCompanyName("Comune di Firenze");
+        pPMock.setOfficeName("Ufficio tributario");
+        pPMock.setStatus(DebtPositionStatus.DRAFT);
+        pPMock.addPaymentOptions(createPaymentOptionsMock1());
+
+        return pPMock;
+    }
+    
+    public static PaymentPositionDTO createPaymentPosition400Mock2() {
+        
+        PaymentPositionDTO pPMock = new PaymentPositionDTO();
+        // debtor properties
+        // manca il codice fiscale => deve dare errore 400
+        pPMock.setType(Type.F);
+        pPMock.setFullName("Mario Rossi");
+        pPMock.setPhone("3330987654");
+        pPMock.setStreetName("Via di novoli");
+        pPMock.setCivicNumber("50/2");
+        pPMock.setProvince("FI");
+        pPMock.setCountry("IT");
+        pPMock.setEmail("mario@firenze.it");
+        pPMock.setPostalCode("50100");
+        // payment position properties
         pPMock.setIupd("12345678901IUPDMOCK1");
         pPMock.setCompanyName("Comune di Firenze");
         pPMock.setOfficeName("Ufficio tributario");
@@ -240,6 +87,18 @@ public class DebtorDTOMock {
     public static PaymentPositionDTO createPaymentPositionMultipleMock1() {
 
         PaymentPositionDTO pPMock = new PaymentPositionDTO();
+        // debtor properties
+        pPMock.setFiscalCode("CPRPLL54H17D542L");
+        pPMock.setType(Type.F);
+        pPMock.setFullName("Marco Bianchi");
+        pPMock.setPhone("3330987654");
+        pPMock.setStreetName("Via di novoli");
+        pPMock.setCivicNumber("50/2");
+        pPMock.setProvince("RM");
+        pPMock.setCountry("IT");
+        pPMock.setEmail("marco@roma.it");
+        pPMock.setPostalCode("00100");
+        // payment position properties
         pPMock.setIupd("12345678901IUPDMULTIPLEMOCK1");
         pPMock.setCompanyName("Comune di Roma");
         pPMock.setOfficeName("Ufficio tributario");
@@ -253,6 +112,18 @@ public class DebtorDTOMock {
     public static PaymentPositionDTO createPaymentPositionMultipleMock2() {
 
         PaymentPositionDTO pPMock = new PaymentPositionDTO();
+        // debtor properties
+        pPMock.setFiscalCode("PIVA12345678");
+        pPMock.setType(Type.G);
+        pPMock.setFullName("Cipriani Srl");
+        pPMock.setPhone("3330987654");
+        pPMock.setStreetName("Via di novoli");
+        pPMock.setCivicNumber("50/2");
+        pPMock.setProvince("RM");
+        pPMock.setCountry("IT");
+        pPMock.setEmail("cipriani@roma.it");
+        pPMock.setPostalCode("00100");
+        // payment position properties
         pPMock.setIupd("12345678901IUPDMULTIPLEMOCK2");
         pPMock.setCompanyName("Comune di Roma");
         pPMock.setOfficeName("Ufficio condono");
@@ -266,6 +137,18 @@ public class DebtorDTOMock {
     public static PaymentPositionDTO createPaymentPosition400Mock1() {
 
         PaymentPositionDTO pPMock = new PaymentPositionDTO();
+        // debtor properties
+        pPMock.setFiscalCode("VRDPLL54H17D542L");
+        pPMock.setType(Type.F);
+        pPMock.setFullName("Antonio Verdi");
+        pPMock.setPhone("3330987654");
+        pPMock.setStreetName("Via di novoli");
+        pPMock.setCivicNumber("50/2");
+        pPMock.setProvince("RM");
+        pPMock.setCountry("IT");
+        pPMock.setEmail("antonio@roma.it");
+        pPMock.setPostalCode("00100");
+        // payment position properties
         pPMock.setIupd("12345678901IUPD400MOCK1");
         pPMock.setCompanyName("Comune di Roma");
         pPMock.setOfficeName("Ufficio tributario");
