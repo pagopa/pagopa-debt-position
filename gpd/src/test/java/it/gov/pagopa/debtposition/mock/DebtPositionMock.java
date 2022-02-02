@@ -34,7 +34,7 @@ public class DebtPositionMock {
     public final static PaymentPositionDTO get400Mock2() {
         return createPaymentPosition400Mock2();
     }
-
+    
 
     public static PaymentPositionDTO createPaymentPositionMock1() {
         

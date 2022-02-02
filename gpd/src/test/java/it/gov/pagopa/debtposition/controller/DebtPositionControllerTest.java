@@ -1,5 +1,6 @@
 package it.gov.pagopa.debtposition.controller;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -25,7 +26,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
 import it.gov.pagopa.debtposition.mock.DebtPositionMock;
-import it.gov.pagopa.debtposition.service.DebtPositionService;
 
 @SpringBootTest(classes = DebtPositionApplication.class)
 @AutoConfigureMockMvc
@@ -36,9 +36,6 @@ class DebtPositionControllerTest {
 
     @Mock
     private ModelMapper modelMapperMock;
-
-    @Mock
-    private DebtPositionService debtPositionService;
 
     @BeforeEach
     void setUp() {
@@ -215,5 +212,31 @@ class DebtPositionControllerTest {
         mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
-
+    
+    // DELETE DEBT POSITION
+    @Test
+    void deleteDebtPosition_200() throws Exception {
+    	// creo una posizione debitoria e la cancello
+        mvc.perform(post("/organizations/DEL_12345678901/debtpositions")
+                .content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+        
+        mvc.perform(delete("/organizations/DEL_12345678901/debtpositions/12345678901IUPDMOCK1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+    
+    @Test
+    void deleteDebtPosition_404() throws Exception {
+    	// provo a cancellare una posizione debitoria che non esiste
+        mvc.perform(delete("/organizations/DEL_12345678901/debtpositions/12345678901IUPDNOTEXIST")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+    
+    // TODO: Appena saranno disponibili le api per simulare un pagamento implementare questo test 
+    @Test
+    void deleteDebtPosition_409() throws Exception {
+    	// creo una posizione debitoria con uno stato di pagamento già presente e provo a cancellarla
+    }
 }

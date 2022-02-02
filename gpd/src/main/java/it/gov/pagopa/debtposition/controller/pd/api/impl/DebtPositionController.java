@@ -25,7 +25,6 @@ import it.gov.pagopa.debtposition.model.filterandorder.Order.PaymentPositionOrde
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
-import it.gov.pagopa.debtposition.service.DebtPositionService;
 import it.gov.pagopa.debtposition.service.PaymentPositionService;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.HttpStatusExplainMessage;
@@ -39,9 +38,6 @@ public class DebtPositionController implements IDebtPositionController {
 	private ModelMapper modelMapper;
 	
 	@Autowired
-	private DebtPositionService debtPositionService;
-	
-	@Autowired
 	private PaymentPositionService paymentPositionService;
 	
 	@Override
@@ -51,7 +47,7 @@ public class DebtPositionController implements IDebtPositionController {
 		// convert model to entity
 	    PaymentPosition debtPosition = modelMapper.map(paymentPositionModel, PaymentPosition.class);
 		
-	    PaymentPosition createdDebtPos = debtPositionService.create(debtPosition, organizationFiscalCode);
+	    PaymentPosition createdDebtPos = paymentPositionService.create(debtPosition, organizationFiscalCode);
 		
 		if (null != createdDebtPos) {
 			return new ResponseEntity<>(HttpStatusExplainMessage.DEBT_POSITION_CREATED, HttpStatus.CREATED);
@@ -109,8 +105,8 @@ public class DebtPositionController implements IDebtPositionController {
 	}
 
     @Override
-    public ResponseEntity<String> deleteDebtPosition(String organizationfiscalcode, String iupd) {
-        // TODO Auto-generated method stub
+    public ResponseEntity<String> deleteDebtPosition(String organizationFiscalCode, String iupd) {
+    	paymentPositionService.deleteDebtPosition(organizationFiscalCode, iupd);
         return new ResponseEntity<>(HttpStatusExplainMessage.DEBT_POSITION_DELETED, HttpStatus.OK);
     }
 

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -98,11 +99,30 @@ public interface IDebtPositionController {
             @ApiResponse(responseCode = "409", description = "Conflict: existing related payment found.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
             @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))) })
         @DeleteMapping(value = "/organizations/{organizationfiscalcode}/debtpositions/{iupd}",
-            produces = { "application/json" }, 
-            consumes = { "application/json" })
+            produces = { "application/json" })
         ResponseEntity<String> deleteDebtPosition(
                 @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.",required=true) 
-                @PathVariable("organizationfiscalcode") String organizationfiscalcode, 
+                @PathVariable("organizationfiscalcode") String organizationFiscalCode, 
                 @Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.",required=true) 
                 @PathVariable("iupd") String iupd);
+	
+/*
+	@Operation(summary = "The Organization updates a debt position ", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "updatePosition", tags={ "Update Debt Positions"})
+	    @ApiResponses(value = { 
+	        @ApiResponse(responseCode = "204", description = "Request updated."),
+	        @ApiResponse(responseCode = "401", description = "Wrong or missing function key."),
+	        @ApiResponse(responseCode = "404", description = "No debt position found."),
+	        @ApiResponse(responseCode = "405", description = "Method not allowed (existing related payment found)."),
+	        @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))) })
+	    @PutMapping(value = "/organizations/{organizationfiscalcode}/payment-notices/{iupd}",
+	        produces = { "application/json" }, 
+	        consumes = { "application/json" })
+	    ResponseEntity<Void> updateDebtPosition(
+	    		@Parameter(description = "Organization fiscal code, the fiscal code of the Organization.",required=true) 
+	    		@PathVariable("organizationfiscalcode") String organizationFiscalCode,
+	    		@Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.",required=true) 
+	    		@PathVariable("iupd") String iupd, 
+	    		@Valid @RequestBody PaymentPositionModel paymentPositionModel);
+*/
+
 }
