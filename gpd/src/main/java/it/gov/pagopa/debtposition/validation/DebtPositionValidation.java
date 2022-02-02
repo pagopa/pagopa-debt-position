@@ -3,7 +3,6 @@ package it.gov.pagopa.debtposition.validation;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
@@ -26,10 +25,8 @@ public class DebtPositionValidation {
 
     
     
-    public static void checkPaymentPositionInputDataAccurancy(final List<PaymentPosition> ppList){
-        for (PaymentPosition pp : ppList) {
+    public static void checkPaymentPositionInputDataAccurancy(PaymentPosition pp){
             checkPaymentPositionDatesCongruency(pp);
-        }
     }
     
     

@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-import it.gov.pagopa.debtposition.entity.Debtor;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
 
 /**
  * @author aacitelli
@@ -13,8 +13,7 @@ import it.gov.pagopa.debtposition.entity.Debtor;
  */
 
 @Repository
-public interface DebtPositionRepository extends JpaRepository<Debtor, Long>, JpaSpecificationExecutor<Debtor>{
+public interface DebtPositionRepository extends JpaRepository<PaymentPosition, Long>, JpaSpecificationExecutor<PaymentPosition>{
 
-    Debtor findByFiscalCode(String fiscalCode);
 }
 
