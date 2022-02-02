@@ -1,21 +1,48 @@
 {
 	"info": {
-		"_postman_id": "1e965795-1fb1-439e-8c8f-8ccc5a4e9370",
+		"_postman_id": "cb1d0084-964c-4b26-9eba-0e69739e63d2",
 		"name": "DEBT_POSITION",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "GPD",
+			"name": "api test suite - GPD",
 			"item": [
 				{
 					"name": "createDebtPosition",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.globals.set(\"creditor_saved\", pm.globals.get(\"creditor_institution_code\"));",
+									"//console.log(pm.globals.get(\"creditor_saved\"))",
+									"//postman.setNextRequest(\"createDebtPosition_409_DuplicatedIUV_sameDebtPos\");",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"type\": \"F\",\r\n  \"fiscalCode\": \"CTLLSSxxxx\",\r\n  \"fullName\": \"Alessio\",\r\n  \"streetName\": \"via\",\r\n  \"civicNumber\": \"0\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"Roma\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"\",\r\n  \"country\": \"ITA\",\r\n  \"email\": \"ale@ale.it\",\r\n  \"phone\": \"06123567\",\r\n  \"paymentPosition\": [\r\n    {\r\n      \"companyName\": \"Comune di Roma\",\r\n      \"officeName\": \"Ufficio Tributi\",\r\n      \"iupd\": \"123456789IUPD\",\r\n      \"paymentOption\": [\r\n        {\r\n          \"iuv\": \"iuv\",\r\n          \"amount\": 100,\r\n          \"description\": \"\",\r\n          \"isPartialPayment\": false,\r\n          \"dueDate\": \"2022-01-29T08:56:55.448Z\",\r\n          \"retentionDate\": \"\",\r\n          \"fee\": 0,\r\n          \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"id transfer\",\r\n          \"amount\": 100,\r\n          \"remittanceInformation\": \"Causale pagamento TARI comune di ROMA\",\r\n          \"iban\": \"IT60X0542811101000000123456\",\r\n          \"category\": \"010-TARI/TEFA\"\r\n        }\r\n      ]\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}",
+							"raw": "{\r\n  \"iupd\": \"{{iupd}}\",\r\n  \"type\": \"F\",\r\n  \"fiscalCode\": \"JHNDOE00A01F205N\",\r\n  \"fullName\": \"John Doe\",\r\n  \"streetName\": \"streetName\",\r\n  \"civicNumber\": \"11\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"city\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"RM\",\r\n  \"country\": \"IT\",\r\n  \"email\": \"lorem@lorem.com\",\r\n  \"phone\": \"333-123456789\",\r\n  \"companyName\": \"companyName\",\r\n  \"officeName\": \"officeName\",\r\n  \"validityDate\": \"{{validity_date}}\",\r\n  \"paymentOption\": [\r\n    {\r\n      \"iuv\": \"{{iuv}}\",\r\n      \"amount\": 10000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE\",\r\n      \"isPartialPayment\": false,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 8000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"02\",\r\n          \"amount\": 2000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -23,15 +50,12 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/organizations/123456789/debtpositions",
-							"protocol": "http",
+							"raw": "{{gpdhost}}organizations/{{creditor_institution_code}}/debtpositions",
 							"host": [
-								"localhost"
+								"{{gpdhost}}organizations"
 							],
-							"port": "8080",
 							"path": [
-								"organizations",
-								"123456789",
+								"{{creditor_institution_code}}",
 								"debtpositions"
 							]
 						}
@@ -39,13 +63,26 @@
 					"response": []
 				},
 				{
-					"name": "createDebtPosition_multiple",
+					"name": "createDebtPosition_multiOptions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n   \"type\":\"F\",\r\n   \"fiscalCode\":\"CPRPLL54H17D542L\",\r\n   \"fullName\":\"Marco Bianchi\",\r\n   \"streetName\":\"Via di novoli\",\r\n   \"civicNumber\":\"50/2\",\r\n   \"postalCode\":\"00100\",\r\n   \"city\":null,\r\n   \"province\":\"RM\",\r\n   \"region\":null,\r\n   \"country\":\"IT\",\r\n   \"email\":\"marco@roma.it\",\r\n   \"phone\":\"3330987654\",\r\n   \"paymentPosition\":[\r\n      {\r\n         \"iupd\":\"12345678901IUPDMULTIPLEMOCK1\",\r\n         \"organizationFiscalCode\":null,\r\n         \"companyName\":\"Comune di Roma\",\r\n         \"officeName\":\"Ufficio tributario\",\r\n         \"insertedDate\":null,\r\n         \"publishDate\":null,\r\n         \"validityDate\":null,\r\n         \"status\":\"DRAFT\",\r\n         \"paymentOption\":[\r\n            {\r\n               \"iuv\":\"123456IUVMULTIPLEMOCK1\",\r\n               \"organizationFiscalCode\":null,\r\n               \"amount\":1000,\r\n               \"description\":null,\r\n               \"isPartialPayment\":false,\r\n               \"dueDate\":\"2022-01-28T23:45:29.9324743\",\r\n               \"retentionDate\":null,\r\n               \"paymentDate\":null,\r\n               \"reportingDate\":null,\r\n               \"paymentMethod\":null,\r\n               \"fee\":0,\r\n               \"pspCompany\":null,\r\n               \"idReceipt\":null,\r\n               \"idFlowReporting\":null,\r\n               \"status\":\"PO_UNPAID\",\r\n               \"transfer\":[\r\n                  {\r\n                     \"organizationFiscalCode\":null,\r\n                     \"idTransfer\":\"id tranfer mock multiple 1\",\r\n                     \"amount\":1000,\r\n                     \"remittanceInformation\":\"causale mock multiple 1\",\r\n                     \"category\":\"10/22252/20\",\r\n                     \"iban\":\"IT75I0306902887100000300005\",\r\n                     \"postalIban\":\"IT82E0760113600000000118547\",\r\n                     \"status\":null\r\n                  }\r\n               ]\r\n            },\r\n            {\r\n               \"iuv\":\"123456IUVMULTIPLEMOCK2\",\r\n               \"organizationFiscalCode\":null,\r\n               \"amount\":500,\r\n               \"description\":null,\r\n               \"isPartialPayment\":false,\r\n               \"dueDate\":\"2022-02-04T23:45:29.9324743\",\r\n               \"retentionDate\":null,\r\n               \"paymentDate\":null,\r\n               \"reportingDate\":null,\r\n               \"paymentMethod\":null,\r\n               \"fee\":0,\r\n               \"pspCompany\":null,\r\n               \"idReceipt\":null,\r\n               \"idFlowReporting\":null,\r\n               \"status\":\"PO_UNPAID\",\r\n               \"transfer\":[\r\n                  {\r\n                     \"organizationFiscalCode\":null,\r\n                     \"idTransfer\":\"id tranfer mock multiple 2\",\r\n                     \"amount\":500,\r\n                     \"remittanceInformation\":\"causale mock multiple 2\",\r\n                     \"category\":\"10/22252/20\",\r\n                     \"iban\":\"IT75I0306902887100000300006\",\r\n                     \"postalIban\":\"IT82E0760113600000000118547\",\r\n                     \"status\":null\r\n                  }\r\n               ]\r\n            }\r\n         ]\r\n      },\r\n      {\r\n         \"iupd\":\"12345678901IUPDMULTIPLEMOCK2\",\r\n         \"organizationFiscalCode\":null,\r\n         \"companyName\":\"Comune di Roma\",\r\n         \"officeName\":\"Ufficio condono\",\r\n         \"insertedDate\":null,\r\n         \"publishDate\":null,\r\n         \"validityDate\":null,\r\n         \"status\":\"DRAFT\",\r\n         \"paymentOption\":[\r\n            {\r\n               \"iuv\":\"123456IUVMULTIPLEMOCK3\",\r\n               \"organizationFiscalCode\":null,\r\n               \"amount\":10000,\r\n               \"description\":null,\r\n               \"isPartialPayment\":false,\r\n               \"dueDate\":\"2022-01-28T23:45:29.9324743\",\r\n               \"retentionDate\":null,\r\n               \"paymentDate\":null,\r\n               \"reportingDate\":null,\r\n               \"paymentMethod\":null,\r\n               \"fee\":0,\r\n               \"pspCompany\":null,\r\n               \"idReceipt\":null,\r\n               \"idFlowReporting\":null,\r\n               \"status\":\"PO_UNPAID\",\r\n               \"transfer\":[\r\n                  {\r\n                     \"organizationFiscalCode\":null,\r\n                     \"idTransfer\":\"id tranfer mock multiple 3\",\r\n                     \"amount\":10000,\r\n                     \"remittanceInformation\":\"causale mock multiple 3\",\r\n                     \"category\":\"10/22252/20\",\r\n                     \"iban\":\"IT75I0306902887100000300007\",\r\n                     \"postalIban\":\"IT82E0760113600000000118547\",\r\n                     \"status\":null\r\n                  }\r\n               ]\r\n            },\r\n            {\r\n               \"iuv\":\"123456IUVMULTIPLEMOCK4\",\r\n               \"organizationFiscalCode\":null,\r\n               \"amount\":5000,\r\n               \"description\":null,\r\n               \"isPartialPayment\":true,\r\n               \"dueDate\":\"2022-01-28T23:45:29.9324743\",\r\n               \"retentionDate\":null,\r\n               \"paymentDate\":null,\r\n               \"reportingDate\":null,\r\n               \"paymentMethod\":null,\r\n               \"fee\":0,\r\n               \"pspCompany\":null,\r\n               \"idReceipt\":null,\r\n               \"idFlowReporting\":null,\r\n               \"status\":\"PO_UNPAID\",\r\n               \"transfer\":[\r\n                  {\r\n                     \"organizationFiscalCode\":null,\r\n                     \"idTransfer\":\"id tranfer mock multiple 4\",\r\n                     \"amount\":2500,\r\n                     \"remittanceInformation\":\"causale mock multiple 4\",\r\n                     \"category\":\"10/22252/20\",\r\n                     \"iban\":\"IT75I0306902887100000300007\",\r\n                     \"postalIban\":\"IT82E0760113600000000118547\",\r\n                     \"status\":null\r\n                  },\r\n                  {\r\n                     \"organizationFiscalCode\":null,\r\n                     \"idTransfer\":\"id tranfer mock multiple 5\",\r\n                     \"amount\":2500,\r\n                     \"remittanceInformation\":\"causale mock multiple 5\",\r\n                     \"category\":\"10/22252/20\",\r\n                     \"iban\":\"IT75I0306902887100000300007\",\r\n                     \"postalIban\":\"IT82E0760113600000000118547\",\r\n                     \"status\":null\r\n                  }\r\n               ]\r\n            }\r\n         ]\r\n      }\r\n   ]\r\n}",
+							"raw": "{\r\n  \"iupd\": \"{{iupd}}\",\r\n  \"type\": \"F\",\r\n  \"fiscalCode\": \"JHNDOE00A01F205N\",\r\n  \"fullName\": \"John Doe\",\r\n  \"streetName\": \"streetName\",\r\n  \"civicNumber\": \"11\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"city\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"RM\",\r\n  \"country\": \"IT\",\r\n  \"email\": \"lorem@lorem.com\",\r\n  \"phone\": \"333-123456789\",\r\n  \"companyName\": \"companyName\",\r\n  \"officeName\": \"officeName\",\r\n  \"validityDate\": \"{{validity_date}}\",\r\n  \"paymentOption\": [\r\n    {\r\n      \"iuv\": \"{{iuv1}}\",\r\n      \"amount\": 10000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE opt 1 FINAL\",\r\n      \"isPartialPayment\": false,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 9000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"02\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"iuv\": \"{{iuv2}}\",\r\n      \"amount\": 5000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE opt 2 NOT FINAL\",\r\n      \"isPartialPayment\": true,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 4000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"02\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"iuv\": \"{{iuv3}}\",\r\n      \"amount\": 5000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE opt 3 NOT FINAL\",\r\n      \"isPartialPayment\": true,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 4000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"02\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -53,15 +90,12 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/organizations/123456789/debtpositions",
-							"protocol": "http",
+							"raw": "{{gpdhost}}organizations/{{creditor_institution_code}}/debtpositions",
 							"host": [
-								"localhost"
+								"{{gpdhost}}organizations"
 							],
-							"port": "8080",
 							"path": [
-								"organizations",
-								"123456789",
+								"{{creditor_institution_code}}",
 								"debtpositions"
 							]
 						}
@@ -69,13 +103,225 @@
 					"response": []
 				},
 				{
-					"name": "createDebtPosition_500 (no fiscalCode)",
+					"name": "getOrganizationDebtPositions_no_filter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response properties\", () => {",
+									"    //parse the response JSON and test three properties",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.payment_position_list).to.have.lengthOf(1);",
+									"    pm.expect(responseJson.payment_position_list[0].paymentOption).to.have.lengthOf(1);",
+									"    pm.expect(responseJson.payment_position_list[0].organizationFiscalCode).to.eql(pm.globals.get(\"creditor_saved\"));",
+									"    pm.expect(responseJson.payment_position_list[0].status).to.eql(\"DRAFT\");",
+									"    pm.expect(responseJson.payment_position_list[0].paymentOption[0].isPartialPayment).to.be.a('boolean');",
+									"    pm.expect(responseJson.payment_position_list[0].paymentOption[0].isPartialPayment).to.eql(false);",
+									"",
+									"    pm.globals.set(\"iupd_saved\", responseJson.payment_position_list[0].iupd);",
+									"",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved}}/debtpositions/?page=0",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved}}",
+								"debtpositions",
+								""
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getOrganizationDebtPositions_filter_by_duedate_from",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response properties\", () => {",
+									"    //parse the response JSON and test three properties",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.payment_position_list).to.have.lengthOf(1);",
+									"    pm.expect(responseJson.payment_position_list[0].paymentOption).to.have.lengthOf(1);",
+									"    pm.expect(responseJson.payment_position_list[0].organizationFiscalCode).to.eql(pm.globals.get(\"creditor_saved\"));",
+									"    pm.expect(responseJson.payment_position_list[0].status).to.eql(\"DRAFT\");",
+									"    pm.expect(responseJson.payment_position_list[0].paymentOption[0].isPartialPayment).to.be.a('boolean');",
+									"    pm.expect(responseJson.payment_position_list[0].paymentOption[0].isPartialPayment).to.eql(false);",
+									"",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved}}/debtpositions/?page=0&due_date_from={{now_date}}",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved}}",
+								"debtpositions",
+								""
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "due_date_from",
+									"value": "{{now_date}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getOrganizationDebtPositions_filter_by_duedate_to",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response properties\", () => {",
+									"    //parse the response JSON and test three properties",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.payment_position_list).to.have.lengthOf(0);",
+									"",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved}}/debtpositions/?page=0&due_date_to={{now_date}}",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved}}",
+								"debtpositions",
+								""
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "due_date_to",
+									"value": "{{now_date}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getPositionByIUPD",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response properties\", () => {",
+									"    //parse the response JSON and test three properties",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.paymentOption).to.have.lengthOf(1);",
+									"    pm.expect(responseJson.iupd).to.eql(pm.globals.get(\"iupd_saved\"));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved}}/debtpositions/{{iupd_saved}}",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved}}",
+								"debtpositions",
+								"{{iupd_saved}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "api test error - GPD",
+			"item": [
+				{
+					"name": "createDebtPosition_409_DuplicatedIUV_sameDebtPos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(409);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"type\": \"F\",\r\n  \"fullName\": \"Andrea\",\r\n  \"streetName\": \"via\",\r\n  \"civicNumber\": \"0\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"Roma\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"\",\r\n  \"country\": \"ITA\",\r\n  \"email\": \"and@and.it\",\r\n  \"phone\": \"06123567\",\r\n  \"paymentPosition\": [\r\n    {\r\n      \"companyName\": \"Comune di Roma\",\r\n      \"officeName\": \"Ufficio Tributi\",\r\n      \"iupd\": \"123456789IUPD\",\r\n      \"paymentOption\": [\r\n        {\r\n          \"iuv\": \"iuv\",\r\n          \"amount\": 100,\r\n          \"description\": \"\",\r\n          \"isPartialPayment\": false,\r\n          \"dueDate\": \"2022-01-29T08:56:55.448Z\",\r\n          \"retentionDate\": \"\",\r\n          \"fee\": 0,\r\n          \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"id transfer\",\r\n          \"amount\": 100,\r\n          \"remittanceInformation\": \"Causale pagamento TARI comune di ROMA\",\r\n          \"iban\": \"IT60X0542811101000000123456\",\r\n          \"category\": \"010-TARI/TEFA\"\r\n        }\r\n      ]\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}",
+							"raw": "{\r\n  \"iupd\": \"{{iupd}}\",\r\n  \"type\": \"F\",\r\n  \"fiscalCode\": \"JHNDOE00A01F205N\",\r\n  \"fullName\": \"John Doe\",\r\n  \"streetName\": \"streetName\",\r\n  \"civicNumber\": \"11\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"city\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"RM\",\r\n  \"country\": \"IT\",\r\n  \"email\": \"lorem@lorem.com\",\r\n  \"phone\": \"333-123456789\",\r\n  \"companyName\": \"companyName\",\r\n  \"officeName\": \"officeName\",\r\n  \"validityDate\": \"{{validity_date}}\",\r\n  \"paymentOption\": [\r\n    {\r\n      \"iuv\": \"{{iuv1}}\",\r\n      \"amount\": 10000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE opt 1 FINAL\",\r\n      \"isPartialPayment\": false,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 9000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"02\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"iuv\": \"{{iuv2}}\",\r\n      \"amount\": 5000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE opt 2 NOT FINAL\",\r\n      \"isPartialPayment\": true,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 4000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"02\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"iuv\": \"{{iuv2}}\",\r\n      \"amount\": 5000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE opt 3 NOT FINAL\",\r\n      \"isPartialPayment\": true,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 4000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"02\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -83,15 +329,52 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/organizations/500_123456789/debtpositions",
-							"protocol": "http",
+							"raw": "{{gpdhost}}organizations/{{creditor_institution_code}}/debtpositions",
 							"host": [
-								"localhost"
+								"{{gpdhost}}organizations"
 							],
-							"port": "8080",
 							"path": [
-								"organizations",
-								"500_123456789",
+								"{{creditor_institution_code}}",
+								"debtpositions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "createDebtPosition_400_no_fiscalCode",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"iupd\": \"{{iupd}}\",\r\n  \"type\": \"F\",\r\n  \"fullName\": \"John Doe\",\r\n  \"streetName\": \"streetName\",\r\n  \"civicNumber\": \"11\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"city\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"RM\",\r\n  \"country\": \"IT\",\r\n  \"email\": \"lorem@lorem.com\",\r\n  \"phone\": \"333-123456789\",\r\n  \"companyName\": \"companyName\",\r\n  \"officeName\": \"officeName\",\r\n  \"validityDate\": \"{{validity_date}}\",\r\n  \"paymentOption\": [\r\n    {\r\n      \"iuv\": \"{{iuv}}\",\r\n      \"amount\": 10000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE\",\r\n      \"isPartialPayment\": false,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 8000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"02\",\r\n          \"amount\": 2000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_institution_code}}/debtpositions",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_institution_code}}",
 								"debtpositions"
 							]
 						}
@@ -100,12 +383,25 @@
 				},
 				{
 					"name": "createDebtPosition_400_TransferAmountsError",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"type\": \"F\",\r\n  \"fiscalCode\": \"CRMLLSSxxxx\",\r\n  \"fullName\": \"Cristiano\",\r\n  \"streetName\": \"via\",\r\n  \"civicNumber\": \"0\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"Roma\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"\",\r\n  \"country\": \"ITA\",\r\n  \"email\": \"ale@ale.it\",\r\n  \"phone\": \"06123567\",\r\n  \"paymentPosition\": [\r\n    {\r\n      \"companyName\": \"Comune di Roma\",\r\n      \"officeName\": \"Ufficio Tributi\",\r\n      \"validityDate\": \"2022-02-15T08:56:55.448Z\",\r\n      \"paymentOption\": [\r\n        {\r\n          \"iuv\": \"iuv-a\",\r\n          \"amount\": 100,\r\n          \"description\": \"\",\r\n          \"isPartialPayment\": false,\r\n          \"dueDate\": \"2022-02-28T08:56:55.448Z\",\r\n          \"retentionDate\": \"\",\r\n          \"fee\": 0,\r\n          \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"id transfer 75\",\r\n          \"amount\": 75,\r\n          \"remittanceInformation\": \"Causale pagamento TARI comune di ROMA\",\r\n          \"iban\": \"IT60X0542811101000000123456\",\r\n          \"category\": \"010-TARI/TEFA\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"id transfer 50\",\r\n          \"amount\": 50,\r\n          \"remittanceInformation\": \"Causale pagamento TEFA\",\r\n          \"iban\": \"IT60X0542811101000000789012\",\r\n          \"category\": \"010-TARI/TEFA\"\r\n        }\r\n      ]\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}",
+							"raw": "{\r\n  \"iupd\": \"{{iupd}}\",\r\n  \"type\": \"F\",\r\n  \"fiscalCode\": \"JHNDOE00A01F205N\",\r\n  \"fullName\": \"John Doe\",\r\n  \"streetName\": \"streetName\",\r\n  \"civicNumber\": \"11\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"city\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"RM\",\r\n  \"country\": \"IT\",\r\n  \"email\": \"lorem@lorem.com\",\r\n  \"phone\": \"333-123456789\",\r\n  \"companyName\": \"companyName\",\r\n  \"officeName\": \"officeName\",\r\n  \"validityDate\": \"{{validity_date}}\",\r\n  \"paymentOption\": [\r\n    {\r\n      \"iuv\": \"{{iuv}}\",\r\n      \"amount\": 10000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE\",\r\n      \"isPartialPayment\": false,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 8000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"02\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -113,202 +409,94 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/organizations/123456789/payment-notices/123456789IUPD",
-							"protocol": "http",
+							"raw": "{{gpdhost}}organizations/{{creditor_institution_code}}/debtpositions",
 							"host": [
-								"localhost"
+								"{{gpdhost}}organizations"
 							],
-							"port": "8080",
 							"path": [
-								"organizations",
-								"123456789",
-								"payment-notices",
-								"123456789IUPD"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "createDebtPosition_DuplicatedIUV",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"type\": \"F\",\r\n  \"fiscalCode\": \"CTLLSSxxxx\",\r\n  \"fullName\": \"Alessio\",\r\n  \"streetName\": \"via\",\r\n  \"civicNumber\": \"0\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"Roma\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"\",\r\n  \"country\": \"ITA\",\r\n  \"email\": \"ale@ale.it\",\r\n  \"phone\": \"06123567\",\r\n  \"paymentPosition\": [\r\n    {\r\n      \"companyName\": \"Comune di Roma\",\r\n      \"officeName\": \"Ufficio Tributi\",\r\n      \"paymentOption\": [\r\n        {\r\n          \"iuv\": \"newiuv\",\r\n          \"amount\": 200,\r\n          \"description\": \"nuova opzione\",\r\n          \"isPartialPayment\": false,\r\n          \"dueDate\": \"2022-01-29T08:56:55.448Z\",\r\n          \"retentionDate\": \"\",\r\n          \"fee\": 0\r\n        },\r\n        {\r\n          \"iuv\": \"iuv\",\r\n          \"amount\": 100,\r\n          \"description\": \"opzione già presente\",\r\n          \"isPartialPayment\": false,\r\n          \"dueDate\": \"2022-01-29T08:56:55.448Z\",\r\n          \"retentionDate\": \"\",\r\n          \"fee\": 0\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8080/organizations/123456789/payment-notices/123456789NEWIUPD",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"organizations",
-								"123456789",
-								"payment-notices",
-								"123456789NEWIUPD"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "getPositionByIUPD",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/organizations/123456789/debtpositions/123456789IUPD",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"organizations",
-								"123456789",
-								"debtpositions",
-								"123456789IUPD"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "getOrganizationDebtPositions (without filter)",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/organizations/123456789/debtpositions/?page=0&due_date_from=2022-01-27",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"organizations",
-								"123456789",
-								"debtpositions",
-								""
-							],
-							"query": [
-								{
-									"key": "page",
-									"value": "0"
-								},
-								{
-									"key": "due_date_from",
-									"value": "2022-01-27"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "getOrganizationDebtPositions (by date from)",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/organizations/123456789/debtpositions?page=0&due_date_from=2022-01-27",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"organizations",
-								"123456789",
+								"{{creditor_institution_code}}",
 								"debtpositions"
-							],
-							"query": [
-								{
-									"key": "page",
-									"value": "0"
-								},
-								{
-									"key": "due_date_from",
-									"value": "2022-01-27"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "getOrganizationDebtPositions (by date to)",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/organizations/123456789/debtpositions?page=0&due_date_from=2022-01-27",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"organizations",
-								"123456789",
-								"debtpositions"
-							],
-							"query": [
-								{
-									"key": "page",
-									"value": "0"
-								},
-								{
-									"key": "due_date_from",
-									"value": "2022-01-27"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "getOrganizationDebtPositions (by date between)",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/organizations/123456789/debtpositions/?page=0&due_date_from=2022-01-27",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"organizations",
-								"123456789",
-								"debtpositions",
-								""
-							],
-							"query": [
-								{
-									"key": "page",
-									"value": "0"
-								},
-								{
-									"key": "due_date_from",
-									"value": "2022-01-27"
-								}
 							]
 						}
 					},
 					"response": []
 				}
 			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"function getDateNowISOAddMin(minutesToAdd) {",
+					"    const currentDate = new Date();",
+					"    const date = new Date(currentDate.getTime() + minutesToAdd*60000);",
+					"    return date.toISOString();    ",
+					"}",
+					"",
+					"",
+					"Date.prototype.addDays = function(days) {",
+					"    var date = new Date(this.valueOf());",
+					"    date.setDate(date.getDate() + days);",
+					"    return date;",
+					"}",
+					"",
+					"var date = new Date();",
+					"console.log(date.addDays(5));",
+					"",
+					"",
+					"function makeidMix(length) {",
+					"    var result           = '';",
+					"    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+					"    var charactersLength = characters.length;",
+					"    for ( var i = 0; i < length; i++ ) {",
+					"      result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+					"    }",
+					"    return result;",
+					"}",
+					"",
+					"function makeidNumber(length) {",
+					"    var result           = '';",
+					"    var characters       = '0123456789';",
+					"    var charactersLength = characters.length;",
+					"    for ( var i = 0; i < length; i++ ) {",
+					"      result += characters.charAt(Math.floor(Math.random() * ",
+					" charactersLength));",
+					"   }",
+					"   return result;",
+					"}",
+					"",
+					"// set global vars",
+					"pm.globals.set(\"creditor_institution_code\", makeidNumber(11));",
+					"pm.globals.set(\"iupd\", makeidMix(35));",
+					"pm.globals.set(\"iuv\", makeidMix(35));",
+					"pm.globals.set(\"iuv1\", makeidMix(35));",
+					"pm.globals.set(\"iuv2\", makeidMix(35));",
+					"pm.globals.set(\"iuv3\", makeidMix(35));",
+					"",
+					"pm.globals.set(\"validity_date\", new Date().addDays(10));",
+					"pm.globals.set(\"due_date\", new Date().addDays(30));",
+					"pm.globals.set(\"retention_date\", new Date().addDays(90));",
+					"",
+					"pm.globals.set(\"now_date\", new Date().toISOString().split('T')[0]);",
+					"",
+					"//pm.globals.set(\"iuv_tipo\", _.random(0, 6));",
+					"",
+					"",
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
 		}
 	]
 }
