@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# kill a previous instance if exists
+lsof -i :8085 | awk '{print $2}' | tail -n +2 | xargs kill -9
+
 # set local env
 export $(grep -v '^#' .env.local | xargs)
 
@@ -21,4 +24,6 @@ do
     echo -n "."
     CMD_CHECK=`curl -o /dev/null -s -w "%{http_code}\n" $URL_CHECK`
 done
-open http://localhost:8085/swagger-ui/index.html
+
+open -na "Google Chrome" --args -incognito http://localhost:8085/swagger-ui/index.html
+# open http://localhost:8085/swagger-ui/index.html
