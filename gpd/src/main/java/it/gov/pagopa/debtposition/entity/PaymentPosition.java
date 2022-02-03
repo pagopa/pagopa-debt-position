@@ -18,6 +18,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
@@ -106,17 +107,23 @@ public class PaymentPosition implements Serializable {
 	@NotNull
 	@Column (name="last_updated_date")
 	private LocalDateTime lastUpdatedDate;
+	
+	@Builder.Default
+	@NotNull
+	@Version
+	@Column(columnDefinition = "integer DEFAULT 0")
+    private Integer version = 0;
 
 	@Builder.Default
 	@OneToMany(targetEntity = PaymentOption.class, fetch = FetchType.LAZY, mappedBy = "paymentPosition", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<PaymentOption> paymentOption = new ArrayList<>();
 
-	public void addPaymentOptions(PaymentOption paymentOpt) {
+	public void addPaymentOption(PaymentOption paymentOpt) {
 		paymentOption.add(paymentOpt);
 		paymentOpt.setPaymentPosition(this);
 	}
 
-	public void removePaymentOptions(PaymentOption paymentOpt) {
+	public void removePaymentOption(PaymentOption paymentOpt) {
 		paymentOption.remove(paymentOpt);
 		paymentOpt.setPaymentPosition(null);
 	}
