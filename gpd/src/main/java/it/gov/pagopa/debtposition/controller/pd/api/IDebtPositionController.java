@@ -82,7 +82,7 @@ public interface IDebtPositionController {
 	produces = { "application/json" })
 	public ResponseEntity<PaymentPositionsInfo> getOrganizationDebtPositions(
 			@Parameter(description = "Organization fiscal code, the fiscal code of the Organization.",required=true) 
-			@PathVariable("organizationfiscalcode") String organizationfiscalcode,
+			@PathVariable("organizationfiscalcode") String organizationFiscalCode,
             @Positive @Parameter(description = "Number of elements on one page. Default = 50")           @RequestParam(required = false, defaultValue = "50") Integer limit,
             @Positive @Parameter(description = "Page number. Page value starts from 0", required = true) @RequestParam Integer page,
             @Valid    @Parameter(description = "Filter from due_date (if provided use the format yyyy-MM-dd)") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "due_date_from", required = false) LocalDate dueDateFrom,
@@ -106,23 +106,24 @@ public interface IDebtPositionController {
                 @Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.",required=true) 
                 @PathVariable("iupd") String iupd);
 	
-/*
+
 	@Operation(summary = "The Organization updates a debt position ", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "updatePosition", tags={ "Update Debt Positions"})
 	    @ApiResponses(value = { 
 	        @ApiResponse(responseCode = "204", description = "Request updated."),
+	        @ApiResponse(responseCode = "400", description  = "Malformed request.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
 	        @ApiResponse(responseCode = "401", description = "Wrong or missing function key."),
-	        @ApiResponse(responseCode = "404", description = "No debt position found."),
-	        @ApiResponse(responseCode = "405", description = "Method not allowed (existing related payment found)."),
+	        @ApiResponse(responseCode = "404", description = "No debt position found.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
+	        @ApiResponse(responseCode = "409", description = "Conflict: existing related payment found.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
 	        @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))) })
-	    @PutMapping(value = "/organizations/{organizationfiscalcode}/payment-notices/{iupd}",
+	    @PutMapping(value = "/organizations/{organizationfiscalcode}/debtpositions/{iupd}",
 	        produces = { "application/json" }, 
 	        consumes = { "application/json" })
-	    ResponseEntity<Void> updateDebtPosition(
+	    ResponseEntity<String> updateDebtPosition(
 	    		@Parameter(description = "Organization fiscal code, the fiscal code of the Organization.",required=true) 
 	    		@PathVariable("organizationfiscalcode") String organizationFiscalCode,
 	    		@Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.",required=true) 
 	    		@PathVariable("iupd") String iupd, 
 	    		@Valid @RequestBody PaymentPositionModel paymentPositionModel);
-*/
+
 
 }

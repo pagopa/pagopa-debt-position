@@ -41,7 +41,9 @@ class DebtPositionControllerTest {
     void setUp() {
     }
 
-    // CREATE DEBT POSITION
+    /**
+     * CREATE DEBT POSITION
+     */
     @Test
     void createDebtPosition_201() throws Exception {
         mvc.perform(post("/organizations/12345678901/debtpositions")
@@ -105,7 +107,9 @@ class DebtPositionControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
-    // GET LIST DEBT POSITIONS
+    /**
+     *  GET LIST DEBT POSITIONS
+     */
     @Test
     void getDebtPositionList() throws Exception {
         // creo due posizioni debitorie e le recupero
@@ -213,7 +217,9 @@ class DebtPositionControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
     
-    // DELETE DEBT POSITION
+    /**
+     * DELETE DEBT POSITION
+     */
     @Test
     void deleteDebtPosition_200() throws Exception {
     	// creo una posizione debitoria e la cancello

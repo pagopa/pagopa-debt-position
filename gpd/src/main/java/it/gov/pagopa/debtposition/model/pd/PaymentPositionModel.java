@@ -8,9 +8,7 @@ import java.util.List;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -40,10 +38,7 @@ public class PaymentPositionModel implements Serializable {
     private String province;
     private String region;
     private String country;
-
-    @Schema(description = "debtor email ", required = true)
     @Email(message="Please provide a valid email address")
-    @Pattern(regexp=".+@.+\\..+", message="Please provide a valid email address")
     private String email;
     private String phone;
 

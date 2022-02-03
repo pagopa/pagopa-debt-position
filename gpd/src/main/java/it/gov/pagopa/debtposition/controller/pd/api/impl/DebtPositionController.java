@@ -29,9 +29,11 @@ import it.gov.pagopa.debtposition.service.PaymentPositionService;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.HttpStatusExplainMessage;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
+import lombok.extern.slf4j.Slf4j;
 
 
 @Controller
+@Slf4j
 public class DebtPositionController implements IDebtPositionController {
 	
 	@Autowired
@@ -40,11 +42,15 @@ public class DebtPositionController implements IDebtPositionController {
 	@Autowired
 	private PaymentPositionService paymentPositionService;
 	
+	private static final String LOG_BASE_HEADER_INFO = "[RequestMethod: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
+	
 	@Override
 	public ResponseEntity<String> createDebtPosition(String organizationFiscalCode,
 			@Valid PaymentPositionModel paymentPositionModel) {
+		final String PARMAS_TO_LOG = "organizationFiscalCode="+organizationFiscalCode;
+		log.info(String.format(LOG_BASE_HEADER_INFO,"POST","createDebtPosition", PARMAS_TO_LOG));
 		
-		// convert model to entity
+		// flip model to entity
 	    PaymentPosition debtPosition = modelMapper.map(paymentPositionModel, PaymentPosition.class);
 		
 	    PaymentPosition createdDebtPos = paymentPositionService.create(debtPosition, organizationFiscalCode);
@@ -59,9 +65,10 @@ public class DebtPositionController implements IDebtPositionController {
 	@Override
 	public ResponseEntity<PaymentPositionModelBaseResponse> getOrganizationDebtPositionByIUPD(String organizationFiscalCode,
 			String iupd) {
+		final String PARMAS_TO_LOG = "organizationFiscalCode="+organizationFiscalCode+"; iupd="+iupd;
+		log.info(String.format(LOG_BASE_HEADER_INFO,"GET","getOrganizationDebtPositionByIUPD", PARMAS_TO_LOG));
 		
-		
-		// convert entity to model
+		// flip entity to model
 	    PaymentPositionModelBaseResponse paymentPositionResponse = ObjectMapperUtils.map(
 				paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd), 
 				PaymentPositionModelBaseResponse.class);
@@ -70,14 +77,17 @@ public class DebtPositionController implements IDebtPositionController {
 	}
 
 	@Override
-	public ResponseEntity<PaymentPositionsInfo> getOrganizationDebtPositions(String organizationfiscalcode,
+	public ResponseEntity<PaymentPositionsInfo> getOrganizationDebtPositions(String organizationFiscalCode,
 			@Positive Integer limit, @Positive Integer page, LocalDate dueDateFrom, LocalDate dueDateTo, 
 			PaymentPositionOrder orderBy, Direction ordering) {
+		
+		final String PARMAS_TO_LOG = "organizationFiscalCode="+organizationFiscalCode;
+		log.info(String.format(LOG_BASE_HEADER_INFO,"GET","getOrganizationDebtPositions", PARMAS_TO_LOG));
 		
 		// Create filter and order object
 		FilterAndOrder filterOrder = FilterAndOrder.builder()
                 .filter(Filter.builder()
-                        .organizationFiscalCode(organizationfiscalcode)
+                        .organizationFiscalCode(organizationFiscalCode)
                         .dueDateFrom(dueDateFrom != null ? dueDateFrom.atStartOfDay() : null)
                         .dueDateTo(dueDateTo != null ? dueDateTo.atStartOfDay() : null)
                         .build())
@@ -90,7 +100,7 @@ public class DebtPositionController implements IDebtPositionController {
 		
 		Page<PaymentPosition> pagePP = paymentPositionService.getOrganizationDebtPositions(limit, page, filterOrder);
 		
-		// convert entity to model
+		// flip entity to model
 		List<PaymentPositionModelBaseResponse> ppResponseList = ObjectMapperUtils.mapAll(
 				pagePP.toList(), 
 				PaymentPositionModelBaseResponse.class);
@@ -106,8 +116,35 @@ public class DebtPositionController implements IDebtPositionController {
 
     @Override
     public ResponseEntity<String> deleteDebtPosition(String organizationFiscalCode, String iupd) {
-    	paymentPositionService.deleteDebtPosition(organizationFiscalCode, iupd);
+    	
+    	final String PARMAS_TO_LOG = "organizationFiscalCode="+organizationFiscalCode+"; iupd="+iupd;
+		log.info(String.format(LOG_BASE_HEADER_INFO,"DELETE","deleteDebtPosition", PARMAS_TO_LOG));
+		
+    	paymentPositionService.delete(organizationFiscalCode, iupd);
         return new ResponseEntity<>(HttpStatusExplainMessage.DEBT_POSITION_DELETED, HttpStatus.OK);
     }
+
+	@Override
+	public ResponseEntity<String> updateDebtPosition(String organizationFiscalCode, String iupd,
+			@Valid PaymentPositionModel paymentPositionModel) {
+		final String IUPD_VALIDATION_ERROR = "IUPD mistmatch error: path variable IUPD [%s] and request body IUPD [%s] must be the same";
+		final String PARMAS_TO_LOG = "organizationFiscalCode="+organizationFiscalCode+"; iupd="+iupd;
+		
+		log.info(String.format(LOG_BASE_HEADER_INFO,"PUT","updateDebtPosition", PARMAS_TO_LOG));
+		// verifico la congruenza di dati tra lo iupd path variable e lo iupd nel request body
+		if (!paymentPositionModel.getIupd().equals(iupd)) {
+			log.error(String.format(LOG_BASE_HEADER_INFO,"PUT","updateDebtPosition", PARMAS_TO_LOG)+" : "+ String.format(IUPD_VALIDATION_ERROR,iupd,paymentPositionModel.getIupd()));
+			throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, String.format(IUPD_VALIDATION_ERROR,iupd,paymentPositionModel.getIupd()));
+		}
+		
+		PaymentPosition updatedDebtPos = paymentPositionService.update(paymentPositionModel, organizationFiscalCode);
+		
+		if (null != updatedDebtPos) {
+			return new ResponseEntity<>(HttpStatusExplainMessage.DEBT_POSITION_UPDATED, HttpStatus.NO_CONTENT);
+		}
+		
+		throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
+		
+	}
 
 }
