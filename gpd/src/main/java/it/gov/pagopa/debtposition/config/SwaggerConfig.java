@@ -34,7 +34,7 @@ public class SwaggerConfig {
                                         .in(SecurityScheme.In.HEADER))
                 )
                 .info(new Info()
-                        .title("PagoPA API configuration")
+                        .title("PagoPA API Debt Position")
                         .version(appVersion)
                         .description(appDescription)
                         .termsOfService("https://www.pagopa.gov.it/"));
