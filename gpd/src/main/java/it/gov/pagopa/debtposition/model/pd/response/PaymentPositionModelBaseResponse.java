@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.dto;
+package it.gov.pagopa.debtposition.model.pd.response;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -11,12 +11,12 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class PaymentPositionDTO implements Serializable {
+public class PaymentPositionModelBaseResponse implements Serializable {
 
     /**
      * generated serialVersionUID
      */
-    private static final long serialVersionUID = 6990851241801808964L;
+    private static final long serialVersionUID = 3162169541264601092L;
     
     private String iupd;
     private String organizationFiscalCode;
@@ -26,14 +26,7 @@ public class PaymentPositionDTO implements Serializable {
     private LocalDateTime publishDate;
     private LocalDateTime validityDate;
     private DebtPositionStatus status;
+    private LocalDateTime lastUpdatedDate;
 
-    private List<PaymentOptionDTO> paymentOption = new ArrayList<>();
-    
-    public void addPaymentOptions(PaymentOptionDTO paymentOpt) {
-        paymentOption.add(paymentOpt);
-    }
-
-    public void removePaymentOptions(PaymentOptionDTO paymentOpt) {
-        paymentOption.remove(paymentOpt);
-    }
+    private List<PaymentOptionModelResponse> paymentOption = new ArrayList<>();
 }

@@ -15,9 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
 import it.gov.pagopa.debtposition.controller.pd.api.IDebtPositionController;
-import it.gov.pagopa.debtposition.dto.DebtorDTO;
-import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
-import it.gov.pagopa.debtposition.entity.Debtor;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
@@ -25,8 +22,9 @@ import it.gov.pagopa.debtposition.model.filterandorder.Filter;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
 import it.gov.pagopa.debtposition.model.filterandorder.Order.PaymentPositionOrder;
+import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
-import it.gov.pagopa.debtposition.service.DebtPositionService;
+import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
 import it.gov.pagopa.debtposition.service.PaymentPositionService;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.HttpStatusExplainMessage;
@@ -40,19 +38,16 @@ public class DebtPositionController implements IDebtPositionController {
 	private ModelMapper modelMapper;
 	
 	@Autowired
-	private DebtPositionService debtPositionService;
-	
-	@Autowired
 	private PaymentPositionService paymentPositionService;
 	
 	@Override
 	public ResponseEntity<String> createDebtPosition(String organizationFiscalCode,
-			@Valid DebtorDTO debtPositionDTO) {
+			@Valid PaymentPositionModel paymentPositionModel) {
 		
-		// convert DTO to entity
-		Debtor debtPosition = modelMapper.map(debtPositionDTO, Debtor.class);
+		// convert model to entity
+	    PaymentPosition debtPosition = modelMapper.map(paymentPositionModel, PaymentPosition.class);
 		
-		Debtor createdDebtPos = debtPositionService.create(debtPosition, organizationFiscalCode);
+	    PaymentPosition createdDebtPos = paymentPositionService.create(debtPosition, organizationFiscalCode);
 		
 		if (null != createdDebtPos) {
 			return new ResponseEntity<>(HttpStatusExplainMessage.DEBT_POSITION_CREATED, HttpStatus.CREATED);
@@ -62,16 +57,16 @@ public class DebtPositionController implements IDebtPositionController {
 	}
 
 	@Override
-	public ResponseEntity<PaymentPositionDTO> getOrganizationDebtPositionByIUPD(String organizationFiscalCode,
+	public ResponseEntity<PaymentPositionModelBaseResponse> getOrganizationDebtPositionByIUPD(String organizationFiscalCode,
 			String iupd) {
 		
 		
-		// convert entity to DTO
-		PaymentPositionDTO paymentPositionDTO = ObjectMapperUtils.map(
+		// convert entity to model
+	    PaymentPositionModelBaseResponse paymentPositionResponse = ObjectMapperUtils.map(
 				paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd), 
-				PaymentPositionDTO.class);
+				PaymentPositionModelBaseResponse.class);
 		
-		return new ResponseEntity<>(paymentPositionDTO, HttpStatus.OK);
+		return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
 	}
 
 	@Override
@@ -95,18 +90,24 @@ public class DebtPositionController implements IDebtPositionController {
 		
 		Page<PaymentPosition> pagePP = paymentPositionService.getOrganizationDebtPositions(limit, page, filterOrder);
 		
-		// convert entity to DTO
-		List<PaymentPositionDTO> ppDTOList = ObjectMapperUtils.mapAll(
+		// convert entity to model
+		List<PaymentPositionModelBaseResponse> ppResponseList = ObjectMapperUtils.mapAll(
 				pagePP.toList(), 
-				PaymentPositionDTO.class);
+				PaymentPositionModelBaseResponse.class);
 		
 		return new ResponseEntity<>(PaymentPositionsInfo.builder()
-        .ppList(ppDTOList)
+        .ppBaseResponseList(ppResponseList)
         .pageInfo(CommonUtil.buildPageInfo(pagePP))
         .build(), 
         HttpStatus.OK);
 		
 		
 	}
+
+    @Override
+    public ResponseEntity<String> deleteDebtPosition(String organizationFiscalCode, String iupd) {
+    	paymentPositionService.deleteDebtPosition(organizationFiscalCode, iupd);
+        return new ResponseEntity<>(HttpStatusExplainMessage.DEBT_POSITION_DELETED, HttpStatus.OK);
+    }
 
 }

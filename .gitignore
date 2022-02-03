@@ -23,3 +23,8 @@
 hs_err_pid*
 
 .idea
+Results
+.DS_Store
+test.csv
+k6*.js
+libs
