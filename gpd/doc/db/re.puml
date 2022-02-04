@@ -33,6 +33,7 @@ entity payment_position {
   * inserted_date 
   * status 
   * last_updated_date ( = inserted_date al primo inserimento)
+  * version (default = 0 alla creazione)
 }
 
 
