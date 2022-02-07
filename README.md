@@ -1,4 +1,5 @@
-# pagopa-debt-position - PagoPA service to manage EC debtor positions
+# pagopa-debt-position
+PagoPA service to manage EC debtor positions
 ---
 ## Api Documentation 📖
 
