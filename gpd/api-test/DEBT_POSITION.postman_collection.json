@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "d9b2a4e2-887d-4b05-8201-0353e8ea3b63",
+		"_postman_id": "4bcd0e9d-18ea-4a15-96e0-c86d0123ec6d",
 		"name": "DEBT_POSITION",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -177,7 +177,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"check_status\", function () {",
-									"  pm.response.to.have.status(204);",
+									"  pm.response.to.have.status(200);",
 									"});",
 									"",
 									"",
@@ -632,17 +632,7 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"function makeidMix(length) {\r",
-									"    var result           = '';\r",
-									"    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\r",
-									"    var charactersLength = characters.length;\r",
-									"    for ( var i = 0; i < length; i++ ) {\r",
-									"      result += characters.charAt(Math.floor(Math.random() * charactersLength));\r",
-									"    }\r",
-									"    return result;\r",
-									"}\r",
-									"\r",
-									"pm.collectionVariables.set(\"iupd_not_existent\", \"FAKEIUPD_\"+makeidMix(35));"
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -666,14 +656,14 @@
 					"response": []
 				},
 				{
-					"name": "updateDebtPosition_404_iupd_mismatch",
+					"name": "updateDebtPosition_400_iupd_mismatch",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
 									"pm.test(\"check_status\", function () {\r",
-									"  pm.response.to.have.status(404);\r",
+									"  pm.response.to.have.status(400);\r",
 									"});\r",
 									"\r",
 									""
@@ -685,17 +675,7 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"function makeidMix(length) {\r",
-									"    var result           = '';\r",
-									"    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\r",
-									"    var charactersLength = characters.length;\r",
-									"    for ( var i = 0; i < length; i++ ) {\r",
-									"      result += characters.charAt(Math.floor(Math.random() * charactersLength));\r",
-									"    }\r",
-									"    return result;\r",
-									"}\r",
-									"\r",
-									"pm.collectionVariables.set(\"iupd_not_existent\", \"FAKEIUPD_\"+makeidMix(35));"
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -735,7 +715,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"check_status\", function () {",
-									"  pm.response.to.have.status(200);",
+									"  pm.response.to.have.status(400);",
 									"});",
 									"",
 									"",
@@ -801,13 +781,7 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"Date.prototype.subDays = function(days) {\r",
-									"    var date = new Date(this.valueOf());\r",
-									"    date.setDate(date.getDate() - days);\r",
-									"    return date;\r",
-									"}\r",
-									"\r",
-									"pm.collectionVariables.set(\"invalid_due_date\", new Date().subDays(5));"
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -834,6 +808,58 @@
 								"{{creditor_saved}}",
 								"debtpositions",
 								"{{iupd_saved}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "updateDebtPosition_404_iupd_not_exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {\r",
+									"  pm.response.to.have.status(404);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"iupd\": \"{{iupd_not_existent}}\",\r\n  \"type\": \"F\",\r\n  \"fiscalCode\": \"JHNDOE00A01F205N\",\r\n  \"fullName\": \"John Doe\",\r\n  \"streetName\": \"streetName\",\r\n  \"civicNumber\": \"11\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"city\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"RM\",\r\n  \"country\": \"IT\",\r\n  \"email\": \"lorem@lorem.com\",\r\n  \"phone\": \"333-123456789\",\r\n  \"companyName\": \"companyName\",\r\n  \"officeName\": \"officeName\",\r\n  \"validityDate\": \"{{validity_date}}\",\r\n  \"paymentOption\": [\r\n    {\r\n      \"iuv\": \"{{iuv}}\",\r\n      \"amount\": 9500,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE\",\r\n      \"isPartialPayment\": false,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 8000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"02\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"03\",\r\n          \"amount\": 500,\r\n          \"remittanceInformation\": \"remittanceInformation 3\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved}}/debtpositions/{{iupd_not_existent}}",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved}}",
+								"debtpositions",
+								"{{iupd_not_existent}}"
 							]
 						}
 					},
@@ -886,6 +912,12 @@
 					"   return result;",
 					"}",
 					"",
+					"Date.prototype.subDays = function(days) {",
+					"    var date = new Date(this.valueOf());",
+					"    date.setDate(date.getDate() - days);",
+					"    return date;",
+					"}",
+					"",
 					"// set global vars",
 					"pm.globals.set(\"creditor_institution_code\", makeidNumber(11));",
 					"pm.globals.set(\"iupd\", makeidMix(35));",
@@ -897,8 +929,10 @@
 					"pm.globals.set(\"validity_date\", new Date().addDays(10));",
 					"pm.globals.set(\"due_date\", new Date().addDays(30));",
 					"pm.globals.set(\"retention_date\", new Date().addDays(90));",
+					"pm.globals.set(\"invalid_due_date\", new Date().subDays(5));",
 					"",
 					"pm.globals.set(\"now_date\", new Date().toISOString().split('T')[0]);",
+					"pm.globals.set(\"iupd_not_existent\", \"FAKEIUPD_\"+makeidMix(35));",
 					"",
 					"//pm.globals.set(\"iuv_tipo\", _.random(0, 6));",
 					"",
