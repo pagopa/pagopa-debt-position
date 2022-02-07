@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>it.gov.pagopa.debtposition</groupId>
-    <artifactId>debt-position</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>debt-position</name>
+    <artifactId>gpd</artifactId>
+    <version>0.0.1</version>
+    <name>gdp</name>
     <description>Progetto Gestione Posizioni Debitorie</description>
     <properties>
         <java.version>11</java.version>

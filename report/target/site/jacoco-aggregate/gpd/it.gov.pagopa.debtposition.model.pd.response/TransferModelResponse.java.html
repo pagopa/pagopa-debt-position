@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>TransferModelResponse.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Coverage Report</a> &gt; <a href="../index.html" class="el_bundle">gpd</a> &gt; <a href="index.source.html" class="el_package">it.gov.pagopa.debtposition.model.pd.response</a> &gt; <span class="el_source">TransferModelResponse.java</span></div><h1>TransferModelResponse.java</h1><pre class="source lang-java linenums">package it.gov.pagopa.debtposition.model.pd.response;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
+import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+<span class="pc bnc" id="L10" title="All 80 branches missed.">@Data</span>
+<span class="fc" id="L11">@NoArgsConstructor</span>
+public class TransferModelResponse implements Serializable {
+
+    /**
+     * generated serialVersionUID
+     */
+    private static final long serialVersionUID = -8466280136220999882L;
+    
+<span class="fc" id="L19">    private String organizationFiscalCode;</span>
+<span class="fc" id="L20">    private String idTransfer;</span>
+<span class="fc" id="L21">    private long amount;</span>
+<span class="fc" id="L22">    private String remittanceInformation; // causale</span>
+<span class="fc" id="L23">    private String category; // taxonomy</span>
+<span class="fc" id="L24">    private String iban;</span>
+<span class="fc" id="L25">    private String postalIban;</span>
+<span class="fc" id="L26">    private LocalDateTime insertedDate;</span>
+<span class="fc" id="L27">    private TransferStatus status; </span>
+<span class="fc" id="L28">    private LocalDateTime lastUpdatedDate;</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

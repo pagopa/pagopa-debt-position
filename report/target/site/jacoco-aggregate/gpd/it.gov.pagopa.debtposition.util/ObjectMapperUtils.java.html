@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>ObjectMapperUtils.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">Coverage Report</a> &gt; <a href="../index.html" class="el_bundle">gpd</a> &gt; <a href="index.source.html" class="el_package">it.gov.pagopa.debtposition.util</a> &gt; <span class="el_source">ObjectMapperUtils.java</span></div><h1>ObjectMapperUtils.java</h1><pre class="source lang-java linenums">package it.gov.pagopa.debtposition.util;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.modelmapper.ModelMapper;
+import org.modelmapper.PropertyMap;
+import org.modelmapper.convention.MatchingStrategies;
+
+public class ObjectMapperUtils {
+
+    private static final ModelMapper modelMapper;
+
+    /**
+     * Model mapper property setting are specified in the following block.
+     * Default property matching strategy is set to Strict see {@link MatchingStrategies}
+     * Custom mappings are added using {@link ModelMapper#addMappings(PropertyMap)}
+     */
+    static {
+<span class="fc" id="L21">        modelMapper = new ModelMapper();</span>
+<span class="fc" id="L22">        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);</span>
+<span class="fc" id="L23">    }</span>
+
+    /**
+     * Hide from public usage.
+     */
+    private ObjectMapperUtils() {
+    }
+
+    /**
+     * &lt;p&gt;Note: outClass object must have default constructor with no arguments&lt;/p&gt;
+     *
+     * @param &lt;D&gt;      type of result object.
+     * @param &lt;T&gt;      type of source object to map from.
+     * @param entity   entity that needs to be mapped.
+     * @param outClass class of result object.
+     * @return new object of &lt;code&gt;outClass&lt;/code&gt; type.
+     */
+    public static &lt;D, T&gt; D map(final T entity, Class&lt;D&gt; outClass) {
+<span class="fc" id="L41">        return modelMapper.map(entity, outClass);</span>
+    }
+
+    /**
+     * &lt;p&gt;Note: outClass object must have default constructor with no arguments&lt;/p&gt;
+     *
+     * @param entityList list of entities that needs to be mapped
+     * @param outCLass   class of result list element
+     * @param &lt;D&gt;        type of objects in result list
+     * @param &lt;T&gt;        type of entity in &lt;code&gt;entityList&lt;/code&gt;
+     * @return list of mapped object with &lt;code&gt;&lt;D&gt;&lt;/code&gt; type.
+     */
+    public static &lt;D, T&gt; List&lt;D&gt; mapAll(final Collection&lt;T&gt; entityList, Class&lt;D&gt; outCLass) {
+<span class="fc" id="L54">        return entityList.stream()</span>
+<span class="fc" id="L55">                .map(entity -&gt; map(entity, outCLass))</span>
+<span class="fc" id="L56">                .collect(Collectors.toList());</span>
+    }
+
+    /**
+     * Maps {@code source} to {@code destination}.
+     *
+     * @param source      object to map from
+     * @param destination object to map to
+     */
+    public static &lt;S, D&gt; D map(final S source, D destination) {
+<span class="nc" id="L66">        modelMapper.map(source, destination);</span>
+<span class="nc" id="L67">        return destination;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
