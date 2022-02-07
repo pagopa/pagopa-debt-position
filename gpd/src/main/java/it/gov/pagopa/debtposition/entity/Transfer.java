@@ -20,6 +20,7 @@ import javax.validation.constraints.NotNull;
 
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -31,6 +32,7 @@ import lombok.Setter;
  *
  */
 
+@Builder (toBuilder = true)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -77,7 +79,8 @@ public class Transfer implements Serializable {
 	private LocalDateTime lastUpdatedDate;
 	
 	
-	@ManyToOne(targetEntity = PaymentOption.class, fetch = FetchType.LAZY, optional = false, cascade = {CascadeType.PERSIST})
+	@ManyToOne(targetEntity = PaymentOption.class, fetch = FetchType.LAZY, optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "payment_option_id")
     private PaymentOption paymentOption;
+
 }

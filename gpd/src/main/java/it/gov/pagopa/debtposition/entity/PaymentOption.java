@@ -112,7 +112,7 @@ public class PaymentOption implements Serializable {
       targetEntity = PaymentPosition.class,
       fetch = FetchType.LAZY,
       optional = false,
-      cascade = {CascadeType.PERSIST})
+      cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @JoinColumn(name = "payment_position_id")
   private PaymentPosition paymentPosition;
 
@@ -125,13 +125,13 @@ public class PaymentOption implements Serializable {
       orphanRemoval = true)
   private List<Transfer> transfer = new ArrayList<>();
 
-  public void addTransfers(Transfer trans) {
-    transfer.add(trans);
-    trans.setPaymentOption(this);
+  public void addTransfer(Transfer t) {
+    transfer.add(t);
+    t.setPaymentOption(this);
   }
 
-  public void removeTransfers(Transfer trans) {
-    transfer.remove(trans);
-    trans.setPaymentOption(null);
+  public void removeTransfer(Transfer t) {
+    transfer.remove(t);
+    t.setPaymentOption(null);
   }
 }
