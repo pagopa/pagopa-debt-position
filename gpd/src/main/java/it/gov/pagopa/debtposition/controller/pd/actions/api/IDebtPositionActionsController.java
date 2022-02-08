@@ -22,7 +22,7 @@ import it.gov.pagopa.debtposition.model.ProblemJson;
 @RequestMapping 
 public interface IDebtPositionActionsController {
 
-	@Operation(summary = "The Organization publish a debt Position.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "publishPosition", tags={"Publish Debt Position"})
+	@Operation(summary = "The Organization changes the status of a debt position to published.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "publishPosition", tags={"Publish Debt Position"})
 	@ApiResponses(value = { 
 			@ApiResponse(responseCode  = "200", description  = "Request published."),
 			@ApiResponse(responseCode  = "400", description  = "Malformed request.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),

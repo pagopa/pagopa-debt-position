@@ -42,11 +42,12 @@ public class DebtPositionController implements IDebtPositionController {
 	@Autowired
 	private PaymentPositionCRUDService paymentPositionService;
 	
+	
 	private static final String LOG_BASE_HEADER_INFO   = "[RequestMethod: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
 	private static final String LOG_BASE_PARAMS_DETAIL = "organizationFiscalCode= %s; iupd= %s";
 	
 	@Override
-	public ResponseEntity<String> createDebtPosition(String organizationFiscalCode,
+	public ResponseEntity<PaymentPositionModel> createDebtPosition(String organizationFiscalCode,
 			@Valid PaymentPositionModel paymentPositionModel) {
 		log.info(String.format(LOG_BASE_HEADER_INFO,"POST","createDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, paymentPositionModel.getIupd())));
 		
@@ -56,7 +57,7 @@ public class DebtPositionController implements IDebtPositionController {
 	    PaymentPosition createdDebtPos = paymentPositionService.create(debtPosition, organizationFiscalCode);
 		
 		if (null != createdDebtPos) {
-			return new ResponseEntity<>(HttpStatusExplainMessage.DEBT_POSITION_CREATED, HttpStatus.CREATED);
+		    return new ResponseEntity<>(modelMapper.map(createdDebtPos, PaymentPositionModel.class), HttpStatus.CREATED);
 		}
 		
 		throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
@@ -120,7 +121,7 @@ public class DebtPositionController implements IDebtPositionController {
     }
 
 	@Override
-	public ResponseEntity<String> updateDebtPosition(String organizationFiscalCode, String iupd,
+	public ResponseEntity<PaymentPositionModel> updateDebtPosition(String organizationFiscalCode, String iupd,
 			@Valid PaymentPositionModel paymentPositionModel) {
 		final String IUPD_VALIDATION_ERROR = "IUPD mistmatch error: path variable IUPD [%s] and request body IUPD [%s] must be the same";
 		
@@ -136,7 +137,7 @@ public class DebtPositionController implements IDebtPositionController {
 		PaymentPosition updatedDebtPos = paymentPositionService.update(paymentPositionModel, organizationFiscalCode);
 		
 		if (null != updatedDebtPos) {
-			return new ResponseEntity<>(HttpStatusExplainMessage.DEBT_POSITION_UPDATED, HttpStatus.OK);
+			return new ResponseEntity<>(modelMapper.map(updatedDebtPos, PaymentPositionModel.class), HttpStatus.OK);
 		}
 		
 		throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
