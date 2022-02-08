@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.service;
+package it.gov.pagopa.debtposition.service.pd.crud;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -43,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class PaymentPositionService {
+public class PaymentPositionCRUDService {
 
 	private static final String UNIQUE_KEY_VIOLATION = "23505";
 	@Autowired
@@ -142,6 +142,8 @@ public class PaymentPositionService {
 
 	@Transactional(isolation = Isolation.SERIALIZABLE)
 	public PaymentPosition update(@NotNull @Valid PaymentPositionModel paymentPositionModel, @NotBlank String organizationFiscalCode) {
+		
+		final String ERROR_UPDATE_LOG_MSG = "Error during debt position update: %s";
 
 		PaymentPosition ppToUpdate = this.getDebtPositionByIUPD(organizationFiscalCode, paymentPositionModel.getIupd());
 
@@ -180,9 +182,8 @@ public class PaymentPositionService {
 		} catch (ValidationException e) {
 			throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
 		} catch (Exception e) {
-			log.error("Error during debt position creation:" + e.getMessage(), e);
+			log.error(String.format(ERROR_UPDATE_LOG_MSG,e.getMessage()), e);
 			throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
 		}
 	}
-
 }
