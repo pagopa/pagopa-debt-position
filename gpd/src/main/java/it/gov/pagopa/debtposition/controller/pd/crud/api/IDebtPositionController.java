@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.controller.pd.api;
+package it.gov.pagopa.debtposition.controller.pd.crud.api;
 
 import java.time.LocalDate;
 
@@ -34,7 +34,7 @@ import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResp
 
 
 
-@Tag(name = "Debtor Positions API")
+@Tag(name = "Debt Positions API")
 @RequestMapping 
 public interface IDebtPositionController {
 
@@ -124,6 +124,4 @@ public interface IDebtPositionController {
 	    		@Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.",required=true) 
 	    		@PathVariable("iupd") String iupd, 
 	    		@Valid @RequestBody PaymentPositionModel paymentPositionModel);
-
-
 }
