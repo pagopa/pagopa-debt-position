@@ -30,17 +30,18 @@ public class PaymentPositionActionsService {
 	@Transactional(isolation = Isolation.SERIALIZABLE)
 	public PaymentPosition publish(@NotBlank String organizationFiscalCode, @NotBlank String iupd) {
 		PaymentPosition ppToPublish = paymentPositionCRUDService.getDebtPositionByIUPD(organizationFiscalCode, iupd);
-		// TODO Probabilmente non ci sarà da verificare se esiste già un pagamento ma se la poszione sia in uno stato pubblicabile 
-		if (DebtPositionStatus.getPaymentPosAlreadyPaidStatus().contains(ppToPublish.getStatus())){
-			throw new AppException(AppError.DEBT_POSITION_PAYMENT_FOUND, organizationFiscalCode, iupd);
+		if (DebtPositionStatus.getPaymentPosNotPublishableStatus().contains(ppToPublish.getStatus())){
+			throw new AppException(AppError.DEBT_POSITION_NOT_PUBLISHABLE, organizationFiscalCode, iupd);
 		}
 		
 		LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-		if (null == ppToPublish.getValidityDate()) {
-			ppToPublish.setValidityDate(currentDate);
-		}
 		ppToPublish.setPublishDate(currentDate);
 		ppToPublish.setStatus(DebtPositionStatus.PUBLISHED);
+		// se non era stata prevista una data di inizio validità allora sovrascrivo lo stato direttamente a VALID
+		if (null == ppToPublish.getValidityDate()) {
+			ppToPublish.setValidityDate(currentDate);
+			ppToPublish.setStatus(DebtPositionStatus.VALID);
+		}
 		
 		return paymentPositionRepository.saveAndFlush(ppToPublish);
 		

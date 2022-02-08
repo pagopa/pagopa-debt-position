@@ -14,7 +14,8 @@ public enum AppError {
     DEBT_POSITION_ALREADY_EXIST      (HttpStatus.CONFLICT, "The debt position alredy exist", "Already exists a debt position with Organization Fiscal Code %s"),
     DEBT_POSITION_NOT_FOUND          (HttpStatus.NOT_FOUND, "Not found the debt position", "Not found a debt position for Organization Fiscal Code %s and IUPD %s"),
     DEBT_POSITION_PAYMENT_FOUND      (HttpStatus.CONFLICT, "Existing related payment found", "A payment transaction has already been carried out on the debt position with Organization Fiscal Code %s and IUPD %s"),
-    DEBT_POSITION_NOT_UPDATABLE      (HttpStatus.CONFLICT, "Existing related payment found or not in workable state", "A payment transaction has already been carried out or, the debt position with Organization Fiscal Code %s and IUPD %s, is not in workable state"),
+    DEBT_POSITION_NOT_UPDATABLE      (HttpStatus.CONFLICT, "Existing related payment found or not in updatable state", "A payment transaction has already been carried out or, the debt position with Organization Fiscal Code %s and IUPD %s, is not in updatable state"),
+    DEBT_POSITION_NOT_PUBLISHABLE    (HttpStatus.CONFLICT, "Existing related payment found or not in publishable state", "A payment transaction has already been carried out or, the debt position with Organization Fiscal Code %s and IUPD %s, is not in publishable state"),
     DEBT_POSITION_PUBLISH_FAILED     (HttpStatus.INTERNAL_SERVER_ERROR, "The debt position publish is failed","Publish failed for the debt position with Organization Fiscal Code %s and IUPD %s"),
     UNKNOWN(null, null, null);
 
