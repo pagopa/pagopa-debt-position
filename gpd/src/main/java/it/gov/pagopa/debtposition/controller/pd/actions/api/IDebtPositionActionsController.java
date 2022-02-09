@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.gov.pagopa.debtposition.model.ProblemJson;
+import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 
 
 
@@ -31,7 +32,7 @@ public interface IDebtPositionActionsController {
 			@ApiResponse(responseCode  = "500", description  = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))) })
 	@PostMapping(value = "/organizations/{organizationfiscalcode}/debtpositions/{iupd}/publish",
 	produces = { "application/json" })
-	ResponseEntity<String> publishDebtPosition(
+	ResponseEntity<PaymentPositionModel> publishDebtPosition(
 			@Parameter(description = "Organization fiscal code, the fiscal code of the Organization.",required=true) 
             @PathVariable("organizationfiscalcode") String organizationFiscalCode, 
             @Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.",required=true) 
