@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "4bcd0e9d-18ea-4a15-96e0-c86d0123ec6d",
+		"_postman_id": "570dd32f-62e0-409a-b466-96b363d0eecc",
 		"name": "DEBT_POSITION",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -459,6 +459,51 @@
 					"response": []
 				},
 				{
+					"name": "publishDebtPosition",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved}}/debtpositions/{{iupd_saved}}/publish",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved}}",
+								"debtpositions",
+								"{{iupd_saved}}",
+								"publish"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "deleteDebtPosition",
 					"event": [
 						{
@@ -661,6 +706,51 @@
 					"response": []
 				},
 				{
+					"name": "publishDebtPosition_404_no_iupd_existing",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(404);",
+									"});",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved}}/debtpositions/{{iupd_not_existent}}/publish",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved}}",
+								"debtpositions",
+								"{{iupd_not_existent}}",
+								"publish"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "updateDebtPosition_400_iupd_mismatch",
 					"event": [
 						{
@@ -720,7 +810,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"check_status\", function () {\r",
-									"  pm.response.to.have.status(404);\r",
+									"  pm.response.to.have.status(400);\r",
 									"});\r",
 									"\r",
 									""
@@ -1006,16 +1096,6 @@
 					""
 				]
 			}
-		}
-	],
-	"variable": [
-		{
-			"key": "iupd_not_existent",
-			"value": ""
-		},
-		{
-			"key": "invalid_due_date",
-			"value": ""
 		}
 	]
 }
