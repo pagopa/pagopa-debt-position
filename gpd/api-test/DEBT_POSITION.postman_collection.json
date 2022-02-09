@@ -231,7 +231,11 @@
 								"exec": [
 									"pm.test(\"check_status\", function () {",
 									"  pm.response.to.have.status(201);",
-									"});"
+									"});",
+									"",
+									"pm.globals.set(\"creditor_saved_multi\", pm.globals.get(\"creditor_institution_code\"));",
+									"pm.globals.set(\"iupd_saved_multi\", pm.globals.get(\"iupd\"));",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -581,7 +585,8 @@
 								"exec": [
 									"pm.test(\"check_status\", function () {",
 									"  pm.response.to.have.status(400);",
-									"});"
+									"});",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -686,7 +691,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"iupd\": \"{{iupd_saved}}\",\r\n  \"type\": \"F\",\r\n  \"fiscalCode\": \"JHNDOE00A01F205N\",\r\n  \"fullName\": \"John Doe\",\r\n  \"streetName\": \"streetName\",\r\n  \"civicNumber\": \"11\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"city\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"RM\",\r\n  \"country\": \"IT\",\r\n  \"email\": \"lorem@lorem.com\",\r\n  \"phone\": \"333-123456789\",\r\n  \"companyName\": \"companyName\",\r\n  \"officeName\": \"officeName\",\r\n  \"validityDate\": \"{{validity_date}}\",\r\n  \"paymentOption\": [\r\n    {\r\n      \"iuv\": \"{{iuv}}\",\r\n      \"amount\": 9500,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE\",\r\n      \"isPartialPayment\": false,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 8000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"02\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"03\",\r\n          \"amount\": 500,\r\n          \"remittanceInformation\": \"remittanceInformation 3\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
+							"raw": "{\r\n  \"iupd\": \"{{iupd_not_existent}}\",\r\n  \"type\": \"F\",\r\n  \"fiscalCode\": \"JHNDOE00A01F205N\",\r\n  \"fullName\": \"John Doe\",\r\n  \"streetName\": \"streetName\",\r\n  \"civicNumber\": \"11\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"city\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"RM\",\r\n  \"country\": \"IT\",\r\n  \"email\": \"lorem@lorem.com\",\r\n  \"phone\": \"333-123456789\",\r\n  \"companyName\": \"companyName\",\r\n  \"officeName\": \"officeName\",\r\n  \"validityDate\": \"{{validity_date}}\",\r\n  \"paymentOption\": [\r\n    {\r\n      \"iuv\": \"{{iuv}}\",\r\n      \"amount\": 9500,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE\",\r\n      \"isPartialPayment\": false,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 8000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"02\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"03\",\r\n          \"amount\": 500,\r\n          \"remittanceInformation\": \"remittanceInformation 3\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -694,12 +699,64 @@
 							}
 						},
 						"url": {
-							"raw": "{{gpdhost}}organizations/{{creditor_saved}}/debtpositions/{{iupd_not_existent}}",
+							"raw": "{{gpdhost}}organizations/{{creditor_saved_multi}}/debtpositions/{{iupd_saved_multi}}",
 							"host": [
 								"{{gpdhost}}organizations"
 							],
 							"path": [
-								"{{creditor_saved}}",
+								"{{creditor_saved_multi}}",
+								"debtpositions",
+								"{{iupd_saved_multi}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "updateDebtPosition_404_iupd_mismatch_not_exists",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {\r",
+									"  pm.response.to.have.status(404);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"iupd\": \"{{iupd_saved_multi}}\",\r\n  \"type\": \"F\",\r\n  \"fiscalCode\": \"JHNDOE00A01F205N\",\r\n  \"fullName\": \"John Doe\",\r\n  \"streetName\": \"streetName\",\r\n  \"civicNumber\": \"11\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"city\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"RM\",\r\n  \"country\": \"IT\",\r\n  \"email\": \"lorem@lorem.com\",\r\n  \"phone\": \"333-123456789\",\r\n  \"companyName\": \"companyName\",\r\n  \"officeName\": \"officeName\",\r\n  \"validityDate\": \"{{validity_date}}\",\r\n  \"paymentOption\": [\r\n    {\r\n      \"iuv\": \"{{iuv}}\",\r\n      \"amount\": 9500,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE\",\r\n      \"isPartialPayment\": false,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 8000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"02\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"03\",\r\n          \"amount\": 500,\r\n          \"remittanceInformation\": \"remittanceInformation 3\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved_multi}}/debtpositions/{{iupd_not_existent}}",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved_multi}}",
 								"debtpositions",
 								"{{iupd_not_existent}}"
 							]
@@ -747,14 +804,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{gpdhost}}organizations/{{creditor_saved}}/debtpositions/{{iupd_saved}}",
+							"raw": "{{gpdhost}}organizations/{{creditor_saved_multi}}/debtpositions/{{iupd_saved_multi}}",
 							"host": [
 								"{{gpdhost}}organizations"
 							],
 							"path": [
-								"{{creditor_saved}}",
+								"{{creditor_saved_multi}}",
 								"debtpositions",
-								"{{iupd_saved}}"
+								"{{iupd_saved_multi}}"
 							]
 						}
 					},
@@ -792,7 +849,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"iupd\": \"{{iupd_saved}}\",\r\n  \"type\": \"F\",\r\n  \"fiscalCode\": \"JHNDOE00A01F205N\",\r\n  \"fullName\": \"John Doe\",\r\n  \"streetName\": \"streetName\",\r\n  \"civicNumber\": \"11\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"city\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"RM\",\r\n  \"country\": \"IT\",\r\n  \"email\": \"lorem@lorem.com\",\r\n  \"phone\": \"333-123456789\",\r\n  \"companyName\": \"companyName\",\r\n  \"officeName\": \"officeName\",\r\n  \"validityDate\": \"{{validity_date}}\",\r\n  \"paymentOption\": [\r\n    {\r\n      \"iuv\": \"{{iuv}}\",\r\n      \"amount\": 9500,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE\",\r\n      \"isPartialPayment\": false,\r\n      \"dueDate\": \"{{invalid_due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 9500,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
+							"raw": "{\r\n  \"iupd\": \"{{iupd_saved_multi}}\",\r\n  \"type\": \"F\",\r\n  \"fiscalCode\": \"JHNDOE00A01F205N\",\r\n  \"fullName\": \"John Doe\",\r\n  \"streetName\": \"streetName\",\r\n  \"civicNumber\": \"11\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"city\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"RM\",\r\n  \"country\": \"IT\",\r\n  \"email\": \"lorem@lorem.com\",\r\n  \"phone\": \"333-123456789\",\r\n  \"companyName\": \"companyName\",\r\n  \"officeName\": \"officeName\",\r\n  \"validityDate\": \"{{validity_date}}\",\r\n  \"paymentOption\": [\r\n    {\r\n      \"iuv\": \"{{iuv}}\",\r\n      \"amount\": 9500,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE\",\r\n      \"isPartialPayment\": false,\r\n      \"dueDate\": \"{{invalid_due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 9500,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -800,14 +857,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{gpdhost}}organizations/{{creditor_saved}}/debtpositions/{{iupd_saved}}",
+							"raw": "{{gpdhost}}organizations/{{creditor_saved_multi}}/debtpositions/{{iupd_saved_multi}}",
 							"host": [
 								"{{gpdhost}}organizations"
 							],
 							"path": [
-								"{{creditor_saved}}",
+								"{{creditor_saved_multi}}",
 								"debtpositions",
-								"{{iupd_saved}}"
+								"{{iupd_saved_multi}}"
 							]
 						}
 					},
@@ -852,12 +909,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{gpdhost}}organizations/{{creditor_saved}}/debtpositions/{{iupd_not_existent}}",
+							"raw": "{{gpdhost}}organizations/{{creditor_saved_multi}}/debtpositions/{{iupd_not_existent}}",
 							"host": [
 								"{{gpdhost}}organizations"
 							],
 							"path": [
-								"{{creditor_saved}}",
+								"{{creditor_saved_multi}}",
 								"debtpositions",
 								"{{iupd_not_existent}}"
 							]
