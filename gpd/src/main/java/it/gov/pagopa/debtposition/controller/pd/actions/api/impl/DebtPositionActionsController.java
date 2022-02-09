@@ -1,7 +1,5 @@
 package it.gov.pagopa.debtposition.controller.pd.actions.api.impl;
 
-import javax.validation.constraints.NotBlank;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +25,7 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
 	private static final String LOG_BASE_PARAMS_DETAIL = "organizationFiscalCode= %s; iupd= %s";
 
 	@Override
-	public ResponseEntity<String> publishDebtPosition(@NotBlank String organizationFiscalCode,@NotBlank String iupd) {
+	public ResponseEntity<String> publishDebtPosition(String organizationFiscalCode, String iupd) {
 		log.info(String.format(LOG_BASE_HEADER_INFO,"POST","publishDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
 		
 		PaymentPosition publishedDebtPos = paymentPositionActionsService.publish(organizationFiscalCode, iupd);
