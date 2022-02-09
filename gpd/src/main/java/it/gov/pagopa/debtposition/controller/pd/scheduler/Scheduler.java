@@ -27,9 +27,18 @@ public class Scheduler {
 	@Scheduled(cron = "${cron.job.schedule.expression.valid.status}")
 	@Async
 	@Transactional
-	public void changeDebtPositionStatus() {
-		log.info(String.format(LOG_BASE_HEADER_INFO,"CRON JOB","changeDebtPositionStatus", "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
+	public void changeDebtPositionStatusToValid() {
+		log.info(String.format(LOG_BASE_HEADER_INFO,"CRON JOB","changeDebtPositionStatusToValid", "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
 		LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
 		paymentPositionRepository.updatePaymentPositionStatusToValid(currentDate, DebtPositionStatus.VALID);
+	}
+	
+	@Scheduled(cron = "${cron.job.schedule.expression.expired.status}")
+	@Async
+	@Transactional
+	public void changeDebtPositionStatusToExpired() {
+		log.info(String.format(LOG_BASE_HEADER_INFO,"CRON JOB","changeDebtPositionStatusToExpired", "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
+		LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+		paymentPositionRepository.updatePaymentPositionStatusToValid(currentDate, DebtPositionStatus.EXPIRED);
 	}
 }
