@@ -112,7 +112,7 @@ public class DebtPositionMock {
 		pPMock.setIupd("12345678901IUPDMOCK3");
 		pPMock.setCompanyName("Comune di Roma");
 		pPMock.setOfficeName("Ufficio condono");
-		pPMock.setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plus(1, ChronoUnit.DAYS));
+		pPMock.setValidityDateFrom(LocalDateTime.now(ZoneOffset.UTC).plus(1, ChronoUnit.DAYS));
 		pPMock.addPaymentOptions(createPaymentOptionsMock1());
 
 		return pPMock;
