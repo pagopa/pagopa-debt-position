@@ -40,4 +40,16 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
 		throw new AppException(AppError.DEBT_POSITION_PUBLISH_FAILED, organizationFiscalCode);
 	}
 
+	@Override
+	public ResponseEntity<PaymentPositionModel> invalidateDebtPosition(String organizationFiscalCode, String iupd) {
+		log.info(String.format(LOG_BASE_HEADER_INFO,"POST","invalidateDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
+		
+		PaymentPosition invalidatedDebtPos = paymentPositionActionsService.invalidate(organizationFiscalCode, iupd);
+		if (null != invalidatedDebtPos) {
+			return new ResponseEntity<>(modelMapper.map(invalidatedDebtPos, PaymentPositionModel.class), HttpStatus.OK);
+		}
+		
+		throw new AppException(AppError.DEBT_POSITION_INVALIDATE_FAILED, organizationFiscalCode);
+	}
+
 }

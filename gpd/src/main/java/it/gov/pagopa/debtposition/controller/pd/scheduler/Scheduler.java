@@ -30,6 +30,6 @@ public class Scheduler {
 	public void changeDebtPositionStatus() {
 		log.info(String.format(LOG_BASE_HEADER_INFO,"CRON JOB","changeDebtPositionStatus", "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
 		LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-		paymentPositionRepository.updatePaymentPositionStatus(currentDate, DebtPositionStatus.VALID);
+		paymentPositionRepository.updatePaymentPositionStatusToValid(currentDate, DebtPositionStatus.VALID);
 	}
 }

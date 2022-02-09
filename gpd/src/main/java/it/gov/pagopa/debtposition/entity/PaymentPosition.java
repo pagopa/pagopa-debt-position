@@ -101,6 +101,10 @@ public class PaymentPosition implements Serializable {
 	private LocalDateTime publishDate;
 	@Column (name="validity_date")
 	private LocalDateTime validityDate;
+	@Column (name="min_due_date")
+	private LocalDateTime minDueDate;
+	@Column (name="max_due_date")
+	private LocalDateTime maxDueDate;
 	@NotNull
 	@Enumerated(EnumType.STRING)
 	private DebtPositionStatus status;
