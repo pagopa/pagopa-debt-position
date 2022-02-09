@@ -9,6 +9,10 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
+
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -47,6 +51,8 @@ public class PaymentPositionModel implements Serializable {
     private String companyName; // es. Comune di Roma
     private String officeName; // es. Ufficio Tributi
     private LocalDateTime validityDate;
+    @JsonProperty(access = Access.READ_ONLY)
+    private DebtPositionStatus status;
 
     private List<PaymentOptionModel> paymentOption = new ArrayList<>();
     
