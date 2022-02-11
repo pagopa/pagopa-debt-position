@@ -26,10 +26,10 @@ JpaSpecificationExecutor<PaymentPosition>, PagingAndSortingRepository<PaymentPos
 	@Query("update PaymentPosition pp set pp.status = :status, pp.lastUpdatedDate = :currentDate where pp.validityDate IS NOT NULL and pp.validityDate <= :currentDate and pp.status='PUBLISHED'")
 	void updatePaymentPositionStatusToValid(@Param(value = "currentDate") LocalDateTime currentDate, @Param(value = "status") DebtPositionStatus status);
 	
-	/*
+	
 	@Modifying
-	@Query("update PaymentPosition pp set pp.status = :status, pp.lastUpdatedDate = :currentDate where pp.validityDate IS NOT NULL and pp.validityDate <= :currentDate and pp.status='PUBLISHED'")
-	void updatePaymentPositionStatusToExpired(@Param(value = "currentDate") LocalDateTime currentDate, @Param(value = "status") DebtPositionStatus status);*/
+	@Query("update PaymentPosition pp set pp.status = :status, pp.lastUpdatedDate = :currentDate where pp.maxDueDate < :currentDate and pp.status='VALID'")
+	void updatePaymentPositionStatusToExpired(@Param(value = "currentDate") LocalDateTime currentDate, @Param(value = "status") DebtPositionStatus status);
 
 }
 
