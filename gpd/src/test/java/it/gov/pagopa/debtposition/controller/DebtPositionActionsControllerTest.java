@@ -5,6 +5,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -70,7 +75,7 @@ class DebtPositionActionsControllerTest {
 
 	@Test
 	void publishDebtPosition_to_publish_200() throws Exception {
-		// creo una posizione debitoria (con 'validity date' impostata nel futuro)
+		// creo una posizione debitoria (con 'validity date')
 		mvc.perform(post("/organizations/PBHPUBLISH_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock5())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
@@ -133,6 +138,92 @@ class DebtPositionActionsControllerTest {
 		// chiamata per portare in pubblicata una posizione debitoria con IUPD inesistente
 		mvc.perform(post("/organizations/PBH_12345678901/debtpositions/12345678901IUPD404MOCK1/publish")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
+	}
+
+	@Test
+	void publishDebtPosition_min_due_date_409() throws Exception {
+
+		// creo una posizione debitoria (senza 'validity date' impostata) e con due_date di pochissimo più grande della current_date
+		mvc.perform(post("/organizations/PBH409DUEDATE_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.get409_Min_Due_Date_Mock1())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated());
+
+		// recupero la posizione debitoria e verifico lo stato
+		mvc.perform(get("/organizations/PBH409DUEDATE_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.DRAFT.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isEmpty())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").isEmpty());
+
+		// introduco un ritardo in modo da far scadere la min_due_date
+		LocalDateTime currentDatePlusSeconds = LocalDateTime.now(ZoneOffset.UTC).plus(5, ChronoUnit.SECONDS);
+		Awaitility.await().until(() -> LocalDateTime.now(ZoneOffset.UTC).isAfter(currentDatePlusSeconds));
+
+		// porto in pubblicata lo stato della posizione debitoria => devo ottenere 409 per il fatto che currentDate > due_date
+		mvc.perform(post("/organizations/PBH409DUEDATE_12345678901/debtpositions/12345678901IUPDMOCK1/publish")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isConflict());
+
+	}
+
+	/**
+	 * INVALIDATE DEBT POSITION
+	 */
+	@Test
+	void invalidateDebtPosition_200() throws Exception {
+		// creo una posizione debitoria (senza 'validity date' impostata)
+		mvc.perform(post("/organizations/INVALIDATE_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated());
+
+		// recupero la posizione debitoria e verifico lo stato in draft
+		mvc.perform(get("/organizations/INVALIDATE_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.DRAFT.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isEmpty());
+
+		// porto in pubblicata/validata lo stato della posizione debitoria
+		mvc.perform(post("/organizations/INVALIDATE_12345678901/debtpositions/12345678901IUPDMOCK1/publish")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+
+		// verifico che lo stato sia stato aggiornato a valid (doppio passaggio di stato) 
+		mvc.perform(get("/organizations/INVALIDATE_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.VALID.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty());
+
+		// invalido la posizione debitoria
+		mvc.perform(post("/organizations/INVALIDATE_12345678901/debtpositions/12345678901IUPDMOCK1/invalidate")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.INVALID.toString()));
+	}
+	
+	@Test
+	void invalidateDebtPosition_404() throws Exception {	
+		// chiamata per portare in invalidata una posizione debitoria con IUPD inesistente
+		mvc.perform(post("/organizations/INVALIDATE404_12345678901/debtpositions/12345678901IUPD404MOCK1/invalidate")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
+	}
+
+	@Test
+	void invalidateDebtPosition_409() throws Exception {
+		// creo una posizione debitoria 
+		mvc.perform(post("/organizations/INVALIDATE409_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated());
+
+		// invalido la posizione debitoria ancora in stato DRAFT -> errore 409
+		mvc.perform(post("/organizations/INVALIDATE409_12345678901/debtpositions/12345678901IUPDMOCK1/invalidate")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isConflict());
+
+
 	}
 
 }

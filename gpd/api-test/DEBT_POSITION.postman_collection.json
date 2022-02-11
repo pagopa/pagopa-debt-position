@@ -504,6 +504,51 @@
 					"response": []
 				},
 				{
+					"name": "invalidateDebtPosition",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved}}/debtpositions/{{iupd_saved}}/invalidate",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved}}",
+								"debtpositions",
+								"{{iupd_saved}}",
+								"invalidate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "deleteDebtPosition",
 					"event": [
 						{
@@ -707,6 +752,51 @@
 				},
 				{
 					"name": "publishDebtPosition_404_no_iupd_existing",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(404);",
+									"});",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved}}/debtpositions/{{iupd_not_existent}}/publish",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved}}",
+								"debtpositions",
+								"{{iupd_not_existent}}",
+								"publish"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "invalidateDebtPosition_404_no_iupd_existing",
 					"event": [
 						{
 							"listen": "test",

@@ -23,13 +23,30 @@ public class Scheduler {
 	private PaymentPositionRepository paymentPositionRepository;
 	
 	private static final String LOG_BASE_HEADER_INFO   = "[OperationType: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
+	
+	private Thread threadOfExecution;
 
 	@Scheduled(cron = "${cron.job.schedule.expression.valid.status}")
 	@Async
 	@Transactional
-	public void changeDebtPositionStatus() {
-		log.info(String.format(LOG_BASE_HEADER_INFO,"CRON JOB","changeDebtPositionStatus", "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
+	public void changeDebtPositionStatusToValid() {
+		log.info(String.format(LOG_BASE_HEADER_INFO,"CRON JOB","changeDebtPositionStatusToValid", "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
 		LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
 		paymentPositionRepository.updatePaymentPositionStatusToValid(currentDate, DebtPositionStatus.VALID);
+		this.threadOfExecution = Thread.currentThread();
+	}
+	
+	@Scheduled(cron = "${cron.job.schedule.expression.expired.status}")
+	@Async
+	@Transactional
+	public void changeDebtPositionStatusToExpired() {
+		log.info(String.format(LOG_BASE_HEADER_INFO,"CRON JOB","changeDebtPositionStatusToExpired", "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
+		LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+		paymentPositionRepository.updatePaymentPositionStatusToExpired(currentDate, DebtPositionStatus.EXPIRED);
+		this.threadOfExecution = Thread.currentThread();
+	}
+	
+	public Thread getThreadOfExecution() {
+		return this.threadOfExecution;
 	}
 }

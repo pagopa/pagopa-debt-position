@@ -23,7 +23,7 @@ public enum DebtPositionStatus {
     }
 	
 	public static Set<DebtPositionStatus> getPaymentPosNotIvalidableStatus() {
-        return getPaymentPosNotUpdatableStatus();
+		return EnumSet.of(DRAFT, INVALID, EXPIRED, PARTIALLY_PAID, PAID, PARTIALLY_REPORTED, REPORTED);
     }
 	
 	
