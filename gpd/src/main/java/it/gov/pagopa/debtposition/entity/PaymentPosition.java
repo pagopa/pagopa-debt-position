@@ -101,8 +101,10 @@ public class PaymentPosition implements Serializable {
 	private LocalDateTime publishDate;
 	@Column (name="validity_date")
 	private LocalDateTime validityDate;
+	@NotNull
 	@Column (name="min_due_date")
 	private LocalDateTime minDueDate;
+	@NotNull
 	@Column (name="max_due_date")
 	private LocalDateTime maxDueDate;
 	@NotNull

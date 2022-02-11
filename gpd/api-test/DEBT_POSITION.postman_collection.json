@@ -826,7 +826,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{gpdhost}}organizations/{{creditor_saved}}/debtpositions/{{iupd_not_existent}}/publish",
+							"raw": "{{gpdhost}}organizations/{{creditor_saved}}/debtpositions/{{iupd_not_existent}}/invalidate",
 							"host": [
 								"{{gpdhost}}organizations"
 							],
@@ -834,7 +834,7 @@
 								"{{creditor_saved}}",
 								"debtpositions",
 								"{{iupd_not_existent}}",
-								"publish"
+								"invalidate"
 							]
 						}
 					},
