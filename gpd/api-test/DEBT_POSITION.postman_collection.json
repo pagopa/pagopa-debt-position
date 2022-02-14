@@ -21,6 +21,7 @@
 									"",
 									"pm.globals.set(\"creditor_saved\", pm.globals.get(\"creditor_institution_code\"));",
 									"pm.globals.set(\"iupd_saved\", pm.globals.get(\"iupd\"));",
+									"",
 									"//console.log(pm.globals.get(\"creditor_saved\"))",
 									"//postman.setNextRequest(\"createDebtPosition_409_DuplicatedIUV_sameDebtPos\");",
 									""
@@ -235,6 +236,7 @@
 									"",
 									"pm.globals.set(\"creditor_saved_multi\", pm.globals.get(\"creditor_institution_code\"));",
 									"pm.globals.set(\"iupd_saved_multi\", pm.globals.get(\"iupd\"));",
+									"pm.globals.set(\"iuv_saved_multi\", pm.globals.get(\"iuv2\"));",
 									""
 								],
 								"type": "text/javascript"
@@ -453,6 +455,45 @@
 								"{{creditor_saved}}",
 								"debtpositions",
 								"{{iupd_saved}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getPaymentOptionByIUV",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response properties\", () => {",
+									"    //parse the response JSON and test three properties",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.transfer).to.have.lengthOf(2);",
+									"    pm.expect(responseJson.iuv).to.eql(pm.globals.get(\"iuv_saved_multi\"));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved_multi}}/paymentoptions/{{iuv_saved_multi}}",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved_multi}}",
+								"paymentoptions",
+								"{{iuv_saved_multi}}"
 							]
 						}
 					},
@@ -1101,6 +1142,39 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "getPaymentOptionByIUV_404",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(404);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved}}/paymentoptions/{{iuv_not_existent}}",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved}}",
+								"paymentoptions",
+								"{{iuv_not_existent}}"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
@@ -1170,6 +1244,7 @@
 					"",
 					"pm.globals.set(\"now_date\", new Date().toISOString().split('T')[0]);",
 					"pm.globals.set(\"iupd_not_existent\", \"FAKEIUPD_\"+makeidMix(35));",
+					"pm.globals.set(\"iuv_not_existent\", \"FAKEIUV_\"+makeidMix(35));",
 					"",
 					"//pm.globals.set(\"iuv_tipo\", _.random(0, 6));",
 					"",
