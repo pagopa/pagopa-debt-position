@@ -2,9 +2,9 @@
   "openapi": "3.0.1",
   "info": {
     "title": "PagoPA API Debt Position",
-    "description": "Progetto Gestione Posizioni Debitorie",
+    "description": "@project.description@",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "0.0.1-SNAPSHOT"
+    "version": "0.0.1"
   },
   "servers": [
     {
@@ -14,7 +14,10 @@
   ],
   "tags": [
     {
-      "name": "Debtor Positions API"
+      "name": "Debt Positions API"
+    },
+    {
+      "name": "Debt Position Actions API"
     }
   ],
   "paths": {
@@ -34,7 +37,7 @@
     "/organizations/{organizationfiscalcode}/debtpositions": {
       "get": {
         "tags": [
-          "Debtor Positions API"
+          "Debt Positions API"
         ],
         "summary": "Return the list of the organization debt positions.",
         "operationId": "getOrganizationDebtPositions",
@@ -96,12 +99,12 @@
             "required": false,
             "schema": {
               "type": "string",
+              "default": "COMPANY_NAME",
               "enum": [
                 "IUPD",
                 "STATUS",
                 "COMPANY_NAME"
-              ],
-              "default": "COMPANY_NAME"
+              ]
             }
           },
           {
@@ -111,17 +114,17 @@
             "required": false,
             "schema": {
               "type": "string",
+              "default": "DESC",
               "enum": [
                 "ASC",
                 "DESC"
-              ],
-              "default": "DESC"
+              ]
             }
           }
         ],
         "responses": {
-          "500": {
-            "description": "Service unavailable.",
+          "400": {
+            "description": "Malformed request.",
             "content": {
               "application/json": {
                 "schema": {
@@ -133,16 +136,6 @@
           "401": {
             "description": "Wrong or missing function key."
           },
-          "400": {
-            "description": "Malformed request.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
-                }
-              }
-            }
-          },
           "429": {
             "description": "Too many requests."
           },
@@ -152,6 +145,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PaymentPositionsInfo"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -168,7 +171,7 @@
       },
       "post": {
         "tags": [
-          "Debtor Positions API"
+          "Debt Positions API"
         ],
         "summary": "The Organization creates a debt Position.",
         "operationId": "createPosition",
@@ -194,8 +197,18 @@
           "required": true
         },
         "responses": {
-          "500": {
-            "description": "Service unavailable.",
+          "400": {
+            "description": "Malformed request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict: duplicate debt position found.",
             "content": {
               "application/json": {
                 "schema": {
@@ -207,28 +220,18 @@
           "401": {
             "description": "Wrong or missing function key."
           },
-          "400": {
-            "description": "Malformed request.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
-                }
-              }
-            }
-          },
           "201": {
             "description": "Request created.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/PaymentPositionModel"
                 }
               }
             }
           },
-          "409": {
-            "description": "Conflict: duplicate debt position found.",
+          "500": {
+            "description": "Service unavailable.",
             "content": {
               "application/json": {
                 "schema": {
@@ -251,7 +254,7 @@
     "/organizations/{organizationfiscalcode}/debtpositions/{iupd}": {
       "get": {
         "tags": [
-          "Debtor Positions API"
+          "Debt Positions API"
         ],
         "summary": "Return the details of a specific debt position.",
         "operationId": "getOrganizationDebtPositionByIUPD",
@@ -276,8 +279,8 @@
           }
         ],
         "responses": {
-          "500": {
-            "description": "Service unavailable.",
+          "404": {
+            "description": "No debt position found.",
             "content": {
               "application/json": {
                 "schema": {
@@ -288,6 +291,93 @@
           },
           "401": {
             "description": "Wrong or missing function key."
+          },
+          "200": {
+            "description": "Obtained debt position details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentPositionModelBaseResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "Authorization": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Debt Positions API"
+        ],
+        "summary": "The Organization updates a debt position ",
+        "operationId": "updatePosition",
+        "parameters": [
+          {
+            "name": "organizationfiscalcode",
+            "in": "path",
+            "description": "Organization fiscal code, the fiscal code of the Organization.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "iupd",
+            "in": "path",
+            "description": "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentPositionModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Malformed request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Wrong or missing function key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentPositionModel"
+                }
+              }
+            }
           },
           "404": {
             "description": "No debt position found.",
@@ -300,11 +390,31 @@
             }
           },
           "200": {
-            "description": "Obtained debt position details.",
+            "description": "Request updated.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaymentPositionModelBaseResponse"
+                  "$ref": "#/components/schemas/PaymentPositionModel"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict: existing related payment found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -321,7 +431,7 @@
       },
       "delete": {
         "tags": [
-          "Debtor Positions API"
+          "Debt Positions API"
         ],
         "summary": "The Organization deletes a debt position",
         "operationId": "deletePosition",
@@ -356,8 +466,28 @@
               }
             }
           },
+          "401": {
+            "description": "Wrong or missing function key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
           "409": {
             "description": "Conflict: existing related payment found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No debt position position found.",
             "content": {
               "application/json": {
                 "schema": {
@@ -375,19 +505,81 @@
                 }
               }
             }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
           },
-          "401": {
-            "description": "Wrong or missing function key.",
+          {
+            "Authorization": []
+          }
+        ]
+      }
+    },
+    "/organizations/{organizationfiscalcode}/debtpositions/{iupd}/publish": {
+      "post": {
+        "tags": [
+          "Debt Position Actions API"
+        ],
+        "summary": "The Organization publish a debt Position.",
+        "operationId": "publishPosition",
+        "parameters": [
+          {
+            "name": "organizationfiscalcode",
+            "in": "path",
+            "description": "Organization fiscal code, the fiscal code of the Organization.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "iupd",
+            "in": "path",
+            "description": "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "409": {
+            "description": "Conflict: debt position is not in publishable state.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
           },
           "404": {
-            "description": "No debt position position found.",
+            "description": "No debt position found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Wrong or missing function key."
+          },
+          "200": {
+            "description": "Request published.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentPositionModel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service unavailable.",
             "content": {
               "application/json": {
                 "schema": {
@@ -455,7 +647,6 @@
       "PaymentPositionModel": {
         "required": [
           "companyName",
-          "email",
           "fiscalCode",
           "fullName",
           "iupd",
@@ -501,9 +692,7 @@
             "type": "string"
           },
           "email": {
-            "pattern": ".+@.+\\..+",
-            "type": "string",
-            "description": "debtor email "
+            "type": "string"
           },
           "phone": {
             "type": "string"
