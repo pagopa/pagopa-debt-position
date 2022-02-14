@@ -35,7 +35,7 @@ public class DebtPositionValidation {
         LocalDateTime today = LocalDateTime.now(ZoneOffset.UTC);
         DateTimeFormatter  dateFormatter = DateTimeFormatter.ofPattern ("yyyy-MM-dd hh:mm:ss");
 
-        // must be validity_date ≥ current time 
+        // Regola 1 - must be validity_date ≥ current time 
         if (null != pp.getValidityDate() && pp.getValidityDate().compareTo(today) < 0) {
             throw new ValidationException(
                     String.format(VALIDITY_DATE_VALIDATION_ERROR, 
@@ -46,7 +46,7 @@ public class DebtPositionValidation {
         }
 
         for (PaymentOption po : pp.getPaymentOption()) {
-            // must be due_date ≥ validity_date || due_date ≥ current time 
+            // Regola 4 - must be due_date ≥ validity_date || due_date ≥ current time 
             if (null != pp.getValidityDate() && po.getDueDate().compareTo(pp.getValidityDate()) < 0 ||
                     null == pp.getValidityDate() && po.getDueDate().compareTo(today) < 0) {
                 throw new ValidationException(
