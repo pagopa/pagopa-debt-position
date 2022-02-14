@@ -63,6 +63,10 @@ public class PaymentPositionCRUDService {
 
 			// predispongo i dati ad uso interno prima dell'aggiornamento
 			LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+			LocalDateTime minDueDate = debtPosition.getPaymentOption().stream().map(PaymentOption::getDueDate).min(LocalDateTime::compareTo).orElse(currentDate);
+			LocalDateTime maxDueDate = debtPosition.getPaymentOption().stream().map(PaymentOption::getDueDate).max(LocalDateTime::compareTo).orElse(currentDate);
+			debtPosition.setMinDueDate(minDueDate);
+			debtPosition.setMaxDueDate(maxDueDate);
 			debtPosition.setInsertedDate(currentDate);
 			debtPosition.setLastUpdatedDate(currentDate);
 			debtPosition.setOrganizationFiscalCode(organizationFiscalCode);
@@ -162,6 +166,10 @@ public class PaymentPositionCRUDService {
 
 			// predispongo i dati ad uso interno prima dell'aggiornamento
 			LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+			LocalDateTime minDueDate = ppToUpdate.getPaymentOption().stream().map(PaymentOption::getDueDate).min(LocalDateTime::compareTo).orElse(currentDate);
+			LocalDateTime maxDueDate = ppToUpdate.getPaymentOption().stream().map(PaymentOption::getDueDate).max(LocalDateTime::compareTo).orElse(currentDate);
+			ppToUpdate.setMinDueDate(minDueDate);
+			ppToUpdate.setMaxDueDate(maxDueDate);
 			ppToUpdate.setLastUpdatedDate(currentDate);
 			ppToUpdate.setStatus(DebtPositionStatus.DRAFT);
 			for (PaymentOption po : ppToUpdate.getPaymentOption()) {

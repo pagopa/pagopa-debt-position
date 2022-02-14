@@ -52,7 +52,7 @@ bash run_local.sh
 ### Run the project
 The easiest way to develop locally is start only db container and run spring-boot application.
 ```
-/usr/local/bin/docker-compose up -d oracle
+/usr/local/bin/docker-compose up -d postgres
 /usr/local/bin/docker-compose up -d flyway
 ```
 

@@ -7,7 +7,7 @@ lsof -i :8085 | awk '{print $2}' | tail -n +2 | xargs kill -9
 export $(grep -v '^#' .env.local | xargs)
 
 # build & run db
-docker-compose -f ../docker-compose-postgresql.yml up --build -d
+docker-compose -f ../docker-compose.yml up --build -d postgres
 
 # build
 # mvn clean package -DskipTests

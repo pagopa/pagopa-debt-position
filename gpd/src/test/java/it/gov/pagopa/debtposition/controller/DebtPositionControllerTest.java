@@ -27,6 +27,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
 import it.gov.pagopa.debtposition.mock.DebtPositionMock;
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 
 @SpringBootTest(classes = DebtPositionApplication.class)
 @AutoConfigureMockMvc
@@ -333,9 +334,43 @@ class DebtPositionControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
 	}
 
-	// TODO: Appena saranno disponibili le api per simulare un pagamento implementare questo test 
 	@Test
 	void updateDebtPosition_409() throws Exception {
-		// creo una posizione debitoria con uno stato di pagamento già presente e provo a modificarla
+		// creo una posizione debitoria (senza 'validity date' impostata)
+		mvc.perform(post("/organizations/UPD409_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated());
+
+		// recupero la posizione debitoria e verifico lo stato in draft
+		mvc.perform(get("/organizations/UPD409_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.DRAFT.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isEmpty());
+
+		// porto in pubblicata/validata lo stato della posizione debitoria
+		mvc.perform(post("/organizations/UPD409_12345678901/debtpositions/12345678901IUPDMOCK1/publish")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+
+		// verifico che lo stato sia stato aggiornato a valid (doppio passaggio di stato) 
+		mvc.perform(get("/organizations/UPD409_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.VALID.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty());
+
+		// invalido la posizione debitoria
+		mvc.perform(post("/organizations/UPD409_12345678901/debtpositions/12345678901IUPDMOCK1/invalidate")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.INVALID.toString()));
+
+		// aggiorno la posizione debitoria con stato INVALID -> errore 409 (non deve essere possibile) 
+		mvc.perform(put("/organizations/UPD409_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.content(TestUtil.toJson(DebtPositionMock.getMock4()))
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isConflict());
 	}
 }

@@ -23,8 +23,13 @@ public interface PaymentPositionRepository extends JpaRepository<PaymentPosition
 JpaSpecificationExecutor<PaymentPosition>, PagingAndSortingRepository<PaymentPosition, Long>{
 	
 	@Modifying
-	@Query("update PaymentPosition pp set pp.status = :status where pp.validityDate IS NOT NULL and pp.validityDate <= :currentDate and pp.status='PUBLISHED'")
-	void updatePaymentPositionStatus(@Param(value = "currentDate") LocalDateTime currentDate, @Param(value = "status") DebtPositionStatus status);
+	@Query("update PaymentPosition pp set pp.status = :status, pp.lastUpdatedDate = :currentDate, pp.version=pp.version+1 where pp.validityDate IS NOT NULL and pp.validityDate <= :currentDate and pp.status='PUBLISHED'")
+	void updatePaymentPositionStatusToValid(@Param(value = "currentDate") LocalDateTime currentDate, @Param(value = "status") DebtPositionStatus status);
+	
+	// Regola 6 - Una posizione va in expired nel momento in cui si raggiunge la max_due_date e lo stato sia rimasto fermo in valid
+	@Modifying
+	@Query("update PaymentPosition pp set pp.status = :status, pp.lastUpdatedDate = :currentDate, pp.version=pp.version+1 where pp.maxDueDate < :currentDate and pp.status='VALID'")
+	void updatePaymentPositionStatusToExpired(@Param(value = "currentDate") LocalDateTime currentDate, @Param(value = "status") DebtPositionStatus status);
 
 }
 
