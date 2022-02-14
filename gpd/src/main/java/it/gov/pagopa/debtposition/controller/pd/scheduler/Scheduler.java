@@ -23,6 +23,7 @@ public class Scheduler {
 	private PaymentPositionRepository paymentPositionRepository;
 	
 	private static final String LOG_BASE_HEADER_INFO   = "[OperationType: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
+	private static final String CRON_JOB = "CRON JOB";
 	
 	private Thread threadOfExecution;
 
@@ -30,9 +31,10 @@ public class Scheduler {
 	@Async
 	@Transactional
 	public void changeDebtPositionStatusToValid() {
-		log.info(String.format(LOG_BASE_HEADER_INFO,"CRON JOB","changeDebtPositionStatusToValid", "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
+		log.info(String.format(LOG_BASE_HEADER_INFO,CRON_JOB,"changeDebtPositionStatusToValid", "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
 		LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-		paymentPositionRepository.updatePaymentPositionStatusToValid(currentDate, DebtPositionStatus.VALID);
+		int numAffectedRows = paymentPositionRepository.updatePaymentPositionStatusToValid(currentDate, DebtPositionStatus.VALID);
+		log.info(String.format(LOG_BASE_HEADER_INFO,CRON_JOB,"changeDebtPositionStatusToValid", "Number of updated rows " + numAffectedRows));
 		this.threadOfExecution = Thread.currentThread();
 	}
 	
@@ -40,9 +42,10 @@ public class Scheduler {
 	@Async
 	@Transactional
 	public void changeDebtPositionStatusToExpired() {
-		log.info(String.format(LOG_BASE_HEADER_INFO,"CRON JOB","changeDebtPositionStatusToExpired", "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
+		log.info(String.format(LOG_BASE_HEADER_INFO,CRON_JOB,"changeDebtPositionStatusToExpired", "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
 		LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-		paymentPositionRepository.updatePaymentPositionStatusToExpired(currentDate, DebtPositionStatus.EXPIRED);
+		int numAffectedRows = paymentPositionRepository.updatePaymentPositionStatusToExpired(currentDate, DebtPositionStatus.EXPIRED);
+		log.info(String.format(LOG_BASE_HEADER_INFO,CRON_JOB,"changeDebtPositionStatusToExpired", "Number of updated rows " + numAffectedRows));
 		this.threadOfExecution = Thread.currentThread();
 	}
 	
