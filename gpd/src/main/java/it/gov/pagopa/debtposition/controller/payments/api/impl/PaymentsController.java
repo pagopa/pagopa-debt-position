@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
 import it.gov.pagopa.debtposition.controller.payments.api.IPaymentsController;
-import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionModelResponse;
+import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.service.payments.PaymentsService;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import lombok.extern.slf4j.Slf4j;

@@ -15,7 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.gov.pagopa.debtposition.model.ProblemJson;
-import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionModelResponse;
+import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 
 
 
