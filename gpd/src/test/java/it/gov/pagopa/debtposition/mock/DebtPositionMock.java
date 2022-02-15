@@ -33,6 +33,10 @@ public class DebtPositionMock {
 	public final static PaymentPositionDTO getMock5() {
 		return createPaymentPositionMock3();
 	}
+	
+	public final static PaymentOptionDTO getPayPOMock1() {
+		return createPayForPaymentOptionMock1();
+	}
 
 
 	public final static PaymentPositionDTO get400Mock1() {
@@ -407,6 +411,17 @@ public class DebtPositionMock {
 		pOMock.setIsPartialPayment(Boolean.FALSE);
 		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
 		pOMock.addTransfers(createTransfersMock1()); 
+
+		return pOMock;
+	}
+	
+	public static PaymentOptionDTO createPayForPaymentOptionMock1() {
+
+		PaymentOptionDTO pOMock = new PaymentOptionDTO();
+		pOMock.setPaymentDate(LocalDateTime.now(ZoneOffset.UTC));
+		pOMock.setPaymentMethod("Bonifico");
+		pOMock.setPspCompany("Intesa San Paolo");
+		pOMock.setIdReceipt("TRN987654321");
 
 		return pOMock;
 	}

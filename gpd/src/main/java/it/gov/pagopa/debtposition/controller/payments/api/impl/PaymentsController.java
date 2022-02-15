@@ -8,6 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
 import it.gov.pagopa.debtposition.controller.payments.api.IPaymentsController;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.exception.AppError;
+import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.service.payments.PaymentsService;
@@ -44,7 +47,15 @@ public class PaymentsController implements IPaymentsController {
 	public ResponseEntity<PaymentOptionModelResponse> payPaymentOption(String organizationFiscalCode, String iuv,
 			@Valid PaymentOptionModel paymentOptionModel) {
 		log.info(String.format(LOG_BASE_HEADER_INFO,"POST","updateDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv)));
-		return null;
+		
+		PaymentOption paidPaymentOption = paymentsService.pay(organizationFiscalCode, iuv, paymentOptionModel);
+		
+		
+		if (null != paidPaymentOption) {
+			return new ResponseEntity<>(ObjectMapperUtils.map(paidPaymentOption, PaymentOptionModelResponse.class), HttpStatus.OK);
+		}
+		
+		throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, iuv);
 	}
 
 }
