@@ -3,13 +3,19 @@ package it.gov.pagopa.debtposition.validation;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.exception.AppError;
+import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.exception.ValidationException;
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 public class DebtPositionValidation {
 
     private static final String DUE_DATE_VALIDATION_ERROR = "Dates congruence error: due_date must be >= validity_date (if provided) or due_date must be >= current_date [due_date=%s; validity_date=%s; current_date=%s]";
@@ -28,6 +34,18 @@ public class DebtPositionValidation {
     public static void checkPaymentPositionInputDataAccurancy(PaymentPosition pp){
             checkPaymentPositionDatesCongruency(pp);
     }
+    
+    public static void checkPaymentPositionPayability(PaymentPosition ppToPay, String iuv) {
+    	// Verifico se la posizione debitoria è in uno stato idoneo al pagamento
+    	if (DebtPositionStatus.getPaymentPosNotPayableStatus().contains(ppToPay.getStatus())){
+			throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, ppToPay.getOrganizationFiscalCode(), iuv);
+		}
+    	// Verifico se la posizione debitoria è ancora aperta
+    	checkPaymentPositionOpen(ppToPay, iuv);
+    	// Verifico se l'opzione di pagamento è pagabile
+    	checkPaymentOptionPayable(ppToPay, iuv) ;
+    }
+
     
     
     private static void checkPaymentPositionDatesCongruency(final PaymentPosition pp) {
@@ -96,14 +114,50 @@ public class DebtPositionValidation {
     
 
     private static void checkTransferCategory(final Transfer t) {
-        String category = t.getCategory();
-        //TODO Da capire come validare il dato
+    	 //TODO Da capire come validare il dato
+    	t.getCategory();
     }
     
     private static void checkTransferIban(final Transfer t) {
-        String orgCF = t.getOrganizationFiscalCode();
-        String iban  = t.getIban();
-        //TODO Da capire come validare il dato
+    	 //TODO Da capire come validare il dato
+    	t.getOrganizationFiscalCode();
+        t.getIban();
+    }
+    
+    
+    private static void checkPaymentPositionOpen(PaymentPosition ppToPay, String iuv) {
+		for (PaymentOption po: ppToPay.getPaymentOption()) {
+    		if (isPaid(po)) {
+    			throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, po.getOrganizationFiscalCode(), iuv);
+    		}
+    	}
+	}
+    
+    private static void checkPaymentOptionPayable(PaymentPosition ppToPay, String iuv) {
+    	Optional<PaymentOption> poToPay = ppToPay.getPaymentOption().stream().filter(po -> po.getIuv().equals(iuv)).findFirst();
+    	if (poToPay.isEmpty()) {
+    		log.error ("Obtained unexpected empty payment option - "
+					+ "[organizationFiscalCode= "+ppToPay.getOrganizationFiscalCode()+"; "
+					+ "iupd= "+ppToPay.getIupd()+"; "
+					+ "iuv= "+iuv
+					+ "]");
+			throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, ppToPay.getOrganizationFiscalCode(), iuv);
+		}
+    	
+    	if (!poToPay.get().getStatus().equals(PaymentOptionStatus.PO_UNPAID)) {
+    		throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, poToPay.get().getOrganizationFiscalCode(), iuv);
+    	}
+    	
+	}
+    
+    private static boolean isPaid(PaymentOption po) {
+    	boolean paid = true;
+    	if (po.getStatus().equals(PaymentOptionStatus.PO_UNPAID) ||
+    		po.getIsPartialPayment().equals(true)) {
+    		
+    		paid = false;
+    	}
+    	return paid;
     }
     
 }

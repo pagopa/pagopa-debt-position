@@ -32,8 +32,8 @@ JpaSpecificationExecutor<PaymentPosition>, PagingAndSortingRepository<PaymentPos
 	@Query("update PaymentPosition pp set pp.status = :status, pp.lastUpdatedDate = :currentDate, pp.version=pp.version+1 where pp.maxDueDate < :currentDate and pp.status='VALID'")
 	int updatePaymentPositionStatusToExpired(@Param(value = "currentDate") LocalDateTime currentDate, @Param(value = "status") DebtPositionStatus status);
 	
-	// Derived Query - using method naming convention
-	Optional<PaymentPosition> findByPaymentPositionOrganizationFiscalCodeAndIuv(String organizationFiscalCode, String iuv);
+	// Derived Query - using method naming convention - get parent PaymentPosition from child PaymentOption properties 
+	Optional<PaymentPosition> findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuv (String organizationFiscalCode, String iuv);
 
 }
 
