@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa;
+package it.gov.pagopa.reporting;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -23,11 +23,11 @@ import javax.xml.datatype.DatatypeFactory;
 
 import com.microsoft.azure.functions.ExecutionContext;
 
-import it.gov.pagopa.hubpa.service.FlowsService;
-import it.gov.pagopa.hubpa.service.NodoChiediElencoFlussi;
-import it.gov.pagopa.hubpa.servicewsdl.ObjectFactory;
-import it.gov.pagopa.hubpa.servicewsdl.TipoElencoFlussiRendicontazione;
-import it.gov.pagopa.hubpa.servicewsdl.TipoIdRendicontazione;
+import it.gov.pagopa.reporting.service.FlowsService;
+import it.gov.pagopa.reporting.service.NodoChiediElencoFlussi;
+import it.gov.pagopa.reporting.servicewsdl.ObjectFactory;
+import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
+import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

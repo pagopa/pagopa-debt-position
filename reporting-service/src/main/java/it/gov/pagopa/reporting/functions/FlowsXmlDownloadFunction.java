@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa.functions;
+package it.gov.pagopa.reporting.functions;
 
 import java.util.Arrays;
 import java.util.logging.Level;
@@ -10,8 +10,8 @@ import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.QueueTrigger;
 
-import it.gov.pagopa.hubpa.models.FlowsMessage;
-import it.gov.pagopa.hubpa.service.FlowsService;
+import it.gov.pagopa.reporting.models.FlowsMessage;
+import it.gov.pagopa.reporting.service.FlowsService;
 
 /**
  * FlowsXmlDownloadFunction Azure Functions with Azure Queue trigger.

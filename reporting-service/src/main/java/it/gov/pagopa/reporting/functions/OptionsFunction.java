@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa.functions;
+package it.gov.pagopa.reporting.functions;
 
 import java.util.Arrays;
 import java.util.logging.Level;
@@ -9,8 +9,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.QueueTrigger;
-import it.gov.pagopa.hubpa.models.OptionsMessage;
-import it.gov.pagopa.hubpa.service.OptionsService;
+import it.gov.pagopa.reporting.models.OptionsMessage;
+import it.gov.pagopa.reporting.service.OptionsService;
 
 /**
  * Azure Functions with Azure Queue trigger.

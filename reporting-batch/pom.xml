@@ -227,7 +227,7 @@
                                         <extraarg>-verbose</extraarg>
                                         <extraarg>-xjc-verbose</extraarg>
                                         <extraarg>-p</extraarg>
-                                        <extraarg>it.gov.pagopa.hubpa.servicewsdl</extraarg>
+                                        <extraarg>it.gov.pagopa.reporting.servicewsdl</extraarg>
                                     </extraargs>
                                 </wsdlOption>
                             </wsdlOptions>

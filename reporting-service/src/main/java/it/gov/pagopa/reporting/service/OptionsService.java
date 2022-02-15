@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa.service;
+package it.gov.pagopa.reporting.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,9 +8,9 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
 
-import it.gov.pagopa.hubpa.models.BooleanResponseModel;
-import it.gov.pagopa.hubpa.models.OptionsMessage;
-import it.gov.pagopa.hubpa.models.OptionsReportingModel;
+import it.gov.pagopa.reporting.models.BooleanResponseModel;
+import it.gov.pagopa.reporting.models.OptionsMessage;
+import it.gov.pagopa.reporting.models.OptionsReportingModel;
 
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;

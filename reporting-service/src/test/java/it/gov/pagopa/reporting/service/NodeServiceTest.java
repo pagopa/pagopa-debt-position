@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa;
+package it.gov.pagopa.reporting.service;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -11,30 +11,18 @@ import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.logging.Logger;
 
-import javax.xml.ws.Holder;
 import javax.xml.ws.WebServiceException;
 
-import com.microsoft.azure.functions.ExecutionContext;
-import it.gov.pagopa.hubpa.servicewsdl.FaultBean;
-import it.gov.pagopa.hubpa.servicewsdl.PagamentiTelematiciRPT;
-import it.gov.pagopa.hubpa.servicewsdl.TipoElencoFlussiRendicontazione;
-import org.glassfish.pfl.basic.func.NullaryFunctionBase;
+import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPT;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import it.gov.pagopa.hubpa.service.NodoChiediElencoFlussi;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class NodoChiediElencoFlussiTest {
+class NodeServiceTest {
 
     @Mock
     PagamentiTelematiciRPT myPort;
@@ -42,28 +30,26 @@ class NodoChiediElencoFlussiTest {
     Logger logger = Logger.getLogger("testlogging");
 
     @Test
-    void nodoChiediElencoFlussiTestNetworkErrorTest() {
+    void nodoChiediXmlFlussoErrorTest() {
 
-        NodoChiediElencoFlussi nodoChiediElencoFlussi = new NodoChiediElencoFlussi();
+        NodeService nodeService = new NodeService(null, null, null, null, null, null);
 
         try {
 
-            nodoChiediElencoFlussi.nodoChiediElencoFlussiRendicontazione("");
+            nodeService.callNodoChiediElencoFlussiRendicontazione("idPA", "idFlow");
 
         } catch (WebServiceException e) {
 
             assertTrue(Boolean.TRUE);
         }
 
-        assertNull(nodoChiediElencoFlussi.getNodoChiediElencoFlussiRendicontazioneFault());
-        assertNull(nodoChiediElencoFlussi.getNodoChiediElencoFlussiRendicontazioneElencoFlussiRendicontazione());
+        assertNull(nodeService.getNodoChiediFlussoRendicontazioneFault());
+        assertNull(nodeService.getNodoChiediElencoFlussiRendicontazioneXmlReporting());
     }
 
     @Test
     void nodoChiediElencoFlussiTestInitTest()
             throws InstantiationException, InvocationTargetException, NoSuchMethodException {
-
-        NodoChiediElencoFlussi nodoChiediElencoFlussi = new NodoChiediElencoFlussi();
 
         String cert = "-----BEGIN CERTIFICATE-----\n"
                 + "MIIDbjCCAlYCCQCqCOJPdeVj6DANBgkqhkiG9w0BAQsFADB5MQswCQYDVQQGEwJJ\n"
@@ -114,21 +100,15 @@ class NodoChiediElencoFlussiTest {
                 + "t5OKJ2UEwwNzzqRaz9E7gnONyT09pb0rI3u2IYwzZt/uQKLGn+f6C3t77J37kINo\n" + "gN4c44m6wDv/oFdcUkESrUQ=\n"
                 + "-----END PRIVATE KEY-----";
 
-        Logger logger = Logger.getLogger("testlogging");
+        NodeService nodeService = new NodeService(null, null, null, cert, key, null);
 
         try {
 
-            Field keyField = nodoChiediElencoFlussi.getClass().getDeclaredField("key");
-            keyField.setAccessible(true);
-            keyField.set(nodoChiediElencoFlussi, key);
+            nodeService.initSslConfiguration();
 
-            Field certField = nodoChiediElencoFlussi.getClass().getDeclaredField("cert");
-            certField.setAccessible(true);
-            certField.set(nodoChiediElencoFlussi, cert);
-
-            nodoChiediElencoFlussi.setSslContext();
-
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | UnrecoverableKeyException | CertificateException | IOException | NoSuchAlgorithmException | KeyStoreException | InvalidKeySpecException | KeyManagementException e) {
+        } catch (SecurityException | IllegalArgumentException | UnrecoverableKeyException | CertificateException
+                | IOException | NoSuchAlgorithmException | KeyStoreException | InvalidKeySpecException
+                | KeyManagementException e) {
 
             assertTrue(Boolean.FALSE);
         }
@@ -136,12 +116,9 @@ class NodoChiediElencoFlussiTest {
         assertTrue(Boolean.TRUE);
     }
 
-
     @Test
     void nodoChiediElencoFlussiTestInitTestKoWrongCert()
             throws InstantiationException, InvocationTargetException, NoSuchMethodException {
-
-        NodoChiediElencoFlussi nodoChiediElencoFlussi = new NodoChiediElencoFlussi();
 
         String cert = "-----BEGIN CERTIFICATE-----\n"
                 + "WRONG-MIIDbjCCAlYCCQCqCOJPdeVj6DANBgkqhkiG9w0BAQsFADB5MQswCQYDVQQGEwJJ\n"
@@ -192,45 +169,32 @@ class NodoChiediElencoFlussiTest {
                 + "t5OKJ2UEwwNzzqRaz9E7gnONyT09pb0rI3u2IYwzZt/uQKLGn+f6C3t77J37kINo\n" + "gN4c44m6wDv/oFdcUkESrUQ=\n"
                 + "-----END PRIVATE KEY-----";
 
-        Logger logger = Logger.getLogger("testlogging");
-
         try {
-
-            Field keyField = nodoChiediElencoFlussi.getClass().getDeclaredField("key");
-            keyField.setAccessible(true);
-            keyField.set(nodoChiediElencoFlussi, key);
-
-            Field certField = nodoChiediElencoFlussi.getClass().getDeclaredField("cert");
-            certField.setAccessible(true);
-            certField.set(nodoChiediElencoFlussi, cert);
+            NodeService nodeService = new NodeService(null, null, null, cert, key, null);
 
             assertThrows(CertificateException.class, () -> {
-                nodoChiediElencoFlussi.setSslContext();
+                nodeService.initSslConfiguration();
             });
 
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+        } catch (SecurityException | IllegalArgumentException e) {
 
             assertTrue(Boolean.TRUE);
         }
 
-
-
     }
-
 
     @Test
     void nodoChiediElencoFlussiTestSettersTest() throws NoSuchFieldException, IllegalAccessException {
 
-        NodoChiediElencoFlussi nodoChiediElencoFlussi = new NodoChiediElencoFlussi();
+        NodeService nodeService = new NodeService(null, null, null, null, null, null);
 
-        Field keyField = nodoChiediElencoFlussi.getClass().getDeclaredField("port");
+        Field keyField = nodeService.getClass().getDeclaredField("port");
         keyField.setAccessible(true);
-        keyField.set(nodoChiediElencoFlussi, myPort);
+        keyField.set(nodeService, myPort);
 
-        String idPa = "12345";
-        nodoChiediElencoFlussi.nodoChiediElencoFlussiRendicontazione(idPa);
+        nodeService.callNodoChiediElencoFlussiRendicontazione("idPA", "idFlow");
 
-        assert (Boolean.TRUE);
+        assertTrue(Boolean.TRUE);
     }
 
 }

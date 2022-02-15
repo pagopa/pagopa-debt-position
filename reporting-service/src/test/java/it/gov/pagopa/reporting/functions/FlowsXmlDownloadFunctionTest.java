@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa.functions;
+package it.gov.pagopa.reporting.functions;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -19,7 +19,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import it.gov.pagopa.hubpa.service.FlowsService;
+import it.gov.pagopa.reporting.service.FlowsService;
 
 @ExtendWith(MockitoExtension.class)
 class FlowsXmlDownloadFunctionTest {

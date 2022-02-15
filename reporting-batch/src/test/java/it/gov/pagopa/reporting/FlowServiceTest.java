@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa;
+package it.gov.pagopa.reporting;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -19,9 +19,9 @@ import javax.xml.datatype.DatatypeFactory;
 import com.microsoft.azure.storage.StorageExtendedErrorInformation;
 import com.microsoft.azure.storage.table.TableServiceException;
 
-import it.gov.pagopa.hubpa.service.FlowsService;
-import it.gov.pagopa.hubpa.servicewsdl.TipoElencoFlussiRendicontazione;
-import it.gov.pagopa.hubpa.servicewsdl.TipoIdRendicontazione;
+import it.gov.pagopa.reporting.service.FlowsService;
+import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
+import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

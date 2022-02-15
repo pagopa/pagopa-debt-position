@@ -1,6 +1,6 @@
-package it.gov.pagopa.hubpa.models;
+package it.gov.pagopa.reporting.models;
 
-import it.gov.pagopa.hubpa.servicewsdl.TipoIdRendicontazione;
+import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
 import lombok.Getter;
 import lombok.Setter;
 

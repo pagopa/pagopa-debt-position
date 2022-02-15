@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa.service;
+package it.gov.pagopa.reporting.service;
 
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
@@ -20,9 +20,9 @@ import com.microsoft.azure.storage.table.TableBatchOperation;
 import com.microsoft.azure.storage.table.TableOperation;
 import com.microsoft.azure.storage.table.TableServiceException;
 
-import it.gov.pagopa.hubpa.entity.FlowEntity;
-import it.gov.pagopa.hubpa.models.FlowsMessage;
-import it.gov.pagopa.hubpa.servicewsdl.TipoIdRendicontazione;
+import it.gov.pagopa.reporting.entity.FlowEntity;
+import it.gov.pagopa.reporting.models.FlowsMessage;
+import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
 
 public class FlowsService {
 
