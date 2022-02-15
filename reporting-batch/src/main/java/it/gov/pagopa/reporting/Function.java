@@ -36,7 +36,7 @@ public class Function {
      */
     @FunctionName("ReportingBatchFunction")
     public void run(@TimerTrigger(name = "ReportingBatchTrigger", schedule = "0 */1 * * * *") String timerInfo,
-            final ExecutionContext context) {
+                    final ExecutionContext context) {
 
         Logger logger = context.getLogger();
 
