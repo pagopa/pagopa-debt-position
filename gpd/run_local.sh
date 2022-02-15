@@ -15,7 +15,7 @@ docker-compose -f ../docker-compose.yml up --build -d postgres
 # run
 mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8085 -Dspring-boot.run.profiles=local &
 
-# check if GDP is UP and open api spec
+# check if GPD is UP and open api spec
 URL_CHECK="http://localhost:8085/v3/api-docs"
 CMD_CHECK=`curl -o /dev/null -s -w "%{http_code}\n" $URL_CHECK`
 while [ "$CMD_CHECK" != "200" ]
