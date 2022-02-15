@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa.service;
+package it.gov.pagopa.reporting.service;
 
 import java.io.IOException;
 import java.net.URL;
@@ -13,10 +13,10 @@ import javax.activation.DataHandler;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Holder;
 
-import it.gov.pagopa.hubpa.config.SslConfig;
-import it.gov.pagopa.hubpa.servicewsdl.FaultBean;
-import it.gov.pagopa.hubpa.servicewsdl.PagamentiTelematiciRPTservice;
-import it.gov.pagopa.hubpa.servicewsdl.PagamentiTelematiciRPT;
+import it.gov.pagopa.reporting.config.SslConfig;
+import it.gov.pagopa.reporting.servicewsdl.FaultBean;
+import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPTservice;
+import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPT;
 
 public class NodeService {
 

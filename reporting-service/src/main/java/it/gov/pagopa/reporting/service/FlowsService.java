@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa.service;
+package it.gov.pagopa.reporting.service;
 
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
@@ -15,8 +15,8 @@ import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 
-import it.gov.pagopa.hubpa.servicewsdl.FaultBean;
-import it.gov.pagopa.hubpa.servicewsdl.TipoIdRendicontazione;
+import it.gov.pagopa.reporting.servicewsdl.FaultBean;
+import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
 
 import java.io.IOException;
 import java.security.KeyManagementException;

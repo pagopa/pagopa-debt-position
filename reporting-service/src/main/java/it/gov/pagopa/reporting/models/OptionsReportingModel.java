@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa.models;
+package it.gov.pagopa.reporting.models;
 
 import lombok.Getter;
 import lombok.Setter;

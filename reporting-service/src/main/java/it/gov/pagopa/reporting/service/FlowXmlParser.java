@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa.service;
+package it.gov.pagopa.reporting.service;
 
 
 import org.xml.sax.Attributes;

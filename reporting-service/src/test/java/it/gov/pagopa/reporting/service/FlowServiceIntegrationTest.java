@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa.service;
+package it.gov.pagopa.reporting.service;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
@@ -34,8 +34,8 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import it.gov.pagopa.hubpa.servicewsdl.FaultBean;
-import it.gov.pagopa.hubpa.servicewsdl.TipoIdRendicontazione;
+import it.gov.pagopa.reporting.servicewsdl.FaultBean;
+import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
 
 @Testcontainers
 class FlowServiceIntegrationTest {

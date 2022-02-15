@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa.functions;
+package it.gov.pagopa.reporting.functions;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -11,8 +11,8 @@ import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.annotation.BindingName;
 import com.microsoft.azure.functions.annotation.BlobTrigger;
 import com.microsoft.azure.functions.annotation.FunctionName;
-import it.gov.pagopa.hubpa.service.FlowXmlParser;
-import it.gov.pagopa.hubpa.service.OptionsService;
+import it.gov.pagopa.reporting.service.FlowXmlParser;
+import it.gov.pagopa.reporting.service.OptionsService;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 

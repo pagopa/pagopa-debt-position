@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa.entity;
+package it.gov.pagopa.reporting.entity;
 
 import com.microsoft.azure.storage.table.TableServiceEntity;
 

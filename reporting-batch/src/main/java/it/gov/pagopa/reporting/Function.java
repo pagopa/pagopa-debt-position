@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa;
+package it.gov.pagopa.reporting;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -15,11 +15,11 @@ import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.TimerTrigger;
 
-import it.gov.pagopa.hubpa.service.FlowsService;
-import it.gov.pagopa.hubpa.service.NodoChiediElencoFlussi;
+import it.gov.pagopa.reporting.service.FlowsService;
+import it.gov.pagopa.reporting.service.NodoChiediElencoFlussi;
 
-import it.gov.pagopa.hubpa.servicewsdl.FaultBean;
-import it.gov.pagopa.hubpa.servicewsdl.TipoElencoFlussiRendicontazione;
+import it.gov.pagopa.reporting.servicewsdl.FaultBean;
+import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
 
 /**
  * Azure Functions with Timer trigger.

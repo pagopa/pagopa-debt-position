@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa.config;
+package it.gov.pagopa.reporting.config;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 

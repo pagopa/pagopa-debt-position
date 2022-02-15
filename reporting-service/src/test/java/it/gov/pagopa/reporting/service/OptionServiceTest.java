@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa.service;
+package it.gov.pagopa.reporting.service;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -21,9 +21,9 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import it.gov.pagopa.hubpa.models.BooleanResponseModel;
-import it.gov.pagopa.hubpa.models.OptionsMessage;
-import it.gov.pagopa.hubpa.models.OptionsReportingModel;
+import it.gov.pagopa.reporting.models.BooleanResponseModel;
+import it.gov.pagopa.reporting.models.OptionsMessage;
+import it.gov.pagopa.reporting.models.OptionsReportingModel;
 
 @Testcontainers
 class OptionServiceTestIntegrationTest {

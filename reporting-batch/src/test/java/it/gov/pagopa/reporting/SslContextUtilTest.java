@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa;
+package it.gov.pagopa.reporting;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import it.gov.pagopa.hubpa.utils.SslContextUtil;
+import it.gov.pagopa.reporting.utils.SslContextUtil;
 
 import javax.net.ssl.SSLSocketFactory;
 

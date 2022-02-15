@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa.utils;
+package it.gov.pagopa.reporting.utils;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;

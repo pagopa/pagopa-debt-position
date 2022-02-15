@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa.functions;
+package it.gov.pagopa.reporting.functions;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 import com.microsoft.azure.functions.ExecutionContext;
 
-import it.gov.pagopa.hubpa.service.OptionsService;
+import it.gov.pagopa.reporting.service.OptionsService;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

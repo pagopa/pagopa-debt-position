@@ -1,6 +1,6 @@
-package it.gov.pagopa.hubpa.functions;
+package it.gov.pagopa.reporting.functions;
 
-import it.gov.pagopa.hubpa.models.OptionsMessage;
+import it.gov.pagopa.reporting.models.OptionsMessage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;

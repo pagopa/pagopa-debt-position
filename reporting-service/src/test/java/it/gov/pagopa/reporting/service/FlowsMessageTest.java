@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa.service;
+package it.gov.pagopa.reporting.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -16,8 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import it.gov.pagopa.hubpa.models.FlowsMessage;
-import it.gov.pagopa.hubpa.servicewsdl.TipoIdRendicontazione;
+import it.gov.pagopa.reporting.models.FlowsMessage;
+import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
 
 @ExtendWith(MockitoExtension.class)
 class FlowsMessageTest {

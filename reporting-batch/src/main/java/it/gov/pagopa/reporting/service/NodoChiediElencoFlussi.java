@@ -1,4 +1,4 @@
-package it.gov.pagopa.hubpa.service;
+package it.gov.pagopa.reporting.service;
 
 import java.io.IOException;
 import java.net.URL;
@@ -12,11 +12,11 @@ import java.security.spec.InvalidKeySpecException;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Holder;
 
-import it.gov.pagopa.hubpa.servicewsdl.FaultBean;
-import it.gov.pagopa.hubpa.servicewsdl.PagamentiTelematiciRPTservice;
-import it.gov.pagopa.hubpa.servicewsdl.PagamentiTelematiciRPT;
-import it.gov.pagopa.hubpa.servicewsdl.TipoElencoFlussiRendicontazione;
-import it.gov.pagopa.hubpa.utils.SslContextUtil;
+import it.gov.pagopa.reporting.servicewsdl.FaultBean;
+import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPTservice;
+import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPT;
+import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
+import it.gov.pagopa.reporting.utils.SslContextUtil;
 
 public class NodoChiediElencoFlussi {
 
