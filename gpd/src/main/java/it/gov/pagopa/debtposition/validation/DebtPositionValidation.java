@@ -148,6 +148,11 @@ public class DebtPositionValidation {
     		throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, poToPay.get().getOrganizationFiscalCode(), iuv);
     	}
     	
+    	// se la posizione debitoria è già in PARTIALLY_PAID e sto provando a pagare una payment option non rateizzata (isPartialPayment = false)
+    	if (ppToPay.getStatus().equals(DebtPositionStatus.PARTIALLY_PAID) && Boolean.FALSE.equals(poToPay.get().getIsPartialPayment())){
+    		throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, poToPay.get().getOrganizationFiscalCode(), iuv);
+    	}
+    	
 	}
     
     private static boolean isPaid(PaymentOption po) {

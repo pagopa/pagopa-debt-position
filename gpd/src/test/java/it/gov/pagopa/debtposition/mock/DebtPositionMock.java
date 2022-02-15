@@ -240,6 +240,7 @@ public class DebtPositionMock {
 		pPMock.setOfficeName("Ufficio condono");
 		pPMock.addPaymentOptions(createPaymentOptionsMultipleMock3());
 		pPMock.addPaymentOptions(createPaymentOptionsMultipleMock4());
+		pPMock.addPaymentOptions(createPaymentOptionsMultipleMock5());
 
 		return pPMock;
 	}
@@ -393,6 +394,20 @@ public class DebtPositionMock {
 		pOMock.setAmount(5000);
 		pOMock.setIuv("123456IUVMULTIPLEMOCK4");
 		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.HOURS));
+		pOMock.setIsPartialPayment(Boolean.TRUE);
+		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
+		pOMock.addTransfers(createTransfersMultipleMock4()); 
+		pOMock.addTransfers(createTransfersMultipleMock5()); 
+
+		return pOMock;
+	}
+	
+	public static PaymentOptionDTO createPaymentOptionsMultipleMock5() {
+
+		PaymentOptionDTO pOMock = new PaymentOptionDTO();
+		pOMock.setAmount(5000);
+		pOMock.setIuv("123456IUVMULTIPLEMOCK5");
+		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(4, ChronoUnit.HOURS));
 		pOMock.setIsPartialPayment(Boolean.TRUE);
 		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
 		pOMock.addTransfers(createTransfersMultipleMock4()); 
