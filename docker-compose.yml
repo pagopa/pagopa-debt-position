@@ -13,7 +13,7 @@ services:
     depends_on:
       - postgres
     networks:
-      - gdp-net
+      - gpd-net
     
   postgres:
     image: postgres
@@ -28,11 +28,11 @@ services:
       - POSTGRES_USER=postgres_user_test
       - POSTGRES_PASSWORD=postgres_pwd_test
     networks:
-      - gdp-net
+      - gpd-net
 
 
 networks:
-  gdp-net:
+  gpd-net:
     driver: bridge
 
     driver_opts:
