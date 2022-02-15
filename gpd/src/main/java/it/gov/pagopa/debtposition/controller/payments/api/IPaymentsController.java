@@ -58,6 +58,6 @@ public interface IPaymentsController {
     		@PathVariable("organizationfiscalcode") String organizationFiscalCode,
     		@Parameter(description = "IUV (Unique Payment Identification). Alphanumeric code that uniquely associates and identifies three key elements of a payment: reason, payer, amount",required=true) 
     		@PathVariable("iuv") String iuv, 
-    		@Valid @RequestBody PaymentOptionModel transferModel);
+    		@Valid @RequestBody PaymentOptionModel paymentOptionModel);
 
 }
