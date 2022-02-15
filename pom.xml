@@ -6,7 +6,7 @@
   <groupId>it.gov.pagopa.debtposition</groupId>
   <artifactId>pagopa-debt-position</artifactId>
   <version>0.0.1</version>
-  <name>debt-position</name>
+  <name>Debt Position Project</name>
   <description>Debt Position for PagoPA</description>
   <packaging>pom</packaging>
   <properties>

@@ -24,7 +24,7 @@ See the [OpenApi 3 here.](https://editor.swagger.io/?url=https://raw.githubuserc
 
 Under main project folder typing :
 `docker-compose up --build`
->**NOTE** : before that compile `gdp` sevice with `mvn package` command
+>**NOTE** : before that compile `gpd` service with `mvn clean package` command
 
 If all right, eventually you'll see something like that:
 ```sh

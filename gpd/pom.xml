@@ -12,7 +12,7 @@
 	<groupId>it.gov.pagopa.debtposition</groupId>
 	<artifactId>gpd</artifactId>
 	<version>0.0.1</version>
-	<name>gdp</name>
+	<name>Gestione Posizioni Debitorie</name>
 	<description>Progetto Gestione Posizioni Debitorie</description>
 	<properties>
 		<java.version>11</java.version>
