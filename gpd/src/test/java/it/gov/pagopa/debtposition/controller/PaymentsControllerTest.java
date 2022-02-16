@@ -159,7 +159,7 @@ class PaymentsControllerTest {
 		mvc.perform(post("/organizations/PAY_Multiple_12345678901/debtpositions/12345678901IUPDMULTIPLEMOCK2/publish")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 		
-		// effettuo la notifica di pagamento della rata unica (isPartialPayment = false) e verifico lo stato in paid
+		// effettuo la notifica di pagamento della rata unica (setIsPartialPayment = false) e verifico lo stato in paid
 		mvc.perform(post("/organizations/PAY_Multiple_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
@@ -187,7 +187,7 @@ class PaymentsControllerTest {
 		mvc.perform(post("/organizations/PAY_Multiple_Partial_12345678901/debtpositions/12345678901IUPDMULTIPLEMOCK2/publish")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 		
-		// effettuo la notifica di pagamento di una rata parziale (isPartialPayment = true) e verifico lo stato in paid
+		// effettuo la notifica di pagamento di una rata parziale (setIsPartialPayment = true) e verifico lo stato in paid
 		mvc.perform(post("/organizations/PAY_Multiple_Partial_12345678901/paymentoptions/123456IUVMULTIPLEMOCK4/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
@@ -215,7 +215,7 @@ class PaymentsControllerTest {
 		mvc.perform(post("/organizations/PAY_Multiple_All_Partial_12345678901/debtpositions/12345678901IUPDMULTIPLEMOCK2/publish")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 		
-		// effettuo la notifica di pagamento di una rata parziale (isPartialPayment = true) e verifico lo stato in paid
+		// effettuo la notifica di pagamento di una rata parziale (setIsPartialPayment = true) e verifico lo stato in paid
 		mvc.perform(post("/organizations/PAY_Multiple_All_Partial_12345678901/paymentoptions/123456IUVMULTIPLEMOCK4/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
@@ -231,7 +231,7 @@ class PaymentsControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(DebtPositionStatus.PARTIALLY_PAID.toString()));
 		
-		// effettuo la notifica di pagamento della seconda rata parziale (isPartialPayment = true) e verifico lo stato in paid
+		// effettuo la notifica di pagamento della seconda rata parziale (setIsPartialPayment = true) e verifico lo stato in paid
 		mvc.perform(post("/organizations/PAY_Multiple_All_Partial_12345678901/paymentoptions/123456IUVMULTIPLEMOCK5/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
@@ -259,7 +259,7 @@ class PaymentsControllerTest {
 		mvc.perform(post("/organizations/PAY_Multiple_409_12345678901/debtpositions/12345678901IUPDMULTIPLEMOCK2/publish")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 		
-		// effettuo la notifica di pagamento della rata unica (isPartialPayment = false) e verifico lo stato in paid
+		// effettuo la notifica di pagamento della rata unica (setIsPartialPayment = false) e verifico lo stato in paid
 		mvc.perform(post("/organizations/PAY_Multiple_409_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
@@ -292,7 +292,7 @@ class PaymentsControllerTest {
 		mvc.perform(post("/organizations/PAY_Multiple_Partial_409_12345678901/debtpositions/12345678901IUPDMULTIPLEMOCK2/publish")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 		
-		// effettuo la notifica di pagamento della rata unica (isPartialPayment = false) e verifico lo stato in paid
+		// effettuo la notifica di pagamento della rata unica (setIsPartialPayment = false) e verifico lo stato in paid
 		mvc.perform(post("/organizations/PAY_Multiple_Partial_409_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
@@ -308,7 +308,7 @@ class PaymentsControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(DebtPositionStatus.PAID.toString()));
 		
-		// effettuo un nuovo pagamento su una delle rate parziali (isPartialPayment = true) per la payment option
+		// effettuo un nuovo pagamento su una delle rate parziali (setIsPartialPayment = true) per la payment option
 		mvc.perform(post("/organizations/PAY_Multiple_Partial_409_12345678901/paymentoptions/123456IUVMULTIPLEMOCK4/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isConflict());
@@ -352,6 +352,15 @@ class PaymentsControllerTest {
 		// provo a pagare una payment option che non esiste
 		String url = "/organizations/PAY_400_12345678901/paymentoptions/123456IUVNOTEXIST";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
+	}
+	
+	@Test
+	void payPaymentOption_400() throws Exception {
+		// provo a pagare una payment option con body della request non corretto
+		mvc.perform(post("/organizations/PAY_Multiple_Partial2_409_12345678901/paymentoptions/123456IUVMULTIPLEMOCK4/pay")
+				.content(TestUtil.toJson(DebtPositionMock.getPayPO400Mock1()))
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
 	}
 

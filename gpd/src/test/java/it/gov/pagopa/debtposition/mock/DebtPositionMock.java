@@ -51,6 +51,10 @@ public class DebtPositionMock {
 		return createPaymentPosition400Mock3();
 	}
 	
+	public final static PaymentOptionDTO getPayPO400Mock1() {
+		return createPayForPaymentOption400Mock1();
+	}
+	
 	public final static PaymentPositionDTO get409_Min_Due_Date_Mock1() {
 		return createPaymentPosition409_Min_Due_Date_Mock1();
 	}
@@ -415,6 +419,17 @@ public class DebtPositionMock {
 
 		return pOMock;
 	}
+	
+	public static PaymentOptionDTO createPayForPaymentOptionMock1() {
+
+		PaymentOptionDTO pOMock = new PaymentOptionDTO();
+		pOMock.setPaymentDate(LocalDateTime.now(ZoneOffset.UTC));
+		pOMock.setPaymentMethod("Bonifico");
+		pOMock.setPspCompany("Intesa San Paolo");
+		pOMock.setIdReceipt("TRN987654321");
+
+		return pOMock;
+	}
 
 	public static PaymentOptionDTO createPaymentOptions400Mock1() {
 
@@ -430,16 +445,19 @@ public class DebtPositionMock {
 		return pOMock;
 	}
 	
-	public static PaymentOptionDTO createPayForPaymentOptionMock1() {
+	public static PaymentOptionDTO createPayForPaymentOption400Mock1() {
 
 		PaymentOptionDTO pOMock = new PaymentOptionDTO();
 		pOMock.setPaymentDate(LocalDateTime.now(ZoneOffset.UTC));
 		pOMock.setPaymentMethod("Bonifico");
 		pOMock.setPspCompany("Intesa San Paolo");
-		pOMock.setIdReceipt("TRN987654321");
+		// metto un campo obbligatorio a blank
+		pOMock.setIdReceipt("");
 
 		return pOMock;
 	}
+	
+	
 
 
 	public static TransferDTO createTransfersMock1() {
