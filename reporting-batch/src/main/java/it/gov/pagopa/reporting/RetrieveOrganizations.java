@@ -3,18 +3,9 @@ package it.gov.pagopa.reporting;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.TimerTrigger;
-import it.gov.pagopa.reporting.service.FlowsService;
-import it.gov.pagopa.reporting.service.NodoChiediElencoFlussi;
-import it.gov.pagopa.reporting.servicewsdl.FaultBean;
-import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
+import it.gov.pagopa.reporting.service.GPDService;
 
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import java.security.spec.InvalidKeySpecException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,14 +24,23 @@ public class RetrieveOrganizations {
      * This function will be invoked periodically according to the specified
      * schedule.
      */
+//    @TimerTrigger(name = "ReportingBatchTrigger", schedule = "0 */1 * * * *") String timerInfo,
+
     @FunctionName("ReportingBatchFunction")
-    public void run(@TimerTrigger(name = "ReportingBatchTrigger", schedule = "0 */1 * * * *") String timerInfo,
-            final ExecutionContext context) {
+    public void run(
+            @TimerTrigger(name = "ReportingBatchTrigger", schedule = "* * * * *") String timerInfo,
+            final ExecutionContext context
+    ) {
 
         Logger logger = context.getLogger();
 
         logger.log(Level.INFO, () -> "Reporting Batch Trigger function executed at: " + LocalDateTime.now());
 
+        // call GPD to retrieve organization list
+        GPDService.getInstance().getOrganizations(LocalDate.now());
+
+        // save organization list to flows table
+        // retrieve organization list from flows table and add to organizations queue
     }
 
 }

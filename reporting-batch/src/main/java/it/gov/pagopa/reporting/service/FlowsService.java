@@ -19,7 +19,6 @@ import com.microsoft.azure.storage.table.CloudTable;
 import com.microsoft.azure.storage.table.TableBatchOperation;
 import com.microsoft.azure.storage.table.TableOperation;
 import com.microsoft.azure.storage.table.TableServiceException;
-
 import it.gov.pagopa.reporting.entity.FlowEntity;
 import it.gov.pagopa.reporting.models.FlowsMessage;
 import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
