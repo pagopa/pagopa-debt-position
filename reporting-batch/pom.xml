@@ -12,11 +12,12 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>11</java.version>
-        <azure.functions.maven.plugin.version>1.12.0</azure.functions.maven.plugin.version>
+        <azure.functions.maven.plugin.version>1.15.0</azure.functions.maven.plugin.version>
         <azure.functions.java.library.version>1.4.2</azure.functions.java.library.version>
         <azure.storage.table.version>8.6.6</azure.storage.table.version>
         <azure.storage.queue.version>12.0.0</azure.storage.queue.version>
-        <functionAppName>reporting-batch-20210709161526311</functionAppName>
+        <functionAppName>com.microsoft.azure-20220215182005862</functionAppName>
+        <resteasy.version>3.15.1.Final</resteasy.version>
     </properties>
 
     <dependencies>
@@ -101,12 +102,24 @@
             <version>2.3.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jaxrs</artifactId>
+            <version>${resteasy.version}</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.20</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.13</version>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>
@@ -136,6 +149,13 @@
                             <value>~3</value>
                         </property>
                     </appSettings>
+                    <resourceGroup>java-functions-group</resourceGroup>
+                    <appServicePlanName>java-functions-app-service-plan</appServicePlanName>
+                    <region>westus</region>
+                    <runtime>
+            <os>windows</os>
+            <javaVersion>11</javaVersion>
+          </runtime>
                 </configuration>
                 <executions>
                     <execution>
