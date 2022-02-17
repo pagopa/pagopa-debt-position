@@ -24,6 +24,9 @@ public enum AppError {
     PAYMENT_OPTION_NOT_FOUND                     (HttpStatus.NOT_FOUND, "Not found the payment option", "Not found a payment option for Organization Fiscal Code %s and IUV %s"),
     PAYMENT_OPTION_NOT_PAYABLE                   (HttpStatus.CONFLICT, "Existing related payment found or not in payable state", "A payment transaction has already been carried out or, the payment option with Organization Fiscal Code %s and IUV %s, is not in payable state"),
     PAYMENT_OPTION_PAY_FAILED                    (HttpStatus.INTERNAL_SERVER_ERROR, "The pay call for a payment option is failed","Payment failed for the payment option with Organization Fiscal Code %s and IUV %s"),
+    TRANSFER_NOT_FOUND                           (HttpStatus.NOT_FOUND, "Not found the transfer", "Not found a transfer for Organization Fiscal Code %s, IUV %s and TxID %s"),
+    TRANSFER_REPORTING_FAILED                    (HttpStatus.INTERNAL_SERVER_ERROR, "The reporting for the transfer is failed", "Reporting failed for the transfer with Organization Fiscal Code %s, IUV %s and TxID %s"),
+    TRANSFER_NOT_ACCOUNTABLE                     (HttpStatus.CONFLICT, "transfer is not in accountable state", "The transfer option with Organization Fiscal Code %s, IUV %s and TxID %s is not in payable state"),
     UNKNOWN(null, null, null);
 
 

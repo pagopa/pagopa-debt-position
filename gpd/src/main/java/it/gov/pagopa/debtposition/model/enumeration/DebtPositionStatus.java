@@ -30,5 +30,9 @@ public enum DebtPositionStatus {
 		return EnumSet.of(DRAFT, PUBLISHED, INVALID, EXPIRED, PAID);
     }
 	
+	public static Set<DebtPositionStatus> getPaymentPosNotAccountableStatus() {
+		return EnumSet.of(DRAFT, PUBLISHED, VALID, INVALID, EXPIRED, REPORTED);
+    }
+	
 	
 }
