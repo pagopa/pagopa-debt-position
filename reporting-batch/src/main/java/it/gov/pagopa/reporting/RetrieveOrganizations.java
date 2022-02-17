@@ -3,10 +3,16 @@ package it.gov.pagopa.reporting;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.TimerTrigger;
+import com.microsoft.azure.storage.StorageException;
+import it.gov.pagopa.reporting.models.Organizations;
 import it.gov.pagopa.reporting.service.GPDService;
+import it.gov.pagopa.reporting.service.OrganizationsService;
 
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,9 +22,8 @@ import java.util.logging.Logger;
 public class RetrieveOrganizations {
 
     private String storageConnectionString = System.getenv("FLOW_SA_CONNECTION_STRING");
-    private String flowsTable = System.getenv("FLOWS_TABLE");
+    private String organizationsTable = System.getenv("FLOWS_TABLE");
     private String organizationsQueue = System.getenv("ORGANIZATIONS_QUEUE");
-    private String gpdHost = System.getenv("GPD_HOST");
 
     /**
      * This function will be invoked periodically according to the specified
@@ -28,7 +33,7 @@ public class RetrieveOrganizations {
 
     @FunctionName("ReportingBatchFunction")
     public void run(
-            @TimerTrigger(name = "ReportingBatchTrigger", schedule = "* * * * *") String timerInfo,
+            @TimerTrigger(name = "ReportingBatchTrigger", schedule = "*/30 * * * * *") String timerInfo,
             final ExecutionContext context
     ) {
 
@@ -37,9 +42,12 @@ public class RetrieveOrganizations {
         logger.log(Level.INFO, () -> "Reporting Batch Trigger function executed at: " + LocalDateTime.now());
 
         // call GPD to retrieve organization list
-        GPDService.getInstance().getOrganizations(LocalDate.now());
+        Organizations organizationList = GPDService.getInstance().getOrganizations(LocalDate.now());
 
-        // save organization list to flows table
+        // update organization list to flows table
+        OrganizationsService organizationsService = new OrganizationsService(storageConnectionString, organizationsTable, organizationsQueue, logger);
+        List<String> organizationListToProcess = organizationsService.processOrganizationList(organizationList);
+
         // retrieve organization list from flows table and add to organizations queue
     }
 

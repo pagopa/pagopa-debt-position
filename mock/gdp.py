@@ -11,11 +11,18 @@ class GPDHandler(tornado.web.RequestHandler):
         self.set_header("Content-Type", 'application/json')
 
     def get(self):
+        print("request received")
         if self.get_query_argument("since", "01-01-1970") == "01-01-1970":
             organization_list = ["77777777777", "90000000001"]
         else:
-            organization_list = ["90000000002"]
-        self.write(json.dumps(organization_list))
+            organization_list = []
+            for i in range(0, 10):
+                organization_list.append(f"9000000000{i}")
+        org_map = {
+            "add": organization_list,
+            "delete": []
+        }
+        self.write(json.dumps(org_map))
 
 
 def make_app():
