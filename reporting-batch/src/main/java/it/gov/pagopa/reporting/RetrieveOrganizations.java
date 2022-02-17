@@ -12,6 +12,7 @@ import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,7 +23,7 @@ import java.util.logging.Logger;
 public class RetrieveOrganizations {
 
     private String storageConnectionString = System.getenv("FLOW_SA_CONNECTION_STRING");
-    private String organizationsTable = System.getenv("FLOWS_TABLE");
+    private String organizationsTable = System.getenv("ORGANIZATIONS_TABLE");
     private String organizationsQueue = System.getenv("ORGANIZATIONS_QUEUE");
 
     /**
@@ -33,7 +34,7 @@ public class RetrieveOrganizations {
 
     @FunctionName("ReportingBatchFunction")
     public void run(
-            @TimerTrigger(name = "ReportingBatchTrigger", schedule = "*/30 * * * * *") String timerInfo,
+            @TimerTrigger(name = "ReportingBatchTrigger", schedule = "*/10 * * * * *") String timerInfo,
             final ExecutionContext context
     ) {
 

@@ -35,6 +35,14 @@ public class OrganizationsService {
     public List<String> processOrganizationList(Organizations organizations) {
         this.logger.info("Processing organization list");
 
+        // create table
+//        try {
+//            createTable();
+//        } catch (Exception e) {
+//            this.logger.severe(String.format("[OrganizationsService] Problem to retrieve organization list: %s", e.getLocalizedMessage()));
+//            return new ArrayList<>();
+//        }
+
         // create batch partition due to max batch size of Azure Table Storage - 100
         List<List<String>> addOrganizationList = Lists.partition(organizations.getAdd(), batchSize);
         List<List<String>> deleteOrganizationList = Lists.partition(organizations.getDelete(), batchSize);
@@ -66,7 +74,7 @@ public class OrganizationsService {
                         e.getLocalizedMessage(), partitionAddIndex));
             }
         });
-
+        /*
         // delete organizations section
         IntStream.range(0, deleteOrganizationList.size()).forEach(partitionDeleteIndex -> {
             try {
@@ -94,6 +102,7 @@ public class OrganizationsService {
                         e.getLocalizedMessage(), partitionDeleteIndex));
             }
         });
+        */
 
         // retrieve updated organization list
         try {
@@ -104,30 +113,37 @@ public class OrganizationsService {
         }
     }
 
+    private void createTable() throws URISyntaxException, InvalidKeyException, StorageException {
+        // Create a new table
+        CloudTable table = CloudStorageAccount.parse(storageConnectionString)
+                .createCloudTableClient().getTableReference(this.organizationsTable);
+        table.createIfNotExists();
+    }
+
     private List<String> getOrganizationList() throws URISyntaxException, InvalidKeyException, StorageException {
-        CloudTable table = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
+        CloudTable table = CloudStorageAccount.parse(storageConnectionString)
+                .createCloudTableClient()
                 .getTableReference(this.organizationsTable);
-        TableQuery<OrganizationEntity> query = new TableQuery<OrganizationEntity>();
-        Iterable<OrganizationEntity> response = table.execute(query);
+
+        Iterable<OrganizationEntity> response = table.execute(TableQuery.from(OrganizationEntity.class).where((TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, "organization"))));
         response.forEach(organizationEntity -> {
             this.logger.info(String.valueOf(organizationEntity));
         });
+
         return new ArrayList<>();
     }
-
 
     private void addOrganizationList(List<String> organizations) throws URISyntaxException, InvalidKeyException, StorageException {
         this.logger.info("Processing add organization list");
 
-        CloudTable table = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
+        CloudTable table = CloudStorageAccount.parse(storageConnectionString)
+                .createCloudTableClient()
                 .getTableReference(this.organizationsTable);
 
         TableBatchOperation batchOperation = new TableBatchOperation();
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-
         organizations.forEach(organization -> {
-            batchOperation.insert(new OrganizationEntity(organization, sdf.format(LocalDateTime.now())));
+            batchOperation.insert(new OrganizationEntity(organization, LocalDateTime.now().toString()));
         });
 
         table.execute(batchOperation);
@@ -138,11 +154,10 @@ public class OrganizationsService {
         CloudTable table = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
                 .getTableReference(this.organizationsTable);
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-
-        table.execute(TableOperation.insert(new OrganizationEntity(organization, sdf.format(LocalDateTime.now()))));
+        table.execute(TableOperation.insert(new OrganizationEntity(organization, LocalDateTime.now().toString())));
     }
 
+    /*
     private void deleteOrganizationList(List<String> organizations) throws URISyntaxException, InvalidKeyException, StorageException {
         this.logger.info("Processing delete organization list");
 
@@ -165,4 +180,5 @@ public class OrganizationsService {
 
         table.execute(TableOperation.delete(new OrganizationEntity(organization)));
     }
+    */
 }
