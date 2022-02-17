@@ -64,11 +64,21 @@ public class PaymentsService {
 	}
 	
 	private PaymentOption updatePaymentStatus (PaymentPosition pp, String iuv, PaymentOptionModel paymentOptionModel) {
-		
+
 		LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
 		PaymentOption poToPay = null;
-		
+
+		long numberOfPartialPayment = pp.getPaymentOption().stream().filter(po -> Boolean.TRUE.equals(po.getIsPartialPayment())).count();
+		int countPaidPartialPayment = 0;
+
 		for (PaymentOption po : pp.getPaymentOption()) {
+
+			// verifico se ci sono pagamenti parziali in stato PO_PAID
+			if (Boolean.TRUE.equals(po.getIsPartialPayment()) && po.getStatus().equals(PaymentOptionStatus.PO_PAID)) {
+				countPaidPartialPayment ++;
+			}
+
+			// aggiorno le proprietà per la payment option oggetto dell'attuale pagamento
 			if (po.getIuv().equals(iuv)) {
 				po.setLastUpdatedDate(currentDate);
 				po.setPaymentDate(paymentOptionModel.getPaymentDate());
@@ -76,16 +86,24 @@ public class PaymentsService {
 				po.setPspCompany(paymentOptionModel.getPspCompany());
 				po.setIdReceipt(paymentOptionModel.getIdReceipt());
 				po.setStatus(PaymentOptionStatus.PO_PAID);
-				if (Boolean.TRUE.equals(po.getIsPartialPayment())) {
-					pp.setStatus(DebtPositionStatus.PARTIALLY_PAID);
+				// se la payment option è di tipo partial incremento il contatore
+				if(Boolean.TRUE.equals(po.getIsPartialPayment())) {
+					countPaidPartialPayment ++;
 				}
-				else {
-					pp.setStatus(DebtPositionStatus.PAID);
-				}
-				
 				poToPay = po;
 			}
+
 		}
+
+		// aggiorno lo stato della payment position
+		if (countPaidPartialPayment > 0 && countPaidPartialPayment < numberOfPartialPayment) {
+			pp.setStatus(DebtPositionStatus.PARTIALLY_PAID);
+		}
+		else {
+			pp.setStatus(DebtPositionStatus.PAID);
+		}
+
+
 		pp.setLastUpdatedDate(currentDate);
 		// salvo l'aggiornamento del pagamento
 		paymentPositionRepository.saveAndFlush(pp);
