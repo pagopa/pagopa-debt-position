@@ -74,7 +74,7 @@ public class OrganizationsService {
                         e.getLocalizedMessage(), partitionAddIndex));
             }
         });
-        /*
+
         // delete organizations section
         IntStream.range(0, deleteOrganizationList.size()).forEach(partitionDeleteIndex -> {
             try {
@@ -102,7 +102,6 @@ public class OrganizationsService {
                         e.getLocalizedMessage(), partitionDeleteIndex));
             }
         });
-        */
 
         // retrieve updated organization list
         try {
@@ -125,10 +124,10 @@ public class OrganizationsService {
                 .createCloudTableClient()
                 .getTableReference(this.organizationsTable);
 
-        Iterable<OrganizationEntity> response = table.execute(TableQuery.from(OrganizationEntity.class).where((TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, "organization"))));
-        response.forEach(organizationEntity -> {
-            this.logger.info(String.valueOf(organizationEntity));
-        });
+        // Iterate through the results
+        for (OrganizationEntity entity : table.execute(TableQuery.from(OrganizationEntity.class).where((TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, OrganizationEntity.myPartitionKey))))) {
+            this.logger.info(String.format("\tOrganizationEntity: %s,%s", entity.getPartitionKey(), entity.getRowKey()));
+        }
 
         return new ArrayList<>();
     }
@@ -157,7 +156,6 @@ public class OrganizationsService {
         table.execute(TableOperation.insert(new OrganizationEntity(organization, LocalDateTime.now().toString())));
     }
 
-    /*
     private void deleteOrganizationList(List<String> organizations) throws URISyntaxException, InvalidKeyException, StorageException {
         this.logger.info("Processing delete organization list");
 
@@ -180,5 +178,5 @@ public class OrganizationsService {
 
         table.execute(TableOperation.delete(new OrganizationEntity(organization)));
     }
-    */
+
 }

@@ -12,16 +12,16 @@ import lombok.Setter;
 public class OrganizationEntity extends TableServiceEntity {
 
     private String organizationOnboardingDate;
-    public static String partitionKey = "organization";
+    public static String myPartitionKey = "organization";
 
     public OrganizationEntity(String organizationId, String organizationOnboardingDate) {
-        this.partitionKey = partitionKey;
+        this.partitionKey = myPartitionKey;
         this.rowKey = organizationId;
         this.organizationOnboardingDate = organizationOnboardingDate;
     }
 
     public OrganizationEntity(String organizationId) {
-        this.partitionKey = partitionKey;
+        this.partitionKey = myPartitionKey;
         this.rowKey = organizationId;
     }
 }
