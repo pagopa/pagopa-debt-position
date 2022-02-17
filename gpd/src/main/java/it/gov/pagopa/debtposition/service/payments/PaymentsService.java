@@ -15,17 +15,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.validation.DebtPositionValidation;
+import lombok.extern.slf4j.Slf4j;
 
 
 @Service
+@Slf4j
 public class PaymentsService {
 
 	
@@ -61,6 +65,23 @@ public class PaymentsService {
 		DebtPositionValidation.checkPaymentPositionPayability(ppToPay.get(), iuv);
 		
 		return this.updatePaymentStatus(ppToPay.get(), iuv, paymentOptionModel);
+	}
+	
+	@Transactional(isolation = Isolation.SERIALIZABLE)
+	public Transfer report (@NotBlank String organizationFiscalCode,
+			@NotBlank String iuv, @NotBlank String transferId) {
+
+		
+		Optional<PaymentPosition> ppToReport = 
+				paymentPositionRepository.findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(organizationFiscalCode, iuv, transferId);
+		
+		if (ppToReport.isEmpty()) {
+			throw new AppException(AppError.TRANSFER_NOT_FOUND, organizationFiscalCode, iuv, transferId);
+		}
+		
+		DebtPositionValidation.checkPaymentPositionAccountability(ppToReport.get(), iuv, transferId);
+       
+		return this.updateTransferStatus(ppToReport.get(), iuv, transferId);
 	}
 	
 	private PaymentOption updatePaymentStatus (PaymentPosition pp, String iuv, PaymentOptionModel paymentOptionModel) {
@@ -110,5 +131,55 @@ public class PaymentsService {
 		return poToPay;
 	}
 	
+	private Transfer updateTransferStatus (PaymentPosition pp, String iuv, String transferId) {
+		
+		LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+		long numberPOTransfers = 0;
+		long countReportedTransfer = 0;
+		Transfer reportedTransfer = null;
+		
+		for (PaymentOption po : pp.getPaymentOption()) {
+			
+			if (po.getIuv().equals(iuv)) {
+				//numero totale dei transfer per la PO
+				numberPOTransfers = po.getTransfer().stream().count();
+				//numero dei transfer della PO in stato T_REPORTED
+				countReportedTransfer = po.getTransfer().stream().filter(t -> t.getStatus().equals(TransferStatus.T_REPORTED)).count();
+				//recupero il transfer oggetto di rendicontazione
+				Optional<Transfer> transferToReport = po.getTransfer().stream().filter(t -> t.getIdTransfer().equals(transferId)).findFirst();
+		    	
+		    	if (transferToReport.isEmpty()) {
+		    		log.error ("Obtained unexpected empty transfer - "
+							+ "[organizationFiscalCode= "+pp.getOrganizationFiscalCode()+"; "
+							+ "iupd= "+pp.getIupd()+"; "
+							+ "iuv= "+iuv+"; "
+							+ "idTransfer= "+transferId
+							+ "]");
+					throw new AppException(AppError.TRANSFER_REPORTING_FAILED, pp.getOrganizationFiscalCode(), iuv, transferId);
+				}
+				
+		    	transferToReport.get().setStatus(TransferStatus.T_REPORTED);
+		    	transferToReport.get().setLastUpdatedDate(currentDate);
+		    	countReportedTransfer++;
+		    	// aggiorno lo stato della PO
+		    	if (countReportedTransfer < numberPOTransfers) {
+		    		po.setStatus(PaymentOptionStatus.PO_PARTIALLY_REPORTED);
+		    	}
+		    	else {
+		    		po.setStatus(PaymentOptionStatus.PO_REPORTED);
+		    	}
+				po.setLastUpdatedDate(currentDate);
+				
+				reportedTransfer = transferToReport.get();
+			}
+			
+		}
+		
+		pp.setLastUpdatedDate(currentDate);
+		// salvo l'aggiornamento della rendicontazione
+		paymentPositionRepository.saveAndFlush(pp);
+		
+		return reportedTransfer;
+	}
 
 }

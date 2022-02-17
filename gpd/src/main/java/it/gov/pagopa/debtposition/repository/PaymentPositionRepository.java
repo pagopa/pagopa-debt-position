@@ -34,6 +34,9 @@ JpaSpecificationExecutor<PaymentPosition>, PagingAndSortingRepository<PaymentPos
 	
 	// Derived Query - using method naming convention - get parent PaymentPosition from child PaymentOption properties 
 	Optional<PaymentPosition> findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuv (String organizationFiscalCode, String iuv);
+	
+	// Derived Query - using method naming convention - get parent PaymentPosition from child PaymentOption and Transfer properties 
+	Optional<PaymentPosition> findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer (String organizationFiscalCode, String iuv, String idTransfer);
 
 }
 
