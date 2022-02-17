@@ -116,8 +116,9 @@ public class FlowsService {
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
-        partition.stream().forEach(flow -> batchOperation.insert(new FlowEntity(flow.getIdentificativoFlusso(),
-                sdf.format(flow.getDataOraFlusso().toGregorianCalendar().getTime()), idPA)));
+        partition.stream().forEach(flow -> batchOperation.insert(
+                new FlowEntity(flow.getIdentificativoFlusso(), sdf.format(flow.getDataOraFlusso().toGregorianCalendar().getTime()), idPA)
+        ));
 
         this.logger.log(Level.INFO, () -> "[FlowsService] Storing batch " + partitionFlowsIndex);
         table.execute(batchOperation);
