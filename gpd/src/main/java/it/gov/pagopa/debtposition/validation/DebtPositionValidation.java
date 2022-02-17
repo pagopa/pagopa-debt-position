@@ -13,11 +13,13 @@ import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.exception.ValidationException;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class DebtPositionValidation {
 
+	private static final String LOG_BASE_PARAMS_DETAIL = "organizationFiscalCode= %s; iupd= %s; iuv= %s";
     private static final String DUE_DATE_VALIDATION_ERROR = "Dates congruence error: due_date must be >= validity_date (if provided) or due_date must be >= current_date [due_date=%s; validity_date=%s; current_date=%s]";
     private static final String RETENTION_DATE_VALIDATION_ERROR = "Dates congruence error: retention_date must be >= due_date [retention_date=%s; due_date=%s] ";
     private static final String VALIDITY_DATE_VALIDATION_ERROR = "Dates congruence error: validity_date must be >= current_date [validity_date=%s; current_date=%s] ";
@@ -44,6 +46,15 @@ public class DebtPositionValidation {
     	checkPaymentPositionOpen(ppToPay, iuv);
     	// Verifico se l'opzione di pagamento è pagabile
     	checkPaymentOptionPayable(ppToPay, iuv) ;
+    }
+    
+    public static void checkPaymentPositionAccountability(PaymentPosition ppToReport, String iuv, String transferId) {
+    	// Verifico se la posizione debitoria è in uno stato idoneo alla rendicontazione
+    	if (DebtPositionStatus.getPaymentPosNotAccountableStatus().contains(ppToReport.getStatus())){
+			throw new AppException(AppError.TRANSFER_NOT_ACCOUNTABLE, ppToReport.getOrganizationFiscalCode(), iuv, transferId);
+		}
+    	// Verifico se la transazione è rendicontabile
+    	checkTransferAccountable(ppToReport, iuv, transferId);
     }
 
     
@@ -136,10 +147,12 @@ public class DebtPositionValidation {
     private static void checkPaymentOptionPayable(PaymentPosition ppToPay, String iuv) {
     	Optional<PaymentOption> poToPay = ppToPay.getPaymentOption().stream().filter(po -> po.getIuv().equals(iuv)).findFirst();
     	if (poToPay.isEmpty()) {
-    		log.error ("Obtained unexpected empty payment option - "
-					+ "[organizationFiscalCode= "+ppToPay.getOrganizationFiscalCode()+"; "
-					+ "iupd= "+ppToPay.getIupd()+"; "
-					+ "iuv= "+iuv
+    		log.error ("Obtained unexpected empty payment option - ["
+    				+ String.format(LOG_BASE_PARAMS_DETAIL, 
+    						ppToPay.getOrganizationFiscalCode(), 
+    						ppToPay.getIupd(),
+    						iuv
+                            )
 					+ "]");
 			throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, ppToPay.getOrganizationFiscalCode(), iuv);
 		}
@@ -163,6 +176,43 @@ public class DebtPositionValidation {
     		paid = false;
     	}
     	return paid;
+    }
+    
+    private static void checkTransferAccountable(PaymentPosition ppToReport, String iuv, String transferId) {
+    	Optional<PaymentOption> poToReport = ppToReport.getPaymentOption().stream().filter(po -> po.getIuv().equals(iuv)).findFirst();
+    	if (poToReport.isEmpty()) {
+    		log.error ("Obtained unexpected empty payment option - ["
+    				+ String.format(LOG_BASE_PARAMS_DETAIL, 
+    						ppToReport.getOrganizationFiscalCode(), 
+    						ppToReport.getIupd(),
+    						iuv
+                            )
+					+ "]");
+			throw new AppException(AppError.TRANSFER_REPORTING_FAILED, ppToReport.getOrganizationFiscalCode(), iuv, transferId);
+		}
+    	
+    	if (!poToReport.get().getStatus().equals(PaymentOptionStatus.PO_PAID) && !poToReport.get().getStatus().equals(PaymentOptionStatus.PO_PARTIALLY_REPORTED)) {
+    		throw new AppException(AppError.TRANSFER_NOT_ACCOUNTABLE, poToReport.get().getOrganizationFiscalCode(), iuv, transferId);
+    	}
+    	
+    	Optional<Transfer> transferToReport = poToReport.get().getTransfer().stream().filter(t -> t.getIdTransfer().equals(transferId)).findFirst();
+    	
+    	if (transferToReport.isEmpty()) {
+    		log.error ("Obtained unexpected empty transfer - ["
+    				+ String.format(LOG_BASE_PARAMS_DETAIL, 
+    						ppToReport.getOrganizationFiscalCode(), 
+    						ppToReport.getIupd(),
+    						iuv
+                            )
+					+ "idTransfer= "+transferId
+					+ "]");
+			throw new AppException(AppError.TRANSFER_REPORTING_FAILED, ppToReport.getOrganizationFiscalCode(), iuv, transferId);
+		}
+    	
+    	if (!transferToReport.get().getStatus().equals(TransferStatus.T_UNREPORTED)) {
+    		throw new AppException(AppError.TRANSFER_NOT_ACCOUNTABLE, poToReport.get().getOrganizationFiscalCode(), iuv, transferId);
+    	}
+    	
     }
     
 }

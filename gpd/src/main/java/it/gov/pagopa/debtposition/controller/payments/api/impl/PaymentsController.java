@@ -9,10 +9,12 @@ import org.springframework.stereotype.Controller;
 
 import it.gov.pagopa.debtposition.controller.payments.api.IPaymentsController;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
+import it.gov.pagopa.debtposition.model.payments.response.TransferModelResponse;
 import it.gov.pagopa.debtposition.service.payments.PaymentsService;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +58,16 @@ public class PaymentsController implements IPaymentsController {
 		}
 		
 		throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, iuv);
+	}
+
+	@Override
+	public ResponseEntity<TransferModelResponse> reportTransfer(String organizationFiscalCode, String iuv,
+			String transferId) {
+		Transfer reportedTransfer = paymentsService.report(organizationFiscalCode, iuv, transferId);
+		if (null != reportedTransfer) {
+			return new ResponseEntity<>(ObjectMapperUtils.map(reportedTransfer, TransferModelResponse.class), HttpStatus.OK);
+		}
+		throw new AppException(AppError.TRANSFER_REPORTING_FAILED, organizationFiscalCode, iuv, transferId);
 	}
 
 }
