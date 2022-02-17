@@ -49,7 +49,10 @@ public class RetrieveOrganizations {
         OrganizationsService organizationsService = new OrganizationsService(storageConnectionString, organizationsTable, organizationsQueue, logger);
         List<String> organizationListToProcess = organizationsService.processOrganizationList(organizationList);
 
-        // retrieve organization list from flows table and add to organizations queue
+        // add to organizations queue
+        organizationsService.addToOrganizationsQueue(organizationListToProcess);
+
+
     }
 
 }
