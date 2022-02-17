@@ -51,6 +51,10 @@ public class DebtPositionMock {
 		return createPaymentPosition400Mock3();
 	}
 	
+	public final static PaymentOptionDTO getPayPO400Mock1() {
+		return createPayForPaymentOption400Mock1();
+	}
+	
 	public final static PaymentPositionDTO get409_Min_Due_Date_Mock1() {
 		return createPaymentPosition409_Min_Due_Date_Mock1();
 	}
@@ -240,6 +244,7 @@ public class DebtPositionMock {
 		pPMock.setOfficeName("Ufficio condono");
 		pPMock.addPaymentOptions(createPaymentOptionsMultipleMock3());
 		pPMock.addPaymentOptions(createPaymentOptionsMultipleMock4());
+		pPMock.addPaymentOptions(createPaymentOptionsMultipleMock5());
 
 		return pPMock;
 	}
@@ -400,6 +405,31 @@ public class DebtPositionMock {
 
 		return pOMock;
 	}
+	
+	public static PaymentOptionDTO createPaymentOptionsMultipleMock5() {
+
+		PaymentOptionDTO pOMock = new PaymentOptionDTO();
+		pOMock.setAmount(5000);
+		pOMock.setIuv("123456IUVMULTIPLEMOCK5");
+		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(4, ChronoUnit.HOURS));
+		pOMock.setIsPartialPayment(Boolean.TRUE);
+		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
+		pOMock.addTransfers(createTransfersMultipleMock4()); 
+		pOMock.addTransfers(createTransfersMultipleMock5()); 
+
+		return pOMock;
+	}
+	
+	public static PaymentOptionDTO createPayForPaymentOptionMock1() {
+
+		PaymentOptionDTO pOMock = new PaymentOptionDTO();
+		pOMock.setPaymentDate(LocalDateTime.now(ZoneOffset.UTC));
+		pOMock.setPaymentMethod("Bonifico");
+		pOMock.setPspCompany("Intesa San Paolo");
+		pOMock.setIdReceipt("TRN987654321");
+
+		return pOMock;
+	}
 
 	public static PaymentOptionDTO createPaymentOptions400Mock1() {
 
@@ -415,16 +445,19 @@ public class DebtPositionMock {
 		return pOMock;
 	}
 	
-	public static PaymentOptionDTO createPayForPaymentOptionMock1() {
+	public static PaymentOptionDTO createPayForPaymentOption400Mock1() {
 
 		PaymentOptionDTO pOMock = new PaymentOptionDTO();
 		pOMock.setPaymentDate(LocalDateTime.now(ZoneOffset.UTC));
 		pOMock.setPaymentMethod("Bonifico");
 		pOMock.setPspCompany("Intesa San Paolo");
-		pOMock.setIdReceipt("TRN987654321");
+		// metto un campo obbligatorio a blank
+		pOMock.setIdReceipt("");
 
 		return pOMock;
 	}
+	
+	
 
 
 	public static TransferDTO createTransfersMock1() {

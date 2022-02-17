@@ -236,7 +236,9 @@
 									"",
 									"pm.globals.set(\"creditor_saved_multi\", pm.globals.get(\"creditor_institution_code\"));",
 									"pm.globals.set(\"iupd_saved_multi\", pm.globals.get(\"iupd\"));",
-									"pm.globals.set(\"iuv_saved_multi\", pm.globals.get(\"iuv2\"));",
+									"pm.globals.set(\"iuv_saved_multi_total\", pm.globals.get(\"iuv1\"));",
+									"pm.globals.set(\"iuv_saved_multi_partial_1\", pm.globals.get(\"iuv2\"));",
+									"pm.globals.set(\"iuv_saved_multi_partial_2\", pm.globals.get(\"iuv3\"));",
 									""
 								],
 								"type": "text/javascript"
@@ -248,7 +250,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"iupd\": \"{{iupd}}\",\r\n  \"type\": \"F\",\r\n  \"fiscalCode\": \"JHNDOE00A01F205N\",\r\n  \"fullName\": \"John Doe\",\r\n  \"streetName\": \"streetName\",\r\n  \"civicNumber\": \"11\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"city\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"RM\",\r\n  \"country\": \"IT\",\r\n  \"email\": \"lorem@lorem.com\",\r\n  \"phone\": \"333-123456789\",\r\n  \"companyName\": \"companyName\",\r\n  \"officeName\": \"officeName\",\r\n  \"validityDate\": \"{{validity_date}}\",\r\n  \"paymentOption\": [\r\n    {\r\n      \"iuv\": \"{{iuv1}}\",\r\n      \"amount\": 10000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE opt 1 FINAL\",\r\n      \"isPartialPayment\": false,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 9000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"02\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"iuv\": \"{{iuv2}}\",\r\n      \"amount\": 5000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE opt 2 NOT FINAL\",\r\n      \"isPartialPayment\": true,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 4000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"02\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"iuv\": \"{{iuv3}}\",\r\n      \"amount\": 5000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE opt 3 NOT FINAL\",\r\n      \"isPartialPayment\": true,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 4000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"02\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
+							"raw": "{\r\n  \"iupd\": \"{{iupd}}\",\r\n  \"type\": \"F\",\r\n  \"fiscalCode\": \"JHNDOE00A01F205N\",\r\n  \"fullName\": \"John Doe\",\r\n  \"streetName\": \"streetName\",\r\n  \"civicNumber\": \"11\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"city\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"RM\",\r\n  \"country\": \"IT\",\r\n  \"email\": \"lorem@lorem.com\",\r\n  \"phone\": \"333-123456789\",\r\n  \"companyName\": \"companyName\",\r\n  \"officeName\": \"officeName\",\r\n  \"paymentOption\": [\r\n    {\r\n      \"iuv\": \"{{iuv1}}\",\r\n      \"amount\": 10000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE opt 1 FINAL\",\r\n      \"isPartialPayment\": false,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 9000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"02\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"iuv\": \"{{iuv2}}\",\r\n      \"amount\": 5000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE opt 2 NOT FINAL\",\r\n      \"isPartialPayment\": true,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 4000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"02\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"iuv\": \"{{iuv3}}\",\r\n      \"amount\": 5000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE opt 3 NOT FINAL\",\r\n      \"isPartialPayment\": true,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"01\",\r\n          \"amount\": 4000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"02\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -475,7 +477,7 @@
 									"    //parse the response JSON and test three properties",
 									"    const responseJson = pm.response.json();",
 									"    pm.expect(responseJson.transfer).to.have.lengthOf(2);",
-									"    pm.expect(responseJson.iuv).to.eql(pm.globals.get(\"iuv_saved_multi\"));",
+									"    pm.expect(responseJson.iuv).to.eql(pm.globals.get(\"iuv_saved_multi_total\"));",
 									"});"
 								],
 								"type": "text/javascript"
@@ -486,14 +488,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{gpdhost}}organizations/{{creditor_saved_multi}}/paymentoptions/{{iuv_saved_multi}}",
+							"raw": "{{gpdhost}}organizations/{{creditor_saved_multi}}/paymentoptions/{{iuv_saved_multi_total}}",
 							"host": [
 								"{{gpdhost}}organizations"
 							],
 							"path": [
 								"{{creditor_saved_multi}}",
 								"paymentoptions",
-								"{{iuv_saved_multi}}"
+								"{{iuv_saved_multi_total}}"
 							]
 						}
 					},
@@ -539,6 +541,216 @@
 								"debtpositions",
 								"{{iupd_saved}}",
 								"publish"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "publishDebtPosition_multiOption",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved_multi}}/debtpositions/{{iupd_saved_multi}}/publish",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved_multi}}",
+								"debtpositions",
+								"{{iupd_saved_multi}}",
+								"publish"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "payPaymentOption_partial_1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response properties\", () => {",
+									"    //parse the response JSON and test properties",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.status).to.eql(\"PO_PAID\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"paymentDate\": \"{{payment_date}}\",\r\n  \"paymentMethod\": \"bonifico\",\r\n  \"pspCompany\": \"Intesa San Paolo\",\r\n  \"idReceipt\": \"TRN123456789\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved_multi}}/paymentoptions/{{iuv_saved_multi_partial_1}}/pay",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved_multi}}",
+								"paymentoptions",
+								"{{iuv_saved_multi_partial_1}}",
+								"pay"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "payPaymentOption_partial_2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response properties\", () => {",
+									"    //parse the response JSON and test properties",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.status).to.eql(\"PO_PAID\");",
+									"});",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"paymentDate\": \"{{payment_date}}\",\r\n  \"paymentMethod\": \"bonifico\",\r\n  \"pspCompany\": \"Intesa San Paolo\",\r\n  \"idReceipt\": \"TRN123456789\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved_multi}}/paymentoptions/{{iuv_saved_multi_partial_2}}/pay",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved_multi}}",
+								"paymentoptions",
+								"{{iuv_saved_multi_partial_2}}",
+								"pay"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getPositionByIUPD_Multi",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response properties\", () => {",
+									"    //parse the response JSON and test three properties",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.paymentOption).to.have.lengthOf(3);",
+									"    pm.expect(responseJson.iupd).to.eql(pm.globals.get(\"iupd_saved_multi\"));",
+									"    pm.expect(responseJson.paymentOption[0].iuv).to.eql(pm.globals.get(\"iuv_saved_multi_total\"));",
+									"    pm.expect(responseJson.paymentOption[0].isPartialPayment).to.eql(false);",
+									"    pm.expect(responseJson.paymentOption[0].status).to.eql(\"PO_UNPAID\");",
+									"    pm.expect(responseJson.paymentOption[1].iuv).to.eql(pm.globals.get(\"iuv_saved_multi_partial_1\"));",
+									"    pm.expect(responseJson.paymentOption[1].isPartialPayment).to.eql(true);",
+									"    pm.expect(responseJson.paymentOption[1].status).to.eql(\"PO_PAID\");",
+									"    pm.expect(responseJson.paymentOption[2].iuv).to.eql(pm.globals.get(\"iuv_saved_multi_partial_2\"));",
+									"    pm.expect(responseJson.paymentOption[2].isPartialPayment).to.eql(true);",
+									"    pm.expect(responseJson.paymentOption[2].status).to.eql(\"PO_PAID\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved_multi}}/debtpositions/{{iupd_saved_multi}}",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved_multi}}",
+								"debtpositions",
+								"{{iupd_saved_multi}}"
 							]
 						}
 					},
@@ -882,6 +1094,159 @@
 					"response": []
 				},
 				{
+					"name": "payPaymentOption_409_already_paid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(409);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"paymentDate\": \"{{payment_date}}\",\r\n  \"paymentMethod\": \"bonifico\",\r\n  \"pspCompany\": \"Intesa San Paolo\",\r\n  \"idReceipt\": \"TRN123456789\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved_multi}}/paymentoptions/{{iuv_saved_multi_total}}/pay",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved_multi}}",
+								"paymentoptions",
+								"{{iuv_saved_multi_total}}",
+								"pay"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "payPaymentOption_400_bad_request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"paymentMethod\": \"bonifico\",\r\n  \"pspCompany\": \"Intesa San Paolo\",\r\n  \"idReceipt\": \"TRN123456789\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved_multi}}/paymentoptions/{{iuv_saved_multi_total}}/pay",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved_multi}}",
+								"paymentoptions",
+								"{{iuv_saved_multi_total}}",
+								"pay"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "payPaymentOption_404_iuv_not_exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"paymentDate\": \"{{payment_date}}\",\r\n  \"paymentMethod\": \"bonifico\",\r\n  \"pspCompany\": \"Intesa San Paolo\",\r\n  \"idReceipt\": \"TRN123456789\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved_multi}}/paymentoptions/{{iuv_not_existent}}/pay",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved_multi}}",
+								"paymentoptions",
+								"{{iuv_not_existent}}",
+								"pay"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "updateDebtPosition_400_iupd_mismatch",
 					"event": [
 						{
@@ -1039,14 +1404,14 @@
 					"response": []
 				},
 				{
-					"name": "updateDebtPosition_400_no_valid_due_date",
+					"name": "updateDebtPosition_409_not_updatable_state",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
 									"pm.test(\"check_status\", function () {",
-									"  pm.response.to.have.status(400);",
+									"  pm.response.to.have.status(409);",
 									"});",
 									"",
 									"",
@@ -1191,6 +1556,12 @@
 					"    return date.toISOString();    ",
 					"}",
 					"",
+					"function getDateNowISOSubMin(minutesToSub) {",
+					"    const currentDate = new Date();",
+					"    const date = new Date(currentDate.getTime() - minutesToSub*60000);",
+					"    return date.toISOString();    ",
+					"}",
+					"",
 					"",
 					"Date.prototype.addDays = function(days) {",
 					"    var date = new Date(this.valueOf());",
@@ -1241,6 +1612,7 @@
 					"pm.globals.set(\"due_date\", new Date().addDays(30));",
 					"pm.globals.set(\"retention_date\", new Date().addDays(90));",
 					"pm.globals.set(\"invalid_due_date\", new Date().subDays(5));",
+					"pm.globals.set(\"payment_date\", getDateNowISOSubMin(15));",
 					"",
 					"pm.globals.set(\"now_date\", new Date().toISOString().split('T')[0]);",
 					"pm.globals.set(\"iupd_not_existent\", \"FAKEIUPD_\"+makeidMix(35));",
