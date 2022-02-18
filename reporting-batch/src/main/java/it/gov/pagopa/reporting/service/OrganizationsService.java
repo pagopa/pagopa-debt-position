@@ -9,14 +9,11 @@ import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
 import com.microsoft.azure.storage.table.*;
 import it.gov.pagopa.reporting.entity.OrganizationEntity;
-import it.gov.pagopa.reporting.models.FlowsMessage;
 import it.gov.pagopa.reporting.models.Organizations;
 import it.gov.pagopa.reporting.models.OrganizationsMessage;
-import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
 
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,12 +41,12 @@ public class OrganizationsService {
         this.logger.info("Processing organization list");
 
         // create table
-        try {
-            createTable();
-        } catch (Exception e) {
-            this.logger.severe(String.format("[OrganizationsService] Problem to retrieve organization list: %s", e.getLocalizedMessage()));
-            return new ArrayList<>();
-        }
+//        try {
+//            createTable();
+//        } catch (Exception e) {
+//            this.logger.severe(String.format("[OrganizationsService] Problem to retrieve organization list: %s", e.getLocalizedMessage()));
+//            return new ArrayList<>();
+//        }
 
         try {
             createQueue();
@@ -131,7 +128,9 @@ public class OrganizationsService {
         // Create a new table
         CloudTable table = CloudStorageAccount.parse(storageConnectionString)
                 .createCloudTableClient().getTableReference(this.organizationsTable);
-        table.createIfNotExists();
+        if (!table.exists()) {
+            table.createIfNotExists();
+        }
     }
 
     private void createQueue() throws URISyntaxException, InvalidKeyException, StorageException {

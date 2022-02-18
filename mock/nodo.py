@@ -10,7 +10,7 @@ class nodoChiediElencoFlussiRendicontazioneHandler(tornado.web.RequestHandler):
     """
     POST https://api.platform.pagopa.it/nodo/nodo-per-pa/v1 HTTP/1.1
     Host: api.platform.pagopa.it
-    Content-Type: text/xml
+    Content-Type: application/xml
     SOAPAction: "nodoChiediElencoFlussiRendicontazione"
     """
     def set_default_headers(self):

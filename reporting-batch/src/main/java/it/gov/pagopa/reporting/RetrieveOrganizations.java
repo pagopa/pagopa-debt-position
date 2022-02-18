@@ -34,7 +34,7 @@ public class RetrieveOrganizations {
 
     @FunctionName("ReportingBatchFunction")
     public void run(
-            @TimerTrigger(name = "ReportingBatchTrigger", schedule = "*/10 * * * * *") String timerInfo,
+            @TimerTrigger(name = "ReportingBatchTrigger", schedule = "*/5 * * * * *") String timerInfo,
             final ExecutionContext context
     ) {
 
@@ -51,7 +51,6 @@ public class RetrieveOrganizations {
 
         // add to organizations queue
         organizationsService.addToOrganizationsQueue(organizationListToProcess);
-
 
     }
 
