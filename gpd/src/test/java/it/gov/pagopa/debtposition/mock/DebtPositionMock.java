@@ -59,6 +59,10 @@ public class DebtPositionMock {
 		return createPaymentPosition400Mock5();
 	}
 	
+	public final static PaymentPositionDTO get400Mock6() {
+		return createPaymentPosition400Mock6();
+	}
+	
 	public final static PaymentOptionDTO getPayPO400Mock1() {
 		return createPayForPaymentOption400Mock1();
 	}
@@ -226,6 +230,31 @@ public class DebtPositionMock {
 		pPMock.setCompanyName("Comune di Firenze");
 		pPMock.setOfficeName("Ufficio tributario");
 		pPMock.addPaymentOptions(createPaymentOptionsMock4());
+
+		return pPMock;
+	}
+	
+	public static PaymentPositionDTO createPaymentPosition400Mock6() {
+
+		PaymentPositionDTO pPMock = new PaymentPositionDTO();
+		// debtor properties
+		pPMock.setFiscalCode("MRDPLL54H17D542L");
+		pPMock.setType(Type.F);
+		pPMock.setFullName("Mario Rossi");
+		pPMock.setPhone("3330987654");
+		pPMock.setStreetName("Via di novoli");
+		pPMock.setCivicNumber("50/2");
+		pPMock.setProvince("FI");
+		pPMock.setCountry("IT");
+		pPMock.setEmail("mario@firenze.it");
+		pPMock.setPostalCode("50100");
+		// payment position properties
+		pPMock.setIupd("12345678901IUPDMOCK4");
+		pPMock.setCompanyName("Comune di Firenze");
+		pPMock.setOfficeName("Ufficio tributario");
+		pPMock.addPaymentOptions(createPaymentOptionsMock4());
+		// La validity date è minore della current date
+		pPMock.setValidityDate(LocalDateTime.now(ZoneOffset.UTC).minus(1, ChronoUnit.DAYS));
 
 		return pPMock;
 	}

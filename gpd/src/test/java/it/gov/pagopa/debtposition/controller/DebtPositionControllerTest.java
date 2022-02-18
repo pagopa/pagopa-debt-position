@@ -89,8 +89,17 @@ class DebtPositionControllerTest {
 	@Test
 	void createDebtPosition_Retention_400() throws Exception {
 		// provo a creare una posizione debitoria dove la retention date è minore della due_date
-		mvc.perform(post("/organizations/400_Amount_12345678901/debtpositions")
+		mvc.perform(post("/organizations/400_Retention_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.get400Mock5())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON));
+
+	}
+	
+	@Test
+	void createDebtPosition_Validity_400() throws Exception {
+		// provo a creare una posizione debitoria dove la retention date è minore della due_date
+		mvc.perform(post("/organizations/400_Validity_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.get400Mock6())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON));
 
 	}
