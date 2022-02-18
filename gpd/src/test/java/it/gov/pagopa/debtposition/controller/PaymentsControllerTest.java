@@ -574,6 +574,103 @@ class PaymentsControllerTest {
 				.value(PaymentOptionStatus.PO_PAID.toString()));
 	}
 	
+	@Test
+	void reportTransfer_409() throws Exception {
+		// creo una posizione debitoria (senza 'validity date' impostata) con una sola PO e isPartialPayment=false
+		mvc.perform(post("/organizations/REPORT_409_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated());
+
+		// porto in pubblicata/validata lo stato della posizione debitoria
+		mvc.perform(post("/organizations/REPORT_409_12345678901/debtpositions/12345678901IUPDMOCK1/publish")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+
+		// recupero l'intera posizione debitoria e verifico lo stato in paid
+		mvc.perform(get("/organizations/REPORT_409_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.VALID.toString()));
+
+		// effettuo la rendicontazione per l'unica transazione della PO ma senza pagamenti in essere 
+		mvc.perform(post("/organizations/REPORT_409_12345678901/paymentoptions/123456IUVMOCK1/transfers/id_1/report")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isConflict());
+		
+	}
+	
+	@Test
+	void reportTransfer_Multiple_409() throws Exception {
+		// creo una posizione debitoria (senza 'validity date' impostata) con più opzioni di pagamento
+		mvc.perform(post("/organizations/REPORT_Multiple_409_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated());
+
+		// porto in pubblicata/validata lo stato della posizione debitoria
+		mvc.perform(post("/organizations/REPORT_Multiple_409_12345678901/debtpositions/12345678901IUPDMULTIPLEMOCK2/publish")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+		
+		// effettuo la notifica di pagamento della rata unica (setIsPartialPayment = false) e verifico lo stato in paid
+		mvc.perform(post("/organizations/REPORT_Multiple_409_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/pay")
+				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMULTIPLEMOCK3"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(PaymentOptionStatus.PO_PAID.toString()));
+		
+		// recupero l'intera posizione debitoria e verifico lo stato in paid
+		mvc.perform(get("/organizations/REPORT_Multiple_409_12345678901/debtpositions/12345678901IUPDMULTIPLEMOCK2")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.PAID.toString()));
+		
+		// effettuo la rendicontazione per l'unica transazione della PO
+		mvc.perform(post("/organizations/REPORT_Multiple_409_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/transfers/id_3/report")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(TransferStatus.T_REPORTED.toString()));
+		
+		//recupero la PO e verifico lo stato in PO_REPORTED
+		String url = "/organizations/REPORT_Multiple_409_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3";
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(PaymentOptionStatus.PO_REPORTED.toString()));
+		
+		//provo a rendicontare nuovamente la transazione già rendicontata
+		mvc.perform(post("/organizations/REPORT_Multiple_409_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/transfers/id_3/report")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isConflict());
+	}
+	
+	@Test
+	void reportTransfer_404() throws Exception {
+		// creo una posizione debitoria (senza 'validity date' impostata) con più opzioni di pagamento
+		mvc.perform(post("/organizations/REPORT_Multiple_404_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated());
+		
+		// porto in pubblicata/validata lo stato della posizione debitoria
+		mvc.perform(post("/organizations/REPORT_Multiple_404_12345678901/debtpositions/12345678901IUPDMULTIPLEMOCK2/publish")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+		
+		// effettuo la notifica di pagamento della rata unica (setIsPartialPayment = false) e verifico lo stato in paid
+		mvc.perform(post("/organizations/REPORT_Multiple_404_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/pay")
+				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMULTIPLEMOCK3"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(PaymentOptionStatus.PO_PAID.toString()));
+
+		// provo a rendicontare una transazione che non esiste
+		mvc.perform(post("/organizations/REPORT_Multiple_404_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/transfers/id_x/report")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
+		
+	}
+
+	
 
 
 }
