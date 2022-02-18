@@ -179,38 +179,38 @@ public class DebtPositionValidation {
     }
     
     private static void checkTransferAccountable(PaymentPosition ppToReport, String iuv, String transferId) {
-    	Optional<PaymentOption> poToReport = ppToReport.getPaymentOption().stream().filter(po -> po.getIuv().equals(iuv)).findFirst();
-    	if (poToReport.isEmpty()) {
-    		log.error ("Obtained unexpected empty payment option - ["
+    	PaymentOption poToReport = ppToReport.getPaymentOption().stream().filter(po -> po.getIuv().equals(iuv)).findFirst()
+    			.orElseThrow(() -> {
+    				log.error ("Obtained unexpected empty payment option - ["
     				+ String.format(LOG_BASE_PARAMS_DETAIL, 
     						ppToReport.getOrganizationFiscalCode(), 
     						ppToReport.getIupd(),
     						iuv
                             )
-					+ "]");
-			throw new AppException(AppError.TRANSFER_REPORTING_FAILED, ppToReport.getOrganizationFiscalCode(), iuv, transferId);
-		}
+    				+ "]");
+    				throw new AppException(AppError.TRANSFER_REPORTING_FAILED, ppToReport.getOrganizationFiscalCode(), iuv, transferId);
+    				});
     	
-    	if (!poToReport.get().getStatus().equals(PaymentOptionStatus.PO_PAID) && !poToReport.get().getStatus().equals(PaymentOptionStatus.PO_PARTIALLY_REPORTED)) {
-    		throw new AppException(AppError.TRANSFER_NOT_ACCOUNTABLE, poToReport.get().getOrganizationFiscalCode(), iuv, transferId);
+    	if (!poToReport.getStatus().equals(PaymentOptionStatus.PO_PAID) && !poToReport.getStatus().equals(PaymentOptionStatus.PO_PARTIALLY_REPORTED)) {
+    		throw new AppException(AppError.TRANSFER_NOT_ACCOUNTABLE, poToReport.getOrganizationFiscalCode(), iuv, transferId);
     	}
     	
-    	Optional<Transfer> transferToReport = poToReport.get().getTransfer().stream().filter(t -> t.getIdTransfer().equals(transferId)).findFirst();
+    	Transfer transferToReport = poToReport.getTransfer().stream().filter(t -> t.getIdTransfer().equals(transferId)).findFirst()
+    			.orElseThrow(() -> {
+    				log.error ("Obtained unexpected empty transfer - ["
+    	    				+ String.format(LOG_BASE_PARAMS_DETAIL, 
+    	    						ppToReport.getOrganizationFiscalCode(), 
+    	    						ppToReport.getIupd(),
+    	    						iuv
+    	                            )
+    						+ "idTransfer= "+transferId
+    						+ "]");
+    				throw new AppException(AppError.TRANSFER_REPORTING_FAILED, ppToReport.getOrganizationFiscalCode(), iuv, transferId);
+    			});
     	
-    	if (transferToReport.isEmpty()) {
-    		log.error ("Obtained unexpected empty transfer - ["
-    				+ String.format(LOG_BASE_PARAMS_DETAIL, 
-    						ppToReport.getOrganizationFiscalCode(), 
-    						ppToReport.getIupd(),
-    						iuv
-                            )
-					+ "idTransfer= "+transferId
-					+ "]");
-			throw new AppException(AppError.TRANSFER_REPORTING_FAILED, ppToReport.getOrganizationFiscalCode(), iuv, transferId);
-		}
     	
-    	if (!transferToReport.get().getStatus().equals(TransferStatus.T_UNREPORTED)) {
-    		throw new AppException(AppError.TRANSFER_NOT_ACCOUNTABLE, poToReport.get().getOrganizationFiscalCode(), iuv, transferId);
+    	if (!transferToReport.getStatus().equals(TransferStatus.T_UNREPORTED)) {
+    		throw new AppException(AppError.TRANSFER_NOT_ACCOUNTABLE, transferToReport.getOrganizationFiscalCode(), iuv, transferId);
     	}
     	
     }
