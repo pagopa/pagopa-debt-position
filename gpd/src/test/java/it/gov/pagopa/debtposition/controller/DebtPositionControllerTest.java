@@ -76,6 +76,15 @@ class DebtPositionControllerTest {
 				.content(TestUtil.toJson(DebtPositionMock.get400Mock2())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON));
 	}
+	
+	@Test
+	void createDebtPosition_Amount_400() throws Exception {
+		// provo a creare una posizione debitoria dove l'amount previsto per la PO differisce da quello del transfer
+		mvc.perform(post("/organizations/400_Amount_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.get400Mock4())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON));
+
+	}
 
 	@Test
 	void createDebtPosition_409() throws Exception {

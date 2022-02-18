@@ -51,6 +51,10 @@ public class DebtPositionMock {
 		return createPaymentPosition400Mock3();
 	}
 	
+	public final static PaymentPositionDTO get400Mock4() {
+		return createPaymentPosition400Mock4();
+	}
+	
 	public final static PaymentOptionDTO getPayPO400Mock1() {
 		return createPayForPaymentOption400Mock1();
 	}
@@ -172,6 +176,29 @@ public class DebtPositionMock {
 		pPMock.setCompanyName("Comune di Firenze");
 		pPMock.setOfficeName("Ufficio tributario");
 		pPMock.addPaymentOptions(createPaymentOptionsMock2());
+
+		return pPMock;
+	}
+	
+	public static PaymentPositionDTO createPaymentPosition400Mock4() {
+
+		PaymentPositionDTO pPMock = new PaymentPositionDTO();
+		// debtor properties
+		pPMock.setFiscalCode("MRDPLL54H17D542L");
+		pPMock.setType(Type.F);
+		pPMock.setFullName("Mario Rossi");
+		pPMock.setPhone("3330987654");
+		pPMock.setStreetName("Via di novoli");
+		pPMock.setCivicNumber("50/2");
+		pPMock.setProvince("FI");
+		pPMock.setCountry("IT");
+		pPMock.setEmail("mario@firenze.it");
+		pPMock.setPostalCode("50100");
+		// payment position properties
+		pPMock.setIupd("12345678901IUPDMOCK4");
+		pPMock.setCompanyName("Comune di Firenze");
+		pPMock.setOfficeName("Ufficio tributario");
+		pPMock.addPaymentOptions(createPaymentOptionsMock3());
 
 		return pPMock;
 	}
@@ -327,6 +354,20 @@ public class DebtPositionMock {
 		return pOMock;
 	}
 	
+	public static PaymentOptionDTO createPaymentOptionsMock3() {
+
+		PaymentOptionDTO pOMock = new PaymentOptionDTO();
+		// la PO ha un amount diverso dal trasfer associato
+		pOMock.setAmount(1000);
+		pOMock.setIuv("123456IUVMOCK3");
+		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
+		pOMock.setIsPartialPayment(Boolean.FALSE);
+		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
+		pOMock.addTransfers(createTransfersMock2()); 
+
+		return pOMock;
+	}
+	
 	public static PaymentOptionDTO createPaymentOptions_Min_Due_Date_Mock1() {
 
 		PaymentOptionDTO pOMock = new PaymentOptionDTO();
@@ -466,6 +507,18 @@ public class DebtPositionMock {
 		tMock.setIdTransfer("id_1");
 		tMock.setIban("IT75I0306902887100000300015");
 		tMock.setAmount(1000);
+		tMock.setRemittanceInformation("causale mock 1");
+		tMock.setCategory("10/22252/20");
+		tMock.setPostalIban("IT82E0760113600000000118547");
+
+		return tMock;
+	}
+	
+	public static TransferDTO createTransfersMock2() {
+		TransferDTO tMock = new TransferDTO();
+		tMock.setIdTransfer("id_1");
+		tMock.setIban("IT75I0306902887100000300015");
+		tMock.setAmount(10);
 		tMock.setRemittanceInformation("causale mock 1");
 		tMock.setCategory("10/22252/20");
 		tMock.setPostalIban("IT82E0760113600000000118547");
