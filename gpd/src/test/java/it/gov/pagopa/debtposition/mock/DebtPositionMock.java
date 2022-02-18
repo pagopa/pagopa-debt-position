@@ -305,6 +305,7 @@ public class DebtPositionMock {
 		pOMock.setAmount(1000);
 		pOMock.setIuv("123456IUVMOCK1");
 		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.SECONDS));
+		pOMock.setRetentionDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
 		pOMock.setIsPartialPayment(Boolean.FALSE);
 		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
 		pOMock.addTransfers(createTransfersMock1()); 
