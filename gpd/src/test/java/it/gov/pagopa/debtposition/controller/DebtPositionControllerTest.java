@@ -135,6 +135,29 @@ class DebtPositionControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[*].iuv")
 				.value(Matchers.hasSize(3)));
 	}
+	
+	@Test
+	void getDebtPositionListOrdered() throws Exception {
+		// creo due posizioni debitorie e le recupero
+		mvc.perform(post("/organizations/LIST_ORDERED_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.getMock2())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated());
+
+		mvc.perform(post("/organizations/LIST_ORDERED_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated());
+
+		String url = "/organizations/LIST_ORDERED_12345678901/debtpositions?page=0&orderby=INSERTED_DATE&ordering=DESC";
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(2)))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].iupd").value("12345678901IUPDMULTIPLEMOCK2"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].iupd").value("12345678901IUPDMULTIPLEMOCK1"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[*].iuv")
+				.value(Matchers.hasSize(3)))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[*].iuv")
+				.value(Matchers.hasSize(2)));
+	}
 
 	@Test
 	void getDebtPositionListDueDateBetween() throws Exception {
