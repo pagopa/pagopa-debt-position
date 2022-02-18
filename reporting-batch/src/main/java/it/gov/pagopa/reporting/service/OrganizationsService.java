@@ -44,12 +44,12 @@ public class OrganizationsService {
         this.logger.info("Processing organization list");
 
         // create table
-//        try {
-//            createTable();
-//        } catch (Exception e) {
-//            this.logger.severe(String.format("[OrganizationsService] Problem to retrieve organization list: %s", e.getLocalizedMessage()));
-//            return new ArrayList<>();
-//        }
+        try {
+            createTable();
+        } catch (Exception e) {
+            this.logger.severe(String.format("[OrganizationsService] Problem to retrieve organization list: %s", e.getLocalizedMessage()));
+            return new ArrayList<>();
+        }
 
         try {
             createQueue();
@@ -57,6 +57,7 @@ public class OrganizationsService {
             this.logger.severe(String.format("[OrganizationsService] Problem to retrieve organization list: %s", e.getLocalizedMessage()));
             e.printStackTrace();
         }
+
         // create batch partition due to max batch size of Azure Table Storage - 100
         List<List<String>> addOrganizationList = Lists.partition(organizations.getAdd(), batchSize);
         List<List<String>> deleteOrganizationList = Lists.partition(organizations.getDelete(), batchSize);
