@@ -48,5 +48,5 @@ if __name__ == "__main__":
     port = int(default_port)
     app = make_app()
     app.listen(port)
-    print("running...")
+    print("gdp running...")
     tornado.ioloop.IOLoop.current().start()
