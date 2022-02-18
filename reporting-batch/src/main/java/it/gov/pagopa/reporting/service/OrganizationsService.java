@@ -128,7 +128,9 @@ public class OrganizationsService {
         // Create a new table
         CloudTable table = CloudStorageAccount.parse(storageConnectionString)
                 .createCloudTableClient().getTableReference(this.organizationsTable);
-        table.createIfNotExists();
+        if (!table.exists()) {
+            table.createIfNotExists();
+        }
     }
 
     private void createQueue() throws URISyntaxException, InvalidKeyException, StorageException {
