@@ -69,7 +69,7 @@ public class RetrieveFlows {
                     }));
 
         } catch (JsonProcessingException e) {
-            this.logger.log(Level.SEVERE, () -> "[RetrieveOrganizationsTrigger]  Error " + e.getLocalizedMessage());
+            logger.log(Level.SEVERE, () -> "[RetrieveOrganizationsTrigger]  Error " + e.getLocalizedMessage());
         }
 
     }
