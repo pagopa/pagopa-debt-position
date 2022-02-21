@@ -681,8 +681,6 @@ class PaymentsControllerTest {
 	 *  VALIDATION TEST - unexpected case
 	 */
 	
-	
-
 	@Test
 	void ValidationError_checkPaymentPositionOpen() throws Exception {
 		try {
@@ -698,7 +696,7 @@ class PaymentsControllerTest {
 			assertTrue(true);
 		}
 		catch(Exception e) {
-			fail("Not the expected exception");
+			fail("Not the expected exception: "+e.getMessage());
 		}
 	}
 	
@@ -718,7 +716,7 @@ class PaymentsControllerTest {
 			assertTrue(true);
 		}
 		catch(Exception e) {
-			fail("Not the expected exception");
+			fail("Not the expected exception: "+e.getMessage());
 		}
 	}
 	
@@ -741,10 +739,8 @@ class PaymentsControllerTest {
 			assertTrue(true);
 		}
 		catch(Exception e) {
-			fail("Not the expected exception");
+			fail("Not the expected exception: "+e.getMessage());
 		}
 	}
 	
-
-
 }
