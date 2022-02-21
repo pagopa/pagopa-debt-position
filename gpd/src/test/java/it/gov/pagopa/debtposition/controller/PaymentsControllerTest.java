@@ -681,8 +681,6 @@ class PaymentsControllerTest {
 	 *  VALIDATION TEST - unexpected case
 	 */
 	
-	
-
 	@Test
 	void ValidationError_checkPaymentPositionOpen() throws Exception {
 		try {
