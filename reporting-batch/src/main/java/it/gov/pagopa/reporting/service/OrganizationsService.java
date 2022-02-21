@@ -156,7 +156,7 @@ public class OrganizationsService {
     }
 
     // Organizations table
-    private void addOrganizationList(List<String> organizations) throws URISyntaxException, InvalidKeyException, StorageException {
+    public void addOrganizationList(List<String> organizations) throws URISyntaxException, InvalidKeyException, StorageException {
         this.logger.info("Processing add organization list");
 
         CloudTable table = CloudStorageAccount.parse(storageConnectionString)
@@ -180,7 +180,7 @@ public class OrganizationsService {
         table.execute(TableOperation.insert(new OrganizationEntity(organization, LocalDateTime.now().toString())));
     }
 
-    private void deleteOrganizationList(List<String> organizations) throws URISyntaxException, InvalidKeyException, StorageException {
+    public void deleteOrganizationList(List<String> organizations) throws URISyntaxException, InvalidKeyException, StorageException {
         this.logger.info("Processing delete organization list");
 
         CloudTable table = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
