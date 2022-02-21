@@ -745,6 +745,4 @@ class PaymentsControllerTest {
 		}
 	}
 	
-
-
 }
