@@ -696,7 +696,7 @@ class PaymentsControllerTest {
 			assertTrue(true);
 		}
 		catch(Exception e) {
-			fail("Not the expected exception");
+			fail("Not the expected exception: "+e.getMessage());
 		}
 	}
 	
