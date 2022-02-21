@@ -1153,6 +1153,7 @@
 									"    const responseJson = pm.response.json();",
 									"    pm.expect(responseJson.paymentOption).to.have.lengthOf(3);",
 									"    pm.expect(responseJson.iupd).to.eql(pm.globals.get(\"iupd_saved_multi\"));",
+									"    pm.expect(responseJson.status).to.eql(\"PAID\");",
 									"    for (var i = 0; i < responseJson.paymentOption.length; i++) {",
 									"        if (responseJson.paymentOption[i].iuv == pm.globals.get(\"iuv_saved_multi_total\")){",
 									"            pm.expect(responseJson.paymentOption[i].isPartialPayment).to.eql(false);",
@@ -1165,6 +1166,111 @@
 									"        else if (responseJson.paymentOption[i].iuv == pm.globals.get(\"iuv_saved_multi_partial_2\")){",
 									"            pm.expect(responseJson.paymentOption[i].isPartialPayment).to.eql(true);",
 									"            pm.expect(responseJson.paymentOption[i].status).to.eql(\"PO_PARTIALLY_REPORTED\");",
+									"        }",
+									"    }",
+									"    ",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved_multi}}/debtpositions/{{iupd_saved_multi}}",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved_multi}}",
+								"debtpositions",
+								"{{iupd_saved_multi}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "reportTransfer_partial_2_txid6",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response properties\", () => {",
+									"    //parse the response JSON and test properties",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.status).to.eql(\"T_REPORTED\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved_multi}}/paymentoptions/{{iuv_saved_multi_partial_2}}/transfers/{{txid_saved_6}}/report",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved_multi}}",
+								"paymentoptions",
+								"{{iuv_saved_multi_partial_2}}",
+								"transfers",
+								"{{txid_saved_6}}",
+								"report"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getPositionByIUPD_Check_Transfer_Reported_2 Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response properties\", () => {",
+									"    //parse the response JSON and test three properties",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.paymentOption).to.have.lengthOf(3);",
+									"    pm.expect(responseJson.iupd).to.eql(pm.globals.get(\"iupd_saved_multi\"));",
+									"    pm.expect(responseJson.status).to.eql(\"REPORTED\");",
+									"    for (var i = 0; i < responseJson.paymentOption.length; i++) {",
+									"        if (responseJson.paymentOption[i].iuv == pm.globals.get(\"iuv_saved_multi_total\")){",
+									"            pm.expect(responseJson.paymentOption[i].isPartialPayment).to.eql(false);",
+									"            pm.expect(responseJson.paymentOption[i].status).to.eql(\"PO_UNPAID\");",
+									"        }",
+									"        else if (responseJson.paymentOption[i].iuv == pm.globals.get(\"iuv_saved_multi_partial_1\")){",
+									"            pm.expect(responseJson.paymentOption[i].isPartialPayment).to.eql(true);",
+									"            pm.expect(responseJson.paymentOption[i].status).to.eql(\"PO_REPORTED\");",
+									"        }",
+									"        else if (responseJson.paymentOption[i].iuv == pm.globals.get(\"iuv_saved_multi_partial_2\")){",
+									"            pm.expect(responseJson.paymentOption[i].isPartialPayment).to.eql(true);",
+									"            pm.expect(responseJson.paymentOption[i].status).to.eql(\"PO_REPORTED\");",
 									"        }",
 									"    }",
 									"    ",

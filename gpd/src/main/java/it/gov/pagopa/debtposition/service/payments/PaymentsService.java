@@ -175,11 +175,28 @@ public class PaymentsService {
 			
 		}
 		
+		this.setPaymentPositionStatus(pp);
 		pp.setLastUpdatedDate(currentDate);
 		// salvo l'aggiornamento della rendicontazione
 		paymentPositionRepository.saveAndFlush(pp);
 		
 		return reportedTransfer;
 	}
+	
+	private void setPaymentPositionStatus(PaymentPosition pp) {
+		//numero totale delle PO con pagamento in unica rata in stato PO_REPORTED
+		long numberPOReportedNoPartial = pp.getPaymentOption().stream().filter(
+				po -> (po.getStatus().equals(PaymentOptionStatus.PO_REPORTED) && Boolean.FALSE.equals(po.getIsPartialPayment()))).count();
+		//numero totale delle PO rateizzate
+		long totalNumberPartialPO = pp.getPaymentOption().stream().filter(po -> Boolean.TRUE.equals(po.getIsPartialPayment())).count();
+		//numero delle PO rateizzate in stato PO_REPORTED  
+		long numberPOReportedPartial = pp.getPaymentOption().stream().filter(po -> (po.getStatus().equals(PaymentOptionStatus.PO_REPORTED) && Boolean.TRUE.equals(po.getIsPartialPayment()))).count();
+	
+		if (numberPOReportedNoPartial > 0 || totalNumberPartialPO == numberPOReportedPartial) {
+			pp.setStatus(DebtPositionStatus.REPORTED);
+		}
+
+	}
+
 
 }
