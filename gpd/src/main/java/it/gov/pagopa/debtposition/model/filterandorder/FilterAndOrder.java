@@ -10,6 +10,7 @@ import lombok.Getter;
 @Builder
 @NotNull
 public class FilterAndOrder {
+	
     @NotNull
     @Valid
     private Filter filter;
