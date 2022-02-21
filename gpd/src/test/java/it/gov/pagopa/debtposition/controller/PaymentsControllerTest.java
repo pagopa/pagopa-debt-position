@@ -23,7 +23,6 @@ import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.mock.DebtPositionMock;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
@@ -693,49 +692,6 @@ class PaymentsControllerTest {
 			localMockPO.setIsPartialPayment(false);
 			localMockPP.addPaymentOption(localMockPO);
 			DebtPositionValidation.checkPaymentPositionPayability(localMockPP, "mockIUV");
-		}
-		catch (AppException e) {
-			assertTrue(true);
-		}
-		catch(Exception e) {
-			fail("Not the expected exception");
-		}
-	}
-	
-	@Test
-	void ValidationError_checkPaymentPositionAccountability_PO() throws Exception {
-		try {
-			PaymentOption localMockPO = new PaymentOption();
-			PaymentPosition localMockPP = new PaymentPosition();
-			localMockPP.setStatus(DebtPositionStatus.PAID);
-			localMockPO.setStatus(PaymentOptionStatus.PO_PAID);
-			localMockPO.setIsPartialPayment(false);
-			localMockPO.setIuv("iuv");
-			localMockPP.addPaymentOption(localMockPO);
-			DebtPositionValidation.checkPaymentPositionAccountability(localMockPP, "mockIUV","mockTxID");
-		}
-		catch (AppException e) {
-			assertTrue(true);
-		}
-		catch(Exception e) {
-			fail("Not the expected exception");
-		}
-	}
-	
-	@Test
-	void ValidationError_checkPaymentPositionAccountability_Transfer() throws Exception {
-		try {
-			PaymentOption localMockPO = new PaymentOption();
-			PaymentPosition localMockPP = new PaymentPosition();
-			Transfer localTransfer = new Transfer();
-			localMockPP.setStatus(DebtPositionStatus.PAID);
-			localMockPO.setStatus(PaymentOptionStatus.PO_PAID);
-			localTransfer.setIdTransfer("Txid");
-			localMockPO.addTransfer(localTransfer);
-			localMockPO.setIsPartialPayment(false);
-			localMockPO.setIuv("mockIUV");
-			localMockPP.addPaymentOption(localMockPO);
-			DebtPositionValidation.checkPaymentPositionAccountability(localMockPP, "mockIUV","mockTxID");
 		}
 		catch (AppException e) {
 			assertTrue(true);
