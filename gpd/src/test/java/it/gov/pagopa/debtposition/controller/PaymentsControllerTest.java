@@ -742,5 +742,4 @@ class PaymentsControllerTest {
 			fail("Not the expected exception: "+e.getMessage());
 		}
 	}	
-	
 }
