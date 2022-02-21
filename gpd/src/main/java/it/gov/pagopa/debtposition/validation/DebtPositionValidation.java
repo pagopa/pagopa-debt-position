@@ -3,7 +3,6 @@ package it.gov.pagopa.debtposition.validation;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
@@ -145,25 +144,25 @@ public class DebtPositionValidation {
 	}
     
     private static void checkPaymentOptionPayable(PaymentPosition ppToPay, String iuv) {
-    	Optional<PaymentOption> poToPay = ppToPay.getPaymentOption().stream().filter(po -> po.getIuv().equals(iuv)).findFirst();
-    	if (poToPay.isEmpty()) {
-    		log.error ("Obtained unexpected empty payment option - ["
-    				+ String.format(LOG_BASE_PARAMS_DETAIL, 
-    						ppToPay.getOrganizationFiscalCode(), 
-    						ppToPay.getIupd(),
-    						iuv
-                            )
-					+ "]");
-			throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, ppToPay.getOrganizationFiscalCode(), iuv);
-		}
+    	PaymentOption poToPay = ppToPay.getPaymentOption().stream().filter(po -> po.getIuv().equals(iuv)).findFirst()
+    			.orElseThrow(() -> {
+    				log.error ("Obtained unexpected empty payment option - ["
+    	    				+ String.format(LOG_BASE_PARAMS_DETAIL, 
+    	    						ppToPay.getOrganizationFiscalCode(), 
+    	    						ppToPay.getIupd(),
+    	    						iuv
+    	                            )
+    						+ "]");
+    				throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, ppToPay.getOrganizationFiscalCode(), iuv);
+    			});
     	
-    	if (!poToPay.get().getStatus().equals(PaymentOptionStatus.PO_UNPAID)) {
-    		throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, poToPay.get().getOrganizationFiscalCode(), iuv);
+    	if (!poToPay.getStatus().equals(PaymentOptionStatus.PO_UNPAID)) {
+    		throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, poToPay.getOrganizationFiscalCode(), iuv);
     	}
     	
     	// se la posizione debitoria è già in PARTIALLY_PAID e sto provando a pagare una payment option non rateizzata (isPartialPayment = false)
-    	if (ppToPay.getStatus().equals(DebtPositionStatus.PARTIALLY_PAID) && Boolean.FALSE.equals(poToPay.get().getIsPartialPayment())){
-    		throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, poToPay.get().getOrganizationFiscalCode(), iuv);
+    	if (ppToPay.getStatus().equals(DebtPositionStatus.PARTIALLY_PAID) && Boolean.FALSE.equals(poToPay.getIsPartialPayment())){
+    		throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, poToPay.getOrganizationFiscalCode(), iuv);
     	}
     	
 	}
@@ -189,7 +188,7 @@ public class DebtPositionValidation {
                             )
     				+ "]");
     				throw new AppException(AppError.TRANSFER_REPORTING_FAILED, ppToReport.getOrganizationFiscalCode(), iuv, transferId);
-    				});
+    			});
     	
     	if (!poToReport.getStatus().equals(PaymentOptionStatus.PO_PAID) && !poToReport.getStatus().equals(PaymentOptionStatus.PO_PARTIALLY_REPORTED)) {
     		throw new AppException(AppError.TRANSFER_NOT_ACCOUNTABLE, poToReport.getOrganizationFiscalCode(), iuv, transferId);
