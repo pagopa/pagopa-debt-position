@@ -226,14 +226,14 @@ public class OrganizationsService {
                     queue.addMessage(new CloudQueueMessage(message));
 
                 } catch (JsonProcessingException | StorageException e) {
-                    e.printStackTrace();
+                    this.logger.log(Level.SEVERE, () -> "[OrganizationsService]  Error " + e.getLocalizedMessage());
                 }
 
             });
 
         } catch (URISyntaxException | StorageException | InvalidKeyException e) {
             this.logger.severe(String.format("[OrganizationsService] Problem to addToOrganizationsQueue"));
-            e.printStackTrace();
+            this.logger.log(Level.SEVERE, () -> "[OrganizationsService]  Error " + e.getLocalizedMessage());
         }
 
 
