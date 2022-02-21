@@ -26,13 +26,11 @@ public class GPDService {
     public Organizations getOrganizations(LocalDate since) {
         String sinceDate = since.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy"));
 
-        Organizations response = ClientBuilder.newClient()
+        return  ClientBuilder.newClient()
                 .target(gpdHost + gpdOrganizationsService)
                 .queryParam("since", sinceDate)
                 .request()
                 .accept(MediaType.APPLICATION_JSON)
                 .get(Organizations.class);
-
-        return response;
     }
 }

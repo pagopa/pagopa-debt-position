@@ -58,7 +58,7 @@ public class OrganizationsServiceTest {
 
 
   @Test
-  void processOrganizationListExTest() throws Exception {
+  void processOrganizationListExAddTest() throws Exception {
 
     OrganizationsService organizationsService = Mockito.spy(
             new OrganizationsService(
@@ -86,6 +86,52 @@ public class OrganizationsServiceTest {
             new StorageExtendedErrorInformation(), null)).when(organizationsService).addOrganizationList(any());
     doThrow(new TableServiceException("InvalidDuplicateRow", "message InvalidDuplicateRow", 400,
             new StorageExtendedErrorInformation(), null)).when(organizationsService).addOrganization(any());
+
+    //doNothing().when(organizationsService).processOrganizationList(any());
+
+    /**
+     * Test
+     */
+    organizationsService.processOrganizationList(orgs);
+
+    /**
+     * Asserts
+     */
+    verify(organizationsService, times(2)).addOrganizationList(any());
+    verify(organizationsService, times(1)).deleteOrganizationList(any());
+
+
+  }
+
+  @Test
+  void processOrganizationListExDelTest() throws Exception {
+
+    OrganizationsService organizationsService = Mockito.spy(
+            new OrganizationsService(
+                    "connectionStringMock",
+                    "tableMock",
+                    "queueMock",
+                    Logger.getLogger("testlogging")));
+
+    Organizations orgs = new Organizations();
+
+    List<String> added = new ArrayList<>();
+    added.add("90000000001");
+    added.add("90000000002");
+    added.add("90000000003");
+    orgs.setAdd(added);
+    List<String> deleted = new ArrayList<>();
+    deleted.add("90000000004");
+    deleted.add("90000000005");
+    orgs.setDelete(deleted);
+
+    /**
+     * Precondition
+     */
+    doThrow(new TableServiceException("InvalidDuplicateRow", "message InvalidDuplicateRow", 400,
+            new StorageExtendedErrorInformation(), null)).when(organizationsService).deleteOrganizationList(any());
+    doThrow(new TableServiceException("InvalidDuplicateRow", "message InvalidDuplicateRow", 400,
+            new StorageExtendedErrorInformation(), null)).when(organizationsService).deleteOrganization(any());
 
     //doNothing().when(organizationsService).processOrganizationList(any());
 
