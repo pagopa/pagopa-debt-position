@@ -4,44 +4,36 @@ import sys
 import tornado.ioloop
 import tornado.web
 import fixtures as msg
+from tornado.log import enable_pretty_logging
+enable_pretty_logging()
 
-
-class nodoChiediElencoFlussiRendicontazioneHandler(tornado.web.RequestHandler):
+class nodoHandler(tornado.web.RequestHandler):
     """
     POST https://api.platform.pagopa.it/nodo/nodo-per-pa/v1 HTTP/1.1
     Host: api.platform.pagopa.it
     Content-Type: text/xml
-    SOAPAction: "nodoChiediElencoFlussiRendicontazione"
+    : "nodoChiediElencoFlussiRendicontazione" or SOAPAction: "nodoChiediFlussoRendicontazione"
     """
     def set_default_headers(self):
-        self.set_header("Content-Type", 'application/xml')
+        self.set_header("Content-Type", 'text/xml')
 
     def post(self):
-        print("request received")
-        # self.write(json.dumps(msg.nodoChiediElencoFlussiRendicontazione))
-        self.write(msg.nodoChiediElencoFlussiRendicontazione)
-
-
-class nodoChiediFlussoRendicontazioneHandler(tornado.web.RequestHandler):
-    """
-    POST https://api.uat.platform.pagopa.it/nodo/nodo-per-pa/v1 HTTP/1.1
-    Host: api.uat.platform.pagopa.it
-    Content-Type: text/xml
-    SOAPAction: "nodoChiediFlussoRendicontazione"
-    """
-    def set_default_headers(self):
-        self.set_header("Content-Type", 'application/xml')
-
-    def post(self):
-        print("request received")
-        # self.write(json.dumps(msg.nodoChiediFlussoRendicontazione))
-        self.write(msg.nodoChiediFlussoRendicontazione)
+        print("request received nodoHandler")
+        print(f"{self.request}{self.request.body.decode()}\n {self.request.headers['SOAPAction']}")
+        if self.request.headers['SOAPAction'] == '"nodoChiediElencoFlussiRendicontazione"':
+            print(f"sent {msg.nodoChiediElencoFlussiRendicontazione}")
+            self.write(msg.nodoChiediElencoFlussiRendicontazione)
+        elif self.request.headers['SOAPAction'] == '"nodoChiediFlussoRendicontazione"':
+            print(f"sent {msg.nodoChiediFlussoRendicontazione}")
+            self.write(msg.nodoChiediFlussoRendicontazione)
+        else :
+            print(f"sent 500 error")
+            self.write_error(500)
 
 
 def make_app():
     return tornado.web.Application([
-        (r"/nodo-per-pa/v1/nodoChiediFlussoRendicontazione", nodoChiediFlussoRendicontazioneHandler),
-        (r"/nodo-per-pa/v1/nodoChiediElencoFlussiRendicontazione", nodoChiediElencoFlussiRendicontazioneHandler),
+        (r"/nodo-per-pa/v1", nodoHandler)
     ])
 
 

@@ -866,8 +866,7 @@
   </wsdl:binding>
   <wsdl:service name="PagamentiTelematiciRPTservice">
     <wsdl:port name="PagamentiTelematiciRPTPort" binding="tns:PagamentiTelematiciRPTbinding">
-      <soap:address location="https://gad.test.pagopa.gov.it/openspcoop2/proxy/PA/RPT6T/" />
-
+      <soap:address location="http://localhost:8086/nodo-per-pa/v1" />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>
