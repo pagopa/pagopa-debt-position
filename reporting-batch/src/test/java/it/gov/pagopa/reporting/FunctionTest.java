@@ -36,10 +36,10 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class FunctionTest {
+class RetrieveFlowsTest {
 
     @Spy
-    Function function;
+    RetrieveFlows function;
 
     @Mock
     ExecutionContext context;

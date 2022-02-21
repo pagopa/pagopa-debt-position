@@ -2,7 +2,25 @@
 
 numero_pagamenti=100
 
-nodoChiediElencoFlussiRendicontazione=f'nodoChiediElencoFlussiRendicontazione-{numero_pagamenti}'
+nodoChiediElencoFlussiRendicontazione=f'''<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ppt="http://ws.pagamenti.telematici.gov/" xmlns:tns="http://NodoPagamentiSPC.spcoop.gov.it/servizi/PagamentiTelematiciRPT" xmlns:ppthead="http://ws.pagamenti.telematici.gov/ppthead">
+    <soapenv:Body>
+        <ppt:nodoChiediElencoFlussiRendicontazioneRisposta>
+            <elencoFlussiRendicontazione>
+                <totRestituiti>2</totRestituiti>
+                <idRendicontazione>
+                    <identificativoFlusso>2022-01-12PPAYITR1XXX-S003101841</identificativoFlusso>
+                    <dataOraFlusso>2022-01-12T00:31:05</dataOraFlusso>
+                </idRendicontazione>
+                <idRendicontazione>
+                    <identificativoFlusso>2022-01-20PPAYITR1XXX-S003037399</identificativoFlusso>
+                    <dataOraFlusso>2022-01-20T00:30:39</dataOraFlusso>
+                </idRendicontazione>
+            </elencoFlussiRendicontazione>
+        </ppt:nodoChiediElencoFlussiRendicontazioneRisposta>
+    </soapenv:Body>
+</soapenv:Envelope>
+'''
 
 nodoChiediFlussoRendicontazione=f'''<?xml version="1.0" encoding="UTF-8" standalone="yes">
                                   <FlussoRiversamento xmlns="http://www.digitpa.gov.it/schemas/2011/Pagamenti/">

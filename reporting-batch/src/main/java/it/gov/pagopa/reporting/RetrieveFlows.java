@@ -1,21 +1,17 @@
 package it.gov.pagopa.reporting;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.QueueTrigger;
-import it.gov.pagopa.reporting.models.Organizations;
+import it.gov.pagopa.reporting.models.OrganizationsMessage;
 import it.gov.pagopa.reporting.service.FlowsService;
 import it.gov.pagopa.reporting.service.NodoChiediElencoFlussi;
-import it.gov.pagopa.reporting.servicewsdl.NodoChiediElencoFlussiRendicontazione;
-import it.gov.pagopa.reporting.servicewsdl.NodoChiediElencoFlussiRendicontazioneRisposta;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.xml.ws.ResponseWrapper;
+import it.gov.pagopa.reporting.servicewsdl.FaultBean;
+import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,6 +20,9 @@ import java.util.logging.Logger;
  */
 public class RetrieveFlows {
 
+    private String storageConnectionString = System.getenv("FLOW_SA_CONNECTION_STRING");
+    private String flowsTable = System.getenv("FLOWS_TABLE");
+    private String flowsQueue = System.getenv("FLOWS_QUEUE");
     /**
      * This function will be invoked when a new message is detected in the queue
      */
@@ -32,29 +31,45 @@ public class RetrieveFlows {
             @QueueTrigger(name = "RetrieveOrganizationsTrigger", queueName = "%ORGANIZATIONS_QUEUE%", connection = "FLOW_SA_CONNECTION_STRING") String message,
             final ExecutionContext context) {
 
-        NodoChiediElencoFlussiRendicontazione req = new NodoChiediElencoFlussiRendicontazione();
-
         Logger logger = context.getLogger();
 
-        try {
+        logger.log(Level.INFO, () -> "RetrieveFlows function executed at: " + LocalDateTime.now());
+
+        NodoChiediElencoFlussi nodeClient = this.getNodeClientInstance();
+        FlowsService flowsService = this.getFlowsServiceInstance(logger);
+
 
             logger.log(Level.INFO, () -> "[RetrieveOrganizationsTrigger START]  processed a message " + message);
 
-            //Response response = ClientBuilder.newClient()
-            Response response = new ResteasyClientBuilder().build()
-              .target("http://localhost:8086/nodo-per-pa/v1"+"/nodoChiediElencoFlussiRendicontazione")
-              .request()
-              .property("SOAPAction", "nodoChiediElencoFlussiRendicontazione")
-             .post(Entity.entity(req, MediaType.APPLICATION_XML));
+        OrganizationsMessage organizationsMessage = null;
+        try {
+            organizationsMessage = new ObjectMapper().readValue(message, OrganizationsMessage.class);
 
-            logger.log(Level.INFO, () -> "[RetrieveOrganizationsTrigger END]  processed a message " + message );
-            NodoChiediElencoFlussiRendicontazioneRisposta res = response.readEntity(NodoChiediElencoFlussiRendicontazioneRisposta.class);
-            logger.log(Level.INFO, () -> "[RetrieveOrganizationsTrigger END]  response " + res);
+            Arrays.stream(organizationsMessage.getIdPA())
+                    .forEach((organization -> {
+                        logger.log(Level.INFO, () -> "call nodoChiediElencoFlussiRendicontazione for EC : " + organization);
 
-        } catch (Exception e) {
+                        // call NODO dei pagamenti
+                        nodeClient.nodoChiediElencoFlussiRendicontazione(organization);
 
-            logger.log(Level.SEVERE, () -> "[RetrieveOrganizationsTrigger Error] Generic Error " + e.getMessage() + " "
-                    + e.getCause() + " - message " + message);
+                        // retrieve result
+                        FaultBean faultBean = nodeClient.getNodoChiediElencoFlussiRendicontazioneFault();
+
+                        TipoElencoFlussiRendicontazione elencoFlussi = nodeClient
+                                .getNodoChiediElencoFlussiRendicontazioneElencoFlussiRendicontazione();
+
+                        if (faultBean != null) {
+                            logger.log(Level.INFO, () -> "faultBean DESC " + faultBean.getDescription());
+                        } else if (elencoFlussi != null) {
+                            logger.log(Level.INFO, () -> "elencoFlussi PA " + organization + " TotRestituiti " + elencoFlussi.getTotRestituiti() );
+                            flowsService.flowsProcessing(elencoFlussi.getIdRendicontazione(), organization);
+
+                        }
+
+                    }));
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
         }
 
     }
@@ -62,4 +77,8 @@ public class RetrieveFlows {
   public NodoChiediElencoFlussi getNodeClientInstance() {
     return new NodoChiediElencoFlussi();
   }
+  public FlowsService getFlowsServiceInstance(Logger logger) {
+    return new FlowsService(this.storageConnectionString, this.flowsTable, this.flowsQueue, logger);
+    }
+
 }
