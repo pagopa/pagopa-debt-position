@@ -741,5 +741,6 @@ class PaymentsControllerTest {
 		catch(Exception e) {
 			fail("Not the expected exception: "+e.getMessage());
 		}
-	}	
+	}
+	
 }
