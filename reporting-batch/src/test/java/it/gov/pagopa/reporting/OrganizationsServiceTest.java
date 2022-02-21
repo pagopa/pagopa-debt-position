@@ -1,9 +1,6 @@
 package it.gov.pagopa.reporting;
 
-import com.microsoft.azure.storage.StorageExtendedErrorInformation;
-import com.microsoft.azure.storage.table.TableServiceException;
 import it.gov.pagopa.reporting.models.Organizations;
-import it.gov.pagopa.reporting.service.FlowsService;
 import it.gov.pagopa.reporting.service.OrganizationsService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +12,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
 
