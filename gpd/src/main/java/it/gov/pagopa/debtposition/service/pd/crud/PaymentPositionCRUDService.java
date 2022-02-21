@@ -171,6 +171,7 @@ public class PaymentPositionCRUDService {
 			ppToUpdate.setMinDueDate(minDueDate);
 			ppToUpdate.setMaxDueDate(maxDueDate);
 			ppToUpdate.setLastUpdatedDate(currentDate);
+			ppToUpdate.setPublishDate(null);
 			ppToUpdate.setStatus(DebtPositionStatus.DRAFT);
 			for (PaymentOption po : ppToUpdate.getPaymentOption()) {
 				po.setOrganizationFiscalCode(organizationFiscalCode);
