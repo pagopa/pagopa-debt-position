@@ -1,5 +1,7 @@
 package it.gov.pagopa.debtposition.controller;
 
+import static org.assertj.core.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -19,10 +21,14 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.mock.DebtPositionMock;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
+import it.gov.pagopa.debtposition.validation.DebtPositionValidation;
 
 @SpringBootTest(classes = DebtPositionApplication.class)
 @AutoConfigureMockMvc
@@ -669,7 +675,31 @@ class PaymentsControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
 		
 	}
+	
+	/**
+	 *  VALIDATION TEST - unexpected case
+	 */
+	
+	
 
+	@Test
+	void ValidationError_checkPaymentPositionOpen() throws Exception {
+		try {
+			PaymentOption localMockPO = new PaymentOption();
+			PaymentPosition localMockPP = new PaymentPosition();
+			localMockPP.setStatus(DebtPositionStatus.VALID);
+			localMockPO.setStatus(PaymentOptionStatus.PO_PAID);
+			localMockPO.setIsPartialPayment(false);
+			localMockPP.addPaymentOption(localMockPO);
+			DebtPositionValidation.checkPaymentPositionPayability(localMockPP, "mockIUV");
+		}
+		catch (AppException e) {
+			assertTrue(true);
+		}
+		catch(Exception e) {
+			fail("Not the expected exception");
+		}
+	}
 	
 
 
