@@ -24,6 +24,7 @@ import it.gov.pagopa.reporting.models.FlowsMessage;
 import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
 
 public class FlowsService {
+    private boolean debugAzurite = Boolean.parseBoolean(System.getenv("DEBUG_AZURITE"));
 
     private String storageConnectionString;
     private String flowsTable;
@@ -54,19 +55,20 @@ public class FlowsService {
     }
     public void flowsProcessing(List<TipoIdRendicontazione> flows, String idPA) {
 
-        // create table
-//        try {
-//            createTable();
-//        } catch (Exception e) {
-//            this.logger.severe(String.format("[FlowsService] The table specified does not exist: %s", e.getLocalizedMessage()));
-//        }
+        if (debugAzurite) {
+            try {
+                createTable();
+            } catch (Exception e) {
+                this.logger.severe(String.format("[FlowsService] The table specified does not exist: %s", e.getLocalizedMessage()));
+            }
 
-//        try {
-//            createQueue();
-//        } catch (URISyntaxException | InvalidKeyException | StorageException e ) {
-//            this.logger.severe(String.format("[FlowsService] Generic Error The specified queue does not exist: %s", e.getLocalizedMessage()));
-//            e.printStackTrace();
-//        }
+            try {
+                createQueue();
+            } catch (URISyntaxException | InvalidKeyException | StorageException e ) {
+                this.logger.severe(String.format("[FlowsService] Generic Error The specified queue does not exist: %s", e.getLocalizedMessage()));
+                e.printStackTrace();
+            }
+        }
 
         this.logger.log(Level.INFO, "[FlowsService] START flows storing ");
 

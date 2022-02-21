@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
 public class OrganizationsService {
+    private boolean debugAzurite = Boolean.parseBoolean(System.getenv("DEBUG_AZURITE"));
 
     private String storageConnectionString;
     private String organizationsTable;
@@ -40,20 +41,22 @@ public class OrganizationsService {
     public List<String> processOrganizationList(Organizations organizations) {
         this.logger.info("Processing organization list");
 
-        // create table
-//        try {
-//            createTable();
-//        } catch (Exception e) {
-//            this.logger.severe(String.format("[OrganizationsService] Problem to retrieve organization list: %s", e.getLocalizedMessage()));
-//            return new ArrayList<>();
-//        }
+        if (debugAzurite) {
+            try {
+                createTable();
+            } catch (Exception e) {
+                this.logger.severe(String.format("[OrganizationsService] Problem to retrieve organization list: %s", e.getLocalizedMessage()));
+                return new ArrayList<>();
+            }
 
-//        try {
-//            createQueue();
-//        } catch (URISyntaxException | InvalidKeyException | StorageException e ) {
-//            this.logger.severe(String.format("[OrganizationsService] Problem to retrieve organization list: %s", e.getLocalizedMessage()));
-//            e.printStackTrace();
-//        }
+            try {
+                createQueue();
+            } catch (URISyntaxException | InvalidKeyException | StorageException e ) {
+                this.logger.severe(String.format("[OrganizationsService] Problem to retrieve organization list: %s", e.getLocalizedMessage()));
+                e.printStackTrace();
+            }
+        }
+
 
         // create batch partition due to max batch size of Azure Table Storage - 100
         List<List<String>> addOrganizationList = Lists.partition(organizations.getAdd(), batchSize);
@@ -172,7 +175,7 @@ public class OrganizationsService {
         table.execute(batchOperation);
     }
 
-    private void addOrganization(String organization) throws URISyntaxException, InvalidKeyException, StorageException {
+    public void addOrganization(String organization) throws URISyntaxException, InvalidKeyException, StorageException {
         this.logger.info("Processing add organization " + organization);
         CloudTable table = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
                 .getTableReference(this.organizationsTable);
