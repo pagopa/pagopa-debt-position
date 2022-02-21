@@ -3,7 +3,6 @@ package it.gov.pagopa.debtposition.validation;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
@@ -145,25 +144,25 @@ public class DebtPositionValidation {
 	}
     
     private static void checkPaymentOptionPayable(PaymentPosition ppToPay, String iuv) {
-    	Optional<PaymentOption> poToPay = ppToPay.getPaymentOption().stream().filter(po -> po.getIuv().equals(iuv)).findFirst();
-    	if (poToPay.isEmpty()) {
-    		log.error ("Obtained unexpected empty payment option - ["
-    				+ String.format(LOG_BASE_PARAMS_DETAIL, 
-    						ppToPay.getOrganizationFiscalCode(), 
-    						ppToPay.getIupd(),
-    						iuv
-                            )
-					+ "]");
-			throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, ppToPay.getOrganizationFiscalCode(), iuv);
-		}
+    	PaymentOption poToPay = ppToPay.getPaymentOption().stream().filter(po -> po.getIuv().equals(iuv)).findFirst()
+    			.orElseThrow(() -> {
+    				log.error ("Obtained unexpected empty payment option - ["
+    	    				+ String.format(LOG_BASE_PARAMS_DETAIL, 
+    	    						ppToPay.getOrganizationFiscalCode(), 
+    	    						ppToPay.getIupd(),
+    	    						iuv
+    	                            )
+    						+ "]");
+    				throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, ppToPay.getOrganizationFiscalCode(), iuv);
+    			});
     	
-    	if (!poToPay.get().getStatus().equals(PaymentOptionStatus.PO_UNPAID)) {
-    		throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, poToPay.get().getOrganizationFiscalCode(), iuv);
+    	if (!poToPay.getStatus().equals(PaymentOptionStatus.PO_UNPAID)) {
+    		throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, poToPay.getOrganizationFiscalCode(), iuv);
     	}
     	
     	// se la posizione debitoria è già in PARTIALLY_PAID e sto provando a pagare una payment option non rateizzata (isPartialPayment = false)
-    	if (ppToPay.getStatus().equals(DebtPositionStatus.PARTIALLY_PAID) && Boolean.FALSE.equals(poToPay.get().getIsPartialPayment())){
-    		throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, poToPay.get().getOrganizationFiscalCode(), iuv);
+    	if (ppToPay.getStatus().equals(DebtPositionStatus.PARTIALLY_PAID) && Boolean.FALSE.equals(poToPay.getIsPartialPayment())){
+    		throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, poToPay.getOrganizationFiscalCode(), iuv);
     	}
     	
 	}
@@ -179,38 +178,38 @@ public class DebtPositionValidation {
     }
     
     private static void checkTransferAccountable(PaymentPosition ppToReport, String iuv, String transferId) {
-    	Optional<PaymentOption> poToReport = ppToReport.getPaymentOption().stream().filter(po -> po.getIuv().equals(iuv)).findFirst();
-    	if (poToReport.isEmpty()) {
-    		log.error ("Obtained unexpected empty payment option - ["
+    	PaymentOption poToReport = ppToReport.getPaymentOption().stream().filter(po -> po.getIuv().equals(iuv)).findFirst()
+    			.orElseThrow(() -> {
+    				log.error ("Obtained unexpected empty payment option - ["
     				+ String.format(LOG_BASE_PARAMS_DETAIL, 
     						ppToReport.getOrganizationFiscalCode(), 
     						ppToReport.getIupd(),
     						iuv
                             )
-					+ "]");
-			throw new AppException(AppError.TRANSFER_REPORTING_FAILED, ppToReport.getOrganizationFiscalCode(), iuv, transferId);
-		}
+    				+ "]");
+    				throw new AppException(AppError.TRANSFER_REPORTING_FAILED, ppToReport.getOrganizationFiscalCode(), iuv, transferId);
+    			});
     	
-    	if (!poToReport.get().getStatus().equals(PaymentOptionStatus.PO_PAID) && !poToReport.get().getStatus().equals(PaymentOptionStatus.PO_PARTIALLY_REPORTED)) {
-    		throw new AppException(AppError.TRANSFER_NOT_ACCOUNTABLE, poToReport.get().getOrganizationFiscalCode(), iuv, transferId);
+    	if (!poToReport.getStatus().equals(PaymentOptionStatus.PO_PAID) && !poToReport.getStatus().equals(PaymentOptionStatus.PO_PARTIALLY_REPORTED)) {
+    		throw new AppException(AppError.TRANSFER_NOT_ACCOUNTABLE, poToReport.getOrganizationFiscalCode(), iuv, transferId);
     	}
     	
-    	Optional<Transfer> transferToReport = poToReport.get().getTransfer().stream().filter(t -> t.getIdTransfer().equals(transferId)).findFirst();
+    	Transfer transferToReport = poToReport.getTransfer().stream().filter(t -> t.getIdTransfer().equals(transferId)).findFirst()
+    			.orElseThrow(() -> {
+    				log.error ("Obtained unexpected empty transfer - ["
+    	    				+ String.format(LOG_BASE_PARAMS_DETAIL, 
+    	    						ppToReport.getOrganizationFiscalCode(), 
+    	    						ppToReport.getIupd(),
+    	    						iuv
+    	                            )
+    						+ "idTransfer= "+transferId
+    						+ "]");
+    				throw new AppException(AppError.TRANSFER_REPORTING_FAILED, ppToReport.getOrganizationFiscalCode(), iuv, transferId);
+    			});
     	
-    	if (transferToReport.isEmpty()) {
-    		log.error ("Obtained unexpected empty transfer - ["
-    				+ String.format(LOG_BASE_PARAMS_DETAIL, 
-    						ppToReport.getOrganizationFiscalCode(), 
-    						ppToReport.getIupd(),
-    						iuv
-                            )
-					+ "idTransfer= "+transferId
-					+ "]");
-			throw new AppException(AppError.TRANSFER_REPORTING_FAILED, ppToReport.getOrganizationFiscalCode(), iuv, transferId);
-		}
     	
-    	if (!transferToReport.get().getStatus().equals(TransferStatus.T_UNREPORTED)) {
-    		throw new AppException(AppError.TRANSFER_NOT_ACCOUNTABLE, poToReport.get().getOrganizationFiscalCode(), iuv, transferId);
+    	if (!transferToReport.getStatus().equals(TransferStatus.T_UNREPORTED)) {
+    		throw new AppException(AppError.TRANSFER_NOT_ACCOUNTABLE, transferToReport.getOrganizationFiscalCode(), iuv, transferId);
     	}
     	
     }
