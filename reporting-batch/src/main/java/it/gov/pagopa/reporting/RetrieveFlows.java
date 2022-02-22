@@ -39,7 +39,7 @@ public class RetrieveFlows {
         FlowsService flowsService = this.getFlowsServiceInstance(logger);
 
 
-            logger.log(Level.INFO, () -> "[RetrieveOrganizationsTrigger START]  processed a message " + message);
+        logger.log(Level.INFO, () -> "[RetrieveOrganizationsTrigger START]  processed a message " + message);
 
         OrganizationsMessage organizationsMessage = null;
         try {

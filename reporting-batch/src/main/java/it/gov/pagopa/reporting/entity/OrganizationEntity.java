@@ -23,5 +23,6 @@ public class OrganizationEntity extends TableServiceEntity {
     public OrganizationEntity(String organizationId) {
         this.partitionKey = organizationKey;
         this.rowKey = organizationId;
+        this.etag = "*";
     }
 }

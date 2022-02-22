@@ -59,10 +59,8 @@ class OrganizationsServiceIntegrationTest {
         CloudStorageAccount.parse(storageConnectionString).createCloudTableClient().getTableReference(this.orgsTable)
                 .createIfNotExists();
 
-
         OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable, this.flowsQueue,
                 logger);
-
 
         Organizations orgs = new Organizations();
 
@@ -82,11 +80,49 @@ class OrganizationsServiceIntegrationTest {
                 .getTableReference(this.orgsTable)
                 .execute(TableQuery.from(OrganizationEntity.class).where((TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, "organization"))));
 
+        List<String> chk = new ArrayList<>();
+        chk.add("90000000001");
+        chk.add("90000000002");
+        chk.add("90000000003");
         int index = 0;
         for (OrganizationEntity r : rows) {
-            assertTrue(r.getRowKey().contains(added.get(index++)));
+            assertTrue(r.getRowKey().contains(chk.get(index++)));
         }
 
     }
 
+
+    @Test
+    void delOrganizationListTest() throws ParseException, DatatypeConfigurationException, InvalidKeyException,
+            URISyntaxException, StorageException, JsonProcessingException {
+
+//        CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient().getQueueReference(this.flowsQueue)
+//                .createIfNotExists();
+
+//        CloudStorageAccount.parse(storageConnectionString).createCloudTableClient().getTableReference(this.orgsTable)
+//                .createIfNotExists();
+
+        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable, this.flowsQueue,
+                logger);
+
+        Organizations orgs = new Organizations();
+
+        List<String> added = new ArrayList<>();
+        orgs.setAdd(added);
+
+        List<String> deleted = new ArrayList<>();
+        deleted.add("90000000001");
+        deleted.add("90000000002");
+        orgs.setDelete(deleted);
+
+        List<String> updateOrganizationsList = organizationsService.processOrganizationList(orgs); // delete ------------
+
+        List<String> chk1 = new ArrayList<>();
+        chk1.add("90000000003");
+        int index1 = 0;
+        for (String o : updateOrganizationsList) {
+            assertTrue(o.equals(chk1.get(index1++)));
+        }
+
+    }
 }
