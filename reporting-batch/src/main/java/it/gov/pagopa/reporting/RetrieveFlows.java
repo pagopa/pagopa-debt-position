@@ -77,8 +77,8 @@ public class RetrieveFlows {
   public NodoChiediElencoFlussi getNodeClientInstance() {
     return new NodoChiediElencoFlussi();
   }
+
   public FlowsService getFlowsServiceInstance(Logger logger) {
     return new FlowsService(this.storageConnectionString, this.flowsTable, this.flowsQueue, logger);
-    }
-
+  }
 }

@@ -4,7 +4,9 @@ import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.TimerTrigger;
 import it.gov.pagopa.reporting.models.Organizations;
+import it.gov.pagopa.reporting.service.FlowsService;
 import it.gov.pagopa.reporting.service.GPDService;
+import it.gov.pagopa.reporting.service.NodoChiediElencoFlussi;
 import it.gov.pagopa.reporting.service.OrganizationsService;
 
 import java.time.LocalDate;
@@ -39,15 +41,23 @@ public class RetrieveOrganizations {
         logger.log(Level.INFO, () -> "Reporting Batch Trigger function executed at: " + LocalDateTime.now());
 
         // call GPD to retrieve organization list
-        Organizations organizationList = GPDService.getInstance().getOrganizations(LocalDate.now());
+        Organizations organizationList = this.getGPDClientInstance().getOrganizations(LocalDate.now());
 
         // update organization list to flows table
-        OrganizationsService organizationsService = new OrganizationsService(storageConnectionString, organizationsTable, organizationsQueue, logger);
+        OrganizationsService organizationsService = this.getOrganizationsServiceInstance(logger);
         List<String> organizationListToProcess = organizationsService.processOrganizationList(organizationList);
 
         // add to organizations queue
         organizationsService.addToOrganizationsQueue(organizationListToProcess);
 
+    }
+
+    public GPDService getGPDClientInstance() {
+        return GPDService.getInstance();
+    }
+
+    public OrganizationsService getOrganizationsServiceInstance(Logger logger) {
+        return new OrganizationsService(this.storageConnectionString, this.organizationsTable, this.organizationsQueue, logger);
     }
 
 }
