@@ -56,7 +56,6 @@ public class OrganizationsServiceTest {
 
   }
 
-
   @Test
   void processOrganizationListExAddTest() throws Exception {
 

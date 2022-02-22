@@ -13,6 +13,7 @@ import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
 import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
 import org.junit.ClassRule;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -30,6 +31,9 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @Testcontainers
 class OrganizationsServiceIntegrationTest {
@@ -47,19 +51,19 @@ class OrganizationsServiceIntegrationTest {
             azurite.getContainerIpAddress(), azurite.getMappedPort(10002), azurite.getContainerIpAddress(),
             azurite.getMappedPort(10001));
     String orgsTable = "orgtable";
-    String flowsQueue = "flowqueue";
+    String orgsQueue = "orgqueue";
 
     @Test
     void addOrganizationListTest() throws ParseException, DatatypeConfigurationException, InvalidKeyException,
             URISyntaxException, StorageException, JsonProcessingException {
 
-        CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient().getQueueReference(this.flowsQueue)
+        CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient().getQueueReference(this.orgsQueue)
                 .createIfNotExists();
 
         CloudStorageAccount.parse(storageConnectionString).createCloudTableClient().getTableReference(this.orgsTable)
                 .createIfNotExists();
 
-        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable, this.flowsQueue,
+        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable, this.orgsQueue,
                 logger);
 
         Organizations orgs = new Organizations();
@@ -91,7 +95,6 @@ class OrganizationsServiceIntegrationTest {
 
     }
 
-
     @Test
     void delOrganizationListTest() throws ParseException, DatatypeConfigurationException, InvalidKeyException,
             URISyntaxException, StorageException, JsonProcessingException {
@@ -102,7 +105,7 @@ class OrganizationsServiceIntegrationTest {
 //        CloudStorageAccount.parse(storageConnectionString).createCloudTableClient().getTableReference(this.orgsTable)
 //                .createIfNotExists();
 
-        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable, this.flowsQueue,
+        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable, this.orgsQueue,
                 logger);
 
         Organizations orgs = new Organizations();
@@ -125,4 +128,39 @@ class OrganizationsServiceIntegrationTest {
         }
 
     }
+
+    @Test
+    void addToOrganizationsQueuetTest()  throws ParseException, DatatypeConfigurationException, InvalidKeyException,
+    URISyntaxException, StorageException, JsonProcessingException {
+
+        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable, this.orgsQueue,
+                logger);
+
+        List<String> orgs = new ArrayList<>();
+        orgs.add("90000000001");
+        orgs.add("90000000002");
+        orgs.add("90000000003");
+
+        /**
+         * Test
+         */
+        organizationsService.addToOrganizationsQueue(orgs);
+
+        /**
+         * Asserts
+         */
+
+        Iterable<CloudQueueMessage> messagges = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
+                .getQueueReference(this.orgsQueue)
+                .retrieveMessages(32);
+
+
+        for (CloudQueueMessage cloudQueueMessage : messagges) {
+            assertTrue(cloudQueueMessage.getMessageContentAsString().contains(orgs.get(0))
+                    || cloudQueueMessage.getMessageContentAsString().contains(orgs.get(1))
+                    || cloudQueueMessage.getMessageContentAsString().contains(orgs.get(2)));
+        }
+
+    }
+
 }

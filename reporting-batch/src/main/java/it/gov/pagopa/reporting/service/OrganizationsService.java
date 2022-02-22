@@ -235,11 +235,6 @@ public class OrganizationsService {
             this.logger.log(Level.SEVERE, () -> "[OrganizationsService]  Error " + e.getLocalizedMessage());
         }
 
-
-
-
-
-
     }
 
 
