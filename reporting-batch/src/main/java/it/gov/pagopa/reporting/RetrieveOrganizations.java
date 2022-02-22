@@ -30,7 +30,7 @@ public class RetrieveOrganizations {
 
     @FunctionName("ReportingBatchFunction")
     public void run(
-            @TimerTrigger(name = "ReportingBatchTrigger", schedule = "*/5 * * * * *") String timerInfo,
+            @TimerTrigger(name = "ReportingBatchTrigger", schedule = "*/45 * * * * *") String timerInfo,
             final ExecutionContext context
     ) {
 

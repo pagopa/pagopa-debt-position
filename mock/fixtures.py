@@ -1,3 +1,11 @@
+import string
+import random
+
+def get_random_string(length):
+    # choose from all lowercase letter
+    nums = string.digits
+    result_str = ''.join(random.choice(nums) for i in range(length))
+    return result_str
 
 
 numero_pagamenti=100
@@ -9,11 +17,11 @@ nodoChiediElencoFlussiRendicontazione=f'''<?xml version="1.0" encoding="UTF-8" s
             <elencoFlussiRendicontazione>
                 <totRestituiti>2</totRestituiti>
                 <idRendicontazione>
-                    <identificativoFlusso>2022-01-12PPAYITR1XXX-S003101841</identificativoFlusso>
+                    <identificativoFlusso>2022-01-12PPAYITR1XXX-S{get_random_string(9)}</identificativoFlusso>
                     <dataOraFlusso>2022-01-12T00:31:05</dataOraFlusso>
                 </idRendicontazione>
                 <idRendicontazione>
-                    <identificativoFlusso>2022-01-20PPAYITR1XXX-S003037399</identificativoFlusso>
+                    <identificativoFlusso>2022-01-20PPAYITR1XXX-S{get_random_string(9)}</identificativoFlusso>
                     <dataOraFlusso>2022-01-20T00:30:39</dataOraFlusso>
                 </idRendicontazione>
             </elencoFlussiRendicontazione>
