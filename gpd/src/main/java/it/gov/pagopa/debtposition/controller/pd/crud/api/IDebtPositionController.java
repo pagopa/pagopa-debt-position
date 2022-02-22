@@ -65,7 +65,7 @@ public interface IDebtPositionController {
 	produces = { "application/json" })
 	ResponseEntity<PaymentPositionModelBaseResponse> getOrganizationDebtPositionByIUPD(
 			@Parameter(description = "Organization fiscal code, the fiscal code of the Organization.",required=true) 
-			@PathVariable("organizationfiscalcode") String organizationfiscalcode, 
+			@PathVariable("organizationfiscalcode") String organizationFiscalCode, 
 			@Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.",required=true) 
 			@PathVariable("iupd") String iupd);
 	
@@ -87,7 +87,7 @@ public interface IDebtPositionController {
             @Positive @Parameter(description = "Page number. Page value starts from 0", required = true) @RequestParam Integer page,
             @Valid    @Parameter(description = "Filter from due_date (if provided use the format yyyy-MM-dd)") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "due_date_from", required = false) LocalDate dueDateFrom,
             @Valid    @Parameter(description = "Filter to due_date (if provided use the format yyyy-MM-dd)")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "due_date_to", required = false)   LocalDate dueDateTo,
-            @RequestParam(required = false, name = "orderby", defaultValue = "COMPANY_NAME") @Parameter(description = "Order by COMPANY_NAME, IUPD or STATUS") Order.PaymentPositionOrder orderBy,
+            @RequestParam(required = false, name = "orderby", defaultValue = "COMPANY_NAME") @Parameter(description = "Order by INSERTED_DATE, COMPANY_NAME, IUPD or STATUS") Order.PaymentPositionOrder orderBy,
             @RequestParam(required = false, name = "ordering", defaultValue = "DESC") @Parameter(description = "Direction of ordering") Sort.Direction ordering);   
 
 	
