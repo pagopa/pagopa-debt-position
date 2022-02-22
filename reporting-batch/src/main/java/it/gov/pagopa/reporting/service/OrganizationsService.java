@@ -192,6 +192,7 @@ public class OrganizationsService {
         organizations.forEach(organization -> batchOperation.delete(new OrganizationEntity(organization)));
 
         table.execute(batchOperation);
+
     }
 
     public void deleteOrganization(String organization) throws URISyntaxException, InvalidKeyException, StorageException {
