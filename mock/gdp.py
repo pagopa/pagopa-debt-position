@@ -4,7 +4,8 @@ import random
 
 import tornado.ioloop
 import tornado.web
-
+from tornado.log import enable_pretty_logging
+enable_pretty_logging()
 
 def generate_response():
     organization_list = []
@@ -27,21 +28,31 @@ def generate_response():
     return org_map
 
 
-class GPDHandler(tornado.web.RequestHandler):
+class organizationsHandler(tornado.web.RequestHandler):
 
     def set_default_headers(self):
         self.set_header("Content-Type", 'application/json')
 
     def get(self):
         print("request received")
+        print(f"{self.request}{self.request.body.decode()}")
         self.write(json.dumps(generate_response()))
 
+class reportsHandler(tornado.web.RequestHandler):
+
+    def set_default_headers(self):
+        self.set_header("Content-Type", 'application/json')
+
+    def post(self,idpa,iuv,idtransfer):
+        print("request received")
+        print(f"{self.request}{self.request.body.decode()} - {idpa} - {iuv} - {idtransfer}")
+        self.write("")
 
 def make_app():
     return tornado.web.Application([
-        (r"/organizations", GPDHandler),
+        (r"/organizations", organizationsHandler),
+        (r"/organizations/([^/]+)/paymentoptions/([^/]+)/transfers/([^/]+)/report", reportsHandler),
     ])
-
 
 if __name__ == "__main__":
     default_port = '8085' if len(sys.argv) == 1 else sys.argv[1]

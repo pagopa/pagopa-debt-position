@@ -51,7 +51,7 @@ public class FlowsService {
 
                 // nodoChiediFlussoRendicontazione(idPA, idFlow)
                 // https://github.com/pagopa/pagopa-api/blob/master/nodo/NodoPerPa.wsdl#L523
-                nodeService.callNodoChiediElencoFlussiRendicontazione(idPA, flows.get(index).getIdentificativoFlusso());
+                nodeService.callNodoChiediFlussoRendicontazione(idPA, flows.get(index).getIdentificativoFlusso());
 
                 FaultBean faultBean = nodeService.getNodoChiediFlussoRendicontazioneFault();
                 DataHandler xmlReporting = nodeService.getNodoChiediElencoFlussiRendicontazioneXmlReporting();

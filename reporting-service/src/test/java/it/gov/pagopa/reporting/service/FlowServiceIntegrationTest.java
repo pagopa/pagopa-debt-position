@@ -95,8 +95,8 @@ class FlowServiceIntegrationTest {
                 List<TipoIdRendicontazione> flows = Arrays.asList(e1, e2);
 
                 List<String> flowsFileName = Arrays.asList(
-                                e1.getIdentificativoFlusso() + "##" + e1.getDataOraFlusso().toString() + ".xml",
-                                e2.getIdentificativoFlusso() + "##" + e2.getDataOraFlusso().toString() + ".xml");
+                        e1.getDataOraFlusso().toString() + "##" + "idPA" + "##"+ e1.getIdentificativoFlusso() + ".xml",
+                        e2.getDataOraFlusso().toString() + "##" + "idPA" + "##"+ e2.getIdentificativoFlusso() + ".xml");
 
                 flowsService.flowsXmlDownloading(flows, "idPA");
 

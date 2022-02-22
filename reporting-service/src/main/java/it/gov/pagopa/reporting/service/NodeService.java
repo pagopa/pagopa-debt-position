@@ -59,7 +59,7 @@ public class NodeService {
         return this.reportingXml != null ? this.reportingXml.value : null;
     }
 
-    public void callNodoChiediElencoFlussiRendicontazione(String idPa, String idFlow) {
+    public void callNodoChiediFlussoRendicontazione(String idPa, String idFlow) {
 
         Holder<FaultBean> fault = new Holder<>();
         Holder<DataHandler> result = new Holder<>();
