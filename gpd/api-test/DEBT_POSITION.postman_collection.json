@@ -9,6 +9,39 @@
 			"name": "api test suite - GPD",
 			"item": [
 				{
+					"name": "info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"The response properties\", () => {\r",
+									"    //parse the response JSON and test tree properties\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.name).to.eql(\"gpd\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gpdhost}}info",
+							"host": [
+								"{{gpdhost}}info"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "createDebtPosition",
 					"event": [
 						{
@@ -339,7 +372,7 @@
 									"});",
 									"",
 									"pm.test(\"The response properties\", () => {",
-									"    //parse the response JSON and test three properties",
+									"    //parse the response JSON and test tree properties",
 									"    const responseJson = pm.response.json();",
 									"    pm.expect(responseJson.payment_position_list).to.have.lengthOf(2);",
 									"    pm.expect(responseJson.payment_position_list[0].paymentOption).to.have.lengthOf(1);",
