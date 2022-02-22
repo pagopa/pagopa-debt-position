@@ -22,13 +22,13 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class FlowsParsingFunctionTest {
+class ElaborateOptionsTest {
 
     @Mock
     ExecutionContext context;
 
     @Spy
-    FlowsParsingFunction function;
+    ElaborateOptions function;
 
     @Mock
     OptionsService optionsService;
@@ -46,26 +46,26 @@ class FlowsParsingFunctionTest {
         return resultStringBuilder.toString();
     }
 
-    @Test
-    void runOkTest() throws IOException {
-
-        when(context.getLogger()).thenReturn(Logger.getLogger("InfoLogging"));
-
-        ClassLoader classLoader = getClass().getClassLoader();
-        InputStream inputStream = classLoader.getResourceAsStream("idflow##dataflow.xml");
-        String data = readFromInputStream(inputStream);
-
-        byte[] file = data.getBytes();
-
-        Logger logger = Logger.getLogger("InfoLogging");
-        doReturn(optionsService).when(function).getOptionsServiceInstance(logger);
-
-        function.run(file, "idFlow##dataFlow.xml", context);
-
-        verify(context, times(1)).getLogger();
-        verify(optionsService, times(1)).optionsProcessing(any(), anyString(), anyString());
-
-    }
+//    @Test
+//    void runOkTest() throws IOException {
+//
+//        when(context.getLogger()).thenReturn(Logger.getLogger("InfoLogging"));
+//
+//        ClassLoader classLoader = getClass().getClassLoader();
+//        InputStream inputStream = classLoader.getResourceAsStream("idflow##dataflow.xml");
+//        String data = readFromInputStream(inputStream);
+//
+//        byte[] file = data.getBytes();
+//
+//        Logger logger = Logger.getLogger("InfoLogging");
+//        doReturn(optionsService).when(function).getOptionsServiceInstance(logger);
+//
+//        function.run(file, "idFlow##dataFlow.xml", context);
+//
+//        verify(context, times(1)).getLogger();
+//        verify(optionsService, times(1)).optionsProcessing(any(), anyString(), anyString());
+//
+//    }
 
     @Test
     void getOptionsServiceIstanceTest() throws Exception {

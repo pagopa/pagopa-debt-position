@@ -3,17 +3,14 @@
     "Values": {
       "FUNCTIONS_WORKER_RUNTIME": "java",
       "AzureWebJobsStorage": "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;",
-      "PAA_ID_INTERMEDIARIO":"1234",
-      "PAA_STAZIONE_INT":"1234_03",
-      "PAA_PASSWORD":"yourpassword",
-      "CERT":"-----BEGIN CERTIFICATE-----jhjhjhjhjhj-----END CERTIFICATE-----",
-      "KEY_PKCS8":"-----BEGIN PRIVATE KEY-----opopopopopopo-----END PRIVATE KEY-----",
-      "FLOW_SA_CONNECTION_STRING":"DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1",
-      "FLOWS_TABLE":"flows",
-      "FLOWS_QUEUE":"flowsid",
+      "FLOW_SA_CONNECTION_STRING": "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;",
+      "FLOWS_QUEUE": "flowsid",
       "OPTIONS_QUEUE": "optionsid",
-      "FLOWS_XML_BLOB":"blob",
-      "PAYMENTS_HOST" : "http://localhost:8085/",
-      "AUX_DIGIT" : "3"
+      "FLOWS_XML_BLOB": "blob",
+      "GPD_HOST": "http://localhost:8085",
+      "NODO_HOST": "http://localhost:8081/nodo-per-pa/v1",
+      "PAA_ID_INTERMEDIARIO": "1234",
+      "PAA_STAZIONE_INT": "1234_03",
+      "PAA_PASSWORD": "yourpassword"
     }
   }

@@ -1,16 +1,24 @@
 package it.gov.pagopa.reporting.service;
 
 
+import it.gov.pagopa.reporting.models.PaymentOption;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
+import javax.persistence.Transient;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FlowXmlParser extends DefaultHandler {
-    private List<String> options = new ArrayList<>();
+    private List<PaymentOption> options = new ArrayList<>();
 
-    public List<String> getOptions() {
+    @Transient
+    private String iuv;
+
+    @Transient
+    private Integer transfer;
+
+    public List<PaymentOption> getOptions() {
         return options;
     }
 
@@ -25,7 +33,6 @@ public class FlowXmlParser extends DefaultHandler {
 
         // reset the tag value
         currentValue.setLength(0);
-
     }
 
     @Override
@@ -34,16 +41,18 @@ public class FlowXmlParser extends DefaultHandler {
                            String qName) {
 
         if (qName.equalsIgnoreCase("identificativoUnivocoVersamento")) {
-            options.add(currentValue.toString());
+            iuv = currentValue.toString();
+        }
+        else if (qName.equalsIgnoreCase("indiceDatiSingoloPagamento")) {
+            transfer = Integer.parseInt(currentValue.toString());
+            options.add(new PaymentOption(iuv, transfer));
         }
 
     }
 
     @Override
     public void characters(char[] ch, int start, int length) {
-
         currentValue.append(ch, start, length);
-
     }
 
 }

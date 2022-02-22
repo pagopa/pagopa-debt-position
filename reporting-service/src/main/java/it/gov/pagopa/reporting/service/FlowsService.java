@@ -19,99 +19,85 @@ import it.gov.pagopa.reporting.servicewsdl.FaultBean;
 import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
 
 import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 
 public class FlowsService {
 
     private String storageConnectionString;
     private String identificativoIntemediarioPA;
     private String identificativoStazioneIntermediarioPA;
-    private String nodePassword;
-    private String cert;
-    private String key;
-    private String certPassword;
+    private String paaPassword;
     private String containerBlob;
     private Logger logger;
 
     public FlowsService(String storageConnectionString, String identificativoIntemediarioPA,
-            String identificativoStazioneIntermediarioPA, String nodePassword, String cert, String key,
-            String certPassword, String containerBlob, Logger logger) {
+                        String identificativoStazioneIntermediarioPA, String paaPassword, String containerBlob, Logger logger) {
 
         this.storageConnectionString = storageConnectionString;
         this.identificativoIntemediarioPA = identificativoIntemediarioPA;
         this.identificativoStazioneIntermediarioPA = identificativoStazioneIntermediarioPA;
-        this.nodePassword = nodePassword;
-        this.cert = cert;
-        this.key = key;
-        this.certPassword = certPassword;
+        this.paaPassword = paaPassword;
         this.containerBlob = containerBlob;
         this.logger = logger;
     }
 
     public void flowsXmlDownloading(List<TipoIdRendicontazione> flows, String idPA) {
 
-        this.logger.log(Level.INFO, "[FlowsDownloadFunction] START flows downloading ");
+        this.logger.log(Level.INFO, "[RetrieveDetails/FlowsService] START flows downloading ");
 
         try {
             NodeService nodeService = this.getNodeServiceInstance();
 
-            nodeService.initSslConfiguration();
-
             IntStream.range(0, flows.size()).forEach(index -> {
 
+                // nodoChiediFlussoRendicontazione(idPA, idFlow)
+                // https://github.com/pagopa/pagopa-api/blob/master/nodo/NodoPerPa.wsdl#L523
                 nodeService.callNodoChiediElencoFlussiRendicontazione(idPA, flows.get(index).getIdentificativoFlusso());
 
                 FaultBean faultBean = nodeService.getNodoChiediFlussoRendicontazioneFault();
                 DataHandler xmlReporting = nodeService.getNodoChiediElencoFlussiRendicontazioneXmlReporting();
 
                 if (faultBean != null) {
-
                     logger.log(Level.INFO,
-                            () -> "[FlowsDownloadFunction] faultBean DESC " + faultBean.getDescription());
+                            () -> "[RetrieveDetails/FlowsService] faultBean DESC " + faultBean.getDescription());
+                    // TODO to analyze what should be done
                 } else if (xmlReporting != null) {
 
                     BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
                             .connectionString(this.storageConnectionString).buildClient();
 
-                    BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(this.containerBlob);
+                    BlobContainerClient flowsContainerClient = blobServiceClient.getBlobContainerClient(this.containerBlob);
 
-                    BlobClient blobClient = containerClient.getBlobClient(flows.get(index).getIdentificativoFlusso()
-                            + "##" + flows.get(index).getDataOraFlusso().toString() + ".xml");
+                    // dataOra##idPa##idflow.xml
+                    BlobClient blobClient = flowsContainerClient.getBlobClient(
+                            flows.get(index).getDataOraFlusso().toString() + "##" + idPA + "##" + flows.get(index).getIdentificativoFlusso() + ".xml"
+                    );
 
-                    logger.log(Level.INFO, () -> "[FlowsDownloadFunction] Uploading " + blobClient.getBlobUrl() + " in "
-                            + this.containerBlob);
+                    logger.log(Level.INFO, () ->
+                            "[RetrieveDetails/FlowsService] Uploading " + blobClient.getBlobUrl() + " in " + this.containerBlob);
 
                     try {
-
+                        // save base64 as xml string
                         blobClient.upload(BinaryData.fromStream(xmlReporting.getInputStream()));
                     } catch (IOException e) {
-                        logger.log(Level.SEVERE, () -> "[FlowsDownloadFunction] Upload failed "
+                        logger.log(Level.SEVERE, () -> "[RetrieveDetails/FlowsService] Upload failed "
                                 + blobClient.getBlobUrl() + " in " + this.containerBlob);
                     }
 
-                    logger.log(Level.INFO, () -> "[FlowsDownloadFunction] Uploaded " + blobClient.getBlobUrl() + " in "
-                            + this.containerBlob);
+                    logger.log(Level.INFO, () ->
+                            "[RetrieveDetails/FlowsService] Uploaded " + blobClient.getBlobUrl() + " in " + this.containerBlob);
                 }
             });
 
-        } catch (UnrecoverableKeyException | CertificateException | NoSuchAlgorithmException | KeyStoreException
-                | InvalidKeySpecException | KeyManagementException e) {
-
-            logger.log(Level.SEVERE, () -> "[FlowsDownloadFunction] Configuration Error " + e.getLocalizedMessage());
         } catch (Exception e) {
-
-            logger.log(Level.SEVERE, () -> "[FlowsDownloadFunction] Generic Error " + e.getMessage());
+            logger.log(Level.SEVERE, () -> "[RetrieveDetails/FlowsService] Generic Error " + e.getMessage());
         }
 
-        this.logger.log(Level.INFO, "[FlowsService] END flows storing ");
+        this.logger.log(Level.INFO, "[RetrieveDetails/FlowsService] END flows storing ");
     }
 
     public NodeService getNodeServiceInstance() {
 
         return new NodeService(this.identificativoIntemediarioPA, this.identificativoStazioneIntermediarioPA,
-                this.nodePassword, this.cert, this.key, this.certPassword);
+                this.paaPassword);
     }
 }

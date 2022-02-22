@@ -62,7 +62,7 @@ class FlowServiceIntegrationTest {
                         throws ParseException, DatatypeConfigurationException, InvalidKeyException, URISyntaxException {
 
                 flowsService = spy(new FlowsService(storageConnectionString, "identificativoIntemediarioPA",
-                                "identificativoStazioneIntermediarioPA", "nodePassword", "cert", "key", "certPassword",
+                                "identificativoStazioneIntermediarioPA", "nodePassword",
                                 "container", logger));
 
                 NodeService nodeService = mock(NodeService.class);
@@ -111,7 +111,7 @@ class FlowServiceIntegrationTest {
                         throws ParseException, DatatypeConfigurationException, InvalidKeyException, URISyntaxException {
 
                 flowsService = spy(new FlowsService(storageConnectionString, "identificativoIntemediarioPA",
-                                "identificativoStazioneIntermediarioPA", "nodePassword", "cert", "key", "certPassword",
+                                "identificativoStazioneIntermediarioPA", "nodePassword",
                                 "container", logger));
 
                 NodeService nodeService = mock(NodeService.class);

@@ -23,7 +23,7 @@ import javax.xml.parsers.SAXParserFactory;
 /**
  * Azure Functions with Azure Blob trigger.
  */
-public class FlowsParsingFunction {
+public class ElaborateOptions {
     private String storageConnectionString = System.getenv("FLOW_SA_CONNECTION_STRING");
     private String optionsQueue = System.getenv("OPTIONS_QUEUE");
 
@@ -31,7 +31,7 @@ public class FlowsParsingFunction {
      * This function will be invoked when a new or updated blob is detected at the
      * specified path. The blob contents are provided as input to this function.
      */
-    @FunctionName("FlowsParsingFunction")
+    @FunctionName("ElaborateOptionsFunction")
     public void run(
             @BlobTrigger(name = "BlobXmlTrigger", path = "%FLOWS_XML_BLOB%/{name}", dataType = "binary", connection = "FLOW_SA_CONNECTION_STRING") byte[] content,
             @BindingName("name") String name, final ExecutionContext context) {
@@ -40,11 +40,10 @@ public class FlowsParsingFunction {
 
         logger.log(Level.INFO, () -> "Blob Trigger function executed at: " + LocalDateTime.now() + " for blob " + name);
 
+        // XML File
         String converted = new String(content, StandardCharsets.UTF_8);
 
         logger.log(Level.INFO, () -> converted);
-
-
 
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -58,11 +57,15 @@ public class FlowsParsingFunction {
 
             OptionsService optionsService = this.getOptionsServiceInstance(logger);
 
+            // dataOra##idPa##idflow.xml
             String[] flowInfo = name.split("##");
-            String idFlow = flowInfo[0];
-            String dataFlow = flowInfo[1].substring(0,flowInfo[1].length()-4); // remove extension file
-            logger.log(Level.INFO, () -> "Processing flow " + idFlow + " with date " + dataFlow);
-            optionsService.optionsProcessing(handler.getOptions(), idFlow, dataFlow);
+            String dataFlow = flowInfo[0];
+            String idPA = flowInfo[1];
+            String idFlow = flowInfo[2].substring(0,flowInfo[2].length()-4); // remove extension file;
+            logger.log(Level.INFO, () -> "Processing flow " + idPA + "/" + idFlow + " with date " + dataFlow);
+
+            // step 11
+            optionsService.optionsProcessing(handler.getOptions(), idPA, idFlow, dataFlow);
 
         } catch (ParserConfigurationException | SAXException | IOException e) {
             logger.log(Level.INFO, () -> "Processing flow exception: " + e.getMessage());
@@ -70,8 +73,7 @@ public class FlowsParsingFunction {
     }
 
     public OptionsService getOptionsServiceInstance(Logger logger) {
-
-        return new OptionsService(this.storageConnectionString, this.optionsQueue, System.getenv("PAYMENTS_HOST"), null, logger);
+        return new OptionsService(this.storageConnectionString, this.optionsQueue, logger);
     }
 
 }
