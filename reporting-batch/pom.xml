@@ -17,7 +17,7 @@
         <azure.storage.table.version>8.6.6</azure.storage.table.version>
         <azure.storage.queue.version>12.0.0</azure.storage.queue.version>
         <functionAppName>com.microsoft.azure-20220215182005862</functionAppName>
-        <resteasy.version>3.15.3.Final</resteasy.version>
+        <resteasy.version>4.5.7.Final</resteasy.version>
     </properties>
 
     <dependencies>
