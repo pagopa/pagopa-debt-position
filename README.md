@@ -56,6 +56,56 @@ The easiest way to develop locally is start only db container and run spring-boo
 /usr/local/bin/docker-compose up -d flyway
 ```
 
+
+## Start the dev environment for reporting subsystem
+
+### Docker
+
+From `reporting-batch` folder:
+
+```
+mv .env.example .env
+```
+
+From `reporting-service` folder:
+
+```
+mv .env.example .env
+```
+
+From the project root:
+```
+docker-compose -f docker-compose-reporting.yml up --build
+```
+
+### Local
+By default, Azurite will listen for the :
+- [Blob service on port 10000](
+https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio#blob-listening-port-configuration)
+- [Queue service on port 10001](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio#queue-listening-port-configuration)
+- [Table service on port 10002](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio#table-listening-port-configuration)
+
+```
+docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite
+```
+
+From `reporting-batch` folder:
+
+```
+cp local.settings.json.example local.settings.json
+```
+
+From `reporting-service` folder:
+
+```
+mv local.settings.json.example local.settings.json
+```
+
+```
+mvn azure-functions:run
+```
+
+
 ### Testing 🧪
 
 #### Unit testing
