@@ -32,6 +32,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -170,8 +171,8 @@ class OrganizationsServiceIntegrationTest {
         chk1.add("90000000003");
         chk1.add("90000000004");
         int index1 = 0;
-        for (String o : updateOrganizationsList) {
-            assertTrue(o.equals(chk1.get(index1++)));
+        for (String org : updateOrganizationsList) {
+            assertEquals(org, chk1.get(index1++));
         }
 
     }
@@ -207,8 +208,8 @@ class OrganizationsServiceIntegrationTest {
         chk1.add("90000000003");
         chk1.add("90000000004");
         int index1 = 0;
-        for (String o : updateOrganizationsList) {
-            assertTrue(o.equals(chk1.get(index1++)));
+        for (String org : updateOrganizationsList) {
+            assertEquals(org, chk1.get(index1++));
         }
 
     }

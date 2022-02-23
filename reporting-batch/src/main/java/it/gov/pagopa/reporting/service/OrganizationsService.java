@@ -150,8 +150,7 @@ public class OrganizationsService {
 
         ArrayList<String> organizationsList = new ArrayList<>();
         // Iterate through the results
-        for (OrganizationEntity entity : table.execute(TableQuery.from(OrganizationEntity.class).where((TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, OrganizationEntity.organizationKey))))) {
-            // this.logger.info(String.format("\tOrganizationEntity: %s,%s", entity.getPartitionKey(), entity.getRowKey()));
+        for (OrganizationEntity entity : table.execute(TableQuery.from(OrganizationEntity.class).where((TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, OrganizationEntity.ORGANIZATION_KEY))))) {
             organizationsList.add(entity.getRowKey());
         }
 

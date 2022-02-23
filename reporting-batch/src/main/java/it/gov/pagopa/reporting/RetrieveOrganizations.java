@@ -4,9 +4,7 @@ import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.TimerTrigger;
 import it.gov.pagopa.reporting.models.Organizations;
-import it.gov.pagopa.reporting.service.FlowsService;
 import it.gov.pagopa.reporting.service.GPDService;
-import it.gov.pagopa.reporting.service.NodoChiediElencoFlussi;
 import it.gov.pagopa.reporting.service.OrganizationsService;
 
 import java.time.LocalDate;
