@@ -12,33 +12,35 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>11</java.version>
-        <azure.functions.maven.plugin.version>1.12.0</azure.functions.maven.plugin.version>
+        <azure.functions.maven.plugin.version>1.15.0</azure.functions.maven.plugin.version>
         <azure.functions.java.library.version>1.4.2</azure.functions.java.library.version>
         <azure.storage.table.version>8.6.6</azure.storage.table.version>
         <azure.storage.queue.version>12.0.0</azure.storage.queue.version>
-        <functionAppName>reporting-batch-20210709161526311</functionAppName>
+        <functionAppName>com.microsoft.azure-20220215182005862</functionAppName>
+        <resteasy.version>3.15.3.Final</resteasy.version>
     </properties>
 
     <dependencies>
+        <!-- Start Azure -->
         <dependency>
             <groupId>com.microsoft.azure.functions</groupId>
             <artifactId>azure-functions-java-library</artifactId>
             <version>${azure.functions.java.library.version}</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.microsoft.azure/azure-storage -->
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-storage</artifactId>
             <version>${azure.storage.table.version}</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.azure/azure-storage-queue -->
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-storage-queue</artifactId>
             <version>${azure.storage.queue.version}</version>
         </dependency>
+
+        <!-- End Azure -->
 
         <!-- Test -->
         <dependency>
@@ -61,7 +63,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.testcontainers/junit-jupiter -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -101,6 +102,55 @@
             <version>2.3.1</version>
         </dependency>
 
+        <!-- resteasy START -->
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+            <version>${resteasy.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jackson2-provider</artifactId>
+            <version>${resteasy.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jaxb-provider</artifactId>
+            <version>6.0.0.Final</version>
+        </dependency>
+
+        <!-- resteasy END -->
+
+        <!-- Jackson START-->
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.13.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.13.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.13.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+            <version>2.13.1</version>
+        </dependency>
+
+        <!-- Jackson END-->
+
         <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -113,6 +163,25 @@
 
     <build>
         <plugins>
+            <!-- START run init scripts -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <executions>
+                    <execution>
+                        <id>update-wsdl-location</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <executable>${project.basedir}/upd_wsdl_location.sh</executable>
+                </configuration>
+            </plugin>
+            <!-- STOP  run init scripts -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -136,6 +205,13 @@
                             <value>~3</value>
                         </property>
                     </appSettings>
+                    <resourceGroup>java-functions-group</resourceGroup>
+                    <appServicePlanName>java-functions-app-service-plan</appServicePlanName>
+                    <region>westus</region>
+                    <runtime>
+            <os>windows</os>
+            <javaVersion>11</javaVersion>
+          </runtime>
                 </configuration>
                 <executions>
                     <execution>
