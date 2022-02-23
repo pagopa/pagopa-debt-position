@@ -56,6 +56,19 @@ The easiest way to develop locally is start only db container and run spring-boo
 /usr/local/bin/docker-compose up -d flyway
 ```
 
+### FlyWay - versioning schema changes
+For Spring Boot project:
+- Add Flyway as a dependency in pom.xml
+<dependency>
+    <groupId>org.flywaydb</groupId>
+    <artifactId>flyway-core</artifactId>
+</dependency>
+
+When this dependency added Spring Boot detects Flyway on the classpath and it will run it on startup.
+In this way, by default, flyway looks at files in the format V$X__$DESCRIPTION.sql (where $X is the migration version name) in the folder src/main/resources/db/migration.
+Example of the naming convention is: V001__INIT.sql
+
+> **NOTE**: In the application.properties the ddl-auto configuration must be validate. This causes Hibernate to validate the schema to see if it matches with what is defined in Java.
 
 ## Start the dev environment for reporting subsystem
 
@@ -104,7 +117,6 @@ mv local.settings.json.example local.settings.json
 ```
 mvn azure-functions:run
 ```
-
 
 ### Testing 🧪
 
@@ -175,4 +187,6 @@ under `gpd` folder typing
 
 ### Mainteiners
 See `CODEOWNERS` file
+
+
 

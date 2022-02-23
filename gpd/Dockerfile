@@ -1,5 +1,5 @@
 FROM  adoptopenjdk/openjdk11:jdk-11.0.9.1_1-alpine
-ARG JAR_FILE=./target/debt*.jar
+ARG JAR_FILE=./target/gpd*.jar
 
 EXPOSE 8085
 
