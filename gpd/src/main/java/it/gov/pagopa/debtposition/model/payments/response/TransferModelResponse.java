@@ -3,12 +3,14 @@ package it.gov.pagopa.debtposition.model.payments.response;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@Schema(name = "PaymentsTransferModelResponse")
 public class TransferModelResponse implements Serializable {
 
     /**

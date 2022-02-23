@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 public class GPDService {
 
     private String gpdHost = System.getenv("GPD_HOST");
-    private final String gpdOrganizationsService = "/organizations";
+    private static final String GDP_ORGANIZATIONS_SERVICE = "/organizations";
 
     private static GPDService instance = null;
 
@@ -27,7 +27,7 @@ public class GPDService {
         String sinceDate = since.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy"));
 
         return  ClientBuilder.newClient()
-                .target(gpdHost + gpdOrganizationsService)
+                .target(gpdHost + GDP_ORGANIZATIONS_SERVICE)
                 .queryParam("since", sinceDate)
                 .request()
                 .accept(MediaType.APPLICATION_JSON)

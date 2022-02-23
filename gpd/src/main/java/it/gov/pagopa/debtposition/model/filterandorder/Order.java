@@ -23,6 +23,7 @@ public class Order {
     @Getter
     @AllArgsConstructor
     public enum PaymentPositionOrder implements OrderType {
+    	INSERTED_DATE("insertedDate"),
         IUPD("iupd"),
         STATUS("status"),
         COMPANY_NAME("companyName");

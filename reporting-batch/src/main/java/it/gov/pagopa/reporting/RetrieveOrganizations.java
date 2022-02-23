@@ -26,11 +26,11 @@ public class RetrieveOrganizations {
      * This function will be invoked periodically according to the specified
      * schedule.
      */
-//    @TimerTrigger(name = "ReportingBatchTrigger", schedule = "0 */1 * * * *") String timerInfo,
+    //  schedule = "*/5 * * * * *"
 
     @FunctionName("ReportingBatchFunction")
     public void run(
-            @TimerTrigger(name = "ReportingBatchTrigger", schedule = "*/45 * * * * *") String timerInfo,
+            @TimerTrigger(name = "ReportingBatchTrigger", schedule = "%NCRON_SCHEDULE_BATCH%") String timerInfo,
             final ExecutionContext context
     ) {
 
@@ -39,15 +39,23 @@ public class RetrieveOrganizations {
         logger.log(Level.INFO, () -> "Reporting Batch Trigger function executed at: " + LocalDateTime.now());
 
         // call GPD to retrieve organization list
-        Organizations organizationList = GPDService.getInstance().getOrganizations(LocalDate.now());
+        Organizations organizationList = this.getGPDClientInstance().getOrganizations(LocalDate.now());
 
         // update organization list to flows table
-        OrganizationsService organizationsService = new OrganizationsService(storageConnectionString, organizationsTable, organizationsQueue, logger);
+        OrganizationsService organizationsService = this.getOrganizationsServiceInstance(logger);
         List<String> organizationListToProcess = organizationsService.processOrganizationList(organizationList);
 
         // add to organizations queue
         organizationsService.addToOrganizationsQueue(organizationListToProcess);
 
+    }
+
+    public GPDService getGPDClientInstance() {
+        return GPDService.getInstance();
+    }
+
+    public OrganizationsService getOrganizationsServiceInstance(Logger logger) {
+        return new OrganizationsService(this.storageConnectionString, this.organizationsTable, this.organizationsQueue, logger);
     }
 
 }

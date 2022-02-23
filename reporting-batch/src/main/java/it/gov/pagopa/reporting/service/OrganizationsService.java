@@ -38,40 +38,24 @@ public class OrganizationsService {
         this.logger = logger;
     }
 
-    private void createTable() throws URISyntaxException, InvalidKeyException, StorageException {
-        // Create a new table
-        CloudTable table = CloudStorageAccount.parse(storageConnectionString)
-                .createCloudTableClient().getTableReference(this.organizationsTable);
-        if (!table.exists()) {
-            table.createIfNotExists();
-        }
-    }
-
-    private void createQueue() throws URISyntaxException, InvalidKeyException, StorageException {
-        // Create a new queue
-        CloudQueue queue = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
-                .getQueueReference(this.organzagionsQueue);
-        queue.createIfNotExists();
-    }
-
     public List<String> processOrganizationList(Organizations organizations) {
         this.logger.info("Processing organization list");
 
-        if (false) { // debugazurite
-            try {
-                createTable();
-            } catch (Exception e) {
-                this.logger.severe(String.format("[OrganizationsService] Problem to retrieve organization list: %s", e.getLocalizedMessage()));
-                return new ArrayList<>();
-            }
-
-            try {
-                createQueue();
-            } catch (URISyntaxException | InvalidKeyException | StorageException e ) {
-                this.logger.severe(String.format("[OrganizationsService] Problem to retrieve organization list: %s", e.getLocalizedMessage()));
-                e.printStackTrace();
-            }
-        }
+//        if (debugAzurite) {
+//            try {
+//                createTable();
+//            } catch (Exception e) {
+//                this.logger.severe(String.format("[OrganizationsService] Problem to retrieve organization list: %s", e.getLocalizedMessage()));
+//                return new ArrayList<>();
+//            }
+//
+//            try {
+//                createQueue();
+//            } catch (URISyntaxException | InvalidKeyException | StorageException e ) {
+//                this.logger.severe(String.format("[OrganizationsService] Problem to retrieve organization list: %s", e.getLocalizedMessage()));
+//                e.printStackTrace();
+//            }
+//        }
 
 
         // create batch partition due to max batch size of Azure Table Storage - 100
@@ -143,6 +127,22 @@ public class OrganizationsService {
         }
     }
 
+//    private void createTable() throws URISyntaxException, InvalidKeyException, StorageException {
+//        // Create a new table
+//        CloudTable table = CloudStorageAccount.parse(storageConnectionString)
+//                .createCloudTableClient().getTableReference(this.organizationsTable);
+//        if (!table.exists()) {
+//            table.createIfNotExists();
+//        }
+//    }
+//
+//    private void createQueue() throws URISyntaxException, InvalidKeyException, StorageException {
+//        // Create a new queue
+//        CloudQueue queue = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
+//                .getQueueReference(this.organzagionsQueue);
+//        queue.createIfNotExists();
+//    }
+
     private List<String> getOrganizationList() throws URISyntaxException, InvalidKeyException, StorageException {
         CloudTable table = CloudStorageAccount.parse(storageConnectionString)
                 .createCloudTableClient()
@@ -150,8 +150,7 @@ public class OrganizationsService {
 
         ArrayList<String> organizationsList = new ArrayList<>();
         // Iterate through the results
-        for (OrganizationEntity entity : table.execute(TableQuery.from(OrganizationEntity.class).where((TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, OrganizationEntity.organizationKey))))) {
-            // this.logger.info(String.format("\tOrganizationEntity: %s,%s", entity.getPartitionKey(), entity.getRowKey()));
+        for (OrganizationEntity entity : table.execute(TableQuery.from(OrganizationEntity.class).where((TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, OrganizationEntity.ORGANIZATION_KEY))))) {
             organizationsList.add(entity.getRowKey());
         }
 
@@ -174,7 +173,8 @@ public class OrganizationsService {
     }
 
     public void addOrganization(String organization) throws URISyntaxException, InvalidKeyException, StorageException {
-        this.logger.info("Processing add organization " + organization);
+        this.logger.log(Level.INFO, () -> "Processing add organization " + organization);
+
         CloudTable table = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
                 .getTableReference(this.organizationsTable);
 
@@ -196,7 +196,8 @@ public class OrganizationsService {
     }
 
     public void deleteOrganization(String organization) throws URISyntaxException, InvalidKeyException, StorageException {
-        this.logger.info("Processing delete organization " + organization);
+        this.logger.log(Level.INFO, () -> "Processing delete organization " + organization);
+
         CloudTable table = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
                 .getTableReference(this.organizationsTable);
 
@@ -234,11 +235,6 @@ public class OrganizationsService {
         } catch (URISyntaxException | StorageException | InvalidKeyException e) {
             this.logger.log(Level.SEVERE, () -> "[OrganizationsService]  Error " + e.getLocalizedMessage());
         }
-
-
-
-
-
 
     }
 

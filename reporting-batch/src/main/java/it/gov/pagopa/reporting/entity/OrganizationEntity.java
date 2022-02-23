@@ -12,17 +12,18 @@ import lombok.Setter;
 public class OrganizationEntity extends TableServiceEntity {
 
     private String organizationOnboardingDate;
-    public static final String organizationKey = "organization";
+    public static final String ORGANIZATION_KEY = "organization";
 
     public OrganizationEntity(String organizationId, String organizationOnboardingDate) {
-        this.partitionKey = organizationKey;
+        this.partitionKey = ORGANIZATION_KEY;
         this.rowKey = organizationId;
         this.organizationOnboardingDate = organizationOnboardingDate;
     }
 
     public OrganizationEntity(String organizationId) {
-        this.partitionKey = organizationKey;
+        this.partitionKey = ORGANIZATION_KEY;
         this.rowKey = organizationId;
+        // https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.cosmos.table.tableentity.etag?view=azure-dotnet#microsoft-azure-cosmos-table-tableentity-etag
         this.etag = "*";
     }
 }

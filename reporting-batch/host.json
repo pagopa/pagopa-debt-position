@@ -4,6 +4,7 @@
     "id": "Microsoft.Azure.Functions.ExtensionBundle",
     "version": "[2.*, 3.0.0)"
   },
+  "functions": ["ReportingBatchFunction"],
   "logging": {
     "fileLoggingMode": "always",
     "logLevel": {
