@@ -1,5 +1,8 @@
 package it.gov.pagopa.debtposition.controller.payments.api.impl;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,12 +12,15 @@ import org.springframework.stereotype.Controller;
 
 import it.gov.pagopa.debtposition.controller.payments.api.IPaymentsController;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.TransferModelResponse;
+import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
+import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
 import it.gov.pagopa.debtposition.service.payments.PaymentsService;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -68,6 +74,16 @@ public class PaymentsController implements IPaymentsController {
 			return new ResponseEntity<>(ObjectMapperUtils.map(reportedTransfer, TransferModelResponse.class), HttpStatus.OK);
 		}
 		throw new AppException(AppError.TRANSFER_REPORTING_FAILED, organizationFiscalCode, iuv, transferId);
+	}
+
+	@Override
+	public ResponseEntity<PaymentPositionsInfo> getOrganizations(@Valid LocalDate since) {
+		List<PaymentPosition> ppList = paymentsService.getOrganizations(since);
+		// flip entity to model
+		List<PaymentPositionModelBaseResponse> ppResponseList = ObjectMapperUtils.mapAll(
+			ppList, 
+			PaymentPositionModelBaseResponse.class);
+		return null;
 	}
 
 }

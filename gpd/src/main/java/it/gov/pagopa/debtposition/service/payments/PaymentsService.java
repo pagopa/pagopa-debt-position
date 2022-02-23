@@ -1,7 +1,9 @@
 package it.gov.pagopa.debtposition.service.payments;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
 
 import javax.validation.Valid;
@@ -9,6 +11,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +27,7 @@ import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
+import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByInsertedDate;
 import it.gov.pagopa.debtposition.validation.DebtPositionValidation;
 import lombok.extern.slf4j.Slf4j;
 
@@ -82,6 +86,11 @@ public class PaymentsService {
 		DebtPositionValidation.checkPaymentPositionAccountability(ppToReport.get(), iuv, transferId);
        
 		return this.updateTransferStatus(ppToReport.get(), iuv, transferId);
+	}
+	
+	public List<PaymentPosition> getOrganizations (@NotNull LocalDate since) {
+		Specification<PaymentPosition> spec = Specification.where(new PaymentPositionByInsertedDate(since.atStartOfDay()));
+		return paymentPositionRepository.findAll(spec);
 	}
 	
 	private PaymentOption updatePaymentStatus (PaymentPosition pp, String iuv, PaymentOptionModel paymentOptionModel) {
