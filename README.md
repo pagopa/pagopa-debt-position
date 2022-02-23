@@ -66,6 +66,7 @@ For Spring Boot project:
 
 When this dependency added Spring Boot detects Flyway on the classpath and it will run it on startup.
 In this way, by default, flyway looks at files in the format V$X__$DESCRIPTION.sql (where $X is the migration version name) in the folder src/main/resources/db/migration.
+Example of the naming convention is: V001__INIT.sql
 
 > **NOTE**: In the application.properties the ddl-auto configuration must be validate. This causes Hibernate to validate the schema to see if it matches with what’s defined in Java.
 
