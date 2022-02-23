@@ -173,7 +173,8 @@ public class OrganizationsService {
     }
 
     public void addOrganization(String organization) throws URISyntaxException, InvalidKeyException, StorageException {
-        this.logger.info("Processing add organization " + organization);
+        this.logger.log(Level.INFO, () -> "Processing add organization " + organization);
+
         CloudTable table = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
                 .getTableReference(this.organizationsTable);
 
@@ -195,7 +196,8 @@ public class OrganizationsService {
     }
 
     public void deleteOrganization(String organization) throws URISyntaxException, InvalidKeyException, StorageException {
-        this.logger.info("Processing delete organization " + organization);
+        this.logger.log(Level.INFO, () -> "Processing delete organization " + organization);
+
         CloudTable table = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
                 .getTableReference(this.organizationsTable);
 

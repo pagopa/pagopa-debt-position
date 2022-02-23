@@ -144,7 +144,7 @@ public class FlowsService {
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
-        partition.stream().forEach(flow -> batchOperation.insert(
+        partition.forEach(flow -> batchOperation.insert(
                 new FlowEntity(flow.getIdentificativoFlusso(), sdf.format(flow.getDataOraFlusso().toGregorianCalendar().getTime()), idPA)
         ));
 

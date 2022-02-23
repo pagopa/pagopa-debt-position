@@ -26,11 +26,11 @@ public class RetrieveOrganizations {
      * This function will be invoked periodically according to the specified
      * schedule.
      */
-//    @TimerTrigger(name = "ReportingBatchTrigger", schedule = "0 */1 * * * *") String timerInfo,
+    //  schedule = "*/5 * * * * *"
 
     @FunctionName("ReportingBatchFunction")
     public void run(
-            @TimerTrigger(name = "ReportingBatchTrigger", schedule = "*/5 * * * * *") String timerInfo,
+            @TimerTrigger(name = "ReportingBatchTrigger", schedule = "%NCRON_SCHEDULE_BATCH%") String timerInfo,
             final ExecutionContext context
     ) {
 

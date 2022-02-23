@@ -23,6 +23,7 @@ public class OrganizationEntity extends TableServiceEntity {
     public OrganizationEntity(String organizationId) {
         this.partitionKey = ORGANIZATION_KEY;
         this.rowKey = organizationId;
+        // https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.cosmos.table.tableentity.etag?view=azure-dotnet#microsoft-azure-cosmos-table-tableentity-etag
         this.etag = "*";
     }
 }
