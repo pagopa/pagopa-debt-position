@@ -57,7 +57,6 @@ The easiest way to develop locally is start only db container and run spring-boo
 ```
 
 ### FlyWay - versioning schema changes
-### FlyWay - versioning schema changes
 For Spring Boot project:
 - Add Flyway as a dependency in pom.xml
 <dependency>
