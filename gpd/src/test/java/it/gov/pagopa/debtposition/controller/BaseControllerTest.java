@@ -19,6 +19,6 @@ class BaseControllerTest {
 
   @Test
   void shouldRespondOKtoHeartBeat() throws Exception {
-    mockMvc.perform(get("/")).andExpect(status().isOk());
+    mockMvc.perform(get("/info")).andExpect(status().isOk());
   }
 }
