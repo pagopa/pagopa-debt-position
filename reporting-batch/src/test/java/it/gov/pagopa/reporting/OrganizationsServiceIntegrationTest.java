@@ -177,6 +177,43 @@ class OrganizationsServiceIntegrationTest {
     }
 
     @Test
+    void delOrganizationLisNotExisttTest() throws ParseException, DatatypeConfigurationException, InvalidKeyException,
+            URISyntaxException, StorageException, JsonProcessingException {
+
+//        CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient().getQueueReference(this.flowsQueue)
+//                .createIfNotExists();
+
+//        CloudStorageAccount.parse(storageConnectionString).createCloudTableClient().getTableReference(this.orgsTable)
+//                .createIfNotExists();
+
+        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable, this.orgsQueue,
+                logger);
+
+        Organizations orgs = new Organizations();
+
+        List<String> added = new ArrayList<>();
+        orgs.setAdd(added);
+
+        List<String> deleted = new ArrayList<>();
+        deleted.add("90000000001");
+        deleted.add("90000000001");
+
+        orgs.setDelete(deleted);
+
+        List<String> updateOrganizationsList = organizationsService.processOrganizationList(orgs); // delete ------------
+
+        List<String> chk1 = new ArrayList<>();
+        chk1.add("90000000002");
+        chk1.add("90000000003");
+        chk1.add("90000000004");
+        int index1 = 0;
+        for (String o : updateOrganizationsList) {
+            assertTrue(o.equals(chk1.get(index1++)));
+        }
+
+    }
+
+    @Test
     void addToOrganizationsQueuetTest()  throws ParseException, DatatypeConfigurationException, InvalidKeyException,
     URISyntaxException, StorageException, JsonProcessingException {
 

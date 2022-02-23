@@ -33,4 +33,5 @@ public class GPDService {
                 .accept(MediaType.APPLICATION_JSON)
                 .get(Organizations.class);
     }
+
 }
