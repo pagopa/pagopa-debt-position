@@ -5,6 +5,7 @@ import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
 import com.microsoft.azure.storage.table.TableQuery;
+import com.microsoft.azure.storage.table.TableServiceException;
 import it.gov.pagopa.reporting.entity.OrganizationEntity;
 import it.gov.pagopa.reporting.models.Organizations;
 import it.gov.pagopa.reporting.service.FlowsService;
@@ -32,8 +33,7 @@ import java.util.logging.Logger;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @Testcontainers
 class OrganizationsServiceIntegrationTest {
@@ -57,11 +57,11 @@ class OrganizationsServiceIntegrationTest {
     void addOrganizationListTest() throws ParseException, DatatypeConfigurationException, InvalidKeyException,
             URISyntaxException, StorageException, JsonProcessingException {
 
-        CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient().getQueueReference(this.orgsQueue)
-                .createIfNotExists();
-
-        CloudStorageAccount.parse(storageConnectionString).createCloudTableClient().getTableReference(this.orgsTable)
-                .createIfNotExists();
+//        CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient().getQueueReference(this.orgsQueue)
+//                .createIfNotExists();
+//
+//        CloudStorageAccount.parse(storageConnectionString).createCloudTableClient().getTableReference(this.orgsTable)
+//                .createIfNotExists();
 
         OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable, this.orgsQueue,
                 logger);
@@ -88,6 +88,52 @@ class OrganizationsServiceIntegrationTest {
         chk.add("90000000001");
         chk.add("90000000002");
         chk.add("90000000003");
+        chk.add("90000000004");
+        int index = 0;
+        for (OrganizationEntity r : rows) {
+            assertTrue(r.getRowKey().contains(chk.get(index++)));
+        }
+
+    }
+
+    @Test
+    void addOrganizationListTestSingle() throws ParseException, DatatypeConfigurationException, InvalidKeyException,
+            URISyntaxException, StorageException, JsonProcessingException {
+
+        CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient().getQueueReference(this.orgsQueue)
+                .createIfNotExists();
+
+        CloudStorageAccount.parse(storageConnectionString).createCloudTableClient().getTableReference(this.orgsTable)
+                .createIfNotExists();
+
+        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable, this.orgsQueue,
+                logger);
+
+        Organizations orgs = new Organizations();
+
+        List<String> added = new ArrayList<>();
+        added.add("90000000001");
+        added.add("90000000002");
+        added.add("90000000003");
+        added.add("90000000004");
+        orgs.setAdd(added);
+        List<String> deleted = new ArrayList<>();
+        orgs.setDelete(deleted);
+
+        //doThrow(TableServiceException.class).when(organizationsService).addOrganizationList(any());
+        organizationsService.processOrganizationList(orgs);
+
+        TableQuery<OrganizationEntity> query = new TableQuery<OrganizationEntity>();
+
+        Iterable<OrganizationEntity> rows = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
+                .getTableReference(this.orgsTable)
+                .execute(TableQuery.from(OrganizationEntity.class).where((TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, "organization"))));
+
+        List<String> chk = new ArrayList<>();
+        chk.add("90000000001");
+        chk.add("90000000002");
+        chk.add("90000000003");
+        chk.add("90000000004");
         int index = 0;
         for (OrganizationEntity r : rows) {
             assertTrue(r.getRowKey().contains(chk.get(index++)));
@@ -122,6 +168,7 @@ class OrganizationsServiceIntegrationTest {
 
         List<String> chk1 = new ArrayList<>();
         chk1.add("90000000003");
+        chk1.add("90000000004");
         int index1 = 0;
         for (String o : updateOrganizationsList) {
             assertTrue(o.equals(chk1.get(index1++)));

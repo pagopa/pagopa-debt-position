@@ -203,8 +203,11 @@ class DebtPositionControllerTest {
 				+ df.format(LocalDateTime.now(ZoneOffset.UTC).plus(1, ChronoUnit.DAYS));
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(0)));
-	}
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(2)))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[*].iuv")
+				.value(Matchers.hasSize(1)))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[*].iuv")
+				.value(Matchers.hasSize(3)));	}
 
 	@Test
 	void getDebtPositionListDueDateGreaterThanOrEqual() throws Exception {
