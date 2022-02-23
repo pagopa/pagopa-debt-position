@@ -36,11 +36,11 @@ public class UpdateOption {
             logger.log(Level.INFO, () -> "[UpdateOptionFunction] Update flow " + options.getIdFlow() + " with data "
                     + options.getFlowDate());
 
-            GPDService gpdService = GPDService.getInstance();
+            GPDService gpdService = this.getGPDServiceInstance();
             options.getPaymentOptions()
                     .forEach(paymentOption -> {
                         logger.log(Level.INFO, () -> "Update to RENDICONTATO iuv : " + paymentOption.getOptionId() + " - " + paymentOption.getTransferId());
-                        gpdService.setReport(options.getIdPA(), paymentOption);                                
+                        gpdService.setReport(options.getIdPA(), paymentOption);
                     });
 
             logger.log(Level.INFO, () -> "[UpdateOptionFunction END]  processed a message " + message);
@@ -54,5 +54,9 @@ public class UpdateOption {
                     + e.getCause() + " - message " + message);
         }
 
+    }
+
+    public GPDService getGPDServiceInstance() {
+        return GPDService.getInstance();
     }
 }

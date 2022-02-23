@@ -9,7 +9,6 @@ import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
 
 import it.gov.pagopa.reporting.models.OptionsMessage;
-import it.gov.pagopa.reporting.models.OptionsReportingModel;
 import it.gov.pagopa.reporting.models.PaymentOption;
 
 import java.net.URISyntaxException;

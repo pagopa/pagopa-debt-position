@@ -46,26 +46,26 @@ class ElaborateOptionsTest {
         return resultStringBuilder.toString();
     }
 
-//    @Test
-//    void runOkTest() throws IOException {
-//
-//        when(context.getLogger()).thenReturn(Logger.getLogger("InfoLogging"));
-//
-//        ClassLoader classLoader = getClass().getClassLoader();
-//        InputStream inputStream = classLoader.getResourceAsStream("idflow##dataflow.xml");
-//        String data = readFromInputStream(inputStream);
-//
-//        byte[] file = data.getBytes();
-//
-//        Logger logger = Logger.getLogger("InfoLogging");
-//        doReturn(optionsService).when(function).getOptionsServiceInstance(logger);
-//
-//        function.run(file, "idFlow##dataFlow.xml", context);
-//
-//        verify(context, times(1)).getLogger();
-//        verify(optionsService, times(1)).optionsProcessing(any(), anyString(), anyString());
-//
-//    }
+    @Test
+    void runOkTest() throws IOException {
+
+        when(context.getLogger()).thenReturn(Logger.getLogger("InfoLogging"));
+
+        ClassLoader classLoader = getClass().getClassLoader();
+        InputStream inputStream = classLoader.getResourceAsStream("dataflow##idPA##idflow.xml");
+        String data = readFromInputStream(inputStream);
+
+        byte[] file = data.getBytes();
+
+        Logger logger = Logger.getLogger("InfoLogging");
+        doReturn(optionsService).when(function).getOptionsServiceInstance(logger);
+
+        function.run(file, "dataflow##idPA##idflow.xml", context);
+
+        verify(context, times(1)).getLogger();
+        verify(optionsService, times(1)).optionsProcessing(any(), anyString(), anyString(), anyString());
+
+    }
 
     @Test
     void getOptionsServiceIstanceTest() throws Exception {

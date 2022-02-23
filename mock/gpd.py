@@ -46,7 +46,7 @@ class reportsHandler(tornado.web.RequestHandler):
     def post(self,idpa,iuv,idtransfer):
         print("request received")
         print(f"{self.request}{self.request.body.decode()} - {idpa} - {iuv} - {idtransfer}")
-        self.write("")
+        self.write(json.dumps(dict()))
 
 def make_app():
     return tornado.web.Application([

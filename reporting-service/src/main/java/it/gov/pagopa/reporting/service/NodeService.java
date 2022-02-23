@@ -1,19 +1,8 @@
 package it.gov.pagopa.reporting.service;
 
-import java.io.IOException;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import java.security.spec.InvalidKeySpecException;
-
 import javax.activation.DataHandler;
-import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Holder;
-
-import it.gov.pagopa.reporting.config.SslConfig;
 import it.gov.pagopa.reporting.servicewsdl.FaultBean;
 import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPTservice;
 import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPT;
