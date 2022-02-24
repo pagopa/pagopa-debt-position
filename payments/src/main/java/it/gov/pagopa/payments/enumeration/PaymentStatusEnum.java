@@ -1,19 +1,11 @@
 package it.gov.pagopa.payments.enumeration;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public enum PaymentStatusEnum {
-    BOZZA(1),
-    PUBBLICATO(2),
-    PAGATO(3),
-    PAGATO_PARZIALE(4),
-    RENDICONTATO_PARZIALE(5),
-    RENDICONTATO(6);
+    DRAFT, PUBLISHED, VALID, INVALID, EXPIRED, PARTIALLY_PAID, PAID, REPORTED;
 
-    private final Integer status;
-    
-    PaymentStatusEnum(Integer status) {
-        this.status = status;
-    }
 }

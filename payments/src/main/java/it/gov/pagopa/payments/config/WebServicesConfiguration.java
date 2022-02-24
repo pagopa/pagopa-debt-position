@@ -1,8 +1,8 @@
 package it.gov.pagopa.payments.config;
 
-import java.util.List;
-import java.util.Properties;
-
+import it.gov.pagopa.payments.endpoints.validation.SoapMessageDispatcher;
+import it.gov.pagopa.payments.endpoints.validation.SoapValidatingInterceptor;
+import it.gov.pagopa.payments.model.partner.ObjectFactory;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -16,9 +16,8 @@ import org.springframework.ws.wsdl.wsdl11.DefaultWsdl11Definition;
 import org.springframework.xml.xsd.SimpleXsdSchema;
 import org.springframework.xml.xsd.XsdSchema;
 
-import it.gov.pagopa.payments.endpoints.validation.SoapMessageDispatcher;
-import it.gov.pagopa.payments.endpoints.validation.SoapValidatingInterceptor;
-import it.gov.pagopa.payments.model.partner.ObjectFactory;
+import java.util.List;
+import java.util.Properties;
 
 @EnableWs
 @Configuration
@@ -43,7 +42,7 @@ public class WebServicesConfiguration extends WsConfigurerAdapter {
         DefaultWsdl11Definition wsdl11Definition = new DefaultWsdl11Definition();
         wsdl11Definition.setPortTypeName("PartnerPort");
         wsdl11Definition.setLocationUri("/partner");
-        wsdl11Definition.setTargetNamespace("http://pagopa-api.pagopa.gov.it/partner");
+        wsdl11Definition.setTargetNamespace("http://pagopa-api.pagopa.gov.it/partner"); // TODO verify
 
         // Required to make the naming schema compatible to xsd definition
         wsdl11Definition.setRequestSuffix("Req");

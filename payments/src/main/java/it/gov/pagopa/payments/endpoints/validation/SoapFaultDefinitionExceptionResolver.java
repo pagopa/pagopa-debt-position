@@ -1,8 +1,8 @@
 package it.gov.pagopa.payments.endpoints.validation;
 
 import it.gov.pagopa.payments.endpoints.validation.exceptions.PartnerValidationException;
-import org.springframework.core.annotation.Order;
 import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.ws.context.MessageContext;
 import org.springframework.ws.server.EndpointExceptionResolver;

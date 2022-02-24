@@ -1,6 +1,19 @@
 package it.gov.pagopa.payments.endpoints.validation;
 
-import java.io.IOException;
+import it.gov.pagopa.payments.endpoints.validation.exceptions.PartnerValidationException;
+import it.gov.pagopa.payments.model.partner.CtFaultBean;
+import it.gov.pagopa.payments.model.partner.CtResponse;
+import it.gov.pagopa.payments.model.partner.ObjectFactory;
+import it.gov.pagopa.payments.model.partner.PaGetPaymentRes;
+import it.gov.pagopa.payments.model.partner.PaSendRTRes;
+import it.gov.pagopa.payments.model.partner.PaVerifyPaymentNoticeRes;
+import it.gov.pagopa.payments.model.partner.StOutcome;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.ws.transport.http.MessageDispatcherServlet;
+import org.w3c.dom.Document;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -14,22 +27,7 @@ import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPBody;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
-
-import it.gov.pagopa.payments.endpoints.validation.exceptions.PartnerValidationException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.ws.transport.http.MessageDispatcherServlet;
-import org.w3c.dom.Document;
-
-import it.gov.pagopa.payments.model.partner.CtFaultBean;
-import it.gov.pagopa.payments.model.partner.CtResponse;
-import it.gov.pagopa.payments.model.partner.ObjectFactory;
-import it.gov.pagopa.payments.model.partner.PaGetPaymentRes;
-import it.gov.pagopa.payments.model.partner.PaSendRTRes;
-import it.gov.pagopa.payments.model.partner.PaVerifyPaymentNoticeRes;
-import it.gov.pagopa.payments.model.partner.StOutcome;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
 
 @Component
 @Slf4j
@@ -42,17 +40,14 @@ public class SoapMessageDispatcher extends MessageDispatcherServlet {
 
     private static final String SOAP_PREFIX = "soapenv";
 
-    private static String intermediario = null;
-
     @Value("${pt.id_intermediario}")
-    public void setIdIntermediario(String idIntermediario){
-        intermediario = idIntermediario;
-    }
+    private static String intermediario;
+
 
     @Override
     protected void doService(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
 
-        String fultCode = null;
+        String faultCode = null;
         String faultString = null;
         String description = null;
         PaVerifyPaymentNoticeRes paVerifyPaymentNoticeRes = null;
@@ -68,12 +63,11 @@ public class SoapMessageDispatcher extends MessageDispatcherServlet {
                 : null;
 
         try {
-
             super.doService(httpServletRequest, httpServletResponse);
         } catch (PartnerValidationException e) {
 
             log.error("Processing resulted in exception: " + e.getMessage());
-            fultCode = e.getError().getFaultCode();
+            faultCode = e.getError().getFaultCode();
             faultString = e.getError().getFaultString();
             description = e.getError().getDescription();
             httpServletResponse.setStatus(200);
@@ -84,11 +78,11 @@ public class SoapMessageDispatcher extends MessageDispatcherServlet {
             httpServletResponse.setStatus(500);
         }
 
-        if (fultCode != null && soapAction != null) {
+        if (faultCode != null && soapAction != null) {
 
             CtFaultBean faultBean = factory.createCtFaultBean();
             faultBean.setDescription(description);
-            faultBean.setFaultCode(fultCode);
+            faultBean.setFaultCode(faultCode);
             faultBean.setFaultString(faultString);
             faultBean.setId(intermediario);
 
