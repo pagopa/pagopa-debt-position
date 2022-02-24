@@ -7,13 +7,17 @@ import static org.mockito.Mockito.spy;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.text.ParseException;
-import java.util.logging.Logger;
+import java.util.Arrays;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.logging.Logger;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.queue.CloudQueueMessage;
+import it.gov.pagopa.reporting.models.PaymentOption;
 import org.junit.ClassRule;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
@@ -42,6 +46,7 @@ class OptionServiceTestIntegrationTest {
             azurite.getMappedPort(10001));
 
     String flowsQueue = "testqueue";
+    String idPA = "idPA";
     String idFlow = "idflow1";
     String dataFlow = "2014-04-24 11:15:00";
 
@@ -49,39 +54,31 @@ class OptionServiceTestIntegrationTest {
 
     @Test
     void optionsProcessingTest()
-            throws ParseException, DatatypeConfigurationException, InvalidKeyException, URISyntaxException {
+            throws ParseException, DatatypeConfigurationException, InvalidKeyException, URISyntaxException, StorageException {
 
-        optionsService = spy(
-                new OptionsService(storageConnectionString, flowsQueue, "http://paymenthost", "3", logger));
+        optionsService = spy(new OptionsService(storageConnectionString, flowsQueue, logger));
 
-        List<String> options = new ArrayList<>();
-        options.add("identificativoUnivocoVersamento1");
-        options.add("identificativoUnivocoVersamento2");
-        options.add("identificativoUnivocoVersamento3");
+        PaymentOption p1 = new PaymentOption("op1", 1);
+        PaymentOption p2 = new PaymentOption("op2", 2);
+        PaymentOption p3 = new PaymentOption("op3", 3);
 
         try {
-            optionsService.optionsProcessing(options, idFlow, dataFlow);
+            optionsService.optionsProcessing(List.of(p1,p2,p3),idPA, idFlow, dataFlow);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
 
         assertTrue(true);
-    }
 
-    @Test
-    void callPaymentKoTest()
-            throws ParseException, DatatypeConfigurationException, InvalidKeyException, URISyntaxException {
+        Iterable<CloudQueueMessage> messagges = CloudStorageAccount.parse(storageConnectionString)
+                .createCloudQueueClient().getQueueReference(this.flowsQueue).retrieveMessages(32);
 
-        optionsService = spy(
-                new OptionsService(storageConnectionString, flowsQueue, "http://paymenthost", "3", logger));
-        OptionsMessage options = new OptionsMessage();
+        for (CloudQueueMessage cloudQueueMessage : messagges) {
 
-        try {
-            optionsService.callPaymentServiceToReportOption(options);
-        } catch (Exception e) {
-            assertTrue(true);
+            assertTrue(cloudQueueMessage.getMessageContentAsString().contains(p1.getOptionId())
+                    || cloudQueueMessage.getMessageContentAsString().contains(p2.getOptionId())
+                    || cloudQueueMessage.getMessageContentAsString().contains(p3.getOptionId()));
         }
-
     }
 
     @Test
@@ -92,26 +89,6 @@ class OptionServiceTestIntegrationTest {
         response.setResult(Boolean.TRUE);
 
         assertEquals(Boolean.TRUE, response.getResult());
-    }
-
-    @Test
-    void getOptionsReportingModel() {
-
-        OptionsService optionsService = new OptionsService(storageConnectionString, flowsQueue, "http://paymenthost",
-                "3", logger);
-
-        OptionsMessage optionsMessage = new OptionsMessage();
-        optionsMessage.setIdFlow("idFlow");
-        optionsMessage.setDateFlow("dateFlow");
-        optionsMessage.setIuvs(new String[] { "iuv1", "iuv2" });
-        optionsService.getOptionsReportingModel(optionsMessage);
-
-        OptionsReportingModel optionsReportingModel = optionsService.getOptionsReportingModel(optionsMessage);
-
-        assertEquals("3iuv1", optionsReportingModel.getNotificationCodes().get(0));
-        assertEquals("3iuv2", optionsReportingModel.getNotificationCodes().get(1));
-        assertEquals("idFlow", optionsReportingModel.getIdFlow());
-        assertEquals("dateFlow", optionsReportingModel.getDateFlow());
     }
 
 }

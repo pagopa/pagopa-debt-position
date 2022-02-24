@@ -2,6 +2,7 @@ package it.gov.pagopa.reporting.functions;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -12,6 +13,7 @@ import java.util.logging.Logger;
 
 import com.microsoft.azure.functions.ExecutionContext;
 
+import it.gov.pagopa.reporting.service.GPDService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -26,26 +28,28 @@ class OptionFunctionTest {
     @Mock
     ExecutionContext context;
 
-    @Mock
-    OptionsService optionsService;
-
     @Spy
-    OptionsFunction function;
+    UpdateOption function;
+
+    @Mock
+    GPDService gpdServiceFake;
 
     @Test
     void runOkTest() {
 
         Logger logger = Logger.getLogger("InfoLogging");
 
-        String message = "{\"idFlow\":\"00595780131\",\"iuvs\":[\"1627293600000\"],\"dateFlow\":1627293600000}";
+    String message =
+        "{\"idPA\":\"77777777777\",\"idFlow\":\"00595780131\",\"flowDate\":1627293600000,\"paymentOptions\":[{\"optionId\":\"09909090909\",\"transferId\":\"1\"},{\"optionId\":\"09909090909\",\"transferId\":\"1\"}]}";
         when(context.getLogger()).thenReturn(logger);
 
-        doReturn(optionsService).when(function).getOptionsServiceInstance(logger);
+        when(function.getGPDServiceInstance()).thenReturn(gpdServiceFake);
 
         function.run(message, context);
 
         verify(context, times(1)).getLogger();
-        verify(optionsService, times(1)).callPaymentServiceToReportOption(any());
+
+        verify(gpdServiceFake, times(2)).setReport(anyString(), any());
     }
 
     @Test
@@ -62,25 +66,12 @@ class OptionFunctionTest {
     }
 
     @Test
-    void getOptionsServiceIstanceTest() throws Exception {
-
-        Logger logger = Logger.getLogger("testlogging");
-
-        // test
-        OptionsService istance = function.getOptionsServiceInstance(logger);
-
-        assertNotNull(istance);
-    }
-
-    @Test
     void runExceptionTest() {
 
         Logger logger = Logger.getLogger("InfoLogging");
 
         String message = "{\"idFlow\":\"00595780131\",\"iuvs\":[\"1627293600000\"],\"dateFlow\":1627293600000}";
         when(context.getLogger()).thenReturn(logger);
-
-        doThrow(RuntimeException.class).when(function).getOptionsServiceInstance(logger);
 
         function.run(message, context);
 

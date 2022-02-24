@@ -16,14 +16,14 @@ import it.gov.pagopa.reporting.service.FlowsService;
 /**
  * FlowsXmlDownloadFunction Azure Functions with Azure Queue trigger.
  */
-public class FlowsXmlDownloadFunction {
+public class RetrieveDetails {
     /**
      * This function will be invoked when a new message is detected in the queue
      * FLOWS_QUEUE related to FLOW_SA_CONNECTION_STRING (app settings)
      */
-    @FunctionName("FlowsXmlDownloadFunction")
+    @FunctionName("RetrieveDetailsFunction")
     public void run(
-            @QueueTrigger(name = "FlowsXmlDownloadTrigger", queueName = "%FLOWS_QUEUE%", connection = "FLOW_SA_CONNECTION_STRING") String message,
+            @QueueTrigger(name = "RetrieveDetailsTrigger", queueName = "%FLOWS_QUEUE%", connection = "FLOW_SA_CONNECTION_STRING") String message,
             final ExecutionContext context) {
 
         Logger logger = context.getLogger();
@@ -34,8 +34,9 @@ public class FlowsXmlDownloadFunction {
 
             FlowsMessage flows = new ObjectMapper().readValue(message, FlowsMessage.class);
 
-            this.getFlowsServiceInstance(logger).flowsXmlDownloading(Arrays.asList(flows.getFlows()),
-                    flows.getIdPA());
+            // retrieve fdr from node
+            this.getFlowsServiceInstance(logger)
+                    .flowsXmlDownloading(Arrays.asList(flows.getFlows()), flows.getIdPA());
 
             logger.log(Level.INFO, () -> "[FlowsDownloadFunction END]  processed a message " + message);
         } catch (JsonProcessingException em) {
@@ -50,9 +51,7 @@ public class FlowsXmlDownloadFunction {
     }
 
     public FlowsService getFlowsServiceInstance(Logger logger) {
-
         return new FlowsService(System.getenv("FLOW_SA_CONNECTION_STRING"), System.getenv("PAA_ID_INTERMEDIARIO"),
-                System.getenv("PAA_STAZIONE_INT"), System.getenv("PAA_PASSWORD"), System.getenv("CERT"),
-                System.getenv("KEY_PKCS8"), System.getenv("CERT_PASSWORD"), System.getenv("FLOWS_XML_BLOB"), logger);
+                System.getenv("PAA_STAZIONE_INT"), System.getenv("PAA_PASSWORD"), System.getenv("FLOWS_XML_BLOB"), logger);
     }
 }
