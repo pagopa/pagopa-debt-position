@@ -22,13 +22,13 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class FlowsParsingFunctionTest {
+class ElaborateOptionsTest {
 
     @Mock
     ExecutionContext context;
 
     @Spy
-    FlowsParsingFunction function;
+    ElaborateOptions function;
 
     @Mock
     OptionsService optionsService;
@@ -52,7 +52,7 @@ class FlowsParsingFunctionTest {
         when(context.getLogger()).thenReturn(Logger.getLogger("InfoLogging"));
 
         ClassLoader classLoader = getClass().getClassLoader();
-        InputStream inputStream = classLoader.getResourceAsStream("idflow##dataflow.xml");
+        InputStream inputStream = classLoader.getResourceAsStream("dataflow##idPA##idflow.xml");
         String data = readFromInputStream(inputStream);
 
         byte[] file = data.getBytes();
@@ -60,10 +60,10 @@ class FlowsParsingFunctionTest {
         Logger logger = Logger.getLogger("InfoLogging");
         doReturn(optionsService).when(function).getOptionsServiceInstance(logger);
 
-        function.run(file, "idFlow##dataFlow.xml", context);
+        function.run(file, "dataflow##idPA##idflow.xml", context);
 
         verify(context, times(1)).getLogger();
-        verify(optionsService, times(1)).optionsProcessing(any(), anyString(), anyString());
+        verify(optionsService, times(1)).optionsProcessing(any(), anyString(), anyString(), anyString());
 
     }
 

@@ -21,11 +21,13 @@ class nodoHandler(tornado.web.RequestHandler):
         print("request received nodoHandler")
         print(f"{self.request}{self.request.body.decode()}\n {self.request.headers['SOAPAction']}")
         if self.request.headers['SOAPAction'] == '"nodoChiediElencoFlussiRendicontazione"':
-            print(f"sent {msg.nodoChiediElencoFlussiRendicontazione}")
-            self.write(msg.nodoChiediElencoFlussiRendicontazione)
+            message = msg.nodoChiediElencoFlussiRendicontazioneF(msg.get_random_string(9),msg.get_random_string(9))
+            print(f"sent {message}")
+            self.write(message)
         elif self.request.headers['SOAPAction'] == '"nodoChiediFlussoRendicontazione"':
-            print(f"sent {msg.nodoChiediFlussoRendicontazione}")
-            self.write(msg.nodoChiediFlussoRendicontazione)
+            message = msg.nodoChiediFlussoRendicontazioneF(msg.get_random_string(9))
+            print(f"sent {message}")
+            self.write(message)
         else :
             print(f"sent 500 error")
             self.write_error(500)

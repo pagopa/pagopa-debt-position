@@ -8,55 +8,46 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
 
-import it.gov.pagopa.reporting.models.BooleanResponseModel;
 import it.gov.pagopa.reporting.models.OptionsMessage;
-import it.gov.pagopa.reporting.models.OptionsReportingModel;
+import it.gov.pagopa.reporting.models.PaymentOption;
 
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
 
 public class OptionsService {
 
     private String storageConnectionString;
     private String optionsQueue;
-    private String paymentHost;
-    private String auxDigit;
     private Logger logger;
     private int optionsForMessage = 2;
 
-    public OptionsService(String storageConnectionString, String optionsQueue, String paymentHost, String auxDigit,
-            Logger logger) {
+    public OptionsService(String storageConnectionString, String optionsQueue, Logger logger) {
 
         this.storageConnectionString = storageConnectionString;
         this.optionsQueue = optionsQueue;
-        this.paymentHost = paymentHost;
-        this.auxDigit = auxDigit;
         this.logger = logger;
     }
 
-    public void optionsProcessing(List<String> options, String idFlow, String dataFlow) throws JsonProcessingException {
+    public void optionsProcessing(List<PaymentOption> options, String idPA, String idFlow, String dataFlow) throws JsonProcessingException {
+
+        // step 11
 
         this.logger.log(Level.INFO, "[OptionsService] START options queue ");
 
-        List<List<String>> partitionOptions = Lists.partition(options, optionsForMessage);
+        List<List<PaymentOption>> partitionOptions = Lists.partition(options, optionsForMessage);
 
         OptionsMessage optionsMsg;
         List<String> messages = new ArrayList<>();
-        for (List<String> partitionOption : partitionOptions) {
+        for (List<PaymentOption> partitionOption : partitionOptions) {
             optionsMsg = new OptionsMessage();
-            optionsMsg.setDateFlow(dataFlow);
+            optionsMsg.setFlowDate(dataFlow);
+            optionsMsg.setIdPA(idPA);
             optionsMsg.setIdFlow(idFlow);
-            optionsMsg.setIuvs(partitionOption.stream().toArray(String[]::new));
+            optionsMsg.setPaymentOptions(partitionOption);
             messages.add(new ObjectMapper().writeValueAsString(optionsMsg));
         }
 
@@ -69,7 +60,7 @@ public class OptionsService {
             queue.createIfNotExists();
             this.logger.log(Level.INFO, () -> "[OptionsService] Sending messages ");
 
-            messages.stream().forEach(msg -> {
+            messages.forEach(msg -> {
                 try {
                     this.logger.log(Level.INFO, () -> "[OptionsService] sent message " + msg);
                     queue.addMessage(new CloudQueueMessage(msg));
@@ -85,34 +76,4 @@ public class OptionsService {
         this.logger.log(Level.INFO, "[OptionsService] END options queue ");
     }
 
-    public void callPaymentServiceToReportOption(OptionsMessage options) {
-
-        this.logger.log(Level.INFO, () -> "[OptionsService]  call PaymentService to report the options related to flow "
-                + options.getIdFlow());
-
-        BooleanResponseModel response = ClientBuilder.newClient()
-                .target(this.paymentHost + "/payments/options/reporting").request()
-                .post(Entity.entity(this.getOptionsReportingModel(options), MediaType.APPLICATION_JSON),
-                        BooleanResponseModel.class);
-
-        if (Boolean.FALSE.equals(response.getResult())) {
-
-            throw new IllegalArgumentException("Option reporting error for flow " + options.getIdFlow());
-        }
-
-        this.logger.log(Level.INFO, "[OptionsService] options reported");
-    }
-
-    public OptionsReportingModel getOptionsReportingModel(OptionsMessage optionsMessage) {
-
-        List<String> notificationCodes = Arrays.asList(optionsMessage.getIuvs()).stream()
-                .map(iuv -> this.auxDigit + iuv).collect(Collectors.toList());
-
-        OptionsReportingModel optionsReportingRequest = new OptionsReportingModel();
-        optionsReportingRequest.setIdFlow(optionsMessage.getIdFlow());
-        optionsReportingRequest.setDateFlow(optionsMessage.getDateFlow());
-        optionsReportingRequest.setNotificationCodes(notificationCodes);
-
-        return optionsReportingRequest;
-    }
 }

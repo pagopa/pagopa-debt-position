@@ -5,17 +5,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class OptionsMessage {
+public class PaymentOption {
 
-    private String idPA;
-    private String idFlow;
-    private String flowDate;
-    private List<PaymentOption> paymentOptions;
+    private String optionId;
+    private Integer transferId;
 
 }

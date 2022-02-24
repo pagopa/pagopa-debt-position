@@ -22,13 +22,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import it.gov.pagopa.reporting.service.FlowsService;
 
 @ExtendWith(MockitoExtension.class)
-class FlowsXmlDownloadFunctionTest {
+class RetrieveDetailsTest {
 
     @Mock
     ExecutionContext context;
 
     @Spy
-    FlowsXmlDownloadFunction function;
+    RetrieveDetails function;
 
     @Mock
     FlowsService flowService;
