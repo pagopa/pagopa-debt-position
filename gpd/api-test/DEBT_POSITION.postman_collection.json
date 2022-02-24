@@ -658,6 +658,47 @@
 					"response": []
 				},
 				{
+					"name": "getOrganizations_by_current_date",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response properties\", () => {",
+									"    //parse the response JSON and test tree properties",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.add.length).to.be.above(0);",
+									"    pm.expect(responseJson.delete.length).to.be.eql(0);",
+									"    ",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gpdhost}}organizations?since={{now_date}}",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"query": [
+								{
+									"key": "since",
+									"value": "{{now_date}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "publishDebtPosition",
 					"event": [
 						{
