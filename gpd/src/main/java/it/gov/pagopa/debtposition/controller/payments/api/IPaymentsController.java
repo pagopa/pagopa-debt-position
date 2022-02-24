@@ -94,5 +94,4 @@ public interface IPaymentsController {
 	public ResponseEntity<OrganizationListModelResponse> getOrganizations(
             @Valid @Parameter(description = "Filter from date (use the format yyyy-MM-dd)") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "since", required = true)   
             LocalDate since);   
-
 }

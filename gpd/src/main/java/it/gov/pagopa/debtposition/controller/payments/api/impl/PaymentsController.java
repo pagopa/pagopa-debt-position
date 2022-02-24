@@ -90,5 +90,4 @@ public class PaymentsController implements IPaymentsController {
 		.delete(ppToDeleteResponseList)
 		.build(), HttpStatus.OK);
 	}
-
 }
