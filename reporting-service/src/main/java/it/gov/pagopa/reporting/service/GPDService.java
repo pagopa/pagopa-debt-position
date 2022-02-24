@@ -11,7 +11,7 @@ public class GPDService {
 
     private String gpdHost = System.getenv("GPD_HOST");
     // /organizations/:idEC/paymentoptions/:IUV/transfers/{transferid}/report
-    private final String gpdpaymentOptionsService = "/organizations/%s/paymentoptions/%s/transfers/%s/report";
+    private static final String gpdpaymentOptionsService = "/organizations/%s/paymentoptions/%s/transfers/%s/report";
 
     private static GPDService instance = null;
 

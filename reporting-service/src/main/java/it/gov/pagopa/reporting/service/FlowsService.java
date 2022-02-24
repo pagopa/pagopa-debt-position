@@ -1,7 +1,5 @@
 package it.gov.pagopa.reporting.service;
 
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;

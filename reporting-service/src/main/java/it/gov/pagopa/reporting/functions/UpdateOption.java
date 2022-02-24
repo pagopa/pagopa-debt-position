@@ -10,7 +10,6 @@ import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.QueueTrigger;
 import it.gov.pagopa.reporting.models.OptionsMessage;
 import it.gov.pagopa.reporting.service.GPDService;
-import it.gov.pagopa.reporting.service.OptionsService;
 
 /**
  * Azure Functions with Azure Queue trigger.
