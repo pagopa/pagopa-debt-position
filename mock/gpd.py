@@ -56,7 +56,7 @@ def generate_payment_option(iuv, organization_fiscal_code):
     return {
         "iuv": iuv,
         "organizationFiscalCode": organization_fiscal_code,
-        "amount": 0,
+        "amount": 1055,
         "description": "string",
         "isPartialPayment": True,
         "dueDate": "2122-02-24T17:03:59.408Z",
@@ -74,12 +74,24 @@ def generate_payment_option(iuv, organization_fiscal_code):
         "transfer": [
             {
                 "organizationFiscalCode": "string",
-                "idTransfer": "string",
-                "amount": 0,
+                "idTransfer": "1",
+                "amount": 1005,
                 "remittanceInformation": "string",
                 "category": "string",
                 "iban": "string",
                 "postalIban": "string",
+                "insertedDate": "2022-02-24T17:03:59.408Z",
+                "status": "T_UNREPORTED",
+                "lastUpdatedDate": "2022-02-24T17:03:59.408Z"
+            },
+            {
+                "organizationFiscalCode": "77777777777",
+                "idTransfer": "2",
+                "amount": 50,
+                "remittanceInformation": "ri",
+                "category": "G",
+                "iban": "ABC",
+                "postalIban": None,
                 "insertedDate": "2022-02-24T17:03:59.408Z",
                 "status": "T_UNREPORTED",
                 "lastUpdatedDate": "2022-02-24T17:03:59.408Z"
@@ -112,5 +124,5 @@ if __name__ == "__main__":
     port = int(default_port)
     app = make_app()
     app.listen(port)
-    print("gdp running...")
+    print("gpd running...")
     tornado.ioloop.IOLoop.current().start()

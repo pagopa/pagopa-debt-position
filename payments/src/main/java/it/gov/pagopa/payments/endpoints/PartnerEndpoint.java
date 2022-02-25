@@ -41,16 +41,16 @@ public class PartnerEndpoint {
         return factory.createPaVerifyPaymentNoticeRes(partnerService.paVerifyPaymentNotice(request.getValue()));
     }
 
-//    @SoapAction("paGetPayment")
-//    @PayloadRoot(localPart = "paGetPaymentReq", namespace = "http://pagopa-api.pagopa.gov.it/partner")
-//    @ResponsePayload
-//    public JAXBElement<PaGetPaymentRes> paGetPayment(@RequestPayload JAXBElement<PaGetPaymentReq> request)
-//            throws PartnerValidationException, DatatypeConfigurationException {
-//
-//        log.info(" paGetPayment START ");
-//        return factory.createPaGetPaymentRes(partnerService.paGetPayment(request.getValue()));
-//    }
-//
+    @SoapAction("paGetPayment")
+    @PayloadRoot(localPart = "paGetPaymentReq", namespace = "http://pagopa-api.pagopa.gov.it/partner")
+    @ResponsePayload
+    public JAXBElement<PaGetPaymentRes> paGetPayment(@RequestPayload JAXBElement<PaGetPaymentReq> request)
+            throws PartnerValidationException, DatatypeConfigurationException {
+
+        log.info(" paGetPayment START ");
+        return factory.createPaGetPaymentRes(partnerService.paGetPayment(request.getValue()));
+    }
+
 //    @SoapAction("paSendRT")
 //    @PayloadRoot(localPart = "paSendRTReq", namespace = "http://pagopa-api.pagopa.gov.it/partner")
 //    @ResponsePayload
