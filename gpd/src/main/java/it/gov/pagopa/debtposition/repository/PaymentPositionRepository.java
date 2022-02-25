@@ -1,6 +1,7 @@
 package it.gov.pagopa.debtposition.repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.payments.OrganizationModelQueryBean;
 
 /**
  * @author aacitelli
@@ -37,6 +39,10 @@ JpaSpecificationExecutor<PaymentPosition>, PagingAndSortingRepository<PaymentPos
 	
 	// Derived Query - using method naming convention - get parent PaymentPosition from child PaymentOption and Transfer properties 
 	Optional<PaymentPosition> findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer (String organizationFiscalCode, String iuv, String idTransfer);
+	
+	@Query("SELECT DISTINCT new it.gov.pagopa.debtposition.model.payments.OrganizationModelQueryBean(pp.organizationFiscalCode as organizationFiscalCode) "
+			+ "FROM PaymentPosition pp WHERE pp.insertedDate >= :fromDate")
+	List<OrganizationModelQueryBean> findDistinctOrganizationsByInsertedDate(LocalDateTime fromDate);
 
 }
 
