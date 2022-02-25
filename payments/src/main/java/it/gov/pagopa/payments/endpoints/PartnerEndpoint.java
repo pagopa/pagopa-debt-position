@@ -51,12 +51,12 @@ public class PartnerEndpoint {
         return factory.createPaGetPaymentRes(partnerService.paGetPayment(request.getValue()));
     }
 
-//    @SoapAction("paSendRT")
-//    @PayloadRoot(localPart = "paSendRTReq", namespace = "http://pagopa-api.pagopa.gov.it/partner")
-//    @ResponsePayload
-//    public JAXBElement<PaSendRTRes> paSendRT(@RequestPayload JAXBElement<PaSendRTReq> request) {
-//
-//        log.info(" paSendRT START ");
-//        return factory.createPaSendRTRes(partnerService.paSendRT(request.getValue()));
-//    }
+    @SoapAction("paSendRT")
+    @PayloadRoot(localPart = "paSendRTReq", namespace = "http://pagopa-api.pagopa.gov.it/partner")
+    @ResponsePayload
+    public JAXBElement<PaSendRTRes> paSendRT(@RequestPayload JAXBElement<PaSendRTReq> request) {
+
+        log.info(" paSendRT START ");
+        return factory.createPaSendRTRes(partnerService.paSendRT(request.getValue()));
+    }
 }

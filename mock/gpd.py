@@ -69,7 +69,7 @@ def generate_payment_option(iuv, organization_fiscal_code):
         "pspCompany": "string",
         "idReceipt": "string",
         "idFlowReporting": "string",
-        "status": "PO_UNPAID",
+        "status": "PO_PAID",
         "lastUpdatedDate": "2022-02-24T17:03:59.408Z",
         "transfer": [
             {
@@ -111,9 +111,21 @@ class PaymentOptionHandler(tornado.web.RequestHandler):
         self.write(json.dumps(generate_payment_option(iuv, idpa)))
 
 
+class PayPaymentOptionHandler(tornado.web.RequestHandler):
+
+    def set_default_headers(self):
+        self.set_header("Content-Type", 'application/json')
+
+    def post(self, idpa, iuv):
+        print("request received")
+        print(f"{self.request}{self.request.body.decode()} - {idpa} - {iuv}")
+        self.write(json.dumps(generate_payment_option(iuv, idpa)))
+
+
 def make_app():
     return tornado.web.Application([
         (r"/organizations", organizationsHandler),
+        (r"/organizations/([^/]+)/paymentoptions/([^/]+)/pay", PayPaymentOptionHandler),
         (r"/organizations/([^/]+)/paymentoptions/([^/]+)/transfers/([^/]+)/report", reportsHandler),
         (r"/organizations/([^/]+)/paymentoptions/([^/]+)", PaymentOptionHandler),
     ])

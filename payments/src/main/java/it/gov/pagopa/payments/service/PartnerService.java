@@ -4,6 +4,8 @@ package it.gov.pagopa.payments.service;
 import it.gov.pagopa.payments.endpoints.validation.PaymentValidator;
 import it.gov.pagopa.payments.endpoints.validation.exceptions.PartnerValidationException;
 import it.gov.pagopa.payments.model.PaaErrorEnum;
+import it.gov.pagopa.payments.model.PaymentOptionModel;
+import it.gov.pagopa.payments.model.PaymentOptionStatus;
 import it.gov.pagopa.payments.model.PaymentsModelResponse;
 import it.gov.pagopa.payments.model.PaymentsTransferModelResponse;
 import it.gov.pagopa.payments.model.partner.CtEntityUniqueIdentifier;
@@ -16,6 +18,8 @@ import it.gov.pagopa.payments.model.partner.CtTransferPA;
 import it.gov.pagopa.payments.model.partner.ObjectFactory;
 import it.gov.pagopa.payments.model.partner.PaGetPaymentReq;
 import it.gov.pagopa.payments.model.partner.PaGetPaymentRes;
+import it.gov.pagopa.payments.model.partner.PaSendRTReq;
+import it.gov.pagopa.payments.model.partner.PaSendRTRes;
 import it.gov.pagopa.payments.model.partner.PaVerifyPaymentNoticeReq;
 import it.gov.pagopa.payments.model.partner.PaVerifyPaymentNoticeRes;
 import it.gov.pagopa.payments.model.partner.StAmountOption;
@@ -72,6 +76,38 @@ public class PartnerService {
 
         log.info("[paGetPayment] Response OK generation");
         return this.generatePaGetPaymentResponse(paymentOption, request);
+    }
+
+    @Transactional
+    public PaSendRTRes paSendRT(PaSendRTReq request) {
+
+        log.debug("[paSendRT] isAuthorize check");
+        paymentValidator.isAuthorize(request.getIdPA(), request.getIdBrokerPA(), request.getIdStation());
+
+        log.debug(String.format("[paSendRT] get receipt payment option %s", request.getReceipt().getNoticeNumber()));
+        PaymentOptionModel body = PaymentOptionModel.builder()
+                .idReceipt(request.getReceipt().getReceiptId())
+                .paymentDate(request.getReceipt().getPaymentDateTime().toGregorianCalendar().toZonedDateTime().toLocalDateTime())
+                .pspCompany(request.getReceipt().getPSPCompanyName())
+                .paymentMethod(request.getReceipt().getPaymentMethod())
+                .build();
+
+        PaSendRTRes result;
+        PaymentsModelResponse gpdResponse;
+        try {
+            gpdResponse = gpdClient.receiptPaymentOption(request.getIdPA(), request.getReceipt().getNoticeNumber(), body);
+        } catch (Exception e) {
+            log.error("[paSendRT] GPD Error Response", e);
+            throw new PartnerValidationException(PaaErrorEnum.PAA_SEMANTICA);
+        }
+
+        log.info("[paSendRT] Generate Response");
+        if (gpdResponse.getStatus().equals(PaymentOptionStatus.PO_PAID)) {
+            result = generatePaSendRTResponse(StOutcome.OK);
+        } else {
+            result = generatePaSendRTResponse(StOutcome.KO);
+        }
+        return result;
     }
 
 
@@ -175,59 +211,12 @@ public class PartnerService {
     }
 
 
-    //    @Transactional
-//    public PaSendRTRes paSendRT(PaSendRTReq request) {
-//
-//        log.debug(String.format("[paSendRT] get Payment %s", request.getReceipt().getNoticeNumber()));
-//        PaymentOptions option = paymentOptionsRepository
-//                .findByNotificationCodeAndFiscalCode(request.getReceipt().getNoticeNumber(),
-//                        request.getReceipt().getFiscalCode())
-//                .orElseThrow(() -> new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO));
-//
-//        log.debug("[paSendRT] isAuthorize check");
-//        paymentValidator.isAuthorize(request.getIdPA(), request.getIdBrokerPA(), request.getIdStation(),
-//                option.getFiscalCode());
-//
-//        log.debug("[paSendRT] isPayable check");
-//        paymentValidator.isPayable(option.getPaymentPosition(), option);
-//
-//        log.debug("[paSendRT] Update Status Option to PAGATO");
-//        option.setStatus(PaymentOptionStatusEnum.PAGATO.getStatus());
-//
-//        log.debug("[paSendRT] Update Paid Option in Position");
-//        Integer paidOptionUpdated = option.getPaymentPosition().getPaidOptions() + 1;
-//        Integer totalOption = option.getPaymentPosition().getTotalOptions();
-//        option.getPaymentPosition().setPaidOptions(paidOptionUpdated);
-//
-//        log.debug("[paSendRT] Insert receipt data");
-//        option.setFee(request.getReceipt().getFee());
-//        option.setPspCompanyName(request.getReceipt().getPSPCompanyName());
-//        option.setPaymentMethod(request.getReceipt().getPaymentMethod());
-//        option.setReceiptId(request.getReceipt().getReceiptId());
-//        option.setPaymentDate(
-//                request.getReceipt().getPaymentDateTime().toGregorianCalendar().toZonedDateTime().toLocalDateTime());
-//        option.setReceipt(this.getReceiptFromRequest(request));
-//        /**
-//         * Position Status is updated to PAGATO if one of the two condiction is true:
-//         *
-//         * 1. option is the only refered to the position (isConclusive == true);
-//         *
-//         * 2. option is the last refered to the position (paidOptionUpdated ==
-//         * totalOption - 1).
-//         */
-//        log.debug("[paSendRT] Update Position Status");
-//        Integer positionStatus = Boolean.TRUE.equals(option.getIsConclusive())
-//                || paidOptionUpdated.compareTo(totalOption - 1) == 0 ? PaymentStatusEnum.PAGATO.getStatus()
-//                : PaymentStatusEnum.PAGATO_PARZIALE.getStatus();
-//        option.getPaymentPosition().setStatus(positionStatus);
-//        paymentOptionsRepository.save(option);
-//
-//        log.info("[paSendRT] Generate Response");
-//        return this.generatePaSendRTResponse(StOutcome.OK);
-//    }
-//
+    /**
+     * @param transfer     GPD response
+     * @param transferType XML request
+     * @return maps input into {@link CtTransferPA} model
+     */
     private CtTransferPA getTransferResponse(PaymentsTransferModelResponse transfer, StTransferType transferType) {
-
         CtTransferPA transferPa = factory.createCtTransferPA();
         transferPa.setFiscalCodePA(transfer.getOrganizationFiscalCode());
         transferPa.setIBAN(getIbanByTransferType(transferType, transfer));
@@ -251,6 +240,13 @@ public class PartnerService {
 
         return transferType != null && transferType.value().equals(StTransferType.POSTAL.value())
                 && transfer.getPostalIban() != null ? transfer.getPostalIban() : defaultIban;
+    }
+
+
+    private PaSendRTRes generatePaSendRTResponse(StOutcome outcome) {
+        PaSendRTRes result = factory.createPaSendRTRes();
+        result.setOutcome(outcome);
+        return result;
     }
 
 
@@ -303,16 +299,6 @@ public class PartnerService {
 //
 //        return response;
 //    }
-//
-//    private PaSendRTRes generatePaSendRTResponse(StOutcome ok) {
-//
-//        PaSendRTRes result = factory.createPaSendRTRes();
-//        result.setOutcome(ok);
-//        return result;
-//    }
-//
-
-
 //
 //    private String getReceiptFromRequest(PaSendRTReq request) {
 //

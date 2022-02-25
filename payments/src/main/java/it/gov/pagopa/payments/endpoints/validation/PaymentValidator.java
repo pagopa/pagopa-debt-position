@@ -22,27 +22,13 @@ public class PaymentValidator {
 //            throw new PartnerValidationException(PaaErrorEnum.PAA_ID_DOMINIO_ERRATO);
 //        }
 
-        if (!ptIdIntermediarioReq.equals(ptIdIntermediario)) {
+        if (!ptIdIntermediario.equals(ptIdIntermediarioReq)) {
             throw new PartnerValidationException(PaaErrorEnum.PAA_ID_INTERMEDIARIO_ERRATO);
         }
 
-        if (!ptIdStazioneReq.equals(ptIdStazione)) {
+        if (!ptIdStazione.equals(ptIdStazioneReq)) {
             throw new PartnerValidationException(PaaErrorEnum.PAA_STAZIONE_INT_ERRATA);
         }
     }
 
-    // TODO do the same without DB
-//    public void isPayable(PaymentPosition position, PaymentOptions option) {
-//
-//        if ((option == null || position == null)
-//                || (!position.getStatus().equals(PaymentStatusEnum.PUBBLICATO.getStatus())
-//                        && (!position.getStatus().equals(PaymentStatusEnum.PAGATO_PARZIALE.getStatus())))) {
-//            throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO);
-//        }
-//
-//        if (!option.getStatus().equals(PaymentOptionStatusEnum.NON_PAGATO.getStatus())) {
-//            throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_DUPLICATO);
-//        }
-//
-//    }
 }
