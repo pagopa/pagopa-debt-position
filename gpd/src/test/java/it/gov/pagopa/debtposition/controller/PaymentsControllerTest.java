@@ -7,6 +7,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -868,6 +872,28 @@ class PaymentsControllerTest {
 		catch(Exception e) {
 			fail("Not the expected exception: "+e.getMessage());
 		}
+	}
+	
+	/**
+	 *  GET ORGANIZATIONS
+	 */
+	
+	@Test
+	void getOrganizations_200() throws Exception {
+		
+		// creo una posizione debitoria e recupero la payment option associata
+		mvc.perform(post("/organizations/GET_ORG_200_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated());
+
+		// recupero le organizzazioni inserite a sistema a fino alla data corrente 
+		DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		mvc.perform(get("/organizations?since="+df.format(LocalDateTime.now(ZoneOffset.UTC)))
+				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.add[*]").isNotEmpty())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.delete[*]").isEmpty());
+
 	}
 	
 }

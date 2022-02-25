@@ -1,7 +1,10 @@
 package it.gov.pagopa.debtposition.service.payments;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import javax.validation.Valid;
@@ -21,6 +24,7 @@ import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
+import it.gov.pagopa.debtposition.model.payments.OrganizationModelQueryBean;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
@@ -82,6 +86,15 @@ public class PaymentsService {
 		DebtPositionValidation.checkPaymentPositionAccountability(ppToReport.get(), iuv, transferId);
        
 		return this.updateTransferStatus(ppToReport.get(), iuv, transferId);
+	}
+	
+	public List<OrganizationModelQueryBean> getOrganizationsToAdd (@NotNull LocalDate since) { 
+		return paymentPositionRepository.findDistinctOrganizationsByInsertedDate(since.atStartOfDay());
+	}
+	
+	public List<OrganizationModelQueryBean> getOrganizationsToDelete (@NotNull LocalDate since) {
+		paymentPositionRepository.findDistinctOrganizationsByInsertedDate(since.atStartOfDay());
+		return Collections.emptyList();
 	}
 	
 	private PaymentOption updatePaymentStatus (PaymentPosition pp, String iuv, PaymentOptionModel paymentOptionModel) {
