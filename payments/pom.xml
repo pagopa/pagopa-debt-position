@@ -12,9 +12,9 @@
     </parent>
 
     <groupId>it.gov.pagopa</groupId>
-    <artifactId>Payments</artifactId>
+    <artifactId>payments</artifactId>
     <version>0.0.1</version>
-    <name>payments</name>
+    <name>Payments</name>
     <description>Payments</description>
 
     <properties>
