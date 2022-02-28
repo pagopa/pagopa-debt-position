@@ -1,6 +1,7 @@
 import json
 import random
 import sys
+import time
 
 import tornado.ioloop
 import tornado.web
@@ -119,6 +120,7 @@ class PayPaymentOptionHandler(tornado.web.RequestHandler):
     def post(self, idpa, iuv):
         print("request received")
         print(f"{self.request}{self.request.body.decode()} - {idpa} - {iuv}")
+        self.set_status(200)
         self.write(json.dumps(generate_payment_option(iuv, idpa)))
 
 

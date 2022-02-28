@@ -14,7 +14,8 @@ public enum PaaErrorEnum {
   PAA_PAGAMENTO_DUPLICATO("PAA_PAGAMENTO_DUPLICATO", "pagamento duplicato",
       "L'id del pagamento ricevuto  e' duplicato"),
   PAA_SEMANTICA("PAA_SEMANTICA", "Errore Generico", "Errore Generico"),
-  PAA_SINTASSI_XSD("PAA_SINTASSI_XSD", "Errore XSD", " Errore validazione XSD della request");
+  PAA_SINTASSI_XSD("PAA_SINTASSI_XSD", "Errore XSD", "Errore validazione XSD della request"),
+  PAA_SYSTEM_ERROR("PAA_SYSTEM_ERROR", "Errore sistema", "Errore del sistema");
 
   private final String faultCode;
   private final String faultString;

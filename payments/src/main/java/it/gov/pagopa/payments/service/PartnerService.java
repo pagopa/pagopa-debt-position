@@ -1,11 +1,12 @@
 
 package it.gov.pagopa.payments.service;
 
+import feign.FeignException;
+import feign.RetryableException;
 import it.gov.pagopa.payments.endpoints.validation.PaymentValidator;
 import it.gov.pagopa.payments.endpoints.validation.exceptions.PartnerValidationException;
 import it.gov.pagopa.payments.model.PaaErrorEnum;
 import it.gov.pagopa.payments.model.PaymentOptionModel;
-import it.gov.pagopa.payments.model.PaymentOptionStatus;
 import it.gov.pagopa.payments.model.PaymentsModelResponse;
 import it.gov.pagopa.payments.model.PaymentsTransferModelResponse;
 import it.gov.pagopa.payments.model.partner.CtEntityUniqueIdentifier;
@@ -92,22 +93,25 @@ public class PartnerService {
                 .paymentMethod(request.getReceipt().getPaymentMethod())
                 .build();
 
-        PaSendRTRes result;
-        PaymentsModelResponse gpdResponse;
         try {
-            gpdResponse = gpdClient.receiptPaymentOption(request.getIdPA(), request.getReceipt().getNoticeNumber(), body);
-        } catch (Exception e) {
+            gpdClient.receiptPaymentOption(request.getIdPA(), request.getReceipt().getNoticeNumber(), body);
+        } catch (FeignException.Conflict e) {
+            log.error("[paSendRT] GPD Conflict Error Response", e);
+            throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_DUPLICATO);
+        } catch (RetryableException e) {
+            log.error("[paSendRT] GPD Not Reachable", e);
+            throw new PartnerValidationException(PaaErrorEnum.PAA_SYSTEM_ERROR);
+        } catch (FeignException e) {
             log.error("[paSendRT] GPD Error Response", e);
             throw new PartnerValidationException(PaaErrorEnum.PAA_SEMANTICA);
+        } catch (Exception e) {
+            log.error("[paSendRT] GPD Generic Error", e);
+            throw new PartnerValidationException(PaaErrorEnum.PAA_SYSTEM_ERROR);
         }
 
         log.info("[paSendRT] Generate Response");
-        if (gpdResponse.getStatus().equals(PaymentOptionStatus.PO_PAID)) {
-            result = generatePaSendRTResponse(StOutcome.OK);
-        } else {
-            result = generatePaSendRTResponse(StOutcome.KO);
-        }
-        return result;
+        // status is always equals to PO_PAID
+        return generatePaSendRTResponse(StOutcome.OK);
     }
 
 
