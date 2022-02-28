@@ -1,5 +1,8 @@
 package it.gov.pagopa.debtposition.controller.payments.api.impl;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +15,10 @@ import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
+import it.gov.pagopa.debtposition.model.payments.OrganizationModelQueryBean;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
+import it.gov.pagopa.debtposition.model.payments.response.OrganizationListModelResponse;
+import it.gov.pagopa.debtposition.model.payments.response.OrganizationModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.TransferModelResponse;
 import it.gov.pagopa.debtposition.service.payments.PaymentsService;
@@ -70,4 +76,19 @@ public class PaymentsController implements IPaymentsController {
 		throw new AppException(AppError.TRANSFER_REPORTING_FAILED, organizationFiscalCode, iuv, transferId);
 	}
 
+	@Override
+	public ResponseEntity<OrganizationListModelResponse> getOrganizations(@Valid LocalDate since) {
+		List<OrganizationModelQueryBean> ppListToAdd = paymentsService.getOrganizationsToAdd(since);
+		List<OrganizationModelQueryBean> ppListToDelete = paymentsService.getOrganizationsToDelete(since);
+				
+		// flip bean to model
+		List<OrganizationModelResponse> ppToAddResponseList = ObjectMapperUtils.mapAll(ppListToAdd, OrganizationModelResponse.class);
+		List<OrganizationModelResponse> ppToDeleteResponseList = ObjectMapperUtils.mapAll(ppListToDelete, OrganizationModelResponse.class);
+		
+		return new ResponseEntity<>(OrganizationListModelResponse.builder()
+		.add(ppToAddResponseList)
+		.delete(ppToDeleteResponseList)
+		.build(), HttpStatus.OK);
+	}
+	
 }
