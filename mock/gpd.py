@@ -1,11 +1,14 @@
 import json
-import sys
 import random
+import sys
+import time
 
 import tornado.ioloop
 import tornado.web
 from tornado.log import enable_pretty_logging
+
 enable_pretty_logging()
+
 
 def generate_response():
     organization_list = []
@@ -38,26 +41,102 @@ class organizationsHandler(tornado.web.RequestHandler):
         print(f"{self.request}{self.request.body.decode()}")
         self.write(json.dumps(generate_response()))
 
+
 class reportsHandler(tornado.web.RequestHandler):
 
     def set_default_headers(self):
         self.set_header("Content-Type", 'application/json')
 
-    def post(self,idpa,iuv,idtransfer):
+    def post(self, idpa, iuv, idtransfer):
         print("request received")
         print(f"{self.request}{self.request.body.decode()} - {idpa} - {iuv} - {idtransfer}")
         self.write(json.dumps(dict()))
 
+
+def generate_payment_option(iuv, organization_fiscal_code):
+    return {
+        "iuv": iuv,
+        "organizationFiscalCode": organization_fiscal_code,
+        "amount": 1055,
+        "description": "string",
+        "isPartialPayment": True,
+        "dueDate": "2122-02-24T17:03:59.408Z",
+        "retentionDate": "2022-02-25T17:03:59.408Z",
+        "paymentDate": "2022-02-24T17:03:59.408Z",
+        "reportingDate": "2022-02-24T17:03:59.408Z",
+        "insertedDate": "2022-02-24T17:03:59.408Z",
+        "paymentMethod": "string",
+        "fee": 0,
+        "pspCompany": "string",
+        "idReceipt": "string",
+        "idFlowReporting": "string",
+        "status": "PO_PAID",
+        "lastUpdatedDate": "2022-02-24T17:03:59.408Z",
+        "transfer": [
+            {
+                "organizationFiscalCode": "string",
+                "idTransfer": "1",
+                "amount": 1005,
+                "remittanceInformation": "string",
+                "category": "string",
+                "iban": "string",
+                "postalIban": "string",
+                "insertedDate": "2022-02-24T17:03:59.408Z",
+                "status": "T_UNREPORTED",
+                "lastUpdatedDate": "2022-02-24T17:03:59.408Z"
+            },
+            {
+                "organizationFiscalCode": "77777777777",
+                "idTransfer": "2",
+                "amount": 50,
+                "remittanceInformation": "ri",
+                "category": "G",
+                "iban": "ABC",
+                "postalIban": None,
+                "insertedDate": "2022-02-24T17:03:59.408Z",
+                "status": "T_UNREPORTED",
+                "lastUpdatedDate": "2022-02-24T17:03:59.408Z"
+            }
+        ]
+    }
+
+
+class PaymentOptionHandler(tornado.web.RequestHandler):
+
+    def set_default_headers(self):
+        self.set_header("Content-Type", 'application/json')
+
+    def get(self, idpa, iuv):
+        print("request received")
+        print(f"{self.request}{self.request.body.decode()} - {idpa} - {iuv}")
+        self.write(json.dumps(generate_payment_option(iuv, idpa)))
+
+
+class PayPaymentOptionHandler(tornado.web.RequestHandler):
+
+    def set_default_headers(self):
+        self.set_header("Content-Type", 'application/json')
+
+    def post(self, idpa, iuv):
+        print("request received")
+        print(f"{self.request}{self.request.body.decode()} - {idpa} - {iuv}")
+        self.set_status(200)
+        self.write(json.dumps(generate_payment_option(iuv, idpa)))
+
+
 def make_app():
     return tornado.web.Application([
         (r"/organizations", organizationsHandler),
+        (r"/organizations/([^/]+)/paymentoptions/([^/]+)/pay", PayPaymentOptionHandler),
         (r"/organizations/([^/]+)/paymentoptions/([^/]+)/transfers/([^/]+)/report", reportsHandler),
+        (r"/organizations/([^/]+)/paymentoptions/([^/]+)", PaymentOptionHandler),
     ])
+
 
 if __name__ == "__main__":
     default_port = '8085' if len(sys.argv) == 1 else sys.argv[1]
     port = int(default_port)
     app = make_app()
     app.listen(port)
-    print("gdp running...")
+    print("gpd running...")
     tornado.ioloop.IOLoop.current().start()
