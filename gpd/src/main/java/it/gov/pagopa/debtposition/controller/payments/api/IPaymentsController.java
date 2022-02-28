@@ -1,10 +1,7 @@
 package it.gov.pagopa.debtposition.controller.payments.api;
 
-import java.time.LocalDate;
-
 import javax.validation.Valid;
 
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +9,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -24,8 +20,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.gov.pagopa.debtposition.model.ProblemJson;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
-import it.gov.pagopa.debtposition.model.payments.response.OrganizationListModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
+import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.TransferModelResponse;
 
 
@@ -36,13 +32,13 @@ public interface IPaymentsController {
 	
 	@Operation(summary = "Return the details of a specific payment option.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizationPaymentOptionByIUV", tags={"Get Payment Option"})
 	@ApiResponses(value = { 
-			@ApiResponse(responseCode = "200", description = "Obtained payment option details.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema= @Schema(name="PaymentPositionResponse", implementation = PaymentOptionModelResponse.class))),
+			@ApiResponse(responseCode = "200", description = "Obtained payment option details.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema= @Schema(name="PaymentPositionResponse", implementation = PaymentOptionWithDebtorInfoModelResponse.class))),
 			@ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
 			@ApiResponse(responseCode = "404", description = "No payment option found.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
 			@ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))) })
 	@GetMapping(value = "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}",
 	produces = { "application/json" })
-	ResponseEntity<PaymentOptionModelResponse> getOrganizationPaymentOptionByIUV(
+	ResponseEntity<PaymentOptionWithDebtorInfoModelResponse> getOrganizationPaymentOptionByIUV(
 			@Parameter(description = "Organization fiscal code, the fiscal code of the Organization.",required=true) 
 			@PathVariable("organizationfiscalcode") String organizationFiscalCode, 
 			@Parameter(description = "IUV (Unique Payment Identification). Alphanumeric code that uniquely associates and identifies three key elements of a payment: reason, payer, amount",required=true) 
@@ -83,16 +79,5 @@ public interface IPaymentsController {
     		@PathVariable("iuv") String iuv, 
     		@Parameter(description = "Transaction identifier. Alphanumeric code that identifies the specific transaction",required=true) 
     		@PathVariable("transferid") String transferId);
-	
-	@Operation(summary = "Return the list of the organizations.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizations", tags={"Get Organization List"})
-	@ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Obtained organizations to add and delete.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = OrganizationListModelResponse.class))),
-            @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
-            @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
-	@GetMapping(value = "/organizations",
-	produces = { "application/json" })
-	public ResponseEntity<OrganizationListModelResponse> getOrganizations(
-            @Valid @Parameter(description = "Filter from date (use the format yyyy-MM-dd)") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "since", required = true)   
-            LocalDate since);   
-	
+
 }

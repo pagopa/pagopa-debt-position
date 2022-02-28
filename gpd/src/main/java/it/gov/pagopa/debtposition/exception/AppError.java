@@ -27,6 +27,7 @@ public enum AppError {
     TRANSFER_NOT_FOUND                           (HttpStatus.NOT_FOUND, "Not found the transfer", "Not found a transfer for Organization Fiscal Code %s, IUV %s and TxID %s"),
     TRANSFER_REPORTING_FAILED                    (HttpStatus.INTERNAL_SERVER_ERROR, "The reporting for the transfer is failed", "Reporting failed for the transfer with Organization Fiscal Code %s, IUV %s and TxID %s"),
     TRANSFER_NOT_ACCOUNTABLE                     (HttpStatus.CONFLICT, "transfer is not in accountable state", "The transfer option with Organization Fiscal Code %s, IUV %s and TxID %s is not in payable state"),
+    ORGANIZATION_NOT_FOUND                       (HttpStatus.NOT_FOUND, "Not found the organization", "Not found an organization for the Organization Fiscal Code %s"),
     UNKNOWN(null, null, null);
 
 
