@@ -63,7 +63,7 @@ public class SoapMessageDispatcher extends MessageDispatcherServlet {
                 : null;
 
         try {
-            super.doService(httpServletRequest, httpServletResponse);
+            callService(httpServletRequest, httpServletResponse);
         } catch (PartnerValidationException e) {
 
             log.error("Processing resulted in exception: " + e.getMessage());
@@ -97,8 +97,7 @@ public class SoapMessageDispatcher extends MessageDispatcherServlet {
                         paVerifyPaymentNoticeRes = factory.createPaVerifyPaymentNoticeRes();
                         paVerifyPaymentNoticeRes.setOutcome(StOutcome.KO);
                         paVerifyPaymentNoticeRes.setFault(faultBean);
-                        paVerifyPaymentNoticeResJaxbElement = factory
-                                .createPaVerifyPaymentNoticeRes(paVerifyPaymentNoticeRes);
+                        paVerifyPaymentNoticeResJaxbElement = factory.createPaVerifyPaymentNoticeRes(paVerifyPaymentNoticeRes);
                         JAXBContext.newInstance(PaVerifyPaymentNoticeRes.class).createMarshaller()
                                 .marshal(paVerifyPaymentNoticeResJaxbElement, doc);
                         break;
@@ -122,6 +121,7 @@ public class SoapMessageDispatcher extends MessageDispatcherServlet {
                         ctResponse = factory.createPaSendRTRes();
                         ctResponse.setOutcome(StOutcome.KO);
                         ctResponse.setFault(faultBean);
+                        paSendRTResJaxbElement = factory.createPaSendRTRes(paSendRTRes);
                         JAXBContext.newInstance(PaSendRTRes.class).createMarshaller().marshal(ctResponse, doc);
                         break;
                 }
@@ -149,5 +149,9 @@ public class SoapMessageDispatcher extends MessageDispatcherServlet {
             }
         }
 
+    }
+
+    protected void callService(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
+        super.doService(httpServletRequest, httpServletResponse);
     }
 }
