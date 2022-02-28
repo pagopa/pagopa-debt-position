@@ -5,9 +5,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
-//@Configuration
-//@ComponentScan(basePackages = {"it.gov.pagopa"})
-//@PropertySource(value = "classpath:application.properties", ignoreResourceNotFound = true)
 @EnableFeignClients
 public class PaymentsApplication {
 
