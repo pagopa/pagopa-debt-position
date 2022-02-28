@@ -6,6 +6,7 @@ import it.gov.pagopa.payments.mock.MockUtil;
 import it.gov.pagopa.payments.mock.PaGetPaymentReqMock;
 import it.gov.pagopa.payments.mock.PaSendRTReqMock;
 import it.gov.pagopa.payments.mock.PaVerifyPaymentNoticeReqMock;
+import it.gov.pagopa.payments.model.PaaErrorEnum;
 import it.gov.pagopa.payments.model.PaymentOptionModel;
 import it.gov.pagopa.payments.model.PaymentsModelResponse;
 import it.gov.pagopa.payments.model.partner.ObjectFactory;
@@ -27,11 +28,11 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -79,31 +80,27 @@ class PartnerServiceTest {
         assertThat(responseBody.getPaymentDescription()).isEqualTo("string");
     }
 
-//    @Test
-//    void paVerifyPaymentNoticeTestKOsconosciuto() throws DatatypeConfigurationException {
-//
-//        // Test preconditions
-//        PaVerifyPaymentNoticeReq requestBody = PaVerifyPaymentNoticeReqMock.getMock();
-//        PaymentOptions option = DebitorMock.createPaymentOptionsMock5();
-//
-//        when(paymentOptionRepository.findByNotificationCodeAndFiscalCode(requestBody.getQrCode().getNoticeNumber(),
-//                requestBody.getQrCode().getFiscalCode())).thenReturn(Optional.of(option));
-//
-//        doThrow(new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO)).when(paymentValidator)
-//                .isPayable(option.getPaymentPosition(), option);
-//
-//        // Test execution
-//        try {
-//
-//            partnerService.paVerifyPaymentNotice(requestBody);
-//
-//        } catch (PartnerValidationException e) {
-//            // Test postcondiction
-//            assertThat(e.getError().getFaultCode()).isEqualTo(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO.getFaultCode());
-//            assertThat(e.getError().getDescription()).isEqualTo(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO.getDescription());
-//            assertThat(e.getError().getFaultString()).isEqualTo(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO.getFaultString());
-//        }
-//    }
+    @Test
+    void paVerifyPaymentNoticeTestKOConfig() throws DatatypeConfigurationException {
+
+        // Test preconditions
+        PaVerifyPaymentNoticeReq requestBody = PaVerifyPaymentNoticeReqMock.getMock();
+
+        doThrow(new PartnerValidationException(PaaErrorEnum.PAA_ID_INTERMEDIARIO_ERRATO))
+                .when(paymentValidator).isAuthorize(anyString(), anyString(), anyString());
+
+        // Test execution
+        try {
+
+            partnerService.paVerifyPaymentNotice(requestBody);
+
+        } catch (PartnerValidationException e) {
+            // Test postcondiction
+            assertThat(e.getError().getFaultCode()).isEqualTo(PaaErrorEnum.PAA_ID_INTERMEDIARIO_ERRATO.getFaultCode());
+            assertThat(e.getError().getDescription()).isEqualTo(PaaErrorEnum.PAA_ID_INTERMEDIARIO_ERRATO.getDescription());
+            assertThat(e.getError().getFaultString()).isEqualTo(PaaErrorEnum.PAA_ID_INTERMEDIARIO_ERRATO.getFaultString());
+        }
+    }
 
 //    @Test
 //    void paVerifyPaymentNoticeTestKOpagato() throws DatatypeConfigurationException {
