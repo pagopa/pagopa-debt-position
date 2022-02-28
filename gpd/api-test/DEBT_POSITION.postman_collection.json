@@ -699,6 +699,36 @@
 					"response": []
 				},
 				{
+					"name": "checkOrganization",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{creditor_saved_multi}}",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{creditor_saved_multi}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "publishDebtPosition",
 					"event": [
 						{
@@ -2332,6 +2362,36 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "checkOrganization_404",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {",
+									"  pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gpdhost}}organizations/{{organization_not_existent}}",
+							"host": [
+								"{{gpdhost}}organizations"
+							],
+							"path": [
+								"{{organization_not_existent}}"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
@@ -2415,6 +2475,7 @@
 					"pm.globals.set(\"payment_date\", getDateNowISOSubMin(15));",
 					"",
 					"pm.globals.set(\"now_date\", new Date().toISOString().split('T')[0]);",
+					"pm.globals.set(\"organization_not_existent\", \"FAKEORG_\"+makeidNumber(11));",
 					"pm.globals.set(\"iupd_not_existent\", \"FAKEIUPD_\"+makeidMix(35));",
 					"pm.globals.set(\"iuv_not_existent\", \"FAKEIUV_\"+makeidMix(35));",
 					"pm.globals.set(\"txid_not_existent\", \"FAKETxID_\" +makeidMix(35))",
