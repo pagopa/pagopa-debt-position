@@ -5,7 +5,7 @@ import it.gov.pagopa.payments.model.partner.PaGetPaymentReq;
 
 public class PaGetPaymentReqMock {
 
-    public final static PaGetPaymentReq getMock() {
+    public static PaGetPaymentReq getMock() {
 
         CtQrCode qrCode = new CtQrCode();
         qrCode.setFiscalCode("77777777777");

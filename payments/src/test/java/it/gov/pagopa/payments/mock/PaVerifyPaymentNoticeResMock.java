@@ -4,7 +4,7 @@ import it.gov.pagopa.payments.model.partner.PaVerifyPaymentNoticeRes;
 
 public class PaVerifyPaymentNoticeResMock {
 
-    public final static PaVerifyPaymentNoticeRes getMock() {
+    public static PaVerifyPaymentNoticeRes getMock() {
 
         PaVerifyPaymentNoticeRes mock = new PaVerifyPaymentNoticeRes();
         mock.setCompanyName("77777777777");

@@ -5,7 +5,7 @@ import it.gov.pagopa.payments.model.partner.StOutcome;
 
 public class PaSendRTResMock {
 
-    public final static PaSendRTRes getMock() {
+    public static PaSendRTRes getMock() {
 
         PaSendRTRes mock = new PaSendRTRes();
         mock.setOutcome(StOutcome.OK);

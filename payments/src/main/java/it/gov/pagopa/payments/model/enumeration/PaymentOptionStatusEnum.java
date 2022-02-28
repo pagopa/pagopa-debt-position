@@ -1,4 +1,4 @@
-package it.gov.pagopa.payments.enumeration;
+package it.gov.pagopa.payments.model.enumeration;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

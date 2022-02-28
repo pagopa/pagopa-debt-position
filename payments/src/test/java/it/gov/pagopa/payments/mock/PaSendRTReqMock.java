@@ -12,7 +12,7 @@ import it.gov.pagopa.payments.model.partner.StOutcome;
 
 public class PaSendRTReqMock {
 
-    public final static PaSendRTReq getMock() throws DatatypeConfigurationException {
+    public static PaSendRTReq getMock() throws DatatypeConfigurationException {
 
         CtReceipt receipt = new CtReceipt();
         receipt.setReceiptId("c110729d258c4ab1b765fe902aae41d6");

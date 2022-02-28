@@ -5,7 +5,7 @@ import it.gov.pagopa.payments.model.partner.PaGetPaymentRes;
 
 public class PaGetPaymentResMock {
 
-    public final static PaGetPaymentRes getMock() {
+    public static PaGetPaymentRes getMock() {
 
         PaGetPaymentRes mock = new PaGetPaymentRes();
         CtPaymentPA data = new CtPaymentPA();

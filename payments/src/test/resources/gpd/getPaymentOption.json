@@ -1,0 +1,45 @@
+{
+  "iuv": "311111111112222222",
+  "organizationFiscalCode": "77777777777",
+  "amount": 1055,
+  "description": "string",
+  "isPartialPayment": true,
+  "dueDate": "2122-02-24T17:03:59.408Z",
+  "retentionDate": "2022-02-25T17:03:59.408Z",
+  "paymentDate": "2022-02-24T17:03:59.408Z",
+  "reportingDate": "2022-02-24T17:03:59.408Z",
+  "insertedDate": "2022-02-24T17:03:59.408Z",
+  "paymentMethod": "string",
+  "fee": 0,
+  "pspCompany": "string",
+  "idReceipt": "string",
+  "idFlowReporting": "string",
+  "status": "PO_PAID",
+  "lastUpdatedDate": "2022-02-24T17:03:59.408Z",
+  "transfer": [
+    {
+      "organizationFiscalCode": "string",
+      "idTransfer": "1",
+      "amount": 1005,
+      "remittanceInformation": "string",
+      "category": "string",
+      "iban": "string",
+      "postalIban": "string",
+      "insertedDate": "2022-02-24T17:03:59.408Z",
+      "status": "T_UNREPORTED",
+      "lastUpdatedDate": "2022-02-24T17:03:59.408Z"
+    },
+    {
+      "organizationFiscalCode": "77777777777",
+      "idTransfer": "2",
+      "amount": 50,
+      "remittanceInformation": "ri",
+      "category": "G",
+      "iban": "ABC",
+      "postalIban": null,
+      "insertedDate": "2022-02-24T17:03:59.408Z",
+      "status": "T_UNREPORTED",
+      "lastUpdatedDate": "2022-02-24T17:03:59.408Z"
+    }
+  ]
+}
