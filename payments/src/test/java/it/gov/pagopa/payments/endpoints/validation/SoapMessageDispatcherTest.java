@@ -99,6 +99,24 @@ class SoapMessageDispatcherTest {
     }
 
 
+    @Test
+    void doServiceDefault() throws Exception {
+        when(factory.createCtFaultBean()).thenReturn(factoryUtil.createCtFaultBean());
+        when(factory.createPaSendRTRes()).thenReturn(factoryUtil.createPaSendRTRes());
+        when(factory.createPaSendRTRes(any())).thenReturn(factoryUtil.createPaSendRTRes(factoryUtil.createPaSendRTRes()));
+
+        when(request.getHeader("SOAPAction")).thenReturn("unknown");
+        when(response.getOutputStream()).thenReturn(outputStream);
+
+        doThrow(new PartnerValidationException(PaaErrorEnum.PAA_SEMANTICA))
+                .when(soapMessageDispatcher).callService(any(), any());
+
+        soapMessageDispatcher.doService(request, response);
+
+        verify(response, times(1)).getOutputStream();
+    }
+
+
 
     public static final ServletOutputStream outputStream = new ServletOutputStream() {
         @Override

@@ -122,7 +122,7 @@ public class SoapMessageDispatcher extends MessageDispatcherServlet {
                         ctResponse.setOutcome(StOutcome.KO);
                         ctResponse.setFault(faultBean);
                         paSendRTResJaxbElement = factory.createPaSendRTRes(paSendRTRes);
-                        JAXBContext.newInstance(PaSendRTRes.class).createMarshaller().marshal(ctResponse, doc);
+                        JAXBContext.newInstance(PaSendRTRes.class).createMarshaller().marshal(paSendRTResJaxbElement, doc);
                         break;
                 }
 
