@@ -111,7 +111,7 @@ public class PartnerService {
 
         log.info("[paSendRT] Generate Response");
         // status is always equals to PO_PAID
-        return generatePaSendRTResponse(StOutcome.OK);
+        return generatePaSendRTResponse();
     }
 
 
@@ -143,27 +143,23 @@ public class PartnerService {
                 : null);
         responseData.setLastPayment(false); // de-scoping
         responseData.setDescription(source.getDescription());
-//        responseData.setCompanyName(Optional.ofNullable(source.getCompanyName()).orElse("NA")); TODO
-//        responseData.setOfficeName(Optional.ofNullable(source.getOfficeName()).orElse(("NA"))); TODO
+        responseData.setCompanyName(Optional.ofNullable(source.getCompanyName()).orElse("NA"));
+        responseData.setOfficeName(Optional.ofNullable(source.getOfficeName()).orElse(("NA")));
 
         // debitor data
-//        uniqueIdentifier.setEntityUniqueIdentifierType(
-//                source.getDebitor().getType().equals(1) ? StEntityUniqueIdentifierType.F TODO
-//                        : StEntityUniqueIdentifierType.G);
-        uniqueIdentifier.setEntityUniqueIdentifierType(StEntityUniqueIdentifierType.G);
+        uniqueIdentifier.setEntityUniqueIdentifierType(StEntityUniqueIdentifierType.fromValue(source.getType().name()));
 
-//        uniqueIdentifier.setEntityUniqueIdentifierValue(source.getDebitor().getFiscalCode()); TODO
-        uniqueIdentifier.setEntityUniqueIdentifierValue("ABC");
+        uniqueIdentifier.setEntityUniqueIdentifierValue(source.getFiscalCode());
 
         debtor.setUniqueIdentifier(uniqueIdentifier);
-//        debtor.setFullName(position.getDebitor().getName());  TODO
-//        debtor.setStreetName(position.getDebitor().getAddress()); TODO
-//        debtor.setCivicNumber(position.getDebitor().getNumber()); TODO
-//        debtor.setPostalCode(position.getDebitor().getCap()); TODO
-//        debtor.setCity(position.getDebitor().getArea()); TODO
-//        debtor.setStateProvinceRegion(position.getDebitor().getProvince()); TODO
-//        debtor.setCountry(position.getDebitor().getCountry()); TODO
-//        debtor.setEMail(position.getDebitor().getEmail()); TODO
+        debtor.setFullName(source.getFullName());
+        debtor.setStreetName(source.getStreetName());
+        debtor.setCivicNumber(source.getCivicNumber());
+        debtor.setPostalCode(source.getPostalCode());
+        debtor.setCity(source.getCity());
+        debtor.setStateProvinceRegion(source.getProvince());
+        debtor.setCountry(source.getCountry());
+        debtor.setEMail(source.getEmail());
 
         // Transfer list
         transferList.getTransfer()
@@ -209,8 +205,8 @@ public class PartnerService {
         // general info
         result.setPaymentDescription(source.getDescription());
         result.setFiscalCodePA(source.getOrganizationFiscalCode());
-//        result.setCompanyName(Optional.ofNullable(source.getCompanyName()).orElse("NA")); TODO
-//        result.setOfficeName(Optional.ofNullable(position.getOfficeName()).orElse(("NA"))); TODO
+        result.setCompanyName(Optional.ofNullable(source.getCompanyName()).orElse("NA"));
+        result.setOfficeName(Optional.ofNullable(source.getOfficeName()).orElse(("NA")));
         return result;
     }
 
@@ -247,9 +243,9 @@ public class PartnerService {
     }
 
 
-    private PaSendRTRes generatePaSendRTResponse(StOutcome outcome) {
+    private PaSendRTRes generatePaSendRTResponse() {
         PaSendRTRes result = factory.createPaSendRTRes();
-        result.setOutcome(outcome);
+        result.setOutcome(StOutcome.OK);
         return result;
     }
 

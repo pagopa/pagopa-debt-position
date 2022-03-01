@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(value = "gpd", url = "${service.gpd.host}")
 public interface GpdClient {
 
+    @GetMapping(value = "/organizations/{organizationfiscalcode}")
+    String getOrganization(@PathVariable("organizationfiscalcode") String organizationFiscalCode);
 
     @GetMapping(value = "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}")
     PaymentsModelResponse getPaymentOption(@PathVariable("organizationfiscalcode") String organizationFiscalCode,

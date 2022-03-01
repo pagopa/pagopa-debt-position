@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -27,7 +28,20 @@ public class PaymentsModelResponse implements Serializable {
     private String idReceipt;
     private String idFlowReporting;
     private PaymentOptionStatus status;
-    private LocalDateTime lastUpdatedDate;
-
+    private Type type;
+    private String fiscalCode;
+    private String fullName;
+    private String streetName;
+    private String civicNumber;
+    private String postalCode;
+    private String city;
+    private String province;
+    private String region;
+    private String country;
+    private String email;
+    private String phone;
+    private String companyName;
+    private String officeName;
+    private DebtPositionStatus debtPositionStatus;
     private List<PaymentsTransferModelResponse> transfer;
 }
