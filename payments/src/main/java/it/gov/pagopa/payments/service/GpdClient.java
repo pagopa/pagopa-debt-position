@@ -1,6 +1,7 @@
 package it.gov.pagopa.payments.service;
 
 import it.gov.pagopa.payments.model.PaymentOptionModel;
+import it.gov.pagopa.payments.model.PaymentOptionModelResponse;
 import it.gov.pagopa.payments.model.PaymentsModelResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
@@ -21,9 +22,9 @@ public interface GpdClient {
                                            @PathVariable("iuv") String iuv);
 
     @PostMapping(value = "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}/pay", consumes = MediaType.APPLICATION_JSON_VALUE)
-    PaymentsModelResponse receiptPaymentOption(@PathVariable("organizationfiscalcode") String organizationFiscalCode,
-                                               @PathVariable("iuv") String iuv,
-                                               @RequestBody PaymentOptionModel body);
+    PaymentOptionModelResponse receiptPaymentOption(@PathVariable("organizationfiscalcode") String organizationFiscalCode,
+                                                    @PathVariable("iuv") String iuv,
+                                                    @RequestBody PaymentOptionModel body);
 
 
 }
