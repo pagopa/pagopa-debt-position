@@ -10,6 +10,7 @@ import it.gov.pagopa.payments.mock.PaSendRTReqMock;
 import it.gov.pagopa.payments.mock.PaVerifyPaymentNoticeReqMock;
 import it.gov.pagopa.payments.model.PaaErrorEnum;
 import it.gov.pagopa.payments.model.PaymentOptionModel;
+import it.gov.pagopa.payments.model.PaymentOptionModelResponse;
 import it.gov.pagopa.payments.model.PaymentsModelResponse;
 import it.gov.pagopa.payments.model.partner.ObjectFactory;
 import it.gov.pagopa.payments.model.partner.PaGetPaymentReq;
@@ -147,7 +148,7 @@ class PartnerServiceTest {
         when(factory.createPaSendRTRes()).thenReturn(factoryUtil.createPaSendRTRes());
 
         when(gpdClient.receiptPaymentOption(anyString(), anyString(), any(PaymentOptionModel.class)))
-                .thenReturn(MockUtil.readModelFromFile("gpd/receiptPaymentOption.json", PaymentsModelResponse.class));
+                .thenReturn(MockUtil.readModelFromFile("gpd/receiptPaymentOption.json", PaymentOptionModelResponse.class));
 
 
         // Test execution

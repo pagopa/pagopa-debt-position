@@ -18,6 +18,6 @@ public class PaymentsTransferModelResponse implements Serializable {
     private String iban;
     private String postalIban;
     private LocalDateTime insertedDate;
-    private TransferStatus status; 
+    private TransferStatus status;
     private LocalDateTime lastUpdatedDate;
 }
