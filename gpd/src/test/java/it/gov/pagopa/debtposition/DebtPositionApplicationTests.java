@@ -1,5 +1,6 @@
 package it.gov.pagopa.debtposition;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Constructor;
@@ -29,9 +30,11 @@ class DebtPositionApplicationTests {
     }
     
     @Test
-    void constructorIsPrivate() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    void constructorIsPrivate() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchFieldException, SecurityException {
       Constructor<Constants> constructor = Constants.class.getDeclaredConstructor();
       assertTrue(Modifier.isPrivate(constructor.getModifiers()));
+      assertNotNull(Constants.class.getDeclaredField("HEADER_REQUEST_ID"));
+      assertNotNull(Constants.class.getDeclaredField("DEBT_POSITION_DELETED"));
     }
 
 }
