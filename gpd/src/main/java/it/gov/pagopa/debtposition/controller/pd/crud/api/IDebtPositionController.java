@@ -94,7 +94,7 @@ public interface IDebtPositionController {
 	@Operation(summary = "The Organization deletes a debt position", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "deletePosition", tags={ "Delete Debt Position"})
         @ApiResponses(value = { 
             @ApiResponse(responseCode = "200", description = "Operation completed successfully."),
-            @ApiResponse(responseCode = "401", description = "Wrong or missing function key."),
+            @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
             @ApiResponse(responseCode = "404", description = "No debt position position found.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
             @ApiResponse(responseCode = "409", description = "Conflict: existing related payment found.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
             @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))) })
@@ -111,7 +111,7 @@ public interface IDebtPositionController {
 	    @ApiResponses(value = { 
 	        @ApiResponse(responseCode = "200", description = "Request updated."),
 	        @ApiResponse(responseCode = "400", description  = "Malformed request.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
-	        @ApiResponse(responseCode = "401", description = "Wrong or missing function key."),
+	        @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
 	        @ApiResponse(responseCode = "404", description = "No debt position found.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
 	        @ApiResponse(responseCode = "409", description = "Conflict: existing related payment found.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
 	        @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))) })
