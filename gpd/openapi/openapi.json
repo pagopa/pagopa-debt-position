@@ -17,6 +17,9 @@
 			"name": "Debt Positions API"
 		},
 		{
+			"name": "Configurations API"
+		},
+		{
 			"name": "Debt Position Actions API"
 		},
 		{
@@ -32,9 +35,6 @@
 				"summary": "Return OK if application is started",
 				"operationId": "healthCheck",
 				"responses": {
-					"403": {
-						"description": "Forbidden."
-					},
 					"500": {
 						"description": "Service unavailable.",
 						"content": {
@@ -45,6 +45,12 @@
 							}
 						}
 					},
+					"401": {
+						"description": "Wrong or missing function key."
+					},
+					"403": {
+						"description": "Forbidden."
+					},
 					"200": {
 						"description": "OK.",
 						"content": {
@@ -54,9 +60,123 @@
 								}
 							}
 						}
+					}
+				},
+				"security": [
+					{
+						"ApiKey": []
+					},
+					{
+						"Authorization": []
+					}
+				]
+			}
+		},
+		"/organizations": {
+			"get": {
+				"tags": [
+					"Configurations API"
+				],
+				"summary": "Return the list of the organizations.",
+				"operationId": "getOrganizations",
+				"parameters": [
+					{
+						"name": "since",
+						"in": "query",
+						"description": "Filter from date (use the format yyyy-MM-dd)",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "date"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Service unavailable.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProblemJson"
+								}
+							}
+						}
 					},
 					"401": {
 						"description": "Wrong or missing function key."
+					},
+					"200": {
+						"description": "Obtained organizations to add and delete.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/OrganizationListModelResponse"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKey": []
+					},
+					{
+						"Authorization": []
+					}
+				]
+			}
+		},
+		"/organizations/{organizationfiscalcode}": {
+			"get": {
+				"tags": [
+					"Configurations API"
+				],
+				"summary": "Check the existence of the organization.",
+				"operationId": "checkOrganization",
+				"parameters": [
+					{
+						"name": "organizationfiscalcode",
+						"in": "path",
+						"description": "Organization fiscal code, the fiscal code of the Organization.",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Service unavailable.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProblemJson"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Wrong or missing function key."
+					},
+					"404": {
+						"description": "No organization found.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProblemJson"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "The organization is registered.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
 					}
 				},
 				"security": [
@@ -159,6 +279,29 @@
 					}
 				],
 				"responses": {
+					"500": {
+						"description": "Service unavailable.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProblemJson"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Wrong or missing function key."
+					},
+					"200": {
+						"description": "Obtained all organization payment positions.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PaymentPositionsInfo"
+								}
+							}
+						}
+					},
 					"400": {
 						"description": "Malformed request.",
 						"content": {
@@ -171,29 +314,6 @@
 					},
 					"429": {
 						"description": "Too many requests."
-					},
-					"500": {
-						"description": "Service unavailable.",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ProblemJson"
-								}
-							}
-						}
-					},
-					"200": {
-						"description": "Obtained all organization payment positions.",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/PaymentPositionsInfo"
-								}
-							}
-						}
-					},
-					"401": {
-						"description": "Wrong or missing function key."
 					}
 				},
 				"security": [
@@ -233,6 +353,29 @@
 					"required": true
 				},
 				"responses": {
+					"500": {
+						"description": "Service unavailable.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProblemJson"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Wrong or missing function key."
+					},
+					"201": {
+						"description": "Request created.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PaymentPositionModel"
+								}
+							}
+						}
+					},
 					"400": {
 						"description": "Malformed request.",
 						"content": {
@@ -252,29 +395,6 @@
 								}
 							}
 						}
-					},
-					"500": {
-						"description": "Service unavailable.",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ProblemJson"
-								}
-							}
-						}
-					},
-					"201": {
-						"description": "Request created.",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/PaymentPositionModel"
-								}
-							}
-						}
-					},
-					"401": {
-						"description": "Wrong or missing function key."
 					}
 				},
 				"security": [
@@ -315,26 +435,6 @@
 					}
 				],
 				"responses": {
-					"404": {
-						"description": "No debt position found.",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ProblemJson"
-								}
-							}
-						}
-					},
-					"200": {
-						"description": "Obtained debt position details.",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/PaymentPositionModelBaseResponse"
-								}
-							}
-						}
-					},
 					"500": {
 						"description": "Service unavailable.",
 						"content": {
@@ -347,6 +447,26 @@
 					},
 					"401": {
 						"description": "Wrong or missing function key."
+					},
+					"200": {
+						"description": "Obtained debt position details.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PaymentPositionModelBaseResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "No debt position found.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProblemJson"
+								}
+							}
+						}
 					}
 				},
 				"security": [
@@ -395,18 +515,8 @@
 					"required": true
 				},
 				"responses": {
-					"404": {
-						"description": "No debt position found.",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ProblemJson"
-								}
-							}
-						}
-					},
-					"400": {
-						"description": "Malformed request.",
+					"409": {
+						"description": "Conflict: existing related payment found.",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -421,16 +531,6 @@
 							"application/json": {
 								"schema": {
 									"$ref": "#/components/schemas/PaymentPositionModel"
-								}
-							}
-						}
-					},
-					"409": {
-						"description": "Conflict: existing related payment found.",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ProblemJson"
 								}
 							}
 						}
@@ -451,6 +551,26 @@
 							"application/json": {
 								"schema": {
 									"$ref": "#/components/schemas/PaymentPositionModel"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Malformed request.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProblemJson"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "No debt position found.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProblemJson"
 								}
 							}
 						}
@@ -502,6 +622,16 @@
 							}
 						}
 					},
+					"409": {
+						"description": "Conflict: existing related payment found.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProblemJson"
+								}
+							}
+						}
+					},
 					"401": {
 						"description": "Wrong or missing function key.",
 						"content": {
@@ -514,16 +644,6 @@
 					},
 					"404": {
 						"description": "No debt position position found.",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ProblemJson"
-								}
-							}
-						}
-					},
-					"409": {
-						"description": "Conflict: existing related payment found.",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -581,8 +701,8 @@
 					}
 				],
 				"responses": {
-					"404": {
-						"description": "No debt position found.",
+					"409": {
+						"description": "Conflict: debt position is not in invalidable state.",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -601,15 +721,8 @@
 							}
 						}
 					},
-					"409": {
-						"description": "Conflict: debt position is not in invalidable state.",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ProblemJson"
-								}
-							}
-						}
+					"401": {
+						"description": "Wrong or missing function key."
 					},
 					"200": {
 						"description": "Request published.",
@@ -621,8 +734,15 @@
 							}
 						}
 					},
-					"401": {
-						"description": "Wrong or missing function key."
+					"404": {
+						"description": "No debt position found.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProblemJson"
+								}
+							}
+						}
 					}
 				},
 				"security": [
@@ -663,8 +783,8 @@
 					}
 				],
 				"responses": {
-					"404": {
-						"description": "No debt position found.",
+					"409": {
+						"description": "Conflict: debt position is not in publishable state.",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -683,6 +803,9 @@
 							}
 						}
 					},
+					"401": {
+						"description": "Wrong or missing function key."
+					},
 					"200": {
 						"description": "Request published.",
 						"content": {
@@ -693,8 +816,8 @@
 							}
 						}
 					},
-					"409": {
-						"description": "Conflict: debt position is not in publishable state.",
+					"404": {
+						"description": "No debt position found.",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -702,9 +825,6 @@
 								}
 							}
 						}
-					},
-					"401": {
-						"description": "Wrong or missing function key."
 					}
 				},
 				"security": [
@@ -745,12 +865,25 @@
 					}
 				],
 				"responses": {
+					"500": {
+						"description": "Service unavailable.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProblemJson"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Wrong or missing function key."
+					},
 					"200": {
 						"description": "Obtained payment option details.",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/PaymentsModelResponse"
+									"$ref": "#/components/schemas/PaymentsWithDebtorInfoModelResponse"
 								}
 							}
 						}
@@ -764,19 +897,6 @@
 								}
 							}
 						}
-					},
-					"500": {
-						"description": "Service unavailable.",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ProblemJson"
-								}
-							}
-						}
-					},
-					"401": {
-						"description": "Wrong or missing function key."
 					}
 				},
 				"security": [
@@ -827,8 +947,8 @@
 					"required": true
 				},
 				"responses": {
-					"400": {
-						"description": "Malformed request.",
+					"409": {
+						"description": "Conflict: existing related payment found.",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -847,28 +967,18 @@
 							}
 						}
 					},
-					"404": {
-						"description": "No payment option found.",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ProblemJson"
-								}
-							}
-						}
-					},
-					"409": {
-						"description": "Conflict: existing related payment found.",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ProblemJson"
-								}
-							}
-						}
-					},
 					"500": {
 						"description": "Service unavailable.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProblemJson"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "No payment option found.",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -883,6 +993,16 @@
 							"application/json": {
 								"schema": {
 									"$ref": "#/components/schemas/PaymentsModelResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Malformed request.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProblemJson"
 								}
 							}
 						}
@@ -945,8 +1065,8 @@
 							}
 						}
 					},
-					"400": {
-						"description": "Malformed request.",
+					"409": {
+						"description": "Conflict: existing related payment found.",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -965,16 +1085,6 @@
 							}
 						}
 					},
-					"409": {
-						"description": "Conflict: existing related payment found.",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ProblemJson"
-								}
-							}
-						}
-					},
 					"500": {
 						"description": "Service unavailable.",
 						"content": {
@@ -987,6 +1097,16 @@
 					},
 					"404": {
 						"description": "No transfer found.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProblemJson"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Malformed request.",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -1331,6 +1451,162 @@
 					}
 				}
 			},
+			"OrganizationListModelResponse": {
+				"type": "object",
+				"properties": {
+					"add": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/OrganizationModelResponse"
+						}
+					},
+					"delete": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/OrganizationModelResponse"
+						}
+					}
+				}
+			},
+			"OrganizationModelResponse": {
+				"type": "object",
+				"properties": {
+					"organizationFiscalCode": {
+						"type": "string"
+					}
+				}
+			},
+			"PaymentsWithDebtorInfoModelResponse": {
+				"type": "object",
+				"properties": {
+					"iuv": {
+						"type": "string"
+					},
+					"organizationFiscalCode": {
+						"type": "string"
+					},
+					"amount": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"description": {
+						"type": "string"
+					},
+					"isPartialPayment": {
+						"type": "boolean"
+					},
+					"dueDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"retentionDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"paymentDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"reportingDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"insertedDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"paymentMethod": {
+						"type": "string"
+					},
+					"fee": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"pspCompany": {
+						"type": "string"
+					},
+					"idReceipt": {
+						"type": "string"
+					},
+					"idFlowReporting": {
+						"type": "string"
+					},
+					"status": {
+						"type": "string",
+						"enum": [
+							"PO_UNPAID",
+							"PO_PAID",
+							"PO_PARTIALLY_REPORTED",
+							"PO_REPORTED"
+						]
+					},
+					"type": {
+						"type": "string",
+						"enum": [
+							"F",
+							"G"
+						]
+					},
+					"fiscalCode": {
+						"type": "string"
+					},
+					"fullName": {
+						"type": "string"
+					},
+					"streetName": {
+						"type": "string"
+					},
+					"civicNumber": {
+						"type": "string"
+					},
+					"postalCode": {
+						"type": "string"
+					},
+					"city": {
+						"type": "string"
+					},
+					"province": {
+						"type": "string"
+					},
+					"region": {
+						"type": "string"
+					},
+					"country": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					},
+					"phone": {
+						"type": "string"
+					},
+					"companyName": {
+						"type": "string"
+					},
+					"officeName": {
+						"type": "string"
+					},
+					"debtPositionStatus": {
+						"type": "string",
+						"enum": [
+							"DRAFT",
+							"PUBLISHED",
+							"VALID",
+							"INVALID",
+							"EXPIRED",
+							"PARTIALLY_PAID",
+							"PAID",
+							"REPORTED"
+						]
+					},
+					"transfer": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/PaymentsTransferModelResponse"
+						}
+					}
+				}
+			},
 			"PageInfo": {
 				"required": [
 					"items_found",
@@ -1446,6 +1722,13 @@
 					},
 					"organizationFiscalCode": {
 						"type": "string"
+					},
+					"type": {
+						"type": "string",
+						"enum": [
+							"F",
+							"G"
+						]
 					},
 					"companyName": {
 						"type": "string"
