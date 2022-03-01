@@ -134,7 +134,7 @@ class PartnerServiceTest {
                 .isEqualTo(DatatypeFactory.newInstance().newXMLGregorianCalendar("2122-02-24T17:03:59.408"));
         assertThat(responseBody.getData().getRetentionDate())
                 .isEqualTo(DatatypeFactory.newInstance().newXMLGregorianCalendar("2022-02-25T17:03:59.408"));
-        // TODO add assertThat for debitor, company name and officeName
+        assertEquals("77777777777", requestBody.getQrCode().getFiscalCode());
     }
 
 
