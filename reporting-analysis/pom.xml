@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>it.gov.pagopa.reporting</groupId>
-    <artifactId>reporting-batch</artifactId>
+    <artifactId>reporting-analysis</artifactId>
     <version>0.0.1</version>
     <packaging>jar</packaging>
 
-    <name>Azure Reporting-Batch Fn</name>
+    <name>Azure Reporting-Analysis Fn</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -15,13 +15,18 @@
         <azure.functions.maven.plugin.version>1.15.0</azure.functions.maven.plugin.version>
         <azure.functions.java.library.version>1.4.2</azure.functions.java.library.version>
         <azure.storage.table.version>8.6.6</azure.storage.table.version>
-        <azure.storage.queue.version>12.11.3</azure.storage.queue.version>
+        <azure.storage.blob.version>12.13.0</azure.storage.blob.version>
         <functionAppName>com.microsoft.azure-20220215182005862</functionAppName>
         <resteasy.version>3.15.3.Final</resteasy.version>
     </properties>
 
     <dependencies>
         <!-- Start Azure -->
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>3.0.0</version>
+        </dependency>
         <dependency>
             <groupId>com.microsoft.azure.functions</groupId>
             <artifactId>azure-functions-java-library</artifactId>
@@ -36,8 +41,8 @@
 
         <dependency>
             <groupId>com.azure</groupId>
-            <artifactId>azure-storage-queue</artifactId>
-            <version>${azure.storage.queue.version}</version>
+            <artifactId>azure-storage-blob</artifactId>
+            <version>${azure.storage.blob.version}</version>
         </dependency>
 
         <!-- End Azure -->
@@ -46,7 +51,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.8.2</version>
+            <version>5.4.2</version>
             <scope>test</scope>
         </dependency>
 

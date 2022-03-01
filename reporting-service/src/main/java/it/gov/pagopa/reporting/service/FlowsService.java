@@ -66,8 +66,9 @@ public class FlowsService {
                     BlobContainerClient flowsContainerClient = blobServiceClient.getBlobContainerClient(this.containerBlob);
 
                     // dataOra##idPa##idflow.xml
+                    // added split to remove millis from name
                     BlobClient blobClient = flowsContainerClient.getBlobClient(
-                            flows.get(index).getDataOraFlusso().toString() + "##" + idPA + "##" + flows.get(index).getIdentificativoFlusso() + ".xml"
+                            flows.get(index).getDataOraFlusso().toString().split("\\.")[0] + "##" + idPA + "##" + flows.get(index).getIdentificativoFlusso() + ".xml"
                     );
 
                     logger.log(Level.INFO, () ->

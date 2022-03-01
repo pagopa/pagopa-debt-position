@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.RetryNoRetry;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
@@ -26,37 +27,34 @@ public class OrganizationsService {
 
     private String storageConnectionString;
     private String organizationsTable;
-    private String organzagionsQueue;
+    private String organzationsQueue;
     private Logger logger;
     private int batchSize = 2;
     private int msgOrganizationsForQueue = 5;
 
-    public OrganizationsService(String storageConnectionString, String organizationsTable, String organzagionsQueue, Logger logger) {
+    public OrganizationsService(String storageConnectionString, String organizationsTable, String organzationsQueue, Logger logger) {
         this.storageConnectionString = storageConnectionString;
         this.organizationsTable = organizationsTable;
-        this.organzagionsQueue = organzagionsQueue;
+        this.organzationsQueue = organzationsQueue;
         this.logger = logger;
     }
 
     public List<String> processOrganizationList(Organizations organizations) {
-        this.logger.info("Processing organization list");
+        this.logger.info("[OrganizationsService] Processing organization list");
 
 //        if (debugAzurite) {
 //            try {
 //                createTable();
 //            } catch (Exception e) {
-//                this.logger.severe(String.format("[OrganizationsService] Problem to retrieve organization list: %s", e.getLocalizedMessage()));
-//                return new ArrayList<>();
+//                this.logger.severe(String.format("[OrganizationsService] Problem to create table: %s", e.getMessage()));
 //            }
 //
 //            try {
 //                createQueue();
 //            } catch (URISyntaxException | InvalidKeyException | StorageException e ) {
-//                this.logger.severe(String.format("[OrganizationsService] Problem to retrieve organization list: %s", e.getLocalizedMessage()));
-//                e.printStackTrace();
+//                this.logger.severe(String.format("[OrganizationsService] Problem to create queue: %s", e.getMessage()));
 //            }
 //        }
-
 
         // create batch partition due to max batch size of Azure Table Storage - 100
         List<List<String>> addOrganizationList = Lists.partition(organizations.getAdd(), batchSize);
@@ -66,6 +64,8 @@ public class OrganizationsService {
         IntStream.range(0, addOrganizationList.size()).forEach(partitionAddIndex -> {
             try {
                 this.addOrganizationList(addOrganizationList.get(partitionAddIndex));
+                this.logger.log(Level.INFO,
+                        () -> "[OrganizationsService] Azure Table Storage - Add for partition index " + partitionAddIndex + " executed.");
             } catch (TableServiceException et) {
                 this.logger.log(Level.SEVERE,
                         () -> "[OrganizationsService] Azure Table Storage Error - Add:  " + et.getErrorCode() + " : "
@@ -127,21 +127,31 @@ public class OrganizationsService {
         }
     }
 
-//    private void createTable() throws URISyntaxException, InvalidKeyException, StorageException {
-//        // Create a new table
-//        CloudTable table = CloudStorageAccount.parse(storageConnectionString)
-//                .createCloudTableClient().getTableReference(this.organizationsTable);
-//        if (!table.exists()) {
-//            table.createIfNotExists();
-//        }
-//    }
-//
-//    private void createQueue() throws URISyntaxException, InvalidKeyException, StorageException {
-//        // Create a new queue
-//        CloudQueue queue = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
-//                .getQueueReference(this.organzagionsQueue);
-//        queue.createIfNotExists();
-//    }
+    private void createTable() throws URISyntaxException, InvalidKeyException, StorageException {
+        // Create a new table
+//        TODO under investigation
+//        CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
+//        CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
+//        TableRequestOptions tableRequestOptions = new TableRequestOptions();
+//        tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance()); // disable retry to complete faster
+//        cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
+//        CloudTable table = cloudTableClient.getTableReference(organizationsTable);
+
+        CloudTable table = CloudStorageAccount.parse(storageConnectionString)
+                .createCloudTableClient().getTableReference(this.organizationsTable);
+        this.logger.info("[OrganizationsService] Creating table...");
+        table.createIfNotExists();
+        this.logger.info(String.format("[OrganizationsService] Table created: %s", this.organizationsTable));
+    }
+
+    private void createQueue() throws URISyntaxException, InvalidKeyException, StorageException {
+        this.logger.info("[OrganizationsService] Creating queue...");
+        // Create a new queue
+        CloudQueue queue = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
+                .getQueueReference(this.organzationsQueue);
+        queue.createIfNotExists();
+        this.logger.info(String.format("[OrganizationsService] Queue created: %s", this.organzationsQueue));
+    }
 
     private List<String> getOrganizationList() throws URISyntaxException, InvalidKeyException, StorageException {
         CloudTable table = CloudStorageAccount.parse(storageConnectionString)
@@ -212,7 +222,7 @@ public class OrganizationsService {
 
         try {
             final CloudQueue queue = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
-                    .getQueueReference(this.organzagionsQueue);
+                    .getQueueReference(this.organzationsQueue);
 
             List<List<String>> queueMsgOrganizations = Lists.partition(organizations, msgOrganizationsForQueue);
 
