@@ -51,7 +51,7 @@ public class PaymentsService {
 		if (po.isEmpty()) {
 			throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, iuv);
 		}
-
+		
 		return po.get();
 	}
 	

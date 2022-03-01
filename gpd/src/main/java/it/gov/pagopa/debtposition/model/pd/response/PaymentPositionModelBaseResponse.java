@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.Type;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -20,6 +21,7 @@ public class PaymentPositionModelBaseResponse implements Serializable {
     
     private String iupd;
     private String organizationFiscalCode;
+    private Type type;
     private String companyName; // es. Comune di Roma
     private String officeName; // es. Ufficio Tributi
     private LocalDateTime insertedDate;
