@@ -10,6 +10,7 @@ import it.gov.pagopa.payments.mock.PaSendRTReqMock;
 import it.gov.pagopa.payments.mock.PaVerifyPaymentNoticeReqMock;
 import it.gov.pagopa.payments.model.PaaErrorEnum;
 import it.gov.pagopa.payments.model.PaymentOptionModel;
+import it.gov.pagopa.payments.model.PaymentOptionModelResponse;
 import it.gov.pagopa.payments.model.PaymentsModelResponse;
 import it.gov.pagopa.payments.model.partner.ObjectFactory;
 import it.gov.pagopa.payments.model.partner.PaGetPaymentReq;
@@ -134,7 +135,7 @@ class PartnerServiceTest {
                 .isEqualTo(DatatypeFactory.newInstance().newXMLGregorianCalendar("2122-02-24T17:03:59.408"));
         assertThat(responseBody.getData().getRetentionDate())
                 .isEqualTo(DatatypeFactory.newInstance().newXMLGregorianCalendar("2022-02-25T17:03:59.408"));
-        // TODO add assertThat for debitor, company name and officeName
+        assertEquals("77777777777", requestBody.getQrCode().getFiscalCode());
     }
 
 
@@ -147,7 +148,7 @@ class PartnerServiceTest {
         when(factory.createPaSendRTRes()).thenReturn(factoryUtil.createPaSendRTRes());
 
         when(gpdClient.receiptPaymentOption(anyString(), anyString(), any(PaymentOptionModel.class)))
-                .thenReturn(MockUtil.readModelFromFile("gpd/receiptPaymentOption.json", PaymentsModelResponse.class));
+                .thenReturn(MockUtil.readModelFromFile("gpd/receiptPaymentOption.json", PaymentOptionModelResponse.class));
 
 
         // Test execution
