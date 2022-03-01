@@ -118,6 +118,8 @@ mv local.settings.json.example local.settings.json
 mvn azure-functions:run
 ```
 
+Tool to explore azurite: https://azure.microsoft.com/it-it/features/storage-explorer/ 
+
 ### Testing 🧪
 
 #### Unit testing
