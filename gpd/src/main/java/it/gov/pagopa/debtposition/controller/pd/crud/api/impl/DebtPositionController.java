@@ -27,7 +27,7 @@ import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
 import it.gov.pagopa.debtposition.service.pd.crud.PaymentPositionCRUDService;
 import it.gov.pagopa.debtposition.util.CommonUtil;
-import it.gov.pagopa.debtposition.util.HttpStatusExplainMessage;
+import it.gov.pagopa.debtposition.util.Constants;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -117,7 +117,7 @@ public class DebtPositionController implements IDebtPositionController {
 		log.info(String.format(LOG_BASE_HEADER_INFO,"DELETE","deleteDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
 		
     	paymentPositionService.delete(organizationFiscalCode, iupd);
-        return new ResponseEntity<>(HttpStatusExplainMessage.DEBT_POSITION_DELETED, HttpStatus.OK);
+        return new ResponseEntity<>(Constants.DEBT_POSITION_DELETED, HttpStatus.OK);
     }
 
 	@Override
