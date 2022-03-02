@@ -1,5 +1,7 @@
 package it.gov.pagopa.reporting.service;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.*;
 
 import java.io.InputStream;
@@ -13,6 +15,7 @@ import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
+import com.azure.storage.blob.models.BlobStorageException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.RetryNoRetry;
@@ -30,7 +33,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-
 
 @Testcontainers
 class FlowServiceIntegrationTest {
@@ -58,13 +60,16 @@ class FlowServiceIntegrationTest {
         flowsService = spy(new FlowsService(storageConnectionString, flowsTable, containerBlob, logger));
 
         String organizationId =  "90000000000";
+        List<Flow> flows = null;
         try {
             createTable();
-            List<Flow> flows = flowsService.getByOrganization(organizationId);
-        } catch (InvalidKeyException | URISyntaxException | StorageException | JsonProcessingException e) {
-            assert(false);
+            flows = flowsService.getByOrganization(organizationId);
+        } catch (URISyntaxException | InvalidKeyException | StorageException e) {
+            assertNull(flows);
         }
-        assert(true);
+
+        assertNotNull(flows);
+
     }
 
     @Test
@@ -74,21 +79,46 @@ class FlowServiceIntegrationTest {
         String organizationId =  "idPa";
         String flowId = "idFlow";
         String flowDate = "dataOra";
+        String data = null;
+
+        BlobServiceClient blobServiceClient = createContainer();
+
+        // precondition
+        BlobContainerClient flowsContainerClient = blobServiceClient.getBlobContainerClient(this.containerBlob);
+        BlobClient blobClient = flowsContainerClient.getBlobClient("dataOra##idPa##idFlow.xml");
+        InputStream is = getClass().getClassLoader().getResourceAsStream("dataOra##idPa##idFlow.xml");
+        blobClient.upload(BinaryData.fromStream(is));
+
+        // test
+        data = flowsService.getByFlow(organizationId, flowId, flowDate);
+
+        assertNotNull(data);
+    }
+
+    @Test
+    void getByFlow_KO() {
+        flowsService = spy(new FlowsService(storageConnectionString, flowsTable, containerBlob, logger));
+
+        String organizationId =  "idPa";
+        String flowId = "idFlowKO";
+        String flowDate = "dataOra";
+        String data = null;
+
+        BlobServiceClient blobServiceClient = createContainer();
+
+        // precondition
+        BlobContainerClient flowsContainerClient = blobServiceClient.getBlobContainerClient(this.containerBlob);
+        BlobClient blobClient = flowsContainerClient.getBlobClient("dataOra##idPa##idFlow.xml");
+        InputStream is = getClass().getClassLoader().getResourceAsStream("dataOra##idPa##idFlow.xml");
+        blobClient.upload(BinaryData.fromStream(is));
+
+        // test
         try {
-            BlobServiceClient blobServiceClient = createContainer();
-
-            // precondition
-            BlobContainerClient flowsContainerClient = blobServiceClient.getBlobContainerClient(this.containerBlob);
-            BlobClient blobClient = flowsContainerClient.getBlobClient("dataOra##idPa##idFlow.xml");
-            InputStream is = getClass().getClassLoader().getResourceAsStream("dataOra##idPa##idFlow.xml");
-            blobClient.upload(BinaryData.fromStream(is));
-
-            // test
-            String data = flowsService.getByFlow(organizationId, flowId, flowDate);
-        } catch (InvalidKeyException | URISyntaxException | StorageException | JsonProcessingException e) {
-            assert(false);
+            data = flowsService.getByFlow(organizationId, flowId, flowDate);
+            assertNull(data);
+        } catch(BlobStorageException e) {
+            assertNull(data);
         }
-        assert(true);
     }
 
     @SneakyThrows
@@ -106,7 +136,10 @@ class FlowServiceIntegrationTest {
     private BlobServiceClient createContainer() {
         BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
                 .connectionString(this.storageConnectionString).buildClient();
-        blobServiceClient.createBlobContainer(containerBlob);
+        BlobContainerClient container = blobServiceClient.getBlobContainerClient(containerBlob);
+        if (!container.exists()) {
+            blobServiceClient.createBlobContainer(containerBlob);
+        }
         return blobServiceClient;
     }
 

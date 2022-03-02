@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -12,6 +13,7 @@ import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
+import com.azure.storage.blob.models.BlobStorageException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
@@ -38,7 +40,8 @@ public class FlowsService {
         this.logger = logger;
     }
 
-    public List<Flow> getByOrganization(String organizationId) throws InvalidKeyException, URISyntaxException, StorageException, JsonProcessingException {
+    public List<Flow> getByOrganization(String organizationId) throws URISyntaxException, InvalidKeyException, StorageException {
+        this.logger.log(Level.INFO, String.format("[FlowsService] START get by organization: %s", organizationId));
 
         // try to create table
         AzureStorageUtil azureStorageUtil = new AzureStorageUtil(storageConnectionString, flowsTable, null);
@@ -63,11 +66,16 @@ public class FlowsService {
         return flowList.stream().map(flow -> modelMapper.map(flow, Flow.class)).collect(Collectors.toList());
     }
 
-    public String getByFlow(String organizationId, String flowId, String flowDate) throws InvalidKeyException, URISyntaxException, StorageException, JsonProcessingException {
+    public String getByFlow(String organizationId, String flowId, String flowDate) throws BlobStorageException {
+        this.logger.log(Level.INFO, String.format("[FlowsService] START get by flow: %s - %s - %s", organizationId, flowId, flowDate));
 
         // try to create blob container
         AzureStorageUtil azureStorageUtil = new AzureStorageUtil(storageConnectionString, null, containerBlob);
-        azureStorageUtil.createTable();
+        try {
+            azureStorageUtil.createTable();
+        } catch (URISyntaxException | InvalidKeyException | StorageException e) {
+            this.logger.severe(String.format("[AzureStorage] Problem to create table: %s", e.getMessage()));
+        }
 
         BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
                 .connectionString(this.storageConnectionString).buildClient();

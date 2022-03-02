@@ -23,6 +23,7 @@ public class AzureStorageUtil {
 
     private String storageConnectionString;
     private String flowsTable;
+    private String flowsQueue;
     private String containerBlob;
 
     // Create a new table
@@ -36,6 +37,15 @@ public class AzureStorageUtil {
             CloudTable table = cloudTableClient.getTableReference(flowsTable);
 
             table.createIfNotExists();
+        }
+    }
+
+    // Create a new queue
+    public void createQueue() throws URISyntaxException, InvalidKeyException, StorageException {
+        if (debugAzurite) {
+            CloudQueue queue = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
+                    .getQueueReference(flowsQueue);
+            queue.createIfNotExists();
         }
     }
 

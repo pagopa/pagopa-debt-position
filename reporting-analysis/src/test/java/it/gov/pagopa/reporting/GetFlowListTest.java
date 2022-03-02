@@ -6,11 +6,9 @@ import com.microsoft.azure.functions.HttpResponseMessage;
 import com.microsoft.azure.functions.HttpStatus;
 import it.gov.pagopa.reporting.model.Flow;
 import it.gov.pagopa.reporting.service.FlowsService;
-import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -63,7 +61,7 @@ class GetFlowListTest {
         HttpResponseMessage response = function.run(request, organizationId, context);
 
         // Asserts
-        assertEquals(response.getStatus(), HttpStatus.OK);
+        assertEquals(HttpStatus.OK, response.getStatus());
     }
 
     @Test
@@ -92,7 +90,7 @@ class GetFlowListTest {
         HttpResponseMessage response = function.run(request, organizationId, context);
 
         // Asserts
-        assertEquals(response.getStatus(), HttpStatus.BAD_REQUEST);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatus());
     }
 
 }

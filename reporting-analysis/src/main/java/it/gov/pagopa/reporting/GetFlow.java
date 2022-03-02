@@ -1,5 +1,6 @@
 package it.gov.pagopa.reporting;
 
+import com.azure.storage.blob.models.BlobStorageException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.microsoft.azure.functions.*;
 import com.microsoft.azure.functions.annotation.BindingName;
@@ -56,10 +57,10 @@ public class GetFlow {
                     .body(data)
                     .build();
 
-        } catch (URISyntaxException | InvalidKeyException | StorageException | JsonProcessingException e) {
+        } catch (BlobStorageException e) {
             logger.log(Level.SEVERE, () -> "GetFlow error: " + e.getLocalizedMessage());
 
-            return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
+            return request.createResponseBuilder(HttpStatus.NOT_FOUND)
                     .header("Content-Type", "application/json")
                     .build();
         }

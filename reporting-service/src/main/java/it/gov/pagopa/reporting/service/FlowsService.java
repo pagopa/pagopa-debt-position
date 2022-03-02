@@ -15,6 +15,7 @@ import com.azure.storage.blob.BlobServiceClientBuilder;
 
 import it.gov.pagopa.reporting.servicewsdl.FaultBean;
 import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
+import it.gov.pagopa.reporting.util.AzureStorageUtil;
 
 import java.io.IOException;
 
@@ -41,6 +42,10 @@ public class FlowsService {
     public void flowsXmlDownloading(List<TipoIdRendicontazione> flows, String idPA) {
 
         this.logger.log(Level.INFO, "[RetrieveDetails/FlowsService] START flows downloading ");
+
+        // try to create blob container
+        AzureStorageUtil azureStorageUtil = new AzureStorageUtil(storageConnectionString, null, null, containerBlob);
+        azureStorageUtil.createBlob();
 
         try {
             NodeService nodeService = this.getNodeServiceInstance();
@@ -95,7 +100,6 @@ public class FlowsService {
     }
 
     public NodeService getNodeServiceInstance() {
-
         return new NodeService(this.identificativoIntemediarioPA, this.identificativoStazioneIntermediarioPA,
                 this.paaPassword);
     }

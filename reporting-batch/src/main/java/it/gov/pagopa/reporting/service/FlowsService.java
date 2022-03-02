@@ -2,7 +2,6 @@ package it.gov.pagopa.reporting.service;
 
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,7 +11,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.RetryNoRetry;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;

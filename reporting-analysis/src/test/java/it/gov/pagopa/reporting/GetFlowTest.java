@@ -1,10 +1,10 @@
 package it.gov.pagopa.reporting;
 
+import com.azure.storage.blob.models.BlobStorageException;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.HttpRequestMessage;
 import com.microsoft.azure.functions.HttpResponseMessage;
 import com.microsoft.azure.functions.HttpStatus;
-import it.gov.pagopa.reporting.model.Flow;
 import it.gov.pagopa.reporting.service.FlowsService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,8 +13,6 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.security.InvalidKeyException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -36,7 +34,7 @@ class GetFlowTest {
     FlowsService flowsService;
 
     @Test
-    void runOK() throws Exception {
+    void runOK() {
 
         // general var
         Logger logger = Logger.getLogger("testlogging");
@@ -64,11 +62,11 @@ class GetFlowTest {
         HttpResponseMessage response = function.run(request, organizationId, flowId, flowDate, context);
 
         // Asserts
-        assertEquals(response.getStatus(), HttpStatus.OK);
+        assertEquals(HttpStatus.OK, response.getStatus());
     }
 
     @Test
-    void runKO() throws Exception {
+    void runKO() {
 
         // general var
         Logger logger = Logger.getLogger("testlogging");
@@ -79,7 +77,7 @@ class GetFlowTest {
         // precondition
         when(context.getLogger()).thenReturn(logger);
         doReturn(flowsService).when(function).getFlowsServiceInstance(logger);
-        doThrow(InvalidKeyException.class).when(flowsService).getByFlow(anyString(), anyString(), anyString());
+        doThrow(BlobStorageException.class).when(flowsService).getByFlow(anyString(), anyString(), anyString());
 
         final HttpResponseMessage.Builder builder = mock(HttpResponseMessage.Builder.class);
         HttpRequestMessage<Optional<String>> request = mock(HttpRequestMessage.class);
@@ -88,14 +86,14 @@ class GetFlowTest {
         doReturn(builder).when(builder).header(anyString(), anyString());
 
         HttpResponseMessage responseMock = mock(HttpResponseMessage.class);
-        doReturn(HttpStatus.BAD_REQUEST).when(responseMock).getStatus();
+        doReturn(HttpStatus.NOT_FOUND).when(responseMock).getStatus();
         doReturn(responseMock).when(builder).build();
 
         // test
         HttpResponseMessage response = function.run(request, organizationId, flowId, flowDate, context);
 
         // Asserts
-        assertEquals(response.getStatus(), HttpStatus.BAD_REQUEST);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatus());
     }
 
 }
