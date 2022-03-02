@@ -207,7 +207,7 @@ class DebtPositionControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[*].iuv")
 				.value(Matchers.hasSize(1)))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[*].iuv")
-				.value(Matchers.hasSize(3)));	}
+				.value(Matchers.hasSize(2)));	}
 
 	@Test
 	void getDebtPositionListDueDateGreaterThanOrEqual() throws Exception {
