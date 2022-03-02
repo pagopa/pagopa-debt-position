@@ -62,7 +62,7 @@ Under `payments` folder typing:
 
 - maven
 - [newman](https://www.npmjs.com/package/newman)
-- [postman-to-k6](https://github.com/grafana/postman-to-k6)
+- [postman-to-k6](https://github.com/apideck-libraries/postman-to-k6)
 - [k6](https://k6.io/)
 
 ### Unit testing
