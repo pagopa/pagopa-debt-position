@@ -20,19 +20,19 @@
 
 ### Prerequisites
 
-- pip install -r requirements.txt
+- `pip install -r requirements.txt`
 
 ### Run GPD mock
 
 Under `mock` folder typing:
 
-`python3 gpd.py`
+`python gpd.py`
 
 ### Run Nodo mock
 
 Under `mock` folder typing:
 
-`python3 nodo.py`
+`python nodo.py`
 
 ---
 
