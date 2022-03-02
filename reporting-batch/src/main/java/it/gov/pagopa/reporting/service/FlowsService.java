@@ -20,9 +20,9 @@ import com.microsoft.azure.storage.table.*;
 import it.gov.pagopa.reporting.entity.FlowEntity;
 import it.gov.pagopa.reporting.models.FlowsMessage;
 import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
+import it.gov.pagopa.reporting.utils.AzureStorageUtil;
 
 public class FlowsService {
-//    private boolean debugAzurite = Boolean.parseBoolean(System.getenv("DEBUG_AZURITE"));
 
     private String storageConnectionString;
     private String flowsTable;
@@ -31,54 +31,15 @@ public class FlowsService {
     private int batchSize = 2;
 
     public FlowsService(String storageConnectionString, String flowsTable, String flowsQueue, Logger logger) {
-
         this.storageConnectionString = storageConnectionString;
         this.flowsTable = flowsTable;
         this.flowsQueue = flowsQueue;
         this.logger = logger;
     }
 
-    private void createTable() throws URISyntaxException, InvalidKeyException, StorageException {
-        this.logger.info("[FlowsService] Creating table...");
-        // Create a new table
-        CloudTable table = CloudStorageAccount.parse(storageConnectionString)
-                .createCloudTableClient().getTableReference(this.flowsTable);
-
-//        TODO under investigation
-//        CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
-//        CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
-//        TableRequestOptions tableRequestOptions = new TableRequestOptions();
-//        tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance()); // disable retry to complete faster
-//        cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
-//        CloudTable table = cloudTableClient.getTableReference(flowsTable);
-
-        table.createIfNotExists();
-        this.logger.info("[FlowsService] Table created.");
-    }
-
-    private void createQueue() throws URISyntaxException, InvalidKeyException, StorageException {
-        // Create a new queue
-        CloudQueue queue = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
-                .getQueueReference(this.flowsQueue);
-        queue.createIfNotExists();
-    }
-
     public void flowsProcessing(List<TipoIdRendicontazione> flows, String idPA) {
 
-//        if (debugAzurite) {
-//            try {
-//                createTable();
-//            } catch (Exception e) {
-//                this.logger.severe(String.format("[FlowsService] The table specified does not exist: %s", e.getLocalizedMessage()));
-//            }
-
-//            try {
-//                createQueue();
-//            } catch (URISyntaxException | InvalidKeyException | StorageException e ) {
-//                this.logger.severe(String.format("[FlowsService] Generic Error The specified queue does not exist: %s", e.getLocalizedMessage()));
-//                e.printStackTrace();
-//            }
-//        }
+        createEnv();
 
         this.logger.log(Level.INFO, "[FlowsService] START flows storing ");
 
@@ -111,9 +72,7 @@ public class FlowsService {
                  * Partition Individual Processing, scan flows
                  */
                 partitionsFlows.get(partitionFlowsIndex).forEach(flow -> {
-
                     try {
-
                         this.flowProcessing(flow, idPA);
                     } catch (TableServiceException et) {
 
@@ -186,5 +145,15 @@ public class FlowsService {
 
         this.logger.log(Level.INFO, () -> "[FlowsService] Sending messages:  " + message);
         queue.addMessage(new CloudQueueMessage(message));
+    }
+
+    private void createEnv() {
+        AzureStorageUtil azureStorageUtil = new AzureStorageUtil(storageConnectionString, flowsTable, flowsQueue);
+        try {
+            azureStorageUtil.createTable();
+            azureStorageUtil.createQueue();
+        } catch (Exception e) {
+            this.logger.severe(String.format("[AzureStorage] Problem to create table or queue: %s", e.getMessage()));
+        }
     }
 }

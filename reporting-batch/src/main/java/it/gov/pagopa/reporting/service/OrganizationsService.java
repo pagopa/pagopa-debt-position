@@ -12,6 +12,7 @@ import com.microsoft.azure.storage.table.*;
 import it.gov.pagopa.reporting.entity.OrganizationEntity;
 import it.gov.pagopa.reporting.models.Organizations;
 import it.gov.pagopa.reporting.models.OrganizationsMessage;
+import it.gov.pagopa.reporting.utils.AzureStorageUtil;
 
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
@@ -40,21 +41,10 @@ public class OrganizationsService {
     }
 
     public List<String> processOrganizationList(Organizations organizations) {
-        this.logger.info("[OrganizationsService] Processing organization list");
+        // try to create Azure table and queue
+        createEnv();
 
-//        if (debugAzurite) {
-//            try {
-//                createTable();
-//            } catch (Exception e) {
-//                this.logger.severe(String.format("[OrganizationsService] Problem to create table: %s", e.getMessage()));
-//            }
-//
-//            try {
-//                createQueue();
-//            } catch (URISyntaxException | InvalidKeyException | StorageException e ) {
-//                this.logger.severe(String.format("[OrganizationsService] Problem to create queue: %s", e.getMessage()));
-//            }
-//        }
+        this.logger.info("[OrganizationsService] Processing organization list");
 
         // create batch partition due to max batch size of Azure Table Storage - 100
         List<List<String>> addOrganizationList = Lists.partition(organizations.getAdd(), batchSize);
@@ -125,32 +115,6 @@ public class OrganizationsService {
             this.logger.severe(String.format("[OrganizationsService] Problem to retrieve organization list: %s", e.getLocalizedMessage()));
             return new ArrayList<>();
         }
-    }
-
-    private void createTable() throws URISyntaxException, InvalidKeyException, StorageException {
-        // Create a new table
-//        TODO under investigation
-//        CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
-//        CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
-//        TableRequestOptions tableRequestOptions = new TableRequestOptions();
-//        tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance()); // disable retry to complete faster
-//        cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
-//        CloudTable table = cloudTableClient.getTableReference(organizationsTable);
-
-        CloudTable table = CloudStorageAccount.parse(storageConnectionString)
-                .createCloudTableClient().getTableReference(this.organizationsTable);
-        this.logger.info("[OrganizationsService] Creating table...");
-        table.createIfNotExists();
-        this.logger.info(String.format("[OrganizationsService] Table created: %s", this.organizationsTable));
-    }
-
-    private void createQueue() throws URISyntaxException, InvalidKeyException, StorageException {
-        this.logger.info("[OrganizationsService] Creating queue...");
-        // Create a new queue
-        CloudQueue queue = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
-                .getQueueReference(this.organzationsQueue);
-        queue.createIfNotExists();
-        this.logger.info(String.format("[OrganizationsService] Queue created: %s", this.organzationsQueue));
     }
 
     private List<String> getOrganizationList() throws URISyntaxException, InvalidKeyException, StorageException {
@@ -245,7 +209,16 @@ public class OrganizationsService {
         } catch (URISyntaxException | StorageException | InvalidKeyException e) {
             this.logger.log(Level.SEVERE, () -> "[OrganizationsService]  Error " + e.getLocalizedMessage());
         }
+    }
 
+    private void createEnv() {
+        AzureStorageUtil azureStorageUtil = new AzureStorageUtil(storageConnectionString, organizationsTable, organzationsQueue);
+        try {
+            azureStorageUtil.createTable();
+            azureStorageUtil.createQueue();
+        } catch (Exception e) {
+            this.logger.severe(String.format("[AzureStorage] Problem to create table or queue: %s", e.getMessage()));
+        }
     }
 
 
