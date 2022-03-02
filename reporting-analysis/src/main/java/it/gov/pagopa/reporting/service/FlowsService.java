@@ -18,12 +18,12 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.*;
 import it.gov.pagopa.reporting.entity.FlowEntity;
 import it.gov.pagopa.reporting.model.Flow;
+import it.gov.pagopa.reporting.util.AzureStorageUtil;
 import it.gov.pagopa.reporting.util.FlowConverter;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 
 public class FlowsService {
-//    private boolean debugAzurite = Boolean.parseBoolean(System.getenv("DEBUG_AZURITE"));
 
     private String storageConnectionString;
     private String flowsTable;
@@ -39,6 +39,11 @@ public class FlowsService {
     }
 
     public List<Flow> getByOrganization(String organizationId) throws InvalidKeyException, URISyntaxException, StorageException, JsonProcessingException {
+
+        // try to create table
+        AzureStorageUtil azureStorageUtil = new AzureStorageUtil(storageConnectionString, flowsTable, null);
+        azureStorageUtil.createTable();
+
         CloudTable table = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
                 .getTableReference(this.flowsTable);
 
@@ -60,6 +65,10 @@ public class FlowsService {
 
     public String getByFlow(String organizationId, String flowId, String flowDate) throws InvalidKeyException, URISyntaxException, StorageException, JsonProcessingException {
 
+        // try to create blob container
+        AzureStorageUtil azureStorageUtil = new AzureStorageUtil(storageConnectionString, null, containerBlob);
+        azureStorageUtil.createTable();
+
         BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
                 .connectionString(this.storageConnectionString).buildClient();
 
@@ -76,4 +85,5 @@ public class FlowsService {
 
         return outputStream.toString();
     }
+
 }

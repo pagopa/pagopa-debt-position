@@ -1,7 +1,6 @@
 package it.gov.pagopa.reporting;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.functions.*;
 import com.microsoft.azure.functions.annotation.BindingName;
 import com.microsoft.azure.functions.annotation.FunctionName;
@@ -9,12 +8,10 @@ import com.microsoft.azure.functions.annotation.HttpTrigger;
 import com.microsoft.azure.storage.StorageException;
 import it.gov.pagopa.reporting.service.FlowsService;
 
-import javax.print.attribute.standard.Media;
 import javax.ws.rs.core.MediaType;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;

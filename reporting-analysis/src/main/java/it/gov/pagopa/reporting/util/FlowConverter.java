@@ -21,12 +21,6 @@ public class FlowConverter implements Converter<FlowEntity, Flow> {
     public Flow convert(MappingContext<FlowEntity, Flow> mappingContext) {
         @Valid FlowEntity source = mappingContext.getSource();
 
-//        DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//        Date date = format.parse(source.getFlowDate());
-//        GregorianCalendar cal = new GregorianCalendar();
-//        cal.setTimeZone(TimeZone.getTimeZone("CEST"));
-//        cal.setTime(date);
-//        XMLGregorianCalendar xmlGregCalendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
         return Flow.builder()
                 .flowId(source.getRowKey())
                 .flowDate(source.getFlowDate())
