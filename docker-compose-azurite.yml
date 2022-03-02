@@ -1,7 +1,7 @@
 version: '3.3'
 services:
     azure-storage:
-        command: "azurite --loose --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0"
+        command: "azurite"
         container_name: azurite-storage
         image: mcr.microsoft.com/azure-storage/azurite
         ports:
