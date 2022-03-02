@@ -67,7 +67,7 @@ public class GetFlowList {
         }
     }
 
-    public FlowsService getFlowsServiceInstance(Logger logger) {
+    protected FlowsService getFlowsServiceInstance(Logger logger) {
         return new FlowsService(this.storageConnectionString, this.flowsTable, this.containerBlob, logger);
     }
 

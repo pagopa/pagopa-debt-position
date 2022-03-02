@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
@@ -19,11 +18,9 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.*;
 import it.gov.pagopa.reporting.entity.FlowEntity;
 import it.gov.pagopa.reporting.model.Flow;
-import it.gov.pagopa.util.FlowConverter;
+import it.gov.pagopa.reporting.util.FlowConverter;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
-
-import javax.xml.datatype.XMLGregorianCalendar;
 
 public class FlowsService {
 //    private boolean debugAzurite = Boolean.parseBoolean(System.getenv("DEBUG_AZURITE"));

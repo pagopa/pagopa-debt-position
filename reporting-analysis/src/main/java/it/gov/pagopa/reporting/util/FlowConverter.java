@@ -1,4 +1,4 @@
-package it.gov.pagopa.util;
+package it.gov.pagopa.reporting.util;
 import it.gov.pagopa.reporting.entity.FlowEntity;
 import it.gov.pagopa.reporting.model.Flow;
 import lombok.SneakyThrows;
