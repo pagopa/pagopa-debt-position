@@ -31,7 +31,7 @@ public class PartnerEndpoint {
     private ObjectFactory factory;
 
     @SoapAction("paVerifyPaymentNotice")
-    @PayloadRoot(localPart = "paVerifyPaymentNoticeReq", namespace = "http://pagopa-api.pagopa.gov.it/partner")
+    @PayloadRoot(localPart = "paVerifyPaymentNoticeReq")
     @ResponsePayload
     public JAXBElement<PaVerifyPaymentNoticeRes> paVerifyPaymentNotice(
             @RequestPayload JAXBElement<PaVerifyPaymentNoticeReq> request)
@@ -42,7 +42,7 @@ public class PartnerEndpoint {
     }
 
     @SoapAction("paGetPayment")
-    @PayloadRoot(localPart = "paGetPaymentReq", namespace = "http://pagopa-api.pagopa.gov.it/partner")
+    @PayloadRoot(localPart = "paGetPaymentReq")
     @ResponsePayload
     public JAXBElement<PaGetPaymentRes> paGetPayment(@RequestPayload JAXBElement<PaGetPaymentReq> request)
             throws PartnerValidationException, DatatypeConfigurationException {
@@ -52,7 +52,7 @@ public class PartnerEndpoint {
     }
 
     @SoapAction("paSendRT")
-    @PayloadRoot(localPart = "paSendRTReq", namespace = "http://pagopa-api.pagopa.gov.it/partner")
+    @PayloadRoot(localPart = "paSendRTReq")
     @ResponsePayload
     public JAXBElement<PaSendRTRes> paSendRT(@RequestPayload JAXBElement<PaSendRTReq> request) {
 
