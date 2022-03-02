@@ -12,10 +12,15 @@
 ## Technology Stack 📚
 
 - Python 3
+- pip
 
 ---  
 
 ## Start Mocks in Local 🚀
+
+### Prerequisites
+
+- pip install -r requirements.txt
 
 ### Run GPD mock
 
