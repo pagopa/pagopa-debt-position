@@ -16,7 +16,6 @@ import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.models.BlobStorageException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.RetryNoRetry;
 import com.microsoft.azure.storage.StorageException;
