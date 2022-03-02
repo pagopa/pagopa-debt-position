@@ -14,7 +14,6 @@ import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.models.BlobStorageException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.*;
@@ -41,7 +40,7 @@ public class FlowsService {
     }
 
     public List<Flow> getByOrganization(String organizationId) throws URISyntaxException, InvalidKeyException, StorageException {
-        this.logger.log(Level.INFO, String.format("[FlowsService] START get by organization: %s", organizationId));
+        logger.log(Level.INFO, () -> String.format("[FlowsService] START get by organization: %s", organizationId));
 
         // try to create table
         AzureStorageUtil azureStorageUtil = new AzureStorageUtil(storageConnectionString, flowsTable, null);
@@ -67,7 +66,7 @@ public class FlowsService {
     }
 
     public String getByFlow(String organizationId, String flowId, String flowDate) throws BlobStorageException {
-        this.logger.log(Level.INFO, String.format("[FlowsService] START get by flow: %s - %s - %s", organizationId, flowId, flowDate));
+        logger.log(Level.INFO, () -> String.format("[FlowsService] START get by flow: %s - %s - %s", organizationId, flowId, flowDate));
 
         // try to create blob container
         AzureStorageUtil azureStorageUtil = new AzureStorageUtil(storageConnectionString, null, containerBlob);

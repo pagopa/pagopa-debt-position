@@ -8,8 +8,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @ExtendWith(MockitoExtension.class)
-public class FlowConverterTest {
+class FlowConverterTest {
 
     @Test
     void convert() {
@@ -25,7 +27,7 @@ public class FlowConverterTest {
 
         Flow flow = modelMapper.map(flowEntity, Flow.class);
 
-        assert(flow.getFlowId().equals(flowId));
-        assert(flow.getFlowDate().equals(flowDate));
+        assertEquals(flowId, flow.getFlowId());
+        assertEquals(flowDate, flow.getFlowDate());
     }
 }
