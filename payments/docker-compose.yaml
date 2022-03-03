@@ -1,0 +1,15 @@
+version: "3.2"
+
+services:
+  payments:
+    container_name: 'payments'
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    build:
+      context: ./
+      dockerfile: Dockerfile
+
+
+
