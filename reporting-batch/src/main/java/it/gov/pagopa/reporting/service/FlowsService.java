@@ -2,7 +2,6 @@ package it.gov.pagopa.reporting.service;
 
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,16 +14,13 @@ import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
-import com.microsoft.azure.storage.table.CloudTable;
-import com.microsoft.azure.storage.table.TableBatchOperation;
-import com.microsoft.azure.storage.table.TableOperation;
-import com.microsoft.azure.storage.table.TableServiceException;
+import com.microsoft.azure.storage.table.*;
 import it.gov.pagopa.reporting.entity.FlowEntity;
 import it.gov.pagopa.reporting.models.FlowsMessage;
 import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
+import it.gov.pagopa.reporting.utils.AzuriteStorageUtil;
 
 public class FlowsService {
-//    private boolean debugAzurite = Boolean.parseBoolean(System.getenv("DEBUG_AZURITE"));
 
     private String storageConnectionString;
     private String flowsTable;
@@ -33,43 +29,15 @@ public class FlowsService {
     private int batchSize = 2;
 
     public FlowsService(String storageConnectionString, String flowsTable, String flowsQueue, Logger logger) {
-
         this.storageConnectionString = storageConnectionString;
         this.flowsTable = flowsTable;
         this.flowsQueue = flowsQueue;
         this.logger = logger;
     }
 
-//    private void createTable() throws URISyntaxException, InvalidKeyException, StorageException {
-//        // Create a new table
-//        CloudTable table = CloudStorageAccount.parse(storageConnectionString)
-//                .createCloudTableClient().getTableReference(this.flowsTable);
-//        table.createIfNotExists();
-//    }
-//
-//    private void createQueue() throws URISyntaxException, InvalidKeyException, StorageException {
-//        // Create a new queue
-//        CloudQueue queue = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
-//                .getQueueReference(this.flowsQueue);
-//        queue.createIfNotExists();
-//    }
-
     public void flowsProcessing(List<TipoIdRendicontazione> flows, String idPA) {
 
-//        if (debugAzurite) {
-//            try {
-//                createTable();
-//            } catch (Exception e) {
-//                this.logger.severe(String.format("[FlowsService] The table specified does not exist: %s", e.getLocalizedMessage()));
-//            }
-//
-//            try {
-//                createQueue();
-//            } catch (URISyntaxException | InvalidKeyException | StorageException e ) {
-//                this.logger.severe(String.format("[FlowsService] Generic Error The specified queue does not exist: %s", e.getLocalizedMessage()));
-//                e.printStackTrace();
-//            }
-//        }
+        createEnv();
 
         this.logger.log(Level.INFO, "[FlowsService] START flows storing ");
 
@@ -101,10 +69,8 @@ public class FlowsService {
                 /**
                  * Partition Individual Processing, scan flows
                  */
-                partitionsFlows.get(partitionFlowsIndex).stream().forEach(flow -> {
-
+                partitionsFlows.get(partitionFlowsIndex).forEach(flow -> {
                     try {
-
                         this.flowProcessing(flow, idPA);
                     } catch (TableServiceException et) {
 
@@ -133,7 +99,7 @@ public class FlowsService {
     public void flowsBatchProcessing(List<TipoIdRendicontazione> partition, String idPA, int partitionFlowsIndex)
             throws InvalidKeyException, URISyntaxException, StorageException, JsonProcessingException {
 
-        this.logger.log(Level.INFO, () -> "[FlowsService] flowsBatchProcessing  " + partitionFlowsIndex);
+        this.logger.log(Level.INFO, () -> "[FlowsService] flowsBatchProcessing - partition index: " + partitionFlowsIndex);
 
         CloudQueue queue = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
                 .getQueueReference(this.flowsQueue);
@@ -142,21 +108,19 @@ public class FlowsService {
 
         TableBatchOperation batchOperation = new TableBatchOperation();
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-
         partition.forEach(flow -> batchOperation.insert(
-                new FlowEntity(flow.getIdentificativoFlusso(), sdf.format(flow.getDataOraFlusso().toGregorianCalendar().getTime()), idPA)
+                new FlowEntity(flow.getIdentificativoFlusso(), flow.getDataOraFlusso().toString(), idPA)
         ));
 
-        this.logger.log(Level.INFO, () -> "[FlowsService] Storing batch " + partitionFlowsIndex);
+        this.logger.log(Level.INFO, () -> "[FlowsService] Storing batch - partition index: " + partitionFlowsIndex);
         table.execute(batchOperation);
 
         FlowsMessage flows = new FlowsMessage();
-        flows.setFlows(partition.stream().toArray(TipoIdRendicontazione[]::new));
+        flows.setFlows(partition.toArray(TipoIdRendicontazione[]::new));
         flows.setIdPA(idPA);
         String message = new ObjectMapper().writeValueAsString(flows);
 
-        this.logger.log(Level.INFO, () -> "[FlowsService] Sending messages " + partitionFlowsIndex);
+        this.logger.log(Level.INFO, () -> "[FlowsService] Sending messages - partition index: " + partitionFlowsIndex);
         queue.addMessage(new CloudQueueMessage(message));
     }
 
@@ -168,11 +132,9 @@ public class FlowsService {
         CloudTable table = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
                 .getTableReference(this.flowsTable);
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-
         this.logger.log(Level.INFO, () -> "[FlowsService] Storing flow " + flow.getIdentificativoFlusso());
         table.execute(TableOperation.insert(new FlowEntity(flow.getIdentificativoFlusso(),
-                sdf.format(flow.getDataOraFlusso().toGregorianCalendar().getTime()), idPA)));
+                flow.getDataOraFlusso().toString(), idPA)));
 
         FlowsMessage flows = new FlowsMessage();
         flows.setFlows(new TipoIdRendicontazione[] { flow });
@@ -181,5 +143,15 @@ public class FlowsService {
 
         this.logger.log(Level.INFO, () -> "[FlowsService] Sending messages:  " + message);
         queue.addMessage(new CloudQueueMessage(message));
+    }
+
+    private void createEnv() {
+        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString, flowsTable, flowsQueue);
+        try {
+            azuriteStorageUtil.createTable();
+            azuriteStorageUtil.createQueue();
+        } catch (Exception e) {
+            this.logger.severe(String.format("[AzureStorage] Problem to create table or queue: %s", e.getMessage()));
+        }
     }
 }

@@ -7,7 +7,6 @@ import static org.mockito.Mockito.spy;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -26,11 +25,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import it.gov.pagopa.reporting.models.BooleanResponseModel;
-import it.gov.pagopa.reporting.models.OptionsMessage;
-import it.gov.pagopa.reporting.models.OptionsReportingModel;
 
 @Testcontainers
-class OptionServiceTestIntegrationTest {
+class OptionServiceIntegrationTest {
 
     @ClassRule
     @Container

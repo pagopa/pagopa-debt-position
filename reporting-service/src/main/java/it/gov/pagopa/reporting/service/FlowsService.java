@@ -15,6 +15,7 @@ import com.azure.storage.blob.BlobServiceClientBuilder;
 
 import it.gov.pagopa.reporting.servicewsdl.FaultBean;
 import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
+import it.gov.pagopa.reporting.util.AzuriteStorageUtil;
 
 import java.io.IOException;
 
@@ -42,6 +43,10 @@ public class FlowsService {
 
         this.logger.log(Level.INFO, "[RetrieveDetails/FlowsService] START flows downloading ");
 
+        // try to create blob container
+        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString, null, null, containerBlob);
+        azuriteStorageUtil.createBlob();
+
         try {
             NodeService nodeService = this.getNodeServiceInstance();
 
@@ -66,8 +71,9 @@ public class FlowsService {
                     BlobContainerClient flowsContainerClient = blobServiceClient.getBlobContainerClient(this.containerBlob);
 
                     // dataOra##idPa##idflow.xml
+                    // added split to remove millis from name
                     BlobClient blobClient = flowsContainerClient.getBlobClient(
-                            flows.get(index).getDataOraFlusso().toString() + "##" + idPA + "##" + flows.get(index).getIdentificativoFlusso() + ".xml"
+                            flows.get(index).getDataOraFlusso().toString().split("\\.")[0] + "##" + idPA + "##" + flows.get(index).getIdentificativoFlusso() + ".xml"
                     );
 
                     logger.log(Level.INFO, () ->
@@ -94,7 +100,6 @@ public class FlowsService {
     }
 
     public NodeService getNodeServiceInstance() {
-
         return new NodeService(this.identificativoIntemediarioPA, this.identificativoStazioneIntermediarioPA,
                 this.paaPassword);
     }

@@ -1,22 +1,12 @@
 package it.gov.pagopa.reporting.service;
 
-import java.io.IOException;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import java.security.spec.InvalidKeySpecException;
-
-import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Holder;
 
 import it.gov.pagopa.reporting.servicewsdl.FaultBean;
 import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPTservice;
 import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPT;
 import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
-import it.gov.pagopa.reporting.utils.SslContextUtil;
 
 public class NodoChiediElencoFlussi {
 
@@ -41,9 +31,6 @@ public class NodoChiediElencoFlussi {
     private String nodoChiediElencoFlussiRendicontazioneIdentificativoStazioneIntermediarioPA = System
             .getenv("PAA_STAZIONE_INT");
     private String nodoChiediElencoFlussiRendicontazionePassword = System.getenv("PAA_PASSWORD");
-    private String cert = System.getenv("CERT");
-    private String key = System.getenv("KEY_PKCS8");
-    private String certPassword = System.getenv("CERT_PASSWORD");
 
     public NodoChiediElencoFlussi() {
 
@@ -51,22 +38,12 @@ public class NodoChiediElencoFlussi {
         port = ss.getPagamentiTelematiciRPTPort();
     }
 
-    public void setSslContext() throws UnrecoverableKeyException, CertificateException, IOException,
-            NoSuchAlgorithmException, KeyStoreException, InvalidKeySpecException, KeyManagementException {
-
-        ((BindingProvider) port).getRequestContext().put("com.sun.xml.ws.transport.https.client.SSLSocketFactory",
-                SslContextUtil.getSslContext(cert, key, certPassword));
-
-    }
-
     public FaultBean getNodoChiediElencoFlussiRendicontazioneFault() {
-
         return nodoChiediElencoFlussiRendicontazioneFault != null ? nodoChiediElencoFlussiRendicontazioneFault.value
                 : null;
     }
 
     public TipoElencoFlussiRendicontazione getNodoChiediElencoFlussiRendicontazioneElencoFlussiRendicontazione() {
-
         return nodoChiediElencoFlussiRendicontazioneElencoFlussiRendicontazione != null
                 ? nodoChiediElencoFlussiRendicontazioneElencoFlussiRendicontazione.value
                 : null;
