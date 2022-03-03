@@ -34,8 +34,8 @@ steps:
       extraProperties: |
         sonar.projectKey=$(SONARCLOUD_PROJECT_KEY)
         sonar.projectName=$(SONARCLOUD_PROJECT_NAME)
-        sonar.coverage.exclusions=**/config/*,**/*Mock*,**/model/**,**/entity/*
-        sonar.cpd.exclusions=**/model/**,**/entity/*
+        sonar.coverage.exclusions=**/config/*,**/*Mock*,**/model/**,**/entity/*,**/reporting-*/**/util/**
+        sonar.cpd.exclusions=**/model/**,**/entity/*,**/reporting-*/**/util/**
 
 #  - task: Maven@3
 #    displayName: 'Run Junit Test'

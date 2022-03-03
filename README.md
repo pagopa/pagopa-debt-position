@@ -70,7 +70,7 @@ Example of the naming convention is: V001__INIT.sql
 
 > **NOTE**: In the application.properties the ddl-auto configuration must be validate. This causes Hibernate to validate the schema to see if it matches with what is defined in Java.
 
-## Start the dev environment for reporting subsystem
+## Start the dev environment for Reporting subsystems
 
 ### Docker
 
@@ -92,6 +92,10 @@ docker-compose -f docker-compose-reporting.yml up --build
 ```
 
 ### Local
+#### Prerequisites
+- [Azurite](https://github.com/Azure/Azurite)
+
+
 By default, Azurite will listen for the :
 - [Blob service on port 10000](
 https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio#blob-listening-port-configuration)
@@ -112,9 +116,7 @@ From `reporting-service` folder:
 
 ```
 mv local.settings.json.example local.settings.json
-```
-
-```
+mvn clean package
 mvn azure-functions:run
 ```
 

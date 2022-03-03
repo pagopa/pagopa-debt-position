@@ -1,9 +1,10 @@
 version: '3.3'
 services:
     azure-storage:
+        command: "azurite"
+        container_name: azurite-storage
+        image: mcr.microsoft.com/azure-storage/azurite
         ports:
             - '10000:10000'
             - '10001:10001'
             - '10002:10002'
-        image: mcr.microsoft.com/azure-storage/azurite
-        container_name: azurite-storage

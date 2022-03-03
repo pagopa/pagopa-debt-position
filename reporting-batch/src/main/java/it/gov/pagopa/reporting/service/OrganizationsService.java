@@ -11,6 +11,7 @@ import com.microsoft.azure.storage.table.*;
 import it.gov.pagopa.reporting.entity.OrganizationEntity;
 import it.gov.pagopa.reporting.models.Organizations;
 import it.gov.pagopa.reporting.models.OrganizationsMessage;
+import it.gov.pagopa.reporting.utils.AzuriteStorageUtil;
 
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
@@ -22,41 +23,26 @@ import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
 public class OrganizationsService {
-//    private boolean debugAzurite = Boolean.parseBoolean(System.getenv("DEBUG_AZURITE"));
 
     private String storageConnectionString;
     private String organizationsTable;
-    private String organzagionsQueue;
+    private String organzationsQueue;
     private Logger logger;
     private int batchSize = 2;
     private int msgOrganizationsForQueue = 5;
 
-    public OrganizationsService(String storageConnectionString, String organizationsTable, String organzagionsQueue, Logger logger) {
+    public OrganizationsService(String storageConnectionString, String organizationsTable, String organzationsQueue, Logger logger) {
         this.storageConnectionString = storageConnectionString;
         this.organizationsTable = organizationsTable;
-        this.organzagionsQueue = organzagionsQueue;
+        this.organzationsQueue = organzationsQueue;
         this.logger = logger;
     }
 
     public List<String> processOrganizationList(Organizations organizations) {
-        this.logger.info("Processing organization list");
+        // try to create Azure table and queue
+        createEnv();
 
-//        if (debugAzurite) {
-//            try {
-//                createTable();
-//            } catch (Exception e) {
-//                this.logger.severe(String.format("[OrganizationsService] Problem to retrieve organization list: %s", e.getLocalizedMessage()));
-//                return new ArrayList<>();
-//            }
-//
-//            try {
-//                createQueue();
-//            } catch (URISyntaxException | InvalidKeyException | StorageException e ) {
-//                this.logger.severe(String.format("[OrganizationsService] Problem to retrieve organization list: %s", e.getLocalizedMessage()));
-//                e.printStackTrace();
-//            }
-//        }
-
+        this.logger.info("[OrganizationsService] Processing organization list");
 
         // create batch partition due to max batch size of Azure Table Storage - 100
         List<List<String>> addOrganizationList = Lists.partition(organizations.getAdd(), batchSize);
@@ -66,6 +52,8 @@ public class OrganizationsService {
         IntStream.range(0, addOrganizationList.size()).forEach(partitionAddIndex -> {
             try {
                 this.addOrganizationList(addOrganizationList.get(partitionAddIndex));
+                this.logger.log(Level.INFO,
+                        () -> "[OrganizationsService] Azure Table Storage - Add for partition index " + partitionAddIndex + " executed.");
             } catch (TableServiceException et) {
                 this.logger.log(Level.SEVERE,
                         () -> "[OrganizationsService] Azure Table Storage Error - Add:  " + et.getErrorCode() + " : "
@@ -126,22 +114,6 @@ public class OrganizationsService {
             return new ArrayList<>();
         }
     }
-
-//    private void createTable() throws URISyntaxException, InvalidKeyException, StorageException {
-//        // Create a new table
-//        CloudTable table = CloudStorageAccount.parse(storageConnectionString)
-//                .createCloudTableClient().getTableReference(this.organizationsTable);
-//        if (!table.exists()) {
-//            table.createIfNotExists();
-//        }
-//    }
-//
-//    private void createQueue() throws URISyntaxException, InvalidKeyException, StorageException {
-//        // Create a new queue
-//        CloudQueue queue = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
-//                .getQueueReference(this.organzagionsQueue);
-//        queue.createIfNotExists();
-//    }
 
     private List<String> getOrganizationList() throws URISyntaxException, InvalidKeyException, StorageException {
         CloudTable table = CloudStorageAccount.parse(storageConnectionString)
@@ -212,7 +184,7 @@ public class OrganizationsService {
 
         try {
             final CloudQueue queue = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
-                    .getQueueReference(this.organzagionsQueue);
+                    .getQueueReference(this.organzationsQueue);
 
             List<List<String>> queueMsgOrganizations = Lists.partition(organizations, msgOrganizationsForQueue);
 
@@ -235,7 +207,16 @@ public class OrganizationsService {
         } catch (URISyntaxException | StorageException | InvalidKeyException e) {
             this.logger.log(Level.SEVERE, () -> "[OrganizationsService]  Error " + e.getLocalizedMessage());
         }
+    }
 
+    private void createEnv() {
+        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString, organizationsTable, organzationsQueue);
+        try {
+            azuriteStorageUtil.createTable();
+            azuriteStorageUtil.createQueue();
+        } catch (Exception e) {
+            this.logger.severe(String.format("[AzureStorage] Problem to create table or queue: %s", e.getMessage()));
+        }
     }
 
 
