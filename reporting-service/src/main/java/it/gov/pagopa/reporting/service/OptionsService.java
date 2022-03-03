@@ -10,7 +10,7 @@ import com.microsoft.azure.storage.queue.CloudQueueMessage;
 
 import it.gov.pagopa.reporting.models.OptionsMessage;
 import it.gov.pagopa.reporting.models.PaymentOption;
-import it.gov.pagopa.reporting.util.AzureStorageUtil;
+import it.gov.pagopa.reporting.util.AzuriteStorageUtil;
 
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
@@ -36,9 +36,9 @@ public class OptionsService {
     public void optionsProcessing(List<PaymentOption> options, String idPA, String idFlow, String dataFlow) throws JsonProcessingException {
 
         // try to create blob container
-        AzureStorageUtil azureStorageUtil = new AzureStorageUtil(storageConnectionString, null, optionsQueue, null);
+        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString, null, optionsQueue, null);
         try {
-            azureStorageUtil.createQueue();
+            azuriteStorageUtil.createQueue();
         } catch (URISyntaxException | InvalidKeyException | StorageException e) {
             this.logger.severe(String.format("[AzureStorage] Problem to create queue: %s", e.getMessage()));
         }

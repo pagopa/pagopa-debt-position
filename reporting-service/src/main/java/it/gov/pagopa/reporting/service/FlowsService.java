@@ -15,7 +15,7 @@ import com.azure.storage.blob.BlobServiceClientBuilder;
 
 import it.gov.pagopa.reporting.servicewsdl.FaultBean;
 import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
-import it.gov.pagopa.reporting.util.AzureStorageUtil;
+import it.gov.pagopa.reporting.util.AzuriteStorageUtil;
 
 import java.io.IOException;
 
@@ -44,8 +44,8 @@ public class FlowsService {
         this.logger.log(Level.INFO, "[RetrieveDetails/FlowsService] START flows downloading ");
 
         // try to create blob container
-        AzureStorageUtil azureStorageUtil = new AzureStorageUtil(storageConnectionString, null, null, containerBlob);
-        azureStorageUtil.createBlob();
+        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString, null, null, containerBlob);
+        azuriteStorageUtil.createBlob();
 
         try {
             NodeService nodeService = this.getNodeServiceInstance();

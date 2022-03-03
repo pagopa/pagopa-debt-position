@@ -11,7 +11,7 @@ import com.microsoft.azure.storage.table.*;
 import it.gov.pagopa.reporting.entity.OrganizationEntity;
 import it.gov.pagopa.reporting.models.Organizations;
 import it.gov.pagopa.reporting.models.OrganizationsMessage;
-import it.gov.pagopa.reporting.utils.AzureStorageUtil;
+import it.gov.pagopa.reporting.utils.AzuriteStorageUtil;
 
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
@@ -210,10 +210,10 @@ public class OrganizationsService {
     }
 
     private void createEnv() {
-        AzureStorageUtil azureStorageUtil = new AzureStorageUtil(storageConnectionString, organizationsTable, organzationsQueue);
+        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString, organizationsTable, organzationsQueue);
         try {
-            azureStorageUtil.createTable();
-            azureStorageUtil.createQueue();
+            azuriteStorageUtil.createTable();
+            azuriteStorageUtil.createQueue();
         } catch (Exception e) {
             this.logger.severe(String.format("[AzureStorage] Problem to create table or queue: %s", e.getMessage()));
         }

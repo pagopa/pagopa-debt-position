@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>it.gov.pagopa.reporting</groupId>
@@ -168,25 +169,6 @@
 
     <build>
         <plugins>
-            <!-- START run init scripts -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.6.0</version>
-                <executions>
-                    <execution>
-                        <id>update-wsdl-location</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <executable>${project.basedir}/upd_wsdl_location.sh</executable>
-                </configuration>
-            </plugin>
-            <!-- STOP  run init scripts -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -214,9 +196,9 @@
                     <appServicePlanName>java-functions-app-service-plan</appServicePlanName>
                     <region>westus</region>
                     <runtime>
-            <os>windows</os>
-            <javaVersion>11</javaVersion>
-          </runtime>
+                        <os>windows</os>
+                        <javaVersion>11</javaVersion>
+                    </runtime>
                 </configuration>
                 <executions>
                     <execution>
@@ -286,38 +268,6 @@
                     <!--suppress UnresolvedMavenProperty -->
                     <argLine>${argLine}</argLine>
                 </configuration>
-            </plugin>
-            <!-- wsdl 2 java -->
-            <plugin>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-codegen-plugin</artifactId>
-                <version>3.4.4</version>
-                <executions>
-                    <execution>
-                        <id>generate-sources</id>
-                        <phase>generate-sources</phase>
-                        <configuration>
-                            <sourceRoot>target/generated</sourceRoot>
-                            <wsdlOptions>
-                                <wsdlOption>
-                                    <wsdl>src/main/resources/wsdl/NodoPerPa.wsdl</wsdl>
-                                    <wsdlLocation>classpath:wsdl/NodoPerPa.wsdl</wsdlLocation>
-                                    <extraargs>
-                                        <extraarg>-validate</extraarg>
-                                        <extraarg>-client</extraarg>
-                                        <extraarg>-verbose</extraarg>
-                                        <extraarg>-xjc-verbose</extraarg>
-                                        <extraarg>-p</extraarg>
-                                        <extraarg>it.gov.pagopa.reporting.servicewsdl</extraarg>
-                                    </extraargs>
-                                </wsdlOption>
-                            </wsdlOptions>
-                        </configuration>
-                        <goals>
-                            <goal>wsdl2java</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <!-- needed to use previously generated resources  -->
             <plugin>

@@ -18,7 +18,7 @@ import com.microsoft.azure.storage.table.*;
 import it.gov.pagopa.reporting.entity.FlowEntity;
 import it.gov.pagopa.reporting.models.FlowsMessage;
 import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
-import it.gov.pagopa.reporting.utils.AzureStorageUtil;
+import it.gov.pagopa.reporting.utils.AzuriteStorageUtil;
 
 public class FlowsService {
 
@@ -146,10 +146,10 @@ public class FlowsService {
     }
 
     private void createEnv() {
-        AzureStorageUtil azureStorageUtil = new AzureStorageUtil(storageConnectionString, flowsTable, flowsQueue);
+        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString, flowsTable, flowsQueue);
         try {
-            azureStorageUtil.createTable();
-            azureStorageUtil.createQueue();
+            azuriteStorageUtil.createTable();
+            azuriteStorageUtil.createQueue();
         } catch (Exception e) {
             this.logger.severe(String.format("[AzureStorage] Problem to create table or queue: %s", e.getMessage()));
         }

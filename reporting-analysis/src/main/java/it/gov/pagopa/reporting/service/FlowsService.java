@@ -19,7 +19,7 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.*;
 import it.gov.pagopa.reporting.entity.FlowEntity;
 import it.gov.pagopa.reporting.model.Flow;
-import it.gov.pagopa.reporting.util.AzureStorageUtil;
+import it.gov.pagopa.reporting.util.AzuriteStorageUtil;
 import it.gov.pagopa.reporting.util.FlowConverter;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
@@ -43,8 +43,8 @@ public class FlowsService {
         logger.log(Level.INFO, () -> String.format("[FlowsService] START get by organization: %s", organizationId));
 
         // try to create table
-        AzureStorageUtil azureStorageUtil = new AzureStorageUtil(storageConnectionString, flowsTable, null);
-        azureStorageUtil.createTable();
+        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString, flowsTable, null);
+        azuriteStorageUtil.createTable();
 
         CloudTable table = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
                 .getTableReference(this.flowsTable);
@@ -69,9 +69,9 @@ public class FlowsService {
         logger.log(Level.INFO, () -> String.format("[FlowsService] START get by flow: %s - %s - %s", organizationId, flowId, flowDate));
 
         // try to create blob container
-        AzureStorageUtil azureStorageUtil = new AzureStorageUtil(storageConnectionString, null, containerBlob);
+        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString, null, containerBlob);
         try {
-            azureStorageUtil.createTable();
+            azuriteStorageUtil.createTable();
         } catch (URISyntaxException | InvalidKeyException | StorageException e) {
             this.logger.severe(String.format("[AzureStorage] Problem to create table: %s", e.getMessage()));
         }
