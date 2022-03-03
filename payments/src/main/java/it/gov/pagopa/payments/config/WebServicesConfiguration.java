@@ -42,7 +42,6 @@ public class WebServicesConfiguration extends WsConfigurerAdapter {
         DefaultWsdl11Definition wsdl11Definition = new DefaultWsdl11Definition();
         wsdl11Definition.setPortTypeName("PartnerPort");
         wsdl11Definition.setLocationUri("/partner");
-        wsdl11Definition.setTargetNamespace("http://pagopa-api.pagopa.gov.it/partner"); // TODO verify
 
         // Required to make the naming schema compatible to xsd definition
         wsdl11Definition.setRequestSuffix("Req");
