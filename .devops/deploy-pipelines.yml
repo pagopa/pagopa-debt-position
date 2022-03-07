@@ -214,7 +214,7 @@ stages:
           # deploy reporting-fn
           - task: AzureFunctionAppContainer@1
             displayName: Deploy Function App
-            condition: or(eq('${{ parameters.REPOSITORY }}', 'reporting-analysis'), or(eq('${{ parameters.REPOSITORY }}', 'reporting-batch'), eq('${{ parameters.REPOSITORY }}', 'reporting-service')))
+            condition: in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service'))
             inputs:
               azureSubscription: $(AZURE_SUBSCRIPTION)
               appName: "${{variables.APP_NAME}}-${{ parameters.REPOSITORY }}"
