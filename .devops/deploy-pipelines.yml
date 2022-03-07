@@ -1,0 +1,226 @@
+parameters:
+  - name: SEMVER
+    displayName: "When packing a release, define the version bump to apply"
+    type: string
+    values:
+      - major
+      - minor
+      - patch
+      - buildNumber
+      - skip
+      default: patch
+  - name: ENV
+    displayName: Target Environment
+    type: string
+    default: dev
+    values:
+      - dev
+      - uat
+      - prod
+  - name: REPOSITORY
+    displayName: "Repository"
+    type: string
+    values:
+      - gpd
+      - payments
+      - reporting-analysis
+      - reporting-batch
+      - reporting-service
+    default: gpd
+
+variables:
+  ${{ if eq(parameters['ENV'], 'dev') }}:
+    AZURE_SUBSCRIPTION: $(DEV_AZURE_SUBSCRIPTION)
+    CONTAINER_REGISTRY: $(DEV_CONTAINER_REGISTRY)
+    CONTAINER_NAMESPACE: $(DEV_CONTAINER_NAMESPACE)
+    APP_NAME: $(DEV_WEB_APP_NAME)
+    STAGE: "d"
+  ${{ if eq(parameters['ENV'], 'uat') }}:
+    AZURE_SUBSCRIPTION: $(DEV_AZURE_SUBSCRIPTION)
+    CONTAINER_REGISTRY: $(DEV_CONTAINER_REGISTRY)
+    CONTAINER_NAMESPACE: $(UAT_CONTAINER_NAMESPACE)
+    APP_NAME: $(UAT_WEB_APP_NAME)
+    STAGE: "u"
+  ${{ if eq(parameters['ENV'], 'prod') }}:
+    AZURE_SUBSCRIPTION: $(PROD_AZURE_SUBSCRIPTION)
+    CONTAINER_REGISTRY: $(PROD_CONTAINER_REGISTRY)
+    CONTAINER_NAMESPACE: $(PROD_CONTAINER_NAMESPACE)
+    APP_NAME: $(PROD_WEB_APP_NAME)
+    STAGE: "p"
+
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+  MAVEN_OPTS: "-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)"
+  title: ""
+  sha: ""
+  tag: ""
+
+# Only manual triggers
+trigger: none
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  # Create a release
+  - stage: release_service
+    # bump version on main branch and if SEMVER is not 'skip'
+    condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne('${{ parameters.SEMVER }}', 'skip'))
+    pool:
+      vmImage: "ubuntu-latest"
+    jobs:
+      - job: releaseService
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+
+          - script: |
+              git config --global user.name "$(GIT_USERNAME)"
+              git config --global user.email "$(GIT_EMAIL)"
+
+          - template: azure-templates/maven-versioning.yml
+            parameters:
+              subproject: "${{ parameters.REPOSITORY }}"
+              semver: "${{ parameters.SEMVER }}"
+
+          - task: Bash@3
+            name: pomversion
+            inputs:
+              targetType: "inline"
+              script: |
+                version=$(mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)
+                echo "##vso[task.setvariable variable=next;isOutput=true]$version"
+              failOnStderr: true
+
+          - script: |
+              git checkout ${{variables['Build.SourceBranchName']}}
+
+          # bump version
+          - script: |
+              git add ${{ parameters.REPOSITORY }}/pom.xml 
+              git commit -m "Bump version [skip ci]"
+              git push origin ${{variables['Build.SourceBranchName']}}
+              git push --tags
+
+          - script: |
+              HEAD_SHA=$(git rev-parse HEAD)
+              TAG="${{ parameters.REPOSITORY }}/$(pomversion.next)"
+              TITLE="Release ${{ parameters.REPOSITORY }}/$(pomversion.next)"
+              echo "##vso[task.setvariable variable=title]$TITLE"
+              echo "##vso[task.setvariable variable=sha]$HEAD_SHA"
+              echo "##vso[task.setvariable variable=tag]$TAG"
+
+          - script: |
+              echo $(tag)
+              echo $(title)
+              echo $(sha)
+
+          # create new release
+          - task: GitHubRelease@0
+            inputs:
+              gitHubConnection: $(GITHUB_CONNECTION)
+              repositoryName: $(Build.Repository.Name)
+              action: create
+              target: $(sha)
+              tagSource: manual
+              tag: $(tag)
+              title: $(title)
+              addChangelog: true
+
+  # Deploy on Azure
+  - stage: deploy
+    condition: not(failed('releaseService'))
+    pool:
+      vmImage: "ubuntu-latest"
+    jobs:
+      - job: deployJava
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+            submodules: true
+
+          - task: Cache@2
+            inputs:
+              key: 'maven | "$(Agent.OS)" | pom.xml'
+              restoreKeys: |
+                maven | "$(Agent.OS)"
+                maven
+              path: $(MAVEN_CACHE_FOLDER)
+            displayName: Set Maven Cache
+
+          - task: Bash@3
+            name: pomversion
+            inputs:
+              targetType: "inline"
+              script: |
+                version=$(mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)
+                echo "##vso[task.setvariable variable=next;isOutput=true]$version"
+              failOnStderr: true
+
+          - task: Bash@3
+            # When the maven task is installed, mvn can be used in a script
+            name: mvn_get_version
+            inputs:
+              targetType: "inline"
+              script: |
+                mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout
+              failOnStderr: true
+
+          - task: Maven@3
+            displayName: Build
+            inputs:
+              mavenPomFile: "./pom.xml"
+              mavenOptions: "-Xmx3072m $(MAVEN_OPTS)"
+              mavenVersionOption: 'Default'
+              javaHomeOption: "JDKVersion"
+              jdkVersionOption: "1.11"
+              jdkArchitectureOption: "x64"
+              testResultsFiles: "**/surefire-reports/TEST-*.xml"
+              publishJUnitResults: false
+              effectivePomSkip: false
+              sonarQubeRunAnalysis: false
+              goals: "install"
+
+          - task: Docker@2
+            displayName: Build and push image to container registry
+            inputs:
+              containerRegistry: $(CONTAINER_REGISTRY)
+              repository: "${{ parameters.REPOSITORY }}"
+              command: "buildAndPush"
+              Dockerfile: "./${{ parameters.REPOSITORY }}/Dockerfile.deploy" # TODO why in hub-pa there is dockerfile.deploy? is it necessary?
+              tags: "$(pomversion.next)"
+
+# TODO analyze
+#          - task: Bash@3
+#            name: App_Insight_Agent
+#            inputs:
+#              targetType: "inline"
+#              script: |
+#                wget https://github.com/microsoft/ApplicationInsights-Java/releases/download/3.1.0/applicationinsights-agent-3.1.0.jar
+#                mv applicationinsights-agent*jar ${{parameters.REPOSITORY}}
+#                ls ${{parameters.REPOSITORY}}
+
+          # deploy gdp | payments
+          - task: AzureRMWebAppDeployment@4
+            displayName: Deploy App Service (Microservice)
+            condition: or(eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.REPOSITORY }}', 'payments'))
+            inputs:
+              appType: webAppContainer
+              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
+              WebAppName: "${{variables.APP_NAME}}-${{ parameters.REPOSITORY }}-ms"
+              DockerNamespace: "${{variables.CONTAINER_NAMESPACE}}"
+              DockerRepository: "${{ parameters.REPOSITORY }}"
+              DockerImageTag: "$(pomversion.next)"
+
+          # deploy reporting-fn
+          - task: AzureFunctionAppContainer@1
+            displayName: Deploy Function App
+            condition: or(eq('${{ parameters.REPOSITORY }}', 'reporting-analysis'), or(eq('${{ parameters.REPOSITORY }}', 'reporting-batch'), eq('${{ parameters.REPOSITORY }}', 'reporting-service')))
+            inputs:
+              azureSubscription: $(AZURE_SUBSCRIPTION)
+              appName: "${{variables.APP_NAME}}-${{ parameters.REPOSITORY }}"
+              imageName: "${{variables.CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(pomversion.next)"
+              #resourceGroupName: $(BATCH_RESOURCE_GROUP) # TODO review (Required if deployToSlotOrASE is true) Name of the Resource Group containing the Function App for Containers. [deployToSlotOrASE is false by default]
+              slotName: production
