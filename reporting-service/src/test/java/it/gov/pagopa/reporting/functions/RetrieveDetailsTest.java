@@ -1,6 +1,5 @@
 package it.gov.pagopa.reporting.functions;
 
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -12,6 +11,7 @@ import java.util.logging.Logger;
 
 import com.microsoft.azure.functions.ExecutionContext;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -37,7 +37,7 @@ class RetrieveDetailsTest {
 
         Logger logger = Logger.getLogger("InfoLogging");
 
-        String message = "{\"idPA\":\"00595780131\",\"flows\":[{\"identificativoFlusso\":\"2021-07-26AGID_02-S000000001\",\"dataOraFlusso\":1627293600000}]}";
+        String message = "{\"idPA\":\"00595780131\",\"flows\":[{\"identificativoFlusso\":\"2021-07-26AGID_02-S000000001\",\"dataOraFlusso\":1627293600000}], \"retry\": 0}";
         when(context.getLogger()).thenReturn(logger);
 
         doReturn(flowService).when(function).getFlowsServiceInstance(logger);
@@ -62,14 +62,15 @@ class RetrieveDetailsTest {
     }
 
     @Test
-    void getFlowServiceIstanceTest() throws Exception {
+    void getFlowServiceInstanceTest() {
 
         Logger logger = Logger.getLogger("testlogging");
+        when(function.getVars(anyString())).thenReturn("60");
 
         // test
-        FlowsService istance = function.getFlowsServiceInstance(logger);
+        FlowsService instance = function.getFlowsServiceInstance(logger);
 
-        assertNotNull(istance);
+        Assertions.assertNotNull(instance);
     }
 
     @Test

@@ -1,7 +1,7 @@
 package it.gov.pagopa.reporting.service;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 
 import java.net.URISyntaxException;
@@ -19,12 +19,12 @@ import com.microsoft.azure.storage.queue.CloudQueueMessage;
 import it.gov.pagopa.reporting.models.PaymentOption;
 import org.junit.ClassRule;
 import org.junit.jupiter.api.Test;
+
+import it.gov.pagopa.reporting.models.BooleanResponseModel;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-
-import it.gov.pagopa.reporting.models.BooleanResponseModel;
 
 @Testcontainers
 class OptionServiceIntegrationTest {
@@ -32,8 +32,8 @@ class OptionServiceIntegrationTest {
     @ClassRule
     @Container
     public static GenericContainer<?> azurite = new GenericContainer<>(
-            DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:latest")).withExposedPorts(10001, 10002,
-                    10000);
+            DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:latest"))
+            .withExposedPorts(10001, 10002, 10000);
 
     Logger logger = Logger.getLogger("testlogging");
 
