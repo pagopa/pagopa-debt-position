@@ -37,8 +37,8 @@ public class OrganizationsService {
     private final int initialVisibilityDelayInSeconds;
 
     private final Logger logger;
-    private final int batchSize = 2;
-    private final int msgOrganizationsForQueue = 5;
+    private static final int batchSize = 2;
+    private static final int msgOrganizationsForQueue = 5;
 
     public OrganizationsService(String storageConnectionString, String organizationsTable, String organizationsQueue, int timeToLiveInSeconds, int initialVisibilityDelayInSeconds, Logger logger) {
         this.storageConnectionString = storageConnectionString;
@@ -233,14 +233,10 @@ public class OrganizationsService {
             organizationsMessage.setIdPA(new String[]{organization});
             organizationsMessage.setRetry(retry);
 
-            try {
-                String message = new ObjectMapper().writeValueAsString(organizationsMessage);
-                queue.addMessage(new CloudQueueMessage(message), timeToLiveInSeconds, initialVisibilityDelayInSeconds, null, null);
-            } catch (JsonProcessingException | StorageException e) {
-                this.logger.log(Level.SEVERE, () -> "[OrganizationsService] Error " + e.getLocalizedMessage());
-            }
+            String message = new ObjectMapper().writeValueAsString(organizationsMessage);
+            queue.addMessage(new CloudQueueMessage(message), timeToLiveInSeconds, initialVisibilityDelayInSeconds, null, null);
 
-        } catch (URISyntaxException | StorageException | InvalidKeyException e) {
+        } catch (URISyntaxException | InvalidKeyException | JsonProcessingException | StorageException e) {
             this.logger.log(Level.SEVERE, () -> "[OrganizationsService] Error " + e.getLocalizedMessage());
         }
     }

@@ -51,7 +51,7 @@ class NodoChiediElencoFlussiTest {
         String idPa = "12345";
         nodoChiediElencoFlussi.nodoChiediElencoFlussiRendicontazione(idPa);
 
-        assert (Boolean.TRUE);
+        assertTrue(Boolean.TRUE);
     }
 
 }

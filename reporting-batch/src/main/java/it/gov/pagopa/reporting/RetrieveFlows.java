@@ -51,8 +51,6 @@ public class RetrieveFlows {
 
             Arrays.stream(organizationsMessage.getIdPA())
                     .forEach((organization -> {
-//                        logger.log(Level.INFO, () -> "[RetrieveFlows] Call nodoChiediElencoFlussiRendicontazione for EC : " + organization);
-
                         try {
                             // call NODO dei pagamenti
                             nodeClient.nodoChiediElencoFlussiRendicontazione(organization);
