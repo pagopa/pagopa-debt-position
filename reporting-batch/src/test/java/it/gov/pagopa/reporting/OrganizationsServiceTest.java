@@ -28,6 +28,7 @@ class OrganizationsServiceTest {
                     "connectionStringMock",
                     "tableMock",
                     "queueMock",
+                    60, 0,
                     Logger.getLogger("testlogging")));
 
     Organizations orgs = new Organizations();
@@ -64,6 +65,7 @@ class OrganizationsServiceTest {
                     "connectionStringMock",
                     "tableMock",
                     "queueMock",
+                    60, 0,
                     Logger.getLogger("testlogging")));
 
     Organizations orgs = new Organizations();
@@ -110,6 +112,7 @@ class OrganizationsServiceTest {
                     "connectionStringMock",
                     "tableMock",
                     "queueMock",
+                    60, 0,
                     Logger.getLogger("testlogging")));
 
     Organizations orgs = new Organizations();

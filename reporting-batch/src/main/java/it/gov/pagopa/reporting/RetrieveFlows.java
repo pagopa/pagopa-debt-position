@@ -5,11 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.QueueTrigger;
+import com.sun.xml.ws.client.ClientTransportException;
 import it.gov.pagopa.reporting.models.OrganizationsMessage;
 import it.gov.pagopa.reporting.service.FlowsService;
 import it.gov.pagopa.reporting.service.NodoChiediElencoFlussi;
+import it.gov.pagopa.reporting.service.OrganizationsService;
 import it.gov.pagopa.reporting.servicewsdl.FaultBean;
 import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
+
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.logging.Level;
@@ -20,9 +23,15 @@ import java.util.logging.Logger;
  */
 public class RetrieveFlows {
 
-    private String storageConnectionString = System.getenv("FLOW_SA_CONNECTION_STRING");
-    private String flowsTable = System.getenv("FLOWS_TABLE");
-    private String flowsQueue = System.getenv("FLOWS_QUEUE");
+    private final String storageConnectionString = System.getenv("FLOW_SA_CONNECTION_STRING");
+    private final String flowsTable = System.getenv("FLOWS_TABLE");
+    private final String flowsQueue = System.getenv("FLOWS_QUEUE");
+    private final String organizationsTable = System.getenv("ORGANIZATIONS_TABLE");
+    private final String organizationsQueue = System.getenv("ORGANIZATIONS_QUEUE");
+    private final String timeToLiveInSeconds = System.getenv("QUEUE_RETENTION_SEC");
+    private final String initialVisibilityDelayInSeconds = System.getenv("QUEUE_DELAY_SEC");
+    private final String maxRetryQueuing = System.getenv("MAX_RETRY_QUEUING");
+
     /**
      * This function will be invoked when a new message is detected in the queue
      */
@@ -32,53 +41,60 @@ public class RetrieveFlows {
             final ExecutionContext context) {
 
         Logger logger = context.getLogger();
-
-        logger.log(Level.INFO, () -> "RetrieveFlows function executed at: " + LocalDateTime.now());
+        logger.log(Level.INFO, () -> String.format("[RetrieveOrganizationsTrigger START] processed the message: %s at %s", message, LocalDateTime.now()));
 
         NodoChiediElencoFlussi nodeClient = this.getNodeClientInstance();
         FlowsService flowsService = this.getFlowsServiceInstance(logger);
 
-
-        logger.log(Level.INFO, () -> "[RetrieveOrganizationsTrigger START]  processed a message " + message);
-
-        OrganizationsMessage organizationsMessage = null;
         try {
-            organizationsMessage = new ObjectMapper().readValue(message, OrganizationsMessage.class);
+            OrganizationsMessage organizationsMessage = new ObjectMapper().readValue(message, OrganizationsMessage.class);
 
             Arrays.stream(organizationsMessage.getIdPA())
                     .forEach((organization -> {
-                        logger.log(Level.INFO, () -> "call nodoChiediElencoFlussiRendicontazione for EC : " + organization);
+//                        logger.log(Level.INFO, () -> "[RetrieveFlows] Call nodoChiediElencoFlussiRendicontazione for EC : " + organization);
 
-                        // call NODO dei pagamenti
-                        nodeClient.nodoChiediElencoFlussiRendicontazione(organization);
+                        try {
+                            // call NODO dei pagamenti
+                            nodeClient.nodoChiediElencoFlussiRendicontazione(organization);
 
-                        // retrieve result
-                        FaultBean faultBean = nodeClient.getNodoChiediElencoFlussiRendicontazioneFault();
+                            // retrieve result
+                            FaultBean faultBean = nodeClient.getNodoChiediElencoFlussiRendicontazioneFault();
 
-                        TipoElencoFlussiRendicontazione elencoFlussi = nodeClient
-                                .getNodoChiediElencoFlussiRendicontazioneElencoFlussiRendicontazione();
+                            TipoElencoFlussiRendicontazione elencoFlussi = nodeClient.getNodoChiediElencoFlussiRendicontazione();
 
-                        if (faultBean != null) {
-                            logger.log(Level.INFO, () -> "faultBean DESC " + faultBean.getDescription());
-                        } else if (elencoFlussi != null) {
-                            logger.log(Level.INFO, () -> "elencoFlussi PA " + organization + " TotRestituiti " + elencoFlussi.getTotRestituiti() );
-                            flowsService.flowsProcessing(elencoFlussi.getIdRendicontazione(), organization);
-
+                            if (faultBean != null) {
+                                logger.log(Level.WARNING, () -> "[RetrieveFlows] faultBean DESC " + faultBean.getDescription());
+                            } else if (elencoFlussi != null) {
+                                logger.log(Level.INFO, () -> "[RetrieveFlows] elencoFlussi PA " + organization + " TotRestituiti " + elencoFlussi.getTotRestituiti());
+                                flowsService.flowsProcessing(elencoFlussi.getIdRendicontazione(), organization);
+                            }
+                        } catch (ClientTransportException e) {
+                            logger.log(Level.SEVERE, () -> "[NODO Connection down] " + organization + ": " + organizationsMessage);
+                            int retry = organizationsMessage.getRetry();
+                            if (retry < Integer.parseInt(maxRetryQueuing)) {
+                                OrganizationsService organizationsService = getOrganizationsServiceInstance(logger);
+                                organizationsService.retryToOrganizationsQueue(organization, retry + 1);
+                            } else {
+                                logger.log(Level.SEVERE, () -> "[NODO Connection down]  Max retry exceeded.");
+                            }
                         }
 
                     }));
-
         } catch (JsonProcessingException e) {
             logger.log(Level.SEVERE, () -> "[RetrieveOrganizationsTrigger]  Error " + e.getLocalizedMessage());
         }
 
     }
 
-  public NodoChiediElencoFlussi getNodeClientInstance() {
-    return new NodoChiediElencoFlussi();
-  }
+    public NodoChiediElencoFlussi getNodeClientInstance() {
+        return new NodoChiediElencoFlussi();
+    }
 
-  public FlowsService getFlowsServiceInstance(Logger logger) {
-    return new FlowsService(this.storageConnectionString, this.flowsTable, this.flowsQueue, logger);
-  }
+    public FlowsService getFlowsServiceInstance(Logger logger) {
+        return new FlowsService(this.storageConnectionString, this.flowsTable, this.flowsQueue, logger);
+    }
+
+    public OrganizationsService getOrganizationsServiceInstance(Logger logger) {
+        return new OrganizationsService(this.storageConnectionString, this.organizationsTable, this.organizationsQueue, Integer.parseInt(timeToLiveInSeconds), Integer.parseInt(initialVisibilityDelayInSeconds), logger);
+    }
 }

@@ -63,7 +63,7 @@ class FlowServiceIntegrationTest {
 
                 flowsService = spy(new FlowsService(storageConnectionString, "identificativoIntemediarioPA",
                                 "identificativoStazioneIntermediarioPA", "nodePassword",
-                                "container", logger));
+                                "container", "queue", 1, 60, 0, logger));
 
                 NodeService nodeService = mock(NodeService.class);
                 doReturn(mock(DataHandler.class)).when(nodeService)
@@ -98,7 +98,7 @@ class FlowServiceIntegrationTest {
                         e1.getDataOraFlusso().toString().split("\\.")[0] + "##" + "idPA" + "##"+ e1.getIdentificativoFlusso() + ".xml",
                         e2.getDataOraFlusso().toString().split("\\.")[0] + "##" + "idPA" + "##"+ e2.getIdentificativoFlusso() + ".xml");
 
-                flowsService.flowsXmlDownloading(flows, "idPA");
+                flowsService.flowsXmlDownloading(flows, "idPA", 0);
 
                 List<String> fileNames = containerClient.listBlobs().stream().map(BlobItem::getName)
                                 .collect(Collectors.toList());
@@ -112,7 +112,7 @@ class FlowServiceIntegrationTest {
 
                 flowsService = spy(new FlowsService(storageConnectionString, "identificativoIntemediarioPA",
                                 "identificativoStazioneIntermediarioPA", "nodePassword",
-                                "container", logger));
+                                "container", "queue", 1, 60, 0, logger));
 
                 NodeService nodeService = mock(NodeService.class);
                 doReturn(mock(FaultBean.class)).when(nodeService).getNodoChiediFlussoRendicontazioneFault();
@@ -137,7 +137,7 @@ class FlowServiceIntegrationTest {
 
                 List<TipoIdRendicontazione> flows = Arrays.asList(e1, e2);
 
-                flowsService.flowsXmlDownloading(flows, "idPA");
+                flowsService.flowsXmlDownloading(flows, "idPA", 0);
 
                 assertTrue(Boolean.TRUE);
         }

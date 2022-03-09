@@ -1,40 +1,27 @@
 package it.gov.pagopa.reporting;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
 import com.microsoft.azure.storage.table.TableQuery;
-import com.microsoft.azure.storage.table.TableServiceException;
 import it.gov.pagopa.reporting.entity.OrganizationEntity;
 import it.gov.pagopa.reporting.models.Organizations;
-import it.gov.pagopa.reporting.service.FlowsService;
 import it.gov.pagopa.reporting.service.OrganizationsService;
-import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
-import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
+import it.gov.pagopa.reporting.utils.AzuriteStorageUtil;
 import org.junit.ClassRule;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import java.io.Console;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @Testcontainers
 class OrganizationsServiceIntegrationTest {
@@ -55,17 +42,14 @@ class OrganizationsServiceIntegrationTest {
     String orgsQueue = "orgqueue";
 
     @Test
-    void addOrganizationListTest() throws ParseException, DatatypeConfigurationException, InvalidKeyException,
-            URISyntaxException, StorageException, JsonProcessingException {
+    void addOrganizationListTest() throws InvalidKeyException,
+            URISyntaxException, StorageException {
+        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(this.storageConnectionString, this.orgsTable, this.orgsQueue);
+        azuriteStorageUtil.createTable();
+        azuriteStorageUtil.createQueue();
 
-//        CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient().getQueueReference(this.orgsQueue)
-//                .createIfNotExists();
-//
-//        CloudStorageAccount.parse(storageConnectionString).createCloudTableClient().getTableReference(this.orgsTable)
-//                .createIfNotExists();
-
-        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable, this.orgsQueue,
-                logger);
+        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable,
+                this.orgsQueue, 60, 0, logger);
 
         Organizations orgs = new Organizations();
 
@@ -92,14 +76,14 @@ class OrganizationsServiceIntegrationTest {
         chk.add("90000000004");
         int index = 0;
         for (OrganizationEntity r : rows) {
-            assertTrue(r.getRowKey().contains(chk.get(index++)));
+            Assertions.assertTrue(r.getRowKey().contains(chk.get(index++)));
         }
 
     }
 
     @Test
-    void addOrganizationListTestSingle() throws ParseException, DatatypeConfigurationException, InvalidKeyException,
-            URISyntaxException, StorageException, JsonProcessingException {
+    void addOrganizationListTestSingle() throws InvalidKeyException,
+            URISyntaxException, StorageException {
 
         CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient().getQueueReference(this.orgsQueue)
                 .createIfNotExists();
@@ -107,8 +91,8 @@ class OrganizationsServiceIntegrationTest {
         CloudStorageAccount.parse(storageConnectionString).createCloudTableClient().getTableReference(this.orgsTable)
                 .createIfNotExists();
 
-        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable, this.orgsQueue,
-                logger);
+        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable,
+                this.orgsQueue, 60, 0, logger);
 
         Organizations orgs = new Organizations();
 
@@ -121,7 +105,6 @@ class OrganizationsServiceIntegrationTest {
         List<String> deleted = new ArrayList<>();
         orgs.setDelete(deleted);
 
-        //doThrow(TableServiceException.class).when(organizationsService).addOrganizationList(any());
         organizationsService.processOrganizationList(orgs);
 
         TableQuery<OrganizationEntity> query = new TableQuery<OrganizationEntity>();
@@ -137,23 +120,20 @@ class OrganizationsServiceIntegrationTest {
         chk.add("90000000004");
         int index = 0;
         for (OrganizationEntity r : rows) {
-            assertTrue(r.getRowKey().contains(chk.get(index++)));
+            Assertions.assertTrue(r.getRowKey().contains(chk.get(index++)));
         }
 
     }
 
     @Test
-    void delOrganizationListTest() throws ParseException, DatatypeConfigurationException, InvalidKeyException,
-            URISyntaxException, StorageException, JsonProcessingException {
+    void delOrganizationListTest() throws URISyntaxException, InvalidKeyException, StorageException {
 
-//        CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient().getQueueReference(this.flowsQueue)
-//                .createIfNotExists();
+        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(this.storageConnectionString, this.orgsTable, this.orgsQueue);
+        azuriteStorageUtil.createTable();
+        azuriteStorageUtil.createQueue();
 
-//        CloudStorageAccount.parse(storageConnectionString).createCloudTableClient().getTableReference(this.orgsTable)
-//                .createIfNotExists();
-
-        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable, this.orgsQueue,
-                logger);
+        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString,
+                this.orgsTable, this.orgsQueue, 60, 0, logger);
 
         Organizations orgs = new Organizations();
 
@@ -178,17 +158,14 @@ class OrganizationsServiceIntegrationTest {
     }
 
     @Test
-    void delOrganizationLisNotExisttTest() throws ParseException, DatatypeConfigurationException, InvalidKeyException,
-            URISyntaxException, StorageException, JsonProcessingException {
+    void delOrganizationLisNotExistTest() throws InvalidKeyException, URISyntaxException, StorageException {
 
-//        CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient().getQueueReference(this.flowsQueue)
-//                .createIfNotExists();
+        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(this.storageConnectionString, this.orgsTable, this.orgsQueue);
+        azuriteStorageUtil.createTable();
+        azuriteStorageUtil.createQueue();
 
-//        CloudStorageAccount.parse(storageConnectionString).createCloudTableClient().getTableReference(this.orgsTable)
-//                .createIfNotExists();
-
-        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable, this.orgsQueue,
-                logger);
+        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString,
+                this.orgsTable, this.orgsQueue, 60, 0, logger);
 
         Organizations orgs = new Organizations();
 
@@ -215,11 +192,10 @@ class OrganizationsServiceIntegrationTest {
     }
 
     @Test
-    void addToOrganizationsQueuetTest()  throws ParseException, DatatypeConfigurationException, InvalidKeyException,
-    URISyntaxException, StorageException, JsonProcessingException {
+    void addToOrganizationsQueuetTest()  throws InvalidKeyException, URISyntaxException, StorageException {
 
-        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable, this.orgsQueue,
-                logger);
+        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString,
+                this.orgsTable, this.orgsQueue, 60, 0, logger);
 
         List<String> orgs = new ArrayList<>();
         orgs.add("90000000001");
@@ -239,13 +215,11 @@ class OrganizationsServiceIntegrationTest {
                 .getQueueReference(this.orgsQueue)
                 .retrieveMessages(32);
 
-
         for (CloudQueueMessage cloudQueueMessage : messagges) {
-            assertTrue(cloudQueueMessage.getMessageContentAsString().contains(orgs.get(0))
+            Assertions.assertTrue(cloudQueueMessage.getMessageContentAsString().contains(orgs.get(0))
                     || cloudQueueMessage.getMessageContentAsString().contains(orgs.get(1))
                     || cloudQueueMessage.getMessageContentAsString().contains(orgs.get(2)));
         }
-
     }
 
 }

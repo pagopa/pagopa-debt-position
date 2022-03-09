@@ -1,8 +1,7 @@
 package it.gov.pagopa.reporting.functions;
 
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -46,7 +45,7 @@ class RetrieveDetailsTest {
         function.run(message, context);
 
         verify(context, times(1)).getLogger();
-        verify(flowService, times(1)).flowsXmlDownloading(any(), anyString());
+        verify(flowService, times(1)).flowsXmlDownloading(any(), anyString(), anyInt());
     }
 
     @Test

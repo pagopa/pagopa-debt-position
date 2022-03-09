@@ -118,6 +118,7 @@ public class FlowsService {
         FlowsMessage flows = new FlowsMessage();
         flows.setFlows(partition.toArray(TipoIdRendicontazione[]::new));
         flows.setIdPA(idPA);
+        flows.setRetry(0);
         String message = new ObjectMapper().writeValueAsString(flows);
 
         this.logger.log(Level.INFO, () -> "[FlowsService] Sending messages - partition index: " + partitionFlowsIndex);

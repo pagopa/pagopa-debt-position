@@ -71,7 +71,7 @@ class RetrieveFlowsTest {
 
         doNothing().when(nodeClient).nodoChiediElencoFlussiRendicontazione(anyString());
         when(nodeClient.getNodoChiediElencoFlussiRendicontazioneFault()).thenReturn(null);
-        when(nodeClient.getNodoChiediElencoFlussiRendicontazioneElencoFlussiRendicontazione()).thenReturn(elencoFlussi);
+        when(nodeClient.getNodoChiediElencoFlussiRendicontazione()).thenReturn(elencoFlussi);
         // test
         String message = "{\"idPA\":[\"9000000001\",\"9000000002\",\"9000000003\"]}";
         function.run(message, context);
@@ -97,7 +97,7 @@ class RetrieveFlowsTest {
 
         doNothing().when(nodeClient).nodoChiediElencoFlussiRendicontazione(anyString());
         when(nodeClient.getNodoChiediElencoFlussiRendicontazioneFault()).thenReturn(objectFactory.createFaultBean());
-        when(nodeClient.getNodoChiediElencoFlussiRendicontazioneElencoFlussiRendicontazione()).thenReturn(null);
+        when(nodeClient.getNodoChiediElencoFlussiRendicontazione()).thenReturn(null);
         // test
         String message = "{\"idPA\":[\"9000000001\",\"9000000002\",\"9000000003\"]}";
         function.run(message, context);

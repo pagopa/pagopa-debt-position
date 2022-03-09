@@ -36,7 +36,7 @@ public class RetrieveDetails {
 
             // retrieve fdr from node
             this.getFlowsServiceInstance(logger)
-                    .flowsXmlDownloading(Arrays.asList(flows.getFlows()), flows.getIdPA());
+                    .flowsXmlDownloading(Arrays.asList(flows.getFlows()), flows.getIdPA(), flows.getRetry() + 1);
 
             logger.log(Level.INFO, () -> "[FlowsDownloadFunction END]  processed a message " + message);
         } catch (JsonProcessingException em) {
@@ -52,6 +52,8 @@ public class RetrieveDetails {
 
     public FlowsService getFlowsServiceInstance(Logger logger) {
         return new FlowsService(System.getenv("FLOW_SA_CONNECTION_STRING"), System.getenv("PAA_ID_INTERMEDIARIO"),
-                System.getenv("PAA_STAZIONE_INT"), System.getenv("PAA_PASSWORD"), System.getenv("FLOWS_XML_BLOB"), logger);
+                System.getenv("PAA_STAZIONE_INT"), System.getenv("PAA_PASSWORD"), System.getenv("FLOWS_XML_BLOB"), System.getenv("FLOWS_QUEUE"),
+                Integer.parseInt(System.getenv("MAX_RETRY_QUEUING")), Integer.parseInt(System.getenv("QUEUE_RETENTION_SEC")), Integer.parseInt(System.getenv("QUEUE_DELAY_SEC")),
+                logger);
     }
 }
