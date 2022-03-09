@@ -1,8 +1,26 @@
 package it.gov.pagopa.reporting.service;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.BlobServiceClientBuilder;
+import com.azure.storage.blob.models.BlobItem;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.microsoft.azure.storage.StorageException;
+import com.sun.xml.ws.client.ClientTransportException;
+import it.gov.pagopa.reporting.servicewsdl.FaultBean;
+import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
+import org.junit.ClassRule;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
+import javax.activation.DataHandler;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
@@ -13,29 +31,8 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import javax.activation.DataHandler;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-
-import com.azure.storage.blob.BlobContainerClient;
-import com.azure.storage.blob.BlobServiceClient;
-import com.azure.storage.blob.BlobServiceClientBuilder;
-import com.azure.storage.blob.models.BlobItem;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.microsoft.azure.storage.StorageException;
-import com.sun.xml.ws.client.ClientTransportException;
-import org.junit.ClassRule;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
-
-import it.gov.pagopa.reporting.servicewsdl.FaultBean;
-import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.*;
 
 @Testcontainers
 class FlowServiceIntegrationTest {

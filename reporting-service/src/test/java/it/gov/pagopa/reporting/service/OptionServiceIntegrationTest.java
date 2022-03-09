@@ -1,30 +1,28 @@
 package it.gov.pagopa.reporting.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.spy;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.queue.CloudQueueMessage;
+import it.gov.pagopa.reporting.models.BooleanResponseModel;
+import it.gov.pagopa.reporting.models.PaymentOption;
+import org.junit.ClassRule;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
+import javax.xml.datatype.DatatypeConfigurationException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.text.ParseException;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.queue.CloudQueueMessage;
-import it.gov.pagopa.reporting.models.PaymentOption;
-import org.junit.ClassRule;
-import org.junit.jupiter.api.Test;
-
-import it.gov.pagopa.reporting.models.BooleanResponseModel;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.spy;
 
 @Testcontainers
 class OptionServiceIntegrationTest {

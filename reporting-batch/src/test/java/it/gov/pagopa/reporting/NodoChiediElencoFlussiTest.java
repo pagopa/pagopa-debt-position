@@ -1,21 +1,17 @@
 package it.gov.pagopa.reporting;
 
-import java.lang.reflect.Field;
-import java.net.ConnectException;
-import java.util.logging.Logger;
-
-import javax.xml.ws.WebServiceException;
-
+import it.gov.pagopa.reporting.service.NodoChiediElencoFlussi;
 import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPT;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import it.gov.pagopa.reporting.service.NodoChiediElencoFlussi;
+import javax.xml.ws.WebServiceException;
+import java.lang.reflect.Field;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 class NodoChiediElencoFlussiTest {

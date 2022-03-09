@@ -1,13 +1,13 @@
 package it.gov.pagopa.reporting.service;
 
-import java.net.URL;
-import javax.activation.DataHandler;
-import javax.xml.ws.Holder;
-
 import com.sun.xml.ws.client.ClientTransportException;
 import it.gov.pagopa.reporting.servicewsdl.FaultBean;
-import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPTservice;
 import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPT;
+import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPTservice;
+
+import javax.activation.DataHandler;
+import javax.xml.ws.Holder;
+import java.net.URL;
 
 public class NodeService {
 

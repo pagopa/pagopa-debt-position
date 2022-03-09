@@ -1,28 +1,12 @@
 package it.gov.pagopa.reporting;
 
-import static org.junit.Assert.assertTrue;
-
-import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.UUID;
-import java.util.logging.Logger;
-
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
-
+import it.gov.pagopa.reporting.service.FlowsService;
+import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
+import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
 import org.junit.ClassRule;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
@@ -30,9 +14,17 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import it.gov.pagopa.reporting.service.FlowsService;
-import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
-import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.logging.Logger;
+
+import static org.junit.Assert.assertTrue;
 
 @Testcontainers
 class FlowsServiceIntegrationTest {

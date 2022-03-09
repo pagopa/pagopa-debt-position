@@ -1,15 +1,13 @@
 package it.gov.pagopa.reporting.service;
 
-import java.lang.reflect.InvocationTargetException;
-import java.net.ConnectException;
-import java.net.URL;
-import javax.xml.ws.Holder;
-
 import com.sun.xml.ws.client.ClientTransportException;
 import it.gov.pagopa.reporting.servicewsdl.FaultBean;
-import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPTservice;
 import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPT;
+import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPTservice;
 import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
+
+import javax.xml.ws.Holder;
+import java.net.URL;
 
 public class NodoChiediElencoFlussi {
 

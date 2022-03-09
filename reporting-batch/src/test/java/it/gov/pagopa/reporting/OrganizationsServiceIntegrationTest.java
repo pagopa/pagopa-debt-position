@@ -18,7 +18,8 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
