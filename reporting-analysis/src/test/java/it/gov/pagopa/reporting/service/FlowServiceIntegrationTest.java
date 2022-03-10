@@ -72,7 +72,7 @@ class FlowServiceIntegrationTest {
     }
 
     @Test
-    void getByFlow() {
+    void getByFlow() throws Exception {
         flowsService = spy(new FlowsService(storageConnectionString, flowsTable, containerBlob, logger));
 
         String organizationId =  "idPa";
@@ -118,7 +118,7 @@ class FlowServiceIntegrationTest {
         try {
             data = flowsService.getByFlow(organizationId, flowId, flowDate);
             assertNull(data);
-        } catch(BlobStorageException e) {
+        } catch(Exception e) {
             assertNull(data);
         } finally {
             blobServiceClient.deleteBlobContainer(containerBlob);

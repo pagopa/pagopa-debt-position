@@ -34,7 +34,7 @@ class GetFlowTest {
     FlowsService flowsService;
 
     @Test
-    void runOK() {
+    void runOK() throws Exception {
 
         // general var
         Logger logger = Logger.getLogger("testlogging");
@@ -66,7 +66,7 @@ class GetFlowTest {
     }
 
     @Test
-    void runKO() {
+    void runKO() throws Exception {
 
         // general var
         Logger logger = Logger.getLogger("testlogging");

@@ -65,16 +65,12 @@ public class FlowsService {
         return flowList.stream().map(flow -> modelMapper.map(flow, Flow.class)).collect(Collectors.toList());
     }
 
-    public String getByFlow(String organizationId, String flowId, String flowDate) throws BlobStorageException {
+    public String getByFlow(String organizationId, String flowId, String flowDate) throws Exception {
         logger.log(Level.INFO, () -> String.format("[FlowsService] START get by flow: %s - %s - %s", organizationId, flowId, flowDate));
 
         // try to create blob container
         AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString, null, containerBlob);
-        try {
-            azuriteStorageUtil.createTable();
-        } catch (Exception e) {
-            this.logger.severe(String.format("[AzureStorage] Problem to create table: %s", e.getMessage()));
-        }
+        azuriteStorageUtil.createTable();
 
         BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
                 .connectionString(this.storageConnectionString).buildClient();

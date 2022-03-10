@@ -53,7 +53,7 @@ public class GetFlow {
                     .body(data)
                     .build();
 
-        } catch (BlobStorageException e) {
+        } catch (Exception e) {
             logger.log(Level.SEVERE, () -> "GetFlow error: " + e.getLocalizedMessage());
 
             return request.createResponseBuilder(HttpStatus.NOT_FOUND)
