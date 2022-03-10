@@ -63,7 +63,7 @@ class FlowServiceIntegrationTest {
         try {
             createTable();
             flows = flowsService.getByOrganization(organizationId);
-        } catch (URISyntaxException | InvalidKeyException | StorageException e) {
+        } catch (Exception e) {
             assertNull(flows);
         }
 

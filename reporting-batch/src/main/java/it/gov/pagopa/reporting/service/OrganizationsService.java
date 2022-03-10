@@ -165,7 +165,7 @@ public class OrganizationsService {
     }
 
     public void deleteOrganizationList(List<String> organizations) throws URISyntaxException, InvalidKeyException, StorageException {
-        this.logger.info("Processing delete organization list");
+        this.logger.info("[OrganizationsService] Processing delete organization list");
 
         CloudTable table = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
                 .getTableReference(this.organizationsTable);
@@ -246,6 +246,8 @@ public class OrganizationsService {
         try {
             azuriteStorageUtil.createTable();
             azuriteStorageUtil.createQueue();
+        } catch (StorageException e) {
+            this.logger.info(String.format("[AzureStorage] Table or Queue created: %s", e.getMessage()));
         } catch (Exception e) {
             this.logger.severe(String.format("[AzureStorage] Problem to create table or queue: %s", e.getMessage()));
         }

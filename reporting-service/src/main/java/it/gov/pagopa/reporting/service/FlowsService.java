@@ -61,7 +61,11 @@ public class FlowsService {
 
         // try to create blob container
         AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString, null, null, containerBlob);
-        azuriteStorageUtil.createBlob();
+        try {
+            azuriteStorageUtil.createBlob();
+        } catch (NullPointerException e) {
+            this.logger.severe(String.format("[AzureStorage] Problem to create blob: %s", e.getMessage()));
+        }
 
         NodeService nodeService = this.getNodeServiceInstance();
 

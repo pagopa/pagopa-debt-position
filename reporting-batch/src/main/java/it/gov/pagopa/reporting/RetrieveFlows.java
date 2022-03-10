@@ -67,7 +67,7 @@ public class RetrieveFlows {
                                 flowsService.flowsProcessing(elencoFlussi.getIdRendicontazione(), organization);
                             }
                         } catch (ClientTransportException e) {
-                            logger.log(Level.SEVERE, () -> "[NODO Connection down] " + organization + ": " + organizationsMessage);
+                            logger.log(Level.SEVERE, () -> "[NODO Connection down] " + organization);
                             int retry = organizationsMessage.getRetry();
                             if (retry < Integer.parseInt(maxRetryQueuing)) {
                                 OrganizationsService organizationsService = getOrganizationsServiceInstance(logger);

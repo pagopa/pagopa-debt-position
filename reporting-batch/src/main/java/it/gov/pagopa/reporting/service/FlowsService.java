@@ -154,6 +154,8 @@ public class FlowsService {
         try {
             azuriteStorageUtil.createTable();
             azuriteStorageUtil.createQueue();
+        } catch (StorageException e) {
+            this.logger.info(String.format("[AzureStorage] Table or Queue created: %s", e.getMessage()));
         } catch (Exception e) {
             this.logger.severe(String.format("[AzureStorage] Problem to create table or queue: %s", e.getMessage()));
         }

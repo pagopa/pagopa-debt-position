@@ -24,7 +24,7 @@ public class AzuriteStorageUtil {
     private String containerBlob;
 
     // Create a new table
-    public void createTable() throws URISyntaxException, InvalidKeyException, StorageException {
+    public void createTable() throws URISyntaxException, InvalidKeyException, StorageException, RuntimeException {
         if (debugAzurite) {
             CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
             CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();

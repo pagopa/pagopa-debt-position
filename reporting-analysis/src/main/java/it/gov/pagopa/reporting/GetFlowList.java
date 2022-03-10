@@ -58,7 +58,7 @@ public class GetFlowList {
                     .body(data)
                     .build();
 
-        } catch (URISyntaxException | InvalidKeyException | StorageException | JsonProcessingException e) {
+        } catch (Exception e) {
             logger.log(Level.SEVERE, () -> "GetFlowList error: " + e.getLocalizedMessage());
 
             return request.createResponseBuilder(HttpStatus.BAD_REQUEST)

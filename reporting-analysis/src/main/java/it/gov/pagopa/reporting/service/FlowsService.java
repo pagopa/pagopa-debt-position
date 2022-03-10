@@ -39,7 +39,7 @@ public class FlowsService {
         this.logger = logger;
     }
 
-    public List<Flow> getByOrganization(String organizationId) throws URISyntaxException, InvalidKeyException, StorageException {
+    public List<Flow> getByOrganization(String organizationId) throws URISyntaxException, InvalidKeyException, StorageException, RuntimeException {
         logger.log(Level.INFO, () -> String.format("[FlowsService] START get by organization: %s", organizationId));
 
         // try to create table
@@ -72,7 +72,7 @@ public class FlowsService {
         AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString, null, containerBlob);
         try {
             azuriteStorageUtil.createTable();
-        } catch (URISyntaxException | InvalidKeyException | StorageException e) {
+        } catch (Exception e) {
             this.logger.severe(String.format("[AzureStorage] Problem to create table: %s", e.getMessage()));
         }
 
