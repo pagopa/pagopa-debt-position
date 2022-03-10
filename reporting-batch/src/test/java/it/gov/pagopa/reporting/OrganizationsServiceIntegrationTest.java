@@ -2,8 +2,10 @@ package it.gov.pagopa.reporting;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.StorageExtendedErrorInformation;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
 import com.microsoft.azure.storage.table.TableQuery;
+import com.microsoft.azure.storage.table.TableServiceException;
 import it.gov.pagopa.reporting.entity.OrganizationEntity;
 import it.gov.pagopa.reporting.models.Organizations;
 import it.gov.pagopa.reporting.service.OrganizationsService;
@@ -23,6 +25,9 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @Testcontainers
 class OrganizationsServiceIntegrationTest {
@@ -79,7 +84,34 @@ class OrganizationsServiceIntegrationTest {
         for (OrganizationEntity r : rows) {
             Assertions.assertTrue(r.getRowKey().contains(chk.get(index++)));
         }
+    }
 
+    @Test
+    void addOrganizationListTest_2() throws InvalidKeyException, URISyntaxException, StorageException {
+        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(this.storageConnectionString, this.orgsTable, this.orgsQueue);
+        azuriteStorageUtil.createTable();
+        azuriteStorageUtil.createQueue();
+
+        OrganizationsService organizationsService = spy(new OrganizationsService(this.storageConnectionString, this.orgsTable,
+                this.orgsQueue, 60, 0, logger));
+
+        StorageExtendedErrorInformation err = new StorageExtendedErrorInformation();
+        err.setErrorMessage("test error message");
+        doThrow(new TableServiceException("error", "message", 500, err, null)).when(organizationsService).addOrganizationList(any());
+
+        Organizations orgs = new Organizations();
+
+        List<String> added = new ArrayList<>();
+        added.add("90000000001");
+        added.add("90000000002");
+        added.add("90000000003");
+        orgs.setAdd(added);
+        List<String> deleted = new ArrayList<>();
+        orgs.setDelete(deleted);
+
+        organizationsService.processOrganizationList(orgs);
+
+        verify(organizationsService, times(3)).addOrganization(anyString());
     }
 
     @Test

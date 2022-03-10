@@ -8,6 +8,7 @@ import it.gov.pagopa.reporting.service.FlowsService;
 import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
 import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
 import org.junit.ClassRule;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -112,14 +113,14 @@ class FlowsServiceIntegrationTest {
         // single flow
         flowsService.flowProcessing(e4, "idPA");
 
-        Iterable<CloudQueueMessage> messagges = CloudStorageAccount.parse(storageConnectionString)
+        Iterable<CloudQueueMessage> messages = CloudStorageAccount.parse(storageConnectionString)
                 .createCloudQueueClient().getQueueReference(this.flowsQueue).retrieveMessages(32);
 
         List<String> ids = Arrays.asList(id1, id2, id4);
 
-        for (CloudQueueMessage cloudQueueMessage : messagges) {
+        for (CloudQueueMessage cloudQueueMessage : messages) {
 
-            assertTrue(cloudQueueMessage.getMessageContentAsString().contains(ids.get(0))
+            Assertions.assertTrue(cloudQueueMessage.getMessageContentAsString().contains(ids.get(0))
                     || cloudQueueMessage.getMessageContentAsString().contains(ids.get(1))
                     || cloudQueueMessage.getMessageContentAsString().contains(ids.get(2)));
         }
