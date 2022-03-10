@@ -1,5 +1,20 @@
 package it.gov.pagopa.reporting.service;
 
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.BlobServiceClientBuilder;
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.table.CloudTable;
+import com.microsoft.azure.storage.table.TableQuery;
+import it.gov.pagopa.reporting.entity.FlowEntity;
+import it.gov.pagopa.reporting.model.Flow;
+import it.gov.pagopa.reporting.util.AzuriteStorageUtil;
+import it.gov.pagopa.reporting.util.FlowConverter;
+import org.modelmapper.Converter;
+import org.modelmapper.ModelMapper;
+
 import java.io.ByteArrayOutputStream;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
@@ -8,21 +23,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import com.azure.storage.blob.BlobClient;
-import com.azure.storage.blob.BlobContainerClient;
-import com.azure.storage.blob.BlobServiceClient;
-import com.azure.storage.blob.BlobServiceClientBuilder;
-import com.azure.storage.blob.models.BlobStorageException;
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.table.*;
-import it.gov.pagopa.reporting.entity.FlowEntity;
-import it.gov.pagopa.reporting.model.Flow;
-import it.gov.pagopa.reporting.util.AzuriteStorageUtil;
-import it.gov.pagopa.reporting.util.FlowConverter;
-import org.modelmapper.Converter;
-import org.modelmapper.ModelMapper;
 
 public class FlowsService {
 

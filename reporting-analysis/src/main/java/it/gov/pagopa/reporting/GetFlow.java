@@ -1,6 +1,5 @@
 package it.gov.pagopa.reporting;
 
-import com.azure.storage.blob.models.BlobStorageException;
 import com.microsoft.azure.functions.*;
 import com.microsoft.azure.functions.annotation.BindingName;
 import com.microsoft.azure.functions.annotation.FunctionName;
