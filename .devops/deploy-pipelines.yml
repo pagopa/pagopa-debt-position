@@ -186,7 +186,7 @@ stages:
               containerRegistry: $(CONTAINER_REGISTRY)
               repository: "${{ parameters.REPOSITORY }}"
               command: "buildAndPush"
-              Dockerfile: "./${{ parameters.REPOSITORY }}/Dockerfile.deploy" # TODO why in hub-pa there is dockerfile.deploy? is it necessary?
+              Dockerfile: "./${{ parameters.REPOSITORY }}/Dockerfile.deploy"
               tags: "$(pomversion.next)"
 
 # TODO analyze
