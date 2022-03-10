@@ -16,16 +16,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(value = "gpd", url = "${service.gpd.host}")
 public interface GpdClient {
 
-    @Retryable(backoff = @Backoff(delay = 2000))
+    @Retryable(maxAttemptsExpression = "${retry.maxAttempts}", backoff = @Backoff(delayExpression = "${retry.maxDelay}"))
     @GetMapping(value = "/organizations/{organizationfiscalcode}")
     String getOrganization(@PathVariable("organizationfiscalcode") String organizationFiscalCode);
 
-    @Retryable(backoff = @Backoff(delay = 2000))
+    @Retryable(maxAttemptsExpression = "${retry.maxAttempts}", backoff = @Backoff(delayExpression = "${retry.maxDelay}"))
     @GetMapping(value = "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}")
     PaymentsModelResponse getPaymentOption(@PathVariable("organizationfiscalcode") String organizationFiscalCode,
                                            @PathVariable("iuv") String iuv);
 
-    @Retryable(backoff = @Backoff(delay = 2000))
+    @Retryable(maxAttemptsExpression = "${retry.maxAttempts}", backoff = @Backoff(delayExpression = "${retry.maxDelay}"))
     @PostMapping(value = "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}/pay", consumes = MediaType.APPLICATION_JSON_VALUE)
     PaymentOptionModelResponse receiptPaymentOption(@PathVariable("organizationfiscalcode") String organizationFiscalCode,
                                                     @PathVariable("iuv") String iuv,
