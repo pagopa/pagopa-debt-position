@@ -20,15 +20,17 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.shaded.com.google.common.base.Predicates;
 import org.testcontainers.utility.DockerImageName;
 
+import javax.persistence.criteria.Predicate;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -267,9 +269,27 @@ class OrganizationsServiceIntegrationTest {
     }
 
     @Test
+    void retryToOrganizationsQueueTest() throws InvalidKeyException, URISyntaxException, StorageException {
+
+        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable,
+                this.orgsQueue, 60, 0, logger);
+
+        organizationsService.retryToOrganizationsQueue("90000000001", 0);
+
+        Iterable<CloudQueueMessage> messages = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
+                .getQueueReference(this.orgsQueue)
+                .retrieveMessages(32);
+
+        List<Boolean> results = new ArrayList<>();
+        for (CloudQueueMessage cloudQueueMessage : messages) {
+            boolean res = cloudQueueMessage.getMessageContentAsString().contains("90000000001");
+            results.add(res);
+        }
+        assertTrue(results.stream().allMatch(r -> r.equals(Boolean.TRUE)));
+    }
+
+    @Test
     void addToOrganizationsQueueTest()  throws InvalidKeyException, URISyntaxException, StorageException {
-//        CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient().getQueueReference(this.orgsQueue)
-//                .createIfNotExists();
 
         OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString,
                 this.orgsTable, this.orgsQueue, 60, 0, logger);
