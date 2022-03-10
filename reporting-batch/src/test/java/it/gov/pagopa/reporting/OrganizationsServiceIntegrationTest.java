@@ -1,17 +1,21 @@
 package it.gov.pagopa.reporting;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.RetryNoRetry;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.StorageExtendedErrorInformation;
+import com.microsoft.azure.storage.queue.CloudQueueClient;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
-import com.microsoft.azure.storage.table.TableQuery;
-import com.microsoft.azure.storage.table.TableServiceException;
+import com.microsoft.azure.storage.queue.QueueRequestOptions;
+import com.microsoft.azure.storage.table.*;
 import it.gov.pagopa.reporting.entity.OrganizationEntity;
 import it.gov.pagopa.reporting.models.Organizations;
 import it.gov.pagopa.reporting.service.OrganizationsService;
-import it.gov.pagopa.reporting.utils.AzuriteStorageUtil;
+import lombok.SneakyThrows;
 import org.junit.ClassRule;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -35,24 +39,73 @@ class OrganizationsServiceIntegrationTest {
     @ClassRule
     @Container
     public static GenericContainer<?> azurite = new GenericContainer<>(
-            DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:latest")).withExposedPorts(10001, 10002,
-                    10000);
-
+        DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:latest")).withExposedPorts(10001, 10002, 10000);
     Logger logger = Logger.getLogger("testlogging");
 
     String storageConnectionString = String.format(
             "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://%s:%s/devstoreaccount1;QueueEndpoint=http://%s:%s/devstoreaccount1",
-            azurite.getContainerIpAddress(), azurite.getMappedPort(10002), azurite.getContainerIpAddress(),
-            azurite.getMappedPort(10001));
+            azurite.getContainerIpAddress(), azurite.getMappedPort(10002),
+            azurite.getContainerIpAddress(), azurite.getMappedPort(10001));
     String orgsTable = "orgtable";
     String orgsQueue = "orgqueue";
+
+    @SneakyThrows
+    @BeforeEach
+    void beforeEach() {
+        TableRequestOptions tableRequestOptions = new TableRequestOptions();
+        tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance()); // disable retry to complete faster
+
+        CloudTableClient cloudTableClient = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient();
+        cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
+        try {
+            cloudTableClient.getTableReference(this.orgsTable).createIfNotExists();
+        } catch (Exception e) {
+            logger.info("no table");
+        }
+
+        QueueRequestOptions queueRequestOptions = new QueueRequestOptions();
+        queueRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance()); // disable retry to complete faster
+
+        CloudQueueClient cloudQueueClient = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient();
+        cloudQueueClient.setDefaultRequestOptions(queueRequestOptions);
+        try {
+            cloudQueueClient.getQueueReference(this.orgsQueue).createIfNotExists();
+        } catch (Exception e) {
+            logger.info("no queue");
+        }
+    }
+
+    @SneakyThrows
+    @AfterEach
+    void afterEach() {
+        TableRequestOptions tableRequestOptions = new TableRequestOptions();
+        tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance()); // disable retry to complete faster
+
+        CloudTableClient cloudTableClient = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient();
+        cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
+        try {
+            cloudTableClient.getTableReference(this.orgsTable).deleteIfExists();
+        } catch (Exception e) {
+            logger.info("no table");
+        }
+
+        QueueRequestOptions queueRequestOptions = new QueueRequestOptions();
+        queueRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance()); // disable retry to complete faster
+
+        CloudQueueClient cloudQueueClient = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient();
+        cloudQueueClient.setDefaultRequestOptions(queueRequestOptions);
+        try {
+            cloudQueueClient.getQueueReference(this.orgsQueue).deleteIfExists();
+        } catch (Exception e) {
+            logger.info("no queue");
+        }
+    }
 
     @Test
     void addOrganizationListTest() throws InvalidKeyException,
             URISyntaxException, StorageException {
-        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(this.storageConnectionString, this.orgsTable, this.orgsQueue);
-        azuriteStorageUtil.createTable();
-        azuriteStorageUtil.createQueue();
+//        CloudStorageAccount.parse(storageConnectionString).createCloudTableClient().getTableReference(this.orgsTable)
+//                .createIfNotExists();
 
         OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable,
                 this.orgsQueue, 60, 0, logger);
@@ -88,9 +141,8 @@ class OrganizationsServiceIntegrationTest {
 
     @Test
     void addOrganizationListTest_2() throws InvalidKeyException, URISyntaxException, StorageException {
-        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(this.storageConnectionString, this.orgsTable, this.orgsQueue);
-        azuriteStorageUtil.createTable();
-        azuriteStorageUtil.createQueue();
+//        CloudStorageAccount.parse(storageConnectionString).createCloudTableClient().getTableReference(this.orgsTable)
+//                .createIfNotExists();
 
         OrganizationsService organizationsService = spy(new OrganizationsService(this.storageConnectionString, this.orgsTable,
                 this.orgsQueue, 60, 0, logger));
@@ -115,14 +167,13 @@ class OrganizationsServiceIntegrationTest {
     }
 
     @Test
-    void addOrganizationListTestSingle() throws InvalidKeyException,
-            URISyntaxException, StorageException {
+    void addOrganizationListTestSingle() throws InvalidKeyException, URISyntaxException, StorageException {
 
-        CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient().getQueueReference(this.orgsQueue)
-                .createIfNotExists();
-
-        CloudStorageAccount.parse(storageConnectionString).createCloudTableClient().getTableReference(this.orgsTable)
-                .createIfNotExists();
+//        CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient().getQueueReference(this.orgsQueue)
+//                .createIfNotExists();
+//
+//        CloudStorageAccount.parse(storageConnectionString).createCloudTableClient().getTableReference(this.orgsTable)
+//                .createIfNotExists();
 
         OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable,
                 this.orgsQueue, 60, 0, logger);
@@ -159,11 +210,7 @@ class OrganizationsServiceIntegrationTest {
     }
 
     @Test
-    void delOrganizationListTest() throws URISyntaxException, InvalidKeyException, StorageException {
-
-        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(this.storageConnectionString, this.orgsTable, this.orgsQueue);
-        azuriteStorageUtil.createTable();
-        azuriteStorageUtil.createQueue();
+    void delOrganizationListTest() {
 
         OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString,
                 this.orgsTable, this.orgsQueue, 60, 0, logger);
@@ -187,15 +234,10 @@ class OrganizationsServiceIntegrationTest {
         for (String org : updateOrganizationsList) {
             assertEquals(org, chk1.get(index1++));
         }
-
     }
 
     @Test
-    void delOrganizationLisNotExistTest() throws InvalidKeyException, URISyntaxException, StorageException {
-
-        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(this.storageConnectionString, this.orgsTable, this.orgsQueue);
-        azuriteStorageUtil.createTable();
-        azuriteStorageUtil.createQueue();
+    void delOrganizationLisNotExistTest() {
 
         OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString,
                 this.orgsTable, this.orgsQueue, 60, 0, logger);
@@ -225,7 +267,9 @@ class OrganizationsServiceIntegrationTest {
     }
 
     @Test
-    void addToOrganizationsQueuetTest()  throws InvalidKeyException, URISyntaxException, StorageException {
+    void addToOrganizationsQueueTest()  throws InvalidKeyException, URISyntaxException, StorageException {
+//        CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient().getQueueReference(this.orgsQueue)
+//                .createIfNotExists();
 
         OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString,
                 this.orgsTable, this.orgsQueue, 60, 0, logger);
@@ -253,6 +297,6 @@ class OrganizationsServiceIntegrationTest {
                     || cloudQueueMessage.getMessageContentAsString().contains(orgs.get(1))
                     || cloudQueueMessage.getMessageContentAsString().contains(orgs.get(2)));
         }
-    }
 
+    }
 }
