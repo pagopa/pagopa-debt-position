@@ -206,7 +206,7 @@ stages:
           # deploy reporting-fn
           - task: AzureFunctionAppContainer@1
             displayName: Deploy Function App
-            condition: in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service'))
+            condition: in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service')
             inputs:
               azureSubscription: $(AZURE_SUBSCRIPTION)
               appName: "${{variables.APP_NAME}}-fn-$[replace(parameters.REPOSITORY, 'reporting', 'gpd')]"
