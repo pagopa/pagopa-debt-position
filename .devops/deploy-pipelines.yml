@@ -175,7 +175,7 @@ stages:
               jdkVersionOption: "1.11"
               jdkArchitectureOption: "x64"
               testResultsFiles: "**/surefire-reports/TEST-*.xml"
-              publishJUnitResults: false
+              publishJUnitResults: true
               effectivePomSkip: false
               sonarQubeRunAnalysis: false
               goals: "install"
@@ -189,15 +189,6 @@ stages:
               Dockerfile: "./${{ parameters.REPOSITORY }}/Dockerfile.deploy"
               tags: "$(pomversion.next)"
 
-# TODO analyze
-#          - task: Bash@3
-#            name: App_Insight_Agent
-#            inputs:
-#              targetType: "inline"
-#              script: |
-#                wget https://github.com/microsoft/ApplicationInsights-Java/releases/download/3.1.0/applicationinsights-agent-3.1.0.jar
-#                mv applicationinsights-agent*jar ${{parameters.REPOSITORY}}
-#                ls ${{parameters.REPOSITORY}}
 
           # deploy gdp | payments
           - task: AzureRMWebAppDeployment@4
@@ -206,7 +197,7 @@ stages:
             inputs:
               appType: webAppContainer
               ConnectedServiceName: $(AZURE_SUBSCRIPTION)
-              WebAppName: "${{variables.APP_NAME}}-${{ parameters.REPOSITORY }}-ms"
+              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
               DockerNamespace: "${{variables.CONTAINER_NAMESPACE}}"
               DockerRepository: "${{ parameters.REPOSITORY }}"
               DockerImageTag: "$(pomversion.next)"
@@ -217,7 +208,6 @@ stages:
             condition: in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service'))
             inputs:
               azureSubscription: $(AZURE_SUBSCRIPTION)
-              appName: "${{variables.APP_NAME}}-${{ parameters.REPOSITORY }}"
+              appName: "${{variables.APP_NAME}}-fn-$[replace(parameters.REPOSITORY, 'reporting', 'gpd')]"
               imageName: "${{variables.CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(pomversion.next)"
-              #resourceGroupName: $(BATCH_RESOURCE_GROUP) # TODO review (Required if deployToSlotOrASE is true) Name of the Resource Group containing the Function App for Containers. [deployToSlotOrASE is false by default]
               slotName: production
