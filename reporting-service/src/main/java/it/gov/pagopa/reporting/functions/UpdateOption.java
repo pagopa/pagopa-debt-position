@@ -1,8 +1,5 @@
 package it.gov.pagopa.reporting.functions;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.functions.ExecutionContext;
@@ -10,6 +7,9 @@ import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.QueueTrigger;
 import it.gov.pagopa.reporting.models.OptionsMessage;
 import it.gov.pagopa.reporting.service.GPDService;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Azure Functions with Azure Queue trigger.

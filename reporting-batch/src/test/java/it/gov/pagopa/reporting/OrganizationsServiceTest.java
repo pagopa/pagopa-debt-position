@@ -13,9 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class OrganizationsServiceTest {
@@ -28,6 +27,7 @@ class OrganizationsServiceTest {
                     "connectionStringMock",
                     "tableMock",
                     "queueMock",
+                    60, 0,
                     Logger.getLogger("testlogging")));
 
     Organizations orgs = new Organizations();
@@ -64,6 +64,7 @@ class OrganizationsServiceTest {
                     "connectionStringMock",
                     "tableMock",
                     "queueMock",
+                    60, 0,
                     Logger.getLogger("testlogging")));
 
     Organizations orgs = new Organizations();
@@ -110,6 +111,7 @@ class OrganizationsServiceTest {
                     "connectionStringMock",
                     "tableMock",
                     "queueMock",
+                    60, 0,
                     Logger.getLogger("testlogging")));
 
     Organizations orgs = new Organizations();

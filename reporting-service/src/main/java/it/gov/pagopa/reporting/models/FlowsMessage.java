@@ -10,4 +10,5 @@ public class FlowsMessage {
 
     private String idPA;
     private TipoIdRendicontazione[] flows;
+    private Integer retry;
 }

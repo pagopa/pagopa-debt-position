@@ -1,17 +1,16 @@
 package it.gov.pagopa.reporting.functions;
 
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.QueueTrigger;
-
 import it.gov.pagopa.reporting.models.FlowsMessage;
 import it.gov.pagopa.reporting.service.FlowsService;
+
+import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * FlowsXmlDownloadFunction Azure Functions with Azure Queue trigger.
@@ -36,7 +35,7 @@ public class RetrieveDetails {
 
             // retrieve fdr from node
             this.getFlowsServiceInstance(logger)
-                    .flowsXmlDownloading(Arrays.asList(flows.getFlows()), flows.getIdPA());
+                    .flowsXmlDownloading(Arrays.asList(flows.getFlows()), flows.getIdPA(), flows.getRetry() + 1);
 
             logger.log(Level.INFO, () -> "[FlowsDownloadFunction END]  processed a message " + message);
         } catch (JsonProcessingException em) {
@@ -51,7 +50,16 @@ public class RetrieveDetails {
     }
 
     public FlowsService getFlowsServiceInstance(Logger logger) {
+        String maxRetryQueuing = getVars("MAX_RETRY_QUEUING");
+        String queueRetentionSec = getVars("QUEUE_RETENTION_SEC");
+        String queueDelaySec = getVars("QUEUE_DELAY_SEC");
         return new FlowsService(System.getenv("FLOW_SA_CONNECTION_STRING"), System.getenv("PAA_ID_INTERMEDIARIO"),
-                System.getenv("PAA_STAZIONE_INT"), System.getenv("PAA_PASSWORD"), System.getenv("FLOWS_XML_BLOB"), logger);
+                System.getenv("PAA_STAZIONE_INT"), System.getenv("PAA_PASSWORD"), System.getenv("FLOWS_XML_BLOB"), System.getenv("FLOWS_QUEUE"),
+                Integer.parseInt(maxRetryQueuing), Integer.parseInt(queueRetentionSec), Integer.parseInt(queueDelaySec),
+                logger);
+    }
+
+    public String getVars(String vars) {
+        return System.getenv(vars);
     }
 }

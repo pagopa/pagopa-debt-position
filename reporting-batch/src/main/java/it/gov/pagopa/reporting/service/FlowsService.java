@@ -1,12 +1,5 @@
 package it.gov.pagopa.reporting.service;
 
-import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.IntStream;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
@@ -14,11 +7,21 @@ import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
-import com.microsoft.azure.storage.table.*;
+import com.microsoft.azure.storage.table.CloudTable;
+import com.microsoft.azure.storage.table.TableBatchOperation;
+import com.microsoft.azure.storage.table.TableOperation;
+import com.microsoft.azure.storage.table.TableServiceException;
 import it.gov.pagopa.reporting.entity.FlowEntity;
 import it.gov.pagopa.reporting.models.FlowsMessage;
 import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
 import it.gov.pagopa.reporting.utils.AzuriteStorageUtil;
+
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.IntStream;
 
 public class FlowsService {
 
@@ -118,6 +121,7 @@ public class FlowsService {
         FlowsMessage flows = new FlowsMessage();
         flows.setFlows(partition.toArray(TipoIdRendicontazione[]::new));
         flows.setIdPA(idPA);
+        flows.setRetry(0);
         String message = new ObjectMapper().writeValueAsString(flows);
 
         this.logger.log(Level.INFO, () -> "[FlowsService] Sending messages - partition index: " + partitionFlowsIndex);
@@ -150,6 +154,8 @@ public class FlowsService {
         try {
             azuriteStorageUtil.createTable();
             azuriteStorageUtil.createQueue();
+        } catch (StorageException e) {
+            this.logger.info(String.format("[AzureStorage] Table or Queue created: %s", e.getMessage()));
         } catch (Exception e) {
             this.logger.severe(String.format("[AzureStorage] Problem to create table or queue: %s", e.getMessage()));
         }

@@ -1,32 +1,24 @@
 package it.gov.pagopa.reporting;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import com.microsoft.azure.storage.StorageExtendedErrorInformation;
+import com.microsoft.azure.storage.table.TableServiceException;
+import it.gov.pagopa.reporting.service.FlowsService;
+import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
+import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.xml.datatype.DatatypeFactory;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import javax.xml.datatype.DatatypeFactory;
-
-import com.microsoft.azure.storage.StorageExtendedErrorInformation;
-import com.microsoft.azure.storage.table.TableServiceException;
-
-import it.gov.pagopa.reporting.service.FlowsService;
-import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
-import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FlowServiceTest {

@@ -12,4 +12,5 @@ import lombok.Setter;
 public class OrganizationsMessage {
 
     private String[] idPA;
+    private Integer retry;
 }

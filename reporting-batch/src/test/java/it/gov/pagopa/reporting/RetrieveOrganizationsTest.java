@@ -1,31 +1,20 @@
 package it.gov.pagopa.reporting;
 
 import com.microsoft.azure.functions.ExecutionContext;
-import it.gov.pagopa.reporting.models.Organizations;
-import it.gov.pagopa.reporting.service.FlowsService;
 import it.gov.pagopa.reporting.service.GPDService;
-import it.gov.pagopa.reporting.service.NodoChiediElencoFlussi;
 import it.gov.pagopa.reporting.service.OrganizationsService;
 import it.gov.pagopa.reporting.servicewsdl.ObjectFactory;
-import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
-import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import javax.xml.datatype.DatatypeFactory;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RetrieveOrganizationsTest {

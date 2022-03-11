@@ -18,9 +18,11 @@ import java.util.logging.Logger;
  */
 public class RetrieveOrganizations {
 
-    private String storageConnectionString = System.getenv("FLOW_SA_CONNECTION_STRING");
-    private String organizationsTable = System.getenv("ORGANIZATIONS_TABLE");
-    private String organizationsQueue = System.getenv("ORGANIZATIONS_QUEUE");
+    private final String storageConnectionString = System.getenv("FLOW_SA_CONNECTION_STRING");
+    private final String organizationsTable = System.getenv("ORGANIZATIONS_TABLE");
+    private final String organizationsQueue = System.getenv("ORGANIZATIONS_QUEUE");
+    private final String timeToLiveInSeconds = System.getenv("QUEUE_RETENTION_SEC");
+    private final String initialVisibilityDelayInSeconds = System.getenv("QUEUE_DELAY_SEC");
 
     /**
      * This function will be invoked periodically according to the specified
@@ -55,7 +57,7 @@ public class RetrieveOrganizations {
     }
 
     public OrganizationsService getOrganizationsServiceInstance(Logger logger) {
-        return new OrganizationsService(this.storageConnectionString, this.organizationsTable, this.organizationsQueue, logger);
+        return new OrganizationsService(this.storageConnectionString, this.organizationsTable, this.organizationsQueue, Integer.parseInt(timeToLiveInSeconds), Integer.parseInt(initialVisibilityDelayInSeconds), logger);
     }
 
 }

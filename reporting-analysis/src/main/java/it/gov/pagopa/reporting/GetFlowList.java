@@ -1,17 +1,13 @@
 package it.gov.pagopa.reporting;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.functions.*;
 import com.microsoft.azure.functions.annotation.BindingName;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.HttpTrigger;
-import com.microsoft.azure.storage.StorageException;
 import it.gov.pagopa.reporting.model.Flow;
 import it.gov.pagopa.reporting.service.FlowsService;
 
-import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -58,7 +54,7 @@ public class GetFlowList {
                     .body(data)
                     .build();
 
-        } catch (URISyntaxException | InvalidKeyException | StorageException | JsonProcessingException e) {
+        } catch (Exception e) {
             logger.log(Level.SEVERE, () -> "GetFlowList error: " + e.getLocalizedMessage());
 
             return request.createResponseBuilder(HttpStatus.BAD_REQUEST)

@@ -7,7 +7,6 @@ import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
-
 import it.gov.pagopa.reporting.models.OptionsMessage;
 import it.gov.pagopa.reporting.models.PaymentOption;
 import it.gov.pagopa.reporting.util.AzuriteStorageUtil;
