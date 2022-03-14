@@ -181,14 +181,18 @@ stages:
               sonarQubeRunAnalysis: false
               goals: "install"
 
+          - task: CmdLine@2
+            inputs:
+              workingDirectory: './${{ parameters.REPOSITORY }}'
+              script: 'dir'
+
           - task: Docker@2
             displayName: Build and push image to container registry
             inputs:
+              command: 'buildAndPush'
               containerRegistry: '$(CONTAINER_REGISTRY)'
               repository: '${{ parameters.REPOSITORY }}'
-              command: 'buildAndPush'
               Dockerfile: './Dockerfile.deploy'
-              buildContext: './${{ parameters.REPOSITORY }}'
               tags: '$(pomversion.next)'
 
 
