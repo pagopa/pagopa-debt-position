@@ -24,17 +24,28 @@ import java.util.stream.IntStream;
 
 public class OrganizationsService {
 
-    private String storageConnectionString;
-    private String organizationsTable;
-    private String organzationsQueue;
-    private Logger logger;
-    private int batchSize = 2;
-    private int msgOrganizationsForQueue = 5;
+    private final String storageConnectionString;
+    private final String organizationsTable;
+    private final String organizationsQueue;
+    // timeToLiveInSeconds – The maximum time to allow the message to be in the queue.
+    //      A value of zero will set the time-to-live to the service default value of seven days.
+    //      A value of negative one will set an infinite time-to-live.
+    private final int timeToLiveInSeconds;
+    // initialVisibilityDelayInSeconds – The length of time during which the message will be invisible, starting when
+    //      it is added to the queue, or 0 to make the message visible immediately. This value must be greater than or
+    //      equal to zero and less than the time-to-live value.
+    private final int initialVisibilityDelayInSeconds;
 
-    public OrganizationsService(String storageConnectionString, String organizationsTable, String organzationsQueue, Logger logger) {
+    private final Logger logger;
+    private static final int batchSize = 2;
+    private static final int msgOrganizationsForQueue = 5;
+
+    public OrganizationsService(String storageConnectionString, String organizationsTable, String organizationsQueue, int timeToLiveInSeconds, int initialVisibilityDelayInSeconds, Logger logger) {
         this.storageConnectionString = storageConnectionString;
         this.organizationsTable = organizationsTable;
-        this.organzationsQueue = organzationsQueue;
+        this.organizationsQueue = organizationsQueue;
+        this.timeToLiveInSeconds = timeToLiveInSeconds;
+        this.initialVisibilityDelayInSeconds = initialVisibilityDelayInSeconds;
         this.logger = logger;
     }
 
@@ -55,7 +66,7 @@ public class OrganizationsService {
                 this.logger.log(Level.INFO,
                         () -> "[OrganizationsService] Azure Table Storage - Add for partition index " + partitionAddIndex + " executed.");
             } catch (TableServiceException et) {
-                this.logger.log(Level.SEVERE,
+                this.logger.log(Level.WARNING,
                         () -> "[OrganizationsService] Azure Table Storage Error - Add:  " + et.getErrorCode() + " : "
                                 + et.getExtendedErrorInformation().getErrorMessage() + " for batch of organizations");
 
@@ -131,7 +142,7 @@ public class OrganizationsService {
 
     // Organizations table
     public void addOrganizationList(List<String> organizations) throws URISyntaxException, InvalidKeyException, StorageException {
-        this.logger.info("Processing add organization list");
+        this.logger.info("[OrganizationsService] Processing add organization list");
 
         CloudTable table = CloudStorageAccount.parse(storageConnectionString)
                 .createCloudTableClient()
@@ -145,7 +156,7 @@ public class OrganizationsService {
     }
 
     public void addOrganization(String organization) throws URISyntaxException, InvalidKeyException, StorageException {
-        this.logger.log(Level.INFO, () -> "Processing add organization " + organization);
+        this.logger.log(Level.INFO, () -> "[OrganizationsService] Processing add organization " + organization);
 
         CloudTable table = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
                 .getTableReference(this.organizationsTable);
@@ -154,7 +165,7 @@ public class OrganizationsService {
     }
 
     public void deleteOrganizationList(List<String> organizations) throws URISyntaxException, InvalidKeyException, StorageException {
-        this.logger.info("Processing delete organization list");
+        this.logger.info("[OrganizationsService] Processing delete organization list");
 
         CloudTable table = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
                 .getTableReference(this.organizationsTable);
@@ -184,24 +195,24 @@ public class OrganizationsService {
 
         try {
             final CloudQueue queue = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
-                    .getQueueReference(this.organzationsQueue);
+                    .getQueueReference(this.organizationsQueue);
 
             List<List<String>> queueMsgOrganizations = Lists.partition(organizations, msgOrganizationsForQueue);
 
             IntStream.range(0, queueMsgOrganizations.size()).forEach(partitionMsgIndex -> {
                 // set single message
                 OrganizationsMessage organizationsMessage = new OrganizationsMessage();
-                organizationsMessage.setIdPA(queueMsgOrganizations.get(partitionMsgIndex).stream().toArray(String[]::new));
+                organizationsMessage.setIdPA(queueMsgOrganizations.get(partitionMsgIndex).toArray(String[]::new));
+                organizationsMessage.setRetry(0);
 
                 try {
                     String message = new ObjectMapper().writeValueAsString(organizationsMessage);
                     this.logger.info("[OrganizationsService] Sending " + partitionMsgIndex + " " + message + " to organizationsQueue");
-                    queue.addMessage(new CloudQueueMessage(message));
+                    queue.addMessage(new CloudQueueMessage(message), timeToLiveInSeconds, 0, null, null);
 
                 } catch (JsonProcessingException | StorageException e) {
                     this.logger.log(Level.SEVERE, () -> "[OrganizationsService]  Error " + e.getLocalizedMessage());
                 }
-
             });
 
         } catch (URISyntaxException | StorageException | InvalidKeyException e) {
@@ -209,11 +220,34 @@ public class OrganizationsService {
         }
     }
 
+    public void retryToOrganizationsQueue(String organization, Integer retry) {
+
+        this.logger.log(Level.INFO, () -> String.format("[OrganizationsService] retryToOrganizationsQueue %s with retry %s", organization, retry));
+
+        try {
+            final CloudQueue queue = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
+                    .getQueueReference(this.organizationsQueue);
+
+            // set single message
+            OrganizationsMessage organizationsMessage = new OrganizationsMessage();
+            organizationsMessage.setIdPA(new String[]{organization});
+            organizationsMessage.setRetry(retry);
+
+            String message = new ObjectMapper().writeValueAsString(organizationsMessage);
+            queue.addMessage(new CloudQueueMessage(message), timeToLiveInSeconds, initialVisibilityDelayInSeconds, null, null);
+
+        } catch (URISyntaxException | InvalidKeyException | JsonProcessingException | StorageException e) {
+            this.logger.log(Level.SEVERE, () -> "[OrganizationsService] Error " + e.getLocalizedMessage());
+        }
+    }
+
     private void createEnv() {
-        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString, organizationsTable, organzationsQueue);
+        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString, organizationsTable, organizationsQueue);
         try {
             azuriteStorageUtil.createTable();
             azuriteStorageUtil.createQueue();
+        } catch (StorageException e) {
+            this.logger.info(String.format("[AzureStorage] Table or Queue created: %s", e.getMessage()));
         } catch (Exception e) {
             this.logger.severe(String.format("[AzureStorage] Problem to create table or queue: %s", e.getMessage()));
         }

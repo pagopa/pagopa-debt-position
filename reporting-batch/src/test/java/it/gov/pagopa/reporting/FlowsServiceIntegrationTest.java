@@ -1,38 +1,31 @@
 package it.gov.pagopa.reporting;
 
-import static org.junit.Assert.assertTrue;
-
-import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.UUID;
-import java.util.logging.Logger;
-
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
-
+import it.gov.pagopa.reporting.service.FlowsService;
+import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
+import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
 import org.junit.ClassRule;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import it.gov.pagopa.reporting.service.FlowsService;
-import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
-import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.logging.Logger;
+
+import static org.junit.Assert.assertTrue;
 
 @Testcontainers
 class FlowsServiceIntegrationTest {
@@ -120,14 +113,14 @@ class FlowsServiceIntegrationTest {
         // single flow
         flowsService.flowProcessing(e4, "idPA");
 
-        Iterable<CloudQueueMessage> messagges = CloudStorageAccount.parse(storageConnectionString)
+        Iterable<CloudQueueMessage> messages = CloudStorageAccount.parse(storageConnectionString)
                 .createCloudQueueClient().getQueueReference(this.flowsQueue).retrieveMessages(32);
 
         List<String> ids = Arrays.asList(id1, id2, id4);
 
-        for (CloudQueueMessage cloudQueueMessage : messagges) {
+        for (CloudQueueMessage cloudQueueMessage : messages) {
 
-            assertTrue(cloudQueueMessage.getMessageContentAsString().contains(ids.get(0))
+            Assertions.assertTrue(cloudQueueMessage.getMessageContentAsString().contains(ids.get(0))
                     || cloudQueueMessage.getMessageContentAsString().contains(ids.get(1))
                     || cloudQueueMessage.getMessageContentAsString().contains(ids.get(2)));
         }

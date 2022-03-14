@@ -23,7 +23,7 @@ public class AzuriteStorageUtil {
     private String flowsQueue;
 
     // Create a new table
-    public void createTable() throws URISyntaxException, InvalidKeyException, StorageException {
+    public void createTable() throws URISyntaxException, InvalidKeyException, StorageException, RuntimeException {
         if (debugAzurite) {
             CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
             CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
@@ -31,13 +31,12 @@ public class AzuriteStorageUtil {
             tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance()); // disable retry to complete faster
             cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
             CloudTable table = cloudTableClient.getTableReference(flowsTable);
-
             table.createIfNotExists();
         }
     }
 
     // Create a new queue
-    public void createQueue() throws URISyntaxException, InvalidKeyException, StorageException {
+    public void createQueue() throws URISyntaxException, InvalidKeyException, StorageException, RuntimeException {
         if (debugAzurite) {
             CloudQueue queue = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
                     .getQueueReference(flowsQueue);

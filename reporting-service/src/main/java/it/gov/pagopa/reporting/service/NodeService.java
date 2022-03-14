@@ -1,11 +1,13 @@
 package it.gov.pagopa.reporting.service;
 
-import java.net.URL;
+import com.sun.xml.ws.client.ClientTransportException;
+import it.gov.pagopa.reporting.servicewsdl.FaultBean;
+import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPT;
+import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPTservice;
+
 import javax.activation.DataHandler;
 import javax.xml.ws.Holder;
-import it.gov.pagopa.reporting.servicewsdl.FaultBean;
-import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPTservice;
-import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPT;
+import java.net.URL;
 
 public class NodeService {
 
@@ -48,7 +50,7 @@ public class NodeService {
         return this.reportingXml != null ? this.reportingXml.value : null;
     }
 
-    public void callNodoChiediFlussoRendicontazione(String idPa, String idFlow) {
+    public void callNodoChiediFlussoRendicontazione(String idPa, String idFlow) throws ClientTransportException {
 
         Holder<FaultBean> fault = new Holder<>();
         Holder<DataHandler> result = new Holder<>();

@@ -1,6 +1,5 @@
 package it.gov.pagopa.reporting;
 
-import com.azure.storage.blob.models.BlobStorageException;
 import com.microsoft.azure.functions.*;
 import com.microsoft.azure.functions.annotation.BindingName;
 import com.microsoft.azure.functions.annotation.FunctionName;
@@ -53,7 +52,7 @@ public class GetFlow {
                     .body(data)
                     .build();
 
-        } catch (BlobStorageException e) {
+        } catch (Exception e) {
             logger.log(Level.SEVERE, () -> "GetFlow error: " + e.getLocalizedMessage());
 
             return request.createResponseBuilder(HttpStatus.NOT_FOUND)

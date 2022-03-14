@@ -12,6 +12,9 @@
       "NODO_HOST": "http://localhost:8081/nodo-per-pa/v1",
       "PAA_ID_INTERMEDIARIO":"PAA_ID_INTERMEDIARIO",
       "PAA_STAZIONE_INT":"PAA_STAZIONE_INT",
-      "PAA_PASSWORD":"PAA_PASSWORD"
+      "PAA_PASSWORD":"PAA_PASSWORD",
+      "MAX_RETRY_QUEUING": 5,
+      "QUEUE_RETENTION_SEC": 86400,
+      "QUEUE_DELAY_SEC": 3600
     }
   }

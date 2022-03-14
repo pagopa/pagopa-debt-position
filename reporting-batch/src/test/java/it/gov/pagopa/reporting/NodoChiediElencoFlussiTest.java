@@ -1,37 +1,17 @@
 package it.gov.pagopa.reporting;
 
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.logging.Logger;
-
-import javax.xml.ws.Holder;
-import javax.xml.ws.WebServiceException;
-
-import com.microsoft.azure.functions.ExecutionContext;
-import it.gov.pagopa.reporting.servicewsdl.FaultBean;
+import it.gov.pagopa.reporting.service.NodoChiediElencoFlussi;
 import it.gov.pagopa.reporting.servicewsdl.PagamentiTelematiciRPT;
-import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
-import org.glassfish.pfl.basic.func.NullaryFunctionBase;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import it.gov.pagopa.reporting.service.NodoChiediElencoFlussi;
+import javax.xml.ws.WebServiceException;
+import java.lang.reflect.Field;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class NodoChiediElencoFlussiTest {
@@ -49,18 +29,18 @@ class NodoChiediElencoFlussiTest {
         try {
 
             nodoChiediElencoFlussi.nodoChiediElencoFlussiRendicontazione("");
-
+            assertNull(nodoChiediElencoFlussi.getNodoChiediElencoFlussiRendicontazioneFault());
         } catch (WebServiceException e) {
-
             assertTrue(Boolean.TRUE);
+        } catch (Exception e) {
+            fail();
         }
 
-        assertNull(nodoChiediElencoFlussi.getNodoChiediElencoFlussiRendicontazioneFault());
-        assertNull(nodoChiediElencoFlussi.getNodoChiediElencoFlussiRendicontazioneElencoFlussiRendicontazione());
+        assertNull(nodoChiediElencoFlussi.getNodoChiediElencoFlussiRendicontazione());
     }
 
     @Test
-    void nodoChiediElencoFlussiTestSettersTest() throws NoSuchFieldException, IllegalAccessException {
+    void nodoChiediElencoFlussiTestSettersTest() throws Exception {
 
         NodoChiediElencoFlussi nodoChiediElencoFlussi = new NodoChiediElencoFlussi();
 
@@ -71,7 +51,7 @@ class NodoChiediElencoFlussiTest {
         String idPa = "12345";
         nodoChiediElencoFlussi.nodoChiediElencoFlussiRendicontazione(idPa);
 
-        assert (Boolean.TRUE);
+        assertTrue(Boolean.TRUE);
     }
 
 }

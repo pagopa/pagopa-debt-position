@@ -1,5 +1,20 @@
 package it.gov.pagopa.reporting.service;
 
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.BlobServiceClientBuilder;
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.table.CloudTable;
+import com.microsoft.azure.storage.table.TableQuery;
+import it.gov.pagopa.reporting.entity.FlowEntity;
+import it.gov.pagopa.reporting.model.Flow;
+import it.gov.pagopa.reporting.util.AzuriteStorageUtil;
+import it.gov.pagopa.reporting.util.FlowConverter;
+import org.modelmapper.Converter;
+import org.modelmapper.ModelMapper;
+
 import java.io.ByteArrayOutputStream;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
@@ -8,21 +23,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import com.azure.storage.blob.BlobClient;
-import com.azure.storage.blob.BlobContainerClient;
-import com.azure.storage.blob.BlobServiceClient;
-import com.azure.storage.blob.BlobServiceClientBuilder;
-import com.azure.storage.blob.models.BlobStorageException;
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.table.*;
-import it.gov.pagopa.reporting.entity.FlowEntity;
-import it.gov.pagopa.reporting.model.Flow;
-import it.gov.pagopa.reporting.util.AzuriteStorageUtil;
-import it.gov.pagopa.reporting.util.FlowConverter;
-import org.modelmapper.Converter;
-import org.modelmapper.ModelMapper;
 
 public class FlowsService {
 
@@ -39,7 +39,7 @@ public class FlowsService {
         this.logger = logger;
     }
 
-    public List<Flow> getByOrganization(String organizationId) throws URISyntaxException, InvalidKeyException, StorageException {
+    public List<Flow> getByOrganization(String organizationId) throws URISyntaxException, InvalidKeyException, StorageException, RuntimeException {
         logger.log(Level.INFO, () -> String.format("[FlowsService] START get by organization: %s", organizationId));
 
         // try to create table
@@ -65,16 +65,12 @@ public class FlowsService {
         return flowList.stream().map(flow -> modelMapper.map(flow, Flow.class)).collect(Collectors.toList());
     }
 
-    public String getByFlow(String organizationId, String flowId, String flowDate) throws BlobStorageException {
+    public String getByFlow(String organizationId, String flowId, String flowDate) throws Exception {
         logger.log(Level.INFO, () -> String.format("[FlowsService] START get by flow: %s - %s - %s", organizationId, flowId, flowDate));
 
         // try to create blob container
         AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString, null, containerBlob);
-        try {
-            azuriteStorageUtil.createTable();
-        } catch (URISyntaxException | InvalidKeyException | StorageException e) {
-            this.logger.severe(String.format("[AzureStorage] Problem to create table: %s", e.getMessage()));
-        }
+        azuriteStorageUtil.createTable();
 
         BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
                 .connectionString(this.storageConnectionString).buildClient();

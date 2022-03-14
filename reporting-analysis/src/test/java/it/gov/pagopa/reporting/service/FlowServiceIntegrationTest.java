@@ -1,30 +1,16 @@
 package it.gov.pagopa.reporting.service;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.*;
-
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
-import java.util.List;
-import java.util.logging.Logger;
-
 import com.azure.core.util.BinaryData;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
-import com.azure.storage.blob.models.BlobStorageException;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.RetryNoRetry;
-import com.microsoft.azure.storage.StorageException;
-
 import com.microsoft.azure.storage.table.CloudTable;
 import com.microsoft.azure.storage.table.CloudTableClient;
 import com.microsoft.azure.storage.table.TableRequestOptions;
 import it.gov.pagopa.reporting.model.Flow;
-
 import lombok.SneakyThrows;
 import org.junit.ClassRule;
 import org.junit.jupiter.api.Test;
@@ -32,6 +18,14 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+
+import java.io.InputStream;
+import java.util.List;
+import java.util.logging.Logger;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.spy;
 
 @Testcontainers
 class FlowServiceIntegrationTest {
@@ -63,7 +57,7 @@ class FlowServiceIntegrationTest {
         try {
             createTable();
             flows = flowsService.getByOrganization(organizationId);
-        } catch (URISyntaxException | InvalidKeyException | StorageException e) {
+        } catch (Exception e) {
             assertNull(flows);
         }
 
@@ -72,7 +66,7 @@ class FlowServiceIntegrationTest {
     }
 
     @Test
-    void getByFlow() {
+    void getByFlow() throws Exception {
         flowsService = spy(new FlowsService(storageConnectionString, flowsTable, containerBlob, logger));
 
         String organizationId =  "idPa";
@@ -118,7 +112,7 @@ class FlowServiceIntegrationTest {
         try {
             data = flowsService.getByFlow(organizationId, flowId, flowDate);
             assertNull(data);
-        } catch(BlobStorageException e) {
+        } catch(Exception e) {
             assertNull(data);
         } finally {
             blobServiceClient.deleteBlobContainer(containerBlob);

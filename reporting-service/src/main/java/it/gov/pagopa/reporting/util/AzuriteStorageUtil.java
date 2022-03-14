@@ -50,7 +50,7 @@ public class AzuriteStorageUtil {
     }
 
     // Create a new blob
-    public void createBlob() {
+    public void createBlob() throws NullPointerException {
         if (debugAzurite) {
             BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
                     .connectionString(this.storageConnectionString).buildClient();
