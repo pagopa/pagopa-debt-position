@@ -190,7 +190,10 @@ stages:
               repository: '${{ parameters.REPOSITORY }}'
               buildContext: './${{ parameters.REPOSITORY }}'
               Dockerfile: './${{ parameters.REPOSITORY }}/Dockerfile.deploy'
-              tags: "$(Build.BuildId)"
+              tags: |
+                $(Build.BuildId)
+                latest
+                $(pomversion.next)
 
           # deploy gdp | payments
           - task: AzureRMWebAppDeployment@4
