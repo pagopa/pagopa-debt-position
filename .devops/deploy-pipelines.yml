@@ -188,7 +188,7 @@ stages:
               repository: '${{ parameters.REPOSITORY }}'
               buildContext: './${{ parameters.REPOSITORY }}'
               Dockerfile: './${{ parameters.REPOSITORY }}/Dockerfile.deploy'
-              tags: '$(pomversion.next)'
+              tags: "$(Build.BuildId)"
 
           # deploy gdp | payments
           - task: AzureRMWebAppDeployment@4
@@ -200,7 +200,7 @@ stages:
               WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
               DockerNamespace: "${{variables.CONTAINER_NAMESPACE}}"
               DockerRepository: "${{ parameters.REPOSITORY }}"
-              DockerImageTag: "$(pomversion.next)"
+              DockerImageTag: "$(Build.BuildId)"
 
           # deploy reporting-fn
           - task: AzureFunctionAppContainer@1
@@ -209,5 +209,5 @@ stages:
             inputs:
               azureSubscription: $(AZURE_SUBSCRIPTION)
               appName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
-              imageName: "${{variables.CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(pomversion.next)"
+              imageName: "${{variables.CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(Build.BuildId)"
               slotName: production
