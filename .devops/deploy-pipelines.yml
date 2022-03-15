@@ -88,6 +88,7 @@ stages:
               script: |
                 version=$(mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)
                 echo "##vso[task.setvariable variable=next;isOutput=true]$version"
+                sh report/bumper.sh ${{ parameters.REPOSITORY }} $version
               failOnStderr: true
 
           - script: |
@@ -96,6 +97,7 @@ stages:
           # bump version
           - script: |
               git add ${{ parameters.REPOSITORY }}/pom.xml 
+              git add report/pom.xml 
               git commit -m "Bump version [skip ci]"
               git push origin ${{variables['Build.SourceBranchName']}}
               git push --tags
