@@ -1,0 +1,15 @@
+@startuml Organizations Table
+
+title Organizations Table [env.ORGANIZATIONS_TABLE]
+
+entity organizationsTable {
+  * partitionKey <<"organization">>
+  * rowKey <<organization_fiscal_code>>
+  --
+  <<organization attributes>>
+  organizationOnboardingDate (yyyy-MM-ddTHH:mm:ss.SS)
+
+}
+
+
+@enduml

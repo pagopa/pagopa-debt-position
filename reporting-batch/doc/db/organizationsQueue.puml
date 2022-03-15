@@ -1,0 +1,15 @@
+@startjson
+title Organizations Queue Message [env.ORGANIZATIONS_QUEUE]
+
+{
+  "idPA": [
+    "90000000000",
+    "90000000003",
+    "90000000004",
+    "90000000005",
+    "90000000006"
+  ],
+  "retry": 0
+}
+
+@endjson

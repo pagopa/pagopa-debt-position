@@ -1,0 +1,16 @@
+@startjson
+title Flows Queue Message [env.FLOWS_QUEUE]
+
+{
+	"idPA": "90000000018",
+	"flows": [{
+		"identificativoFlusso": "2022-01-12PPAYITR1XXX-S876234604",
+		"dataOraFlusso": 1641943865000
+	}, {
+		"identificativoFlusso": "2022-01-20PPAYITR1XXX-S038767725",
+		"dataOraFlusso": 1642635039000
+	}],
+	"retry": 0
+}
+
+@endjson

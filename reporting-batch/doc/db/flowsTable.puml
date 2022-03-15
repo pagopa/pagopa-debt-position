@@ -1,0 +1,15 @@
+@startuml Flows Table
+
+title Flows Table [env.FLOWS_TABLE]
+
+entity flowsTable {
+  * partitionKey <<organization_fiscal_code>>
+  * rowKey <<flow Id>>
+  --
+  <<flow attributes>>
+  flowDate (yyyy-MM-ddTHH:mm:ss)
+
+}
+
+
+@enduml
