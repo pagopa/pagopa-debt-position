@@ -3,7 +3,7 @@
 title Flows Table [env.FLOWS_TABLE]
 
 entity flowsTable {
-  * partitionKeys <<organization_fiscal_code>>
+  * partitionKey <<organization_fiscal_code>>
   * rowKey <<flow Id>>
   --
   <<flow attributes>>
