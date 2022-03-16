@@ -90,7 +90,7 @@ stages:
                 version=$(mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)
                 echo "##vso[task.setvariable variable=next;isOutput=true]$version"
                 sh report/bumper.sh ${{ parameters.REPOSITORY }} $version
-                echo report/pom.xml
+                cat report/pom.xml
               failOnStderr: true
 
           - script: |
@@ -119,7 +119,6 @@ stages:
               echo $(tag)
               echo $(title)
               echo $(sha)
-              echo $(version)
             displayName: Debug step
 
           # create new release
