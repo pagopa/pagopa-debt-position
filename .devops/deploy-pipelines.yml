@@ -75,6 +75,7 @@ stages:
           - script: |
               git config --global user.name "$(GIT_USERNAME)"
               git config --global user.email "$(GIT_EMAIL)"
+            displayName: Set Git global config
 
           - template: azure-templates/maven-versioning.yml
             parameters:
@@ -88,14 +89,19 @@ stages:
               script: |
                 version=$(mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)
                 echo "##vso[task.setvariable variable=next;isOutput=true]$version"
+                sh report/bumper.sh ${{ parameters.REPOSITORY }} $version
+                cat report/pom.xml
               failOnStderr: true
 
           - script: |
+              echo "Checkout on ${{variables['Build.SourceBranchName']}}"
               git checkout ${{variables['Build.SourceBranchName']}}
+            displayName: Checkout on source branch
 
           # bump version
           - script: |
-              git add ${{ parameters.REPOSITORY }}/pom.xml 
+              git add ${{ parameters.REPOSITORY }}/pom.xml
+              git add report/pom.xml
               git commit -m "Bump version [skip ci]"
               git push origin ${{variables['Build.SourceBranchName']}}
               git push --tags
@@ -107,11 +113,13 @@ stages:
               echo "##vso[task.setvariable variable=title]$TITLE"
               echo "##vso[task.setvariable variable=sha]$HEAD_SHA"
               echo "##vso[task.setvariable variable=tag]$TAG"
+            displayName: Setting vars
 
           - script: |
               echo $(tag)
               echo $(title)
               echo $(sha)
+            displayName: Debug step
 
           # create new release
           - task: GitHubRelease@0
@@ -188,7 +196,10 @@ stages:
               repository: '${{ parameters.REPOSITORY }}'
               buildContext: './${{ parameters.REPOSITORY }}'
               Dockerfile: './${{ parameters.REPOSITORY }}/Dockerfile.deploy'
-              tags: '$(pomversion.next)'
+              tags: |
+                $(Build.BuildId)
+                latest
+                $(pomversion.next)
 
           # deploy gdp | payments
           - task: AzureRMWebAppDeployment@4
@@ -200,7 +211,7 @@ stages:
               WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
               DockerNamespace: "${{variables.CONTAINER_NAMESPACE}}"
               DockerRepository: "${{ parameters.REPOSITORY }}"
-              DockerImageTag: "$(pomversion.next)"
+              DockerImageTag: "$(Build.BuildId)"
 
           # deploy reporting-fn
           - task: AzureFunctionAppContainer@1
@@ -209,5 +220,5 @@ stages:
             inputs:
               azureSubscription: $(AZURE_SUBSCRIPTION)
               appName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
-              imageName: "${{variables.CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(pomversion.next)"
+              imageName: "${{variables.CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(Build.BuildId)"
               slotName: production
