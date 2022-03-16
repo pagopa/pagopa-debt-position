@@ -1,0 +1,8 @@
+@startuml Flows XML Blob
+
+title Flows XML Blob
+folder FlowsXMLBlob [
+    yyyy-MM-ddTHH:mm:ss##idPa##idflow.xml
+]
+
+@enduml
