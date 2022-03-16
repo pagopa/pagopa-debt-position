@@ -1,7 +1,7 @@
 #!/bin/bash
 
 repository=$1
-version="        <version>${2}</version>"
+version="\t        <version>${2}</version>"
 
 pom="report/pom.xml"
 
