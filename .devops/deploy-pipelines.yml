@@ -62,7 +62,7 @@ stages:
   # Create a release
   - stage: release_service
     # bump version on main branch and if SEMVER is not 'skip'
-#    condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne('${{ parameters.SEMVER }}', 'skip'))
+    condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne('${{ parameters.SEMVER }}', 'skip'))
     pool:
       vmImage: "ubuntu-latest"
     jobs:
@@ -89,18 +89,14 @@ stages:
               script: |
                 version=$(mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)
                 echo "##vso[task.setvariable variable=next;isOutput=true]$version"
-                echo "VERSION $version"
                 sh report/bumper.sh ${{ parameters.REPOSITORY }} $version
-                cat ${{ parameters.REPOSITORY }}/pom.xml
+                echo report/pom.xml
               failOnStderr: true
 
           - script: |
               echo "Checkout on ${{variables['Build.SourceBranchName']}}"
               git checkout ${{variables['Build.SourceBranchName']}}
-              echo "POM XML START ------------------------------------------"
-              cat ${{ parameters.REPOSITORY }}/pom.xml
-              echo "POM XML END ------------------------------------------"
-            displayName: Checkout
+            displayName: Checkout on source branch
 
           # bump version
 #          - script: |
@@ -123,6 +119,7 @@ stages:
               echo $(tag)
               echo $(title)
               echo $(sha)
+              echo $(version)
             displayName: Debug step
 
           # create new release
