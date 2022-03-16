@@ -75,6 +75,7 @@ stages:
           - script: |
               git config --global user.name "$(GIT_USERNAME)"
               git config --global user.email "$(GIT_EMAIL)"
+            displayName: Set Git global config
 
           - template: azure-templates/maven-versioning.yml
             parameters:
@@ -90,6 +91,9 @@ stages:
                 echo "##vso[task.setvariable variable=next;isOutput=true]$version"
                 echo "VERSION $version"
                 sh report/bumper.sh ${{ parameters.REPOSITORY }} $version
+                cat ${{ parameters.REPOSITORY }}/pom.xml
+                echo "--------------------------------------------------------"
+                cat report/pom.xml
               failOnStderr: true
 
           - script: |

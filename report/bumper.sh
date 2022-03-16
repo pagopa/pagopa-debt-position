@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 repository=$1
 version="            <version>${2}</version>"
