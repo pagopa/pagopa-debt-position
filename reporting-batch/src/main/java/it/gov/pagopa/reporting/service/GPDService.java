@@ -24,7 +24,7 @@ public class GPDService {
     }
 
     public Organizations getOrganizations(LocalDate since) {
-        String sinceDate = since.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy"));
+        String sinceDate = since.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
         return  ClientBuilder.newClient()
                 .target(gpdHost + GDP_ORGANIZATIONS_SERVICE)
