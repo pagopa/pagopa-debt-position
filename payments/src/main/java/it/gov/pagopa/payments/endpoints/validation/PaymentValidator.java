@@ -4,11 +4,15 @@ import feign.FeignException;
 import it.gov.pagopa.payments.endpoints.validation.exceptions.PartnerValidationException;
 import it.gov.pagopa.payments.model.PaaErrorEnum;
 import it.gov.pagopa.payments.service.GpdClient;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.logging.Level;
+
 @Component
+@Slf4j
 public class PaymentValidator {
 
     @Value("${pt.id_intermediario}")
@@ -34,6 +38,7 @@ public class PaymentValidator {
         try {
             gpdClient.getOrganization(ptIdDominioReq);
         }  catch (Exception e) {
+            log.error("[isAuthorize ERROR] error during GPD call" , e);
             if (e.getCause() instanceof FeignException.FeignClientException) {
                 throw new PartnerValidationException(PaaErrorEnum.PAA_ID_DOMINIO_ERRATO);
             } else {
