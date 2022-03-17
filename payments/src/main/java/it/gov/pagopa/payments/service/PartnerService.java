@@ -59,7 +59,17 @@ public class PartnerService {
         paymentValidator.isAuthorize(request.getIdPA(), request.getIdBrokerPA(), request.getIdStation());
 
         log.debug("[paVerifyPaymentNotice] get payment option");
-        var paymentOption = gpdClient.getPaymentOption(request.getIdPA(), request.getQrCode().getNoticeNumber());
+        PaymentsModelResponse paymentOption = null;
+
+        try {
+            paymentOption = gpdClient.getPaymentOption(request.getIdPA(), request.getQrCode().getNoticeNumber());
+        } catch (FeignException.NotFound e) {
+            log.error("[paVerifyPaymentNotice] GPD Error not found", e);
+            throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO);
+        } catch (Exception e) {
+            log.error("[paVerifyPaymentNotice] GPD Generic Error", e);
+            throw new PartnerValidationException(PaaErrorEnum.PAA_SYSTEM_ERROR);
+        }
 
         log.info("[paVerifyPaymentNotice] Response OK generation");
         return this.generatePaVerifyPaymentNoticeResponse(paymentOption);

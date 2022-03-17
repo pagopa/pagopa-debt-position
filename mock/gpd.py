@@ -114,6 +114,13 @@ def generate_payment_option(iuv, organization_fiscal_code):
     }
 
 
+def generate_payment_option_error(iuv, organization_fiscal_code):
+    return {
+        "title": "Not found the payment option",
+        "status": 404,
+        "detail": f"Not found a payment option for Organization Fiscal Code {iuv} and IUV {organization_fiscal_code}"
+    }
+    
 class PaymentOptionHandler(tornado.web.RequestHandler):
 
     def set_default_headers(self):
@@ -122,7 +129,11 @@ class PaymentOptionHandler(tornado.web.RequestHandler):
     def get(self, idpa, iuv):
         print("request received")
         print(f"{self.request}{self.request.body.decode()} - {idpa} - {iuv}")
-        self.write(json.dumps(generate_payment_option(iuv, idpa)))
+        if iuv[0] == "4":
+            self.set_status(404)
+            self.write(json.dumps(generate_payment_option_error(iuv, idpa)))
+        else:            
+            self.write(json.dumps(generate_payment_option(iuv, idpa)))
 
 
 class OrganizationHandler(tornado.web.RequestHandler):
