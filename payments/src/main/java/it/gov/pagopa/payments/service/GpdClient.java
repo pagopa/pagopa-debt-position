@@ -1,5 +1,6 @@
 package it.gov.pagopa.payments.service;
 
+import feign.FeignException;
 import it.gov.pagopa.payments.model.PaymentOptionModel;
 import it.gov.pagopa.payments.model.PaymentOptionModelResponse;
 import it.gov.pagopa.payments.model.PaymentsModelResponse;
@@ -16,18 +17,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(value = "gpd", url = "${service.gpd.host}")
 public interface GpdClient {
 
-    @Retryable(maxAttemptsExpression = "${retry.maxAttempts}",
+    @Retryable(exclude = FeignException.FeignClientException.class, maxAttemptsExpression = "${retry.maxAttempts}",
             backoff = @Backoff(delayExpression = "${retry.maxDelay}"))
     @GetMapping(value = "/organizations/{organizationfiscalcode}")
     String getOrganization(@PathVariable("organizationfiscalcode") String organizationFiscalCode);
 
-    @Retryable(maxAttemptsExpression = "${retry.maxAttempts}",
+    @Retryable(exclude = FeignException.FeignClientException.class, maxAttemptsExpression = "${retry.maxAttempts}",
             backoff = @Backoff(delayExpression = "${retry.maxDelay}"))
     @GetMapping(value = "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}")
     PaymentsModelResponse getPaymentOption(@PathVariable("organizationfiscalcode") String organizationFiscalCode,
                                            @PathVariable("iuv") String iuv);
 
-    @Retryable(maxAttemptsExpression = "${retry.maxAttempts}",
+    @Retryable(exclude = FeignException.FeignClientException.class, maxAttemptsExpression = "${retry.maxAttempts}",
             backoff = @Backoff(delayExpression = "${retry.maxDelay}"))
     @PostMapping(value = "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}/pay", consumes = MediaType.APPLICATION_JSON_VALUE)
     PaymentOptionModelResponse receiptPaymentOption(@PathVariable("organizationfiscalcode") String organizationFiscalCode,

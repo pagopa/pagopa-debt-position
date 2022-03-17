@@ -23,20 +23,22 @@ public class PaymentValidator {
     public void isAuthorize(String ptIdDominioReq, String ptIdIntermediarioReq, String ptIdStazioneReq)
             throws PartnerValidationException {
 
-        try {
-            gpdClient.getOrganization(ptIdDominioReq);
-        } catch (FeignException.NotFound e) {
-            throw new PartnerValidationException(PaaErrorEnum.PAA_ID_DOMINIO_ERRATO);
-        } catch (Exception e) {
-            throw new PartnerValidationException(PaaErrorEnum.PAA_SYSTEM_ERROR);
-        }
-
         if (!ptIdIntermediario.equals(ptIdIntermediarioReq)) {
             throw new PartnerValidationException(PaaErrorEnum.PAA_ID_INTERMEDIARIO_ERRATO);
         }
 
         if (!ptIdStazione.equals(ptIdStazioneReq)) {
             throw new PartnerValidationException(PaaErrorEnum.PAA_STAZIONE_INT_ERRATA);
+        }
+
+        try {
+            gpdClient.getOrganization(ptIdDominioReq);
+        }  catch (Exception e) {
+            if (e.getCause() instanceof FeignException.FeignClientException) {
+                throw new PartnerValidationException(PaaErrorEnum.PAA_ID_DOMINIO_ERRATO);
+            } else {
+                throw new PartnerValidationException(PaaErrorEnum.PAA_SYSTEM_ERROR);
+            }
         }
     }
 
