@@ -19,9 +19,16 @@ def generate_response():
     add_organization_list = []
     for i in range(0, seed):
         organization = random.choice(organization_list)
-        add_organization_list.append(organization)
+        org = {
+            "organizationFiscalCode": organization
+        }
+        add_organization_list.append(org)
         organization_list.remove(organization)
-    delete_organization_list = organization_list
+    delete_organization_list = []
+    for org in organization_list:
+        delete_organization_list.append({
+            "organizationFiscalCode": org
+        })
 
     org_map = {
         "add": add_organization_list,
