@@ -2742,9 +2742,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{reporting-analysys-host}}/api/organizations/:organizationId/reportings",
+              "raw": "{{reporting-analysis-host}}/api/organizations/:organizationId/reportings",
               "host": [
-                "{{reporting-analysys-host}}"
+                "{{reporting-analysis-host}}"
               ],
               "path": [
                 "api",
@@ -2782,9 +2782,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{reporting-analysys-host}}/api/organizations/:organizationId/reportings/:flowId/date/:date",
+              "raw": "{{reporting-analysis-host}}/api/organizations/:organizationId/reportings/:flowId/date/:date",
               "host": [
-                "{{reporting-analysys-host}}"
+                "{{reporting-analysis-host}}"
               ],
               "path": [
                 "api",
