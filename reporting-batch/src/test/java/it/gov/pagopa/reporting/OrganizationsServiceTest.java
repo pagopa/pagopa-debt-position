@@ -122,7 +122,10 @@ class OrganizationsServiceTest {
   private Organizations getOrganizations() {
     Organizations orgs = new Organizations();
     List<Organization> added = new ArrayList<>();
-    added.add(new Organization("90000000001"));
+    // this is useful to improve coverage for that case
+    Organization o = new Organization();
+    o.setOrganizationFiscalCode("90000000001");
+    added.add(o);
     added.add(new Organization("90000000002"));
     added.add(new Organization("90000000003"));
     orgs.setAdd(added);
