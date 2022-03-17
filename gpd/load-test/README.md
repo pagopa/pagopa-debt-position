@@ -9,4 +9,5 @@ This is a set of [k6](https://k6.io) load tests related to the GPD (_Gestione Po
 
 ```
 k6 run gpd/load-test/src/create_debt_postion.js
+k6 run -e BASE_URL=http://localhost:8080 gpd/load-test/src/payments_workflow.js
 ```
