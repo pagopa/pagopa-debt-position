@@ -1,0 +1,17 @@
+@startjson
+title Options Queue Message [env.OPTIONS_QUEUE]
+
+{
+	"idPA": "90000000017",
+	"idFlow": "2022-01-12PPAYITR1XXX-S711882366",
+	"flowDate": "2022-01-11T23:31:05.000Z",
+	"paymentOptions": [{
+		"optionId": "16286205779192052",
+		"transferId": 1
+	}, {
+		"optionId": "35828841305549836",
+		"transferId": 2
+	}]
+}
+
+@endjson
