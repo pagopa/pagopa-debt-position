@@ -62,7 +62,10 @@ public class PartnerService {
         PaymentsModelResponse paymentOption = null;
 
         try {
-            paymentOption = gpdClient.getPaymentOption(request.getIdPA(), request.getQrCode().getNoticeNumber());
+            // with Aux-Digit = 3 notice nummber format is define as follow :
+            // 3<codice segregazione(2n)><IUV base(13n)><IUV check digit(2n)>
+            // GPD service works on IUVs  directly so we remove the Aux-Digit
+            paymentOption = gpdClient.getPaymentOption(request.getIdPA(), request.getQrCode().getNoticeNumber().substring(1));
         } catch (FeignException.NotFound e) {
             log.error("[paVerifyPaymentNotice] GPD Error not found", e);
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO);
@@ -86,7 +89,10 @@ public class PartnerService {
         PaymentsModelResponse paymentOption = null;
 
         try {
-            paymentOption = gpdClient.getPaymentOption(request.getIdPA(), request.getQrCode().getNoticeNumber());
+            // with Aux-Digit = 3 notice nummber format is define as follow :
+            // 3<codice segregazione(2n)><IUV base(13n)><IUV check digit(2n)>
+            // GPD service works on IUVs  directly so we remove the Aux-Digit
+            paymentOption = gpdClient.getPaymentOption(request.getIdPA(), request.getQrCode().getNoticeNumber().substring(1));
         } catch (FeignException.NotFound e) {
             log.error("[paGetPayment] GPD Error not found", e);
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO);
@@ -114,7 +120,10 @@ public class PartnerService {
                 .build();
 
         try {
-            gpdClient.receiptPaymentOption(request.getIdPA(), request.getReceipt().getNoticeNumber(), body);
+            // with Aux-Digit = 3 notice nummber format is define as follow :
+            // 3<codice segregazione(2n)><IUV base(13n)><IUV check digit(2n)>
+            // GPD service works on IUVs  directly so we remove the Aux-Digit
+            gpdClient.receiptPaymentOption(request.getIdPA(), request.getReceipt().getNoticeNumber().substring(1), body);
         } catch (FeignException.Conflict e) {
             log.error("[paSendRT] GPD Conflict Error Response", e);
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_DUPLICATO);
