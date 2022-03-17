@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class BaseController {
 
 
-    @GetMapping(value = "/payments/info")
+    @GetMapping(value = "/info")
     @ResponseStatus(HttpStatus.OK)
     public void healthCheck() {
         // Used just for heartbeating

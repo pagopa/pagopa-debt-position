@@ -108,6 +108,47 @@ class PartnerServiceTest {
         }
     }
 
+    @Test
+    void paVerifyPaymentTestKONotFound() throws DatatypeConfigurationException, IOException {
+
+        // Test preconditions
+        PaVerifyPaymentNoticeReq requestBody = PaVerifyPaymentNoticeReqMock.getMock();
+
+        var e = Mockito.mock(FeignException.NotFound.class);
+        when(gpdClient.getPaymentOption(anyString(), anyString()))
+                .thenThrow(e);
+
+        try {
+            // Test execution
+
+            partnerService.paVerifyPaymentNotice(requestBody);
+            fail();
+        } catch (PartnerValidationException ex) {
+            // Test postcondiction
+            assertEquals(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO, ex.getError());
+        }
+    }
+
+
+    @Test
+    void paVerifyPaymentTestKOGeneric() throws DatatypeConfigurationException, IOException {
+
+        // Test preconditions
+        PaVerifyPaymentNoticeReq requestBody = PaVerifyPaymentNoticeReqMock.getMock();
+
+        var e = Mockito.mock(FeignException.FeignClientException.class);
+        when(gpdClient.getPaymentOption(anyString(), anyString()))
+                .thenThrow(e);
+
+        try {
+            // Test execution
+            partnerService.paVerifyPaymentNotice(requestBody);
+            fail();
+        } catch (PartnerValidationException ex) {
+            // Test postcondiction
+            assertEquals(PaaErrorEnum.PAA_SYSTEM_ERROR, ex.getError());
+        }
+    }
 
     @Test
     void paGetPaymentTest() throws PartnerValidationException, DatatypeConfigurationException, IOException {
@@ -136,6 +177,47 @@ class PartnerServiceTest {
         assertThat(responseBody.getData().getRetentionDate())
                 .isEqualTo(DatatypeFactory.newInstance().newXMLGregorianCalendar("2022-02-25T17:03:59.408"));
         assertEquals("77777777777", requestBody.getQrCode().getFiscalCode());
+    }
+
+    @Test
+    void paGetPaymentTestKONotFound() throws DatatypeConfigurationException, IOException {
+
+        // Test preconditions
+        PaGetPaymentReq requestBody = PaGetPaymentReqMock.getMock();
+
+        var e = Mockito.mock(FeignException.NotFound.class);
+        when(gpdClient.getPaymentOption(anyString(), anyString()))
+                .thenThrow(e);
+
+        try {
+            // Test execution
+            PaGetPaymentRes responseBody = partnerService.paGetPayment(requestBody);
+            fail();
+        } catch (PartnerValidationException ex) {
+            // Test postcondiction
+            assertEquals(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO, ex.getError());
+        }
+    }
+
+
+    @Test
+    void paGetPaymentTestKOGeneric() throws DatatypeConfigurationException, IOException {
+
+        // Test preconditions
+        PaGetPaymentReq requestBody = PaGetPaymentReqMock.getMock();
+
+        var e = Mockito.mock(FeignException.FeignClientException.class);
+        when(gpdClient.getPaymentOption(anyString(), anyString()))
+                .thenThrow(e);
+
+        try {
+            // Test execution
+            PaGetPaymentRes responseBody = partnerService.paGetPayment(requestBody);
+            fail();
+        } catch (PartnerValidationException ex) {
+            // Test postcondiction
+            assertEquals(PaaErrorEnum.PAA_SYSTEM_ERROR, ex.getError());
+        }
     }
 
 
