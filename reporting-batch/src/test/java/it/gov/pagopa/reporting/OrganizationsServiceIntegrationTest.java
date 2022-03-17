@@ -9,6 +9,7 @@ import com.microsoft.azure.storage.queue.CloudQueueMessage;
 import com.microsoft.azure.storage.queue.QueueRequestOptions;
 import com.microsoft.azure.storage.table.*;
 import it.gov.pagopa.reporting.entity.OrganizationEntity;
+import it.gov.pagopa.reporting.models.Organization;
 import it.gov.pagopa.reporting.models.Organizations;
 import it.gov.pagopa.reporting.service.OrganizationsService;
 import lombok.SneakyThrows;
@@ -114,12 +115,12 @@ class OrganizationsServiceIntegrationTest {
 
         Organizations orgs = new Organizations();
 
-        List<String> added = new ArrayList<>();
-        added.add("90000000001");
-        added.add("90000000002");
-        added.add("90000000003");
+        List<Organization> added = new ArrayList<>();
+        added.add(new Organization("90000000001"));
+        added.add(new Organization("90000000002"));
+        added.add(new Organization("90000000003"));
         orgs.setAdd(added);
-        List<String> deleted = new ArrayList<>();
+        List<Organization> deleted = new ArrayList<>();
         orgs.setDelete(deleted);
 
         organizationsService.processOrganizationList(orgs);
@@ -155,12 +156,12 @@ class OrganizationsServiceIntegrationTest {
 
         Organizations orgs = new Organizations();
 
-        List<String> added = new ArrayList<>();
-        added.add("90000000001");
-        added.add("90000000002");
-        added.add("90000000003");
+        List<Organization> added = new ArrayList<>();
+        added.add(new Organization("90000000001"));
+        added.add(new Organization("90000000002"));
+        added.add(new Organization("90000000003"));
         orgs.setAdd(added);
-        List<String> deleted = new ArrayList<>();
+        List<Organization> deleted = new ArrayList<>();
         orgs.setDelete(deleted);
 
         organizationsService.processOrganizationList(orgs);
@@ -182,13 +183,13 @@ class OrganizationsServiceIntegrationTest {
 
         Organizations orgs = new Organizations();
 
-        List<String> added = new ArrayList<>();
-        added.add("90000000001");
-        added.add("90000000002");
-        added.add("90000000003");
-        added.add("90000000004");
+        List<Organization> added = new ArrayList<>();
+        added.add(new Organization("90000000001"));
+        added.add(new Organization("90000000002"));
+        added.add(new Organization("90000000003"));
+        added.add(new Organization("90000000004"));
         orgs.setAdd(added);
-        List<String> deleted = new ArrayList<>();
+        List<Organization> deleted = new ArrayList<>();
         orgs.setDelete(deleted);
 
         organizationsService.processOrganizationList(orgs);
@@ -219,12 +220,12 @@ class OrganizationsServiceIntegrationTest {
 
         Organizations orgs = new Organizations();
 
-        List<String> added = new ArrayList<>();
+        List<Organization> added = new ArrayList<>();
         orgs.setAdd(added);
 
-        List<String> deleted = new ArrayList<>();
-        deleted.add("90000000001");
-        deleted.add("90000000002");
+        List<Organization> deleted = new ArrayList<>();
+        deleted.add(new Organization("90000000001"));
+        deleted.add(new Organization("90000000002"));
         orgs.setDelete(deleted);
 
         List<String> updateOrganizationsList = organizationsService.processOrganizationList(orgs); // delete ------------
@@ -246,12 +247,12 @@ class OrganizationsServiceIntegrationTest {
 
         Organizations orgs = new Organizations();
 
-        List<String> added = new ArrayList<>();
+        List<Organization> added = new ArrayList<>();
         orgs.setAdd(added);
 
-        List<String> deleted = new ArrayList<>();
-        deleted.add("90000000001");
-        deleted.add("90000000001");
+        List<Organization> deleted = new ArrayList<>();
+        deleted.add(new Organization("90000000001"));
+        deleted.add(new Organization("90000000001"));
 
         orgs.setDelete(deleted);
 

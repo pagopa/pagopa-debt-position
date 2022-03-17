@@ -22,7 +22,7 @@ class ApiTest {
 
     @Test
     void shouldRespondOKtoHeartBeat() throws Exception {
-        mockMvc.perform(get("/payments/info")).andExpect(status().isOk());
+        mockMvc.perform(get("/info")).andExpect(status().isOk());
     }
 
     @Test

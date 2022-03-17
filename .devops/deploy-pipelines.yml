@@ -90,7 +90,6 @@ stages:
                 version=$(mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)
                 echo "##vso[task.setvariable variable=next;isOutput=true]$version"
                 sh report/bumper.sh ${{ parameters.REPOSITORY }} $version
-                cat report/pom.xml
               failOnStderr: true
 
           - script: |
