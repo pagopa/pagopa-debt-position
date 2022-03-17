@@ -356,6 +356,23 @@ class PaymentsControllerTest {
 	}
 	
 	@Test
+	void payPaymentOption_422() throws Exception {
+		// creo una posizione debitoria (con 'validity date' impostata)
+		mvc.perform(post("/organizations/PAY_422_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.getMock6())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated());
+
+		// porto in pubblicata lo stato della posizione debitoria
+		mvc.perform(post("/organizations/PAY_422_12345678901/debtpositions/12345678901IUPDMOCK5/publish")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+		
+		// effettuo la notifica di pagamento della rata unica (setIsPartialPayment = false) e verifico l'errore 422 di 'Not in payable state' 
+		mvc.perform(post("/organizations/PAY_422_12345678901/paymentoptions/123456IUVMOCK6/pay")
+				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isUnprocessableEntity());
+	}
+	
+	@Test
 	void payPaymentOption_404() throws Exception {
 		// provo a pagare una payment option che non esiste
 		String url = "/organizations/PAY_400_12345678901/paymentoptions/123456IUVNOTEXIST";
