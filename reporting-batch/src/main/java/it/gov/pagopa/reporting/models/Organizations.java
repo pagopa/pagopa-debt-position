@@ -9,7 +9,7 @@ import java.util.List;
 @Setter
 public class Organizations {
 
-    private List<String> add;
-    private List<String> delete;
+    private List<Organization> add;
+    private List<Organization> delete;
 
 }

@@ -9,6 +9,7 @@ import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
 import com.microsoft.azure.storage.table.*;
 import it.gov.pagopa.reporting.entity.OrganizationEntity;
+import it.gov.pagopa.reporting.models.Organization;
 import it.gov.pagopa.reporting.models.Organizations;
 import it.gov.pagopa.reporting.models.OrganizationsMessage;
 import it.gov.pagopa.reporting.utils.AzuriteStorageUtil;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class OrganizationsService {
@@ -56,8 +58,8 @@ public class OrganizationsService {
         this.logger.info("[OrganizationsService] Processing organization list");
 
         // create batch partition due to max batch size of Azure Table Storage - 100
-        List<List<String>> addOrganizationList = Lists.partition(organizations.getAdd(), batchSize);
-        List<List<String>> deleteOrganizationList = Lists.partition(organizations.getDelete(), batchSize);
+        List<List<String>> addOrganizationList = Lists.partition(organizations.getAdd().stream().map(Organization::getOrganizationFiscalCode).collect(Collectors.toList()), batchSize);
+        List<List<String>> deleteOrganizationList = Lists.partition(organizations.getDelete().stream().map(Organization::getOrganizationFiscalCode).collect(Collectors.toList()), batchSize);
 
         // add organizations section
         IntStream.range(0, addOrganizationList.size()).forEach(partitionAddIndex -> {

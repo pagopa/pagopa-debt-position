@@ -2,6 +2,7 @@ package it.gov.pagopa.reporting;
 
 import com.microsoft.azure.storage.StorageExtendedErrorInformation;
 import com.microsoft.azure.storage.table.TableServiceException;
+import it.gov.pagopa.reporting.models.Organization;
 import it.gov.pagopa.reporting.models.Organizations;
 import it.gov.pagopa.reporting.service.OrganizationsService;
 import org.junit.jupiter.api.Test;
@@ -30,17 +31,7 @@ class OrganizationsServiceTest {
                     60, 0,
                     Logger.getLogger("testlogging")));
 
-    Organizations orgs = new Organizations();
-
-    List<String> added = new ArrayList<>();
-    added.add("90000000001");
-    added.add("90000000002");
-    added.add("90000000003");
-    orgs.setAdd(added);
-    List<String> deleted = new ArrayList<>();
-    deleted.add("90000000004");
-    deleted.add("90000000005");
-    orgs.setDelete(deleted);
+    Organizations orgs = getOrganizations();
 
     /**
      * Test
@@ -52,7 +43,6 @@ class OrganizationsServiceTest {
      */
     verify(organizationsService, times(2)).addOrganizationList(any());
     verify(organizationsService, times(1)).deleteOrganizationList(any());
-
 
   }
 
@@ -67,17 +57,7 @@ class OrganizationsServiceTest {
                     60, 0,
                     Logger.getLogger("testlogging")));
 
-    Organizations orgs = new Organizations();
-
-    List<String> added = new ArrayList<>();
-    added.add("90000000001");
-    added.add("90000000002");
-    added.add("90000000003");
-    orgs.setAdd(added);
-    List<String> deleted = new ArrayList<>();
-    deleted.add("90000000004");
-    deleted.add("90000000005");
-    orgs.setDelete(deleted);
+    Organizations orgs = getOrganizations();
 
     /**
      * Precondition
@@ -114,17 +94,7 @@ class OrganizationsServiceTest {
                     60, 0,
                     Logger.getLogger("testlogging")));
 
-    Organizations orgs = new Organizations();
-
-    List<String> added = new ArrayList<>();
-    added.add("90000000001");
-    added.add("90000000002");
-    added.add("90000000003");
-    orgs.setAdd(added);
-    List<String> deleted = new ArrayList<>();
-    deleted.add("90000000004");
-    deleted.add("90000000005");
-    orgs.setDelete(deleted);
+    Organizations orgs = getOrganizations();
 
     /**
      * Precondition
@@ -147,7 +117,20 @@ class OrganizationsServiceTest {
     verify(organizationsService, times(2)).addOrganizationList(any());
     verify(organizationsService, times(1)).deleteOrganizationList(any());
 
+  }
 
+  private Organizations getOrganizations() {
+    Organizations orgs = new Organizations();
+    List<Organization> added = new ArrayList<>();
+    added.add(new Organization("90000000001"));
+    added.add(new Organization("90000000002"));
+    added.add(new Organization("90000000003"));
+    orgs.setAdd(added);
+    List<Organization> deleted = new ArrayList<>();
+    deleted.add(new Organization("90000000004"));
+    deleted.add(new Organization("90000000005"));
+    orgs.setDelete(deleted);
+    return orgs;
   }
 
 }
