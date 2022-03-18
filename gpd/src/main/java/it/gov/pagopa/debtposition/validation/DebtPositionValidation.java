@@ -157,7 +157,7 @@ public class DebtPositionValidation {
         	}
         }  
     }
-    
+
     private static void checkPaymentOptionAmounts(final PaymentOption po) {
         long totalTranfersAmout = 0;
         long poAmount = po.getAmount();
