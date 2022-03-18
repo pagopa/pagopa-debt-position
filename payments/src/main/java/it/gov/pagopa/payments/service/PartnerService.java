@@ -165,9 +165,16 @@ public class PartnerService {
             log.error("[Check DP] Debt position status error: " + paymentOption.getDebtPositionStatus());
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_ANNULLATO);
         }
-        else if (!paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.PAID)) {
+        else if (paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.DRAFT) ||
+                paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.PUBLISHED)) {
             log.error("[Check DP] Debt position status error: " + paymentOption.getDebtPositionStatus());
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO);
+        }
+        else if (paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.PARTIALLY_PAID) ||
+                paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.PAID) ||
+                paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.REPORTED)) {
+            log.error("[Check DP] Debt position status error: " + paymentOption.getDebtPositionStatus());
+            throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_DUPLICATO);
         }
     }
 
