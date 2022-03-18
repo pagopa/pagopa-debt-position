@@ -52,7 +52,7 @@ public class PaymentsController implements IPaymentsController {
 	@Override
 	public ResponseEntity<PaymentOptionModelResponse> payPaymentOption(String organizationFiscalCode, String iuv,
 			@Valid PaymentOptionModel paymentOptionModel) {
-		log.info(String.format(LOG_BASE_HEADER_INFO,"POST","updateDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv)));
+		log.info(String.format(LOG_BASE_HEADER_INFO,"POST","payPaymentOption", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv)));
 		
 		PaymentOption paidPaymentOption = paymentsService.pay(organizationFiscalCode, iuv, paymentOptionModel);
 		
