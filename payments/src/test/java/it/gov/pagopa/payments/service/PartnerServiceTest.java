@@ -8,10 +8,7 @@ import it.gov.pagopa.payments.mock.MockUtil;
 import it.gov.pagopa.payments.mock.PaGetPaymentReqMock;
 import it.gov.pagopa.payments.mock.PaSendRTReqMock;
 import it.gov.pagopa.payments.mock.PaVerifyPaymentNoticeReqMock;
-import it.gov.pagopa.payments.model.PaaErrorEnum;
-import it.gov.pagopa.payments.model.PaymentOptionModel;
-import it.gov.pagopa.payments.model.PaymentOptionModelResponse;
-import it.gov.pagopa.payments.model.PaymentsModelResponse;
+import it.gov.pagopa.payments.model.*;
 import it.gov.pagopa.payments.model.partner.ObjectFactory;
 import it.gov.pagopa.payments.model.partner.PaGetPaymentReq;
 import it.gov.pagopa.payments.model.partner.PaGetPaymentRes;
@@ -23,6 +20,8 @@ import it.gov.pagopa.payments.model.partner.StAmountOption;
 import it.gov.pagopa.payments.model.partner.StOutcome;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -69,13 +68,13 @@ class PartnerServiceTest {
         when(factory.createCtPaymentOptionsDescriptionListPA())
                 .thenReturn(factoryUtil.createCtPaymentOptionsDescriptionListPA());
 
-        when(gpdClient.getPaymentOption(anyString(), anyString()))
-                .thenReturn(MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class));
+        PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
+        when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
 
         // Test execution
         PaVerifyPaymentNoticeRes responseBody = partnerService.paVerifyPaymentNotice(requestBody);
 
-        // Test postcondiction
+        // Test post condition
         assertThat(responseBody.getOutcome()).isEqualTo(StOutcome.OK);
         assertThat(responseBody.getPaymentList().getPaymentOptionDescription().get(0).isAllCCP()).isFalse();
         assertThat(responseBody.getPaymentList().getPaymentOptionDescription().get(0).getAmount())
@@ -101,7 +100,7 @@ class PartnerServiceTest {
             partnerService.paVerifyPaymentNotice(requestBody);
 
         } catch (PartnerValidationException e) {
-            // Test postcondiction
+            // Test post condition
             assertThat(e.getError().getFaultCode()).isEqualTo(PaaErrorEnum.PAA_ID_INTERMEDIARIO_ERRATO.getFaultCode());
             assertThat(e.getError().getDescription()).isEqualTo(PaaErrorEnum.PAA_ID_INTERMEDIARIO_ERRATO.getDescription());
             assertThat(e.getError().getFaultString()).isEqualTo(PaaErrorEnum.PAA_ID_INTERMEDIARIO_ERRATO.getFaultString());
@@ -120,15 +119,13 @@ class PartnerServiceTest {
 
         try {
             // Test execution
-
             partnerService.paVerifyPaymentNotice(requestBody);
             fail();
         } catch (PartnerValidationException ex) {
-            // Test postcondiction
+            // Test post condition
             assertEquals(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO, ex.getError());
         }
     }
-
 
     @Test
     void paVerifyPaymentTestKOGeneric() throws DatatypeConfigurationException, IOException {
@@ -145,8 +142,38 @@ class PartnerServiceTest {
             partnerService.paVerifyPaymentNotice(requestBody);
             fail();
         } catch (PartnerValidationException ex) {
-            // Test postcondiction
+            // Test post condition
             assertEquals(PaaErrorEnum.PAA_SYSTEM_ERROR, ex.getError());
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"DRAFT", "PUBLISHED", "VALID", "INVALID", "EXPIRED", "PARTIALLY_PAID", "REPORTED" })
+    void paVerifyPaymentNoticeStatusKOTest(String status) throws DatatypeConfigurationException, IOException {
+
+        // Test preconditions
+        PaVerifyPaymentNoticeReq requestBody = PaVerifyPaymentNoticeReqMock.getMock();
+
+        PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
+        paymentModel.setDebtPositionStatus(DebtPositionStatus.valueOf(status));
+        when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
+
+        // Test post condition
+        try {
+            // Test execution
+            partnerService.paVerifyPaymentNotice(requestBody);
+            fail();
+        } catch (PartnerValidationException ex) {
+            // Test post condition
+            if (DebtPositionStatus.valueOf(status).equals(DebtPositionStatus.EXPIRED)) {
+                assertEquals(PaaErrorEnum.PAA_PAGAMENTO_SCADUTO, ex.getError());
+            }
+            else if (DebtPositionStatus.valueOf(status).equals(DebtPositionStatus.INVALID)) {
+                assertEquals(PaaErrorEnum.PAA_PAGAMENTO_ANNULLATO, ex.getError());
+            }
+            else {
+                assertEquals(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO, ex.getError());
+            }
         }
     }
 
@@ -169,7 +196,7 @@ class PartnerServiceTest {
         // Test execution
         PaGetPaymentRes responseBody = partnerService.paGetPayment(requestBody);
 
-        // Test postcondiction
+        // Test post condition
         assertThat(responseBody.getData().getCreditorReferenceId()).isEqualTo("77777777777");
         assertThat(responseBody.getData().getDescription()).isEqualTo("string");
         assertThat(responseBody.getData().getDueDate())
@@ -194,11 +221,10 @@ class PartnerServiceTest {
             PaGetPaymentRes responseBody = partnerService.paGetPayment(requestBody);
             fail();
         } catch (PartnerValidationException ex) {
-            // Test postcondiction
+            // Test post condition
             assertEquals(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO, ex.getError());
         }
     }
-
 
     @Test
     void paGetPaymentTestKOGeneric() throws DatatypeConfigurationException, IOException {
@@ -215,7 +241,7 @@ class PartnerServiceTest {
             PaGetPaymentRes responseBody = partnerService.paGetPayment(requestBody);
             fail();
         } catch (PartnerValidationException ex) {
-            // Test postcondiction
+            // Test post condition
             assertEquals(PaaErrorEnum.PAA_SYSTEM_ERROR, ex.getError());
         }
     }
@@ -236,10 +262,9 @@ class PartnerServiceTest {
         // Test execution
         PaSendRTRes responseBody = partnerService.paSendRT(requestBody);
 
-        // Test postcondiction
+        // Test post condition
         assertThat(responseBody.getOutcome()).isEqualTo(StOutcome.OK);
     }
-
 
     @Test
     void paSendRTTestKOConflict() throws DatatypeConfigurationException, IOException {
@@ -256,8 +281,30 @@ class PartnerServiceTest {
             PaSendRTRes responseBody = partnerService.paSendRT(requestBody);
             fail();
         } catch (PartnerValidationException ex) {
-            // Test postcondiction
+            // Test post condition
             assertEquals(PaaErrorEnum.PAA_PAGAMENTO_DUPLICATO, ex.getError());
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"PO_UNPAID", "PO_PARTIALLY_REPORTED", "PO_REPORTED" })
+    void paSendRTTestKOStatus(String status) throws DatatypeConfigurationException, IOException {
+
+        // Test preconditions
+        PaSendRTReq requestBody = PaSendRTReqMock.getMock();
+
+        PaymentOptionModelResponse paymentOption = MockUtil.readModelFromFile("gpd/receiptPaymentOption.json", PaymentOptionModelResponse.class);
+        paymentOption.setStatus(PaymentOptionStatus.valueOf(status));
+        when(gpdClient.receiptPaymentOption(anyString(), anyString(), any(PaymentOptionModel.class)))
+                .thenReturn(paymentOption);
+
+        try {
+            // Test execution
+            PaSendRTRes responseBody = partnerService.paSendRT(requestBody);
+            fail();
+        } catch (PartnerValidationException ex) {
+            // Test post condition
+            assertEquals(PaaErrorEnum.PAA_SEMANTICA, ex.getError());
         }
     }
 
@@ -276,7 +323,7 @@ class PartnerServiceTest {
             PaSendRTRes responseBody = partnerService.paSendRT(requestBody);
             fail();
         } catch (PartnerValidationException ex) {
-            // Test postcondiction
+            // Test post condition
             assertEquals(PaaErrorEnum.PAA_SYSTEM_ERROR, ex.getError());
         }
     }
@@ -296,7 +343,7 @@ class PartnerServiceTest {
             PaSendRTRes responseBody = partnerService.paSendRT(requestBody);
             fail();
         } catch (PartnerValidationException ex) {
-            // Test postcondiction
+            // Test post condition
             assertEquals(PaaErrorEnum.PAA_SEMANTICA, ex.getError());
         }
     }
@@ -316,7 +363,7 @@ class PartnerServiceTest {
             PaSendRTRes responseBody = partnerService.paSendRT(requestBody);
             fail();
         } catch (PartnerValidationException ex) {
-            // Test postcondiction
+            // Test post condition
             assertEquals(PaaErrorEnum.PAA_SYSTEM_ERROR, ex.getError());
         }
     }
