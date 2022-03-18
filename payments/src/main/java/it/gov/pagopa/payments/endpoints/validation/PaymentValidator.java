@@ -39,11 +39,7 @@ public class PaymentValidator {
             gpdClient.getOrganization(ptIdDominioReq);
         }  catch (Exception e) {
             log.error("[isAuthorize ERROR] error during GPD call" , e);
-            if (e.getCause() instanceof FeignException.FeignClientException) {
-                throw new PartnerValidationException(PaaErrorEnum.PAA_ID_DOMINIO_ERRATO);
-            } else {
-                throw new PartnerValidationException(PaaErrorEnum.PAA_SYSTEM_ERROR);
-            }
+            throw new PartnerValidationException(PaaErrorEnum.PAA_ID_DOMINIO_ERRATO);
         }
     }
 

@@ -8,10 +8,7 @@ import it.gov.pagopa.payments.mock.MockUtil;
 import it.gov.pagopa.payments.mock.PaGetPaymentReqMock;
 import it.gov.pagopa.payments.mock.PaSendRTReqMock;
 import it.gov.pagopa.payments.mock.PaVerifyPaymentNoticeReqMock;
-import it.gov.pagopa.payments.model.PaaErrorEnum;
-import it.gov.pagopa.payments.model.PaymentOptionModel;
-import it.gov.pagopa.payments.model.PaymentOptionModelResponse;
-import it.gov.pagopa.payments.model.PaymentsModelResponse;
+import it.gov.pagopa.payments.model.*;
 import it.gov.pagopa.payments.model.partner.ObjectFactory;
 import it.gov.pagopa.payments.model.partner.PaGetPaymentReq;
 import it.gov.pagopa.payments.model.partner.PaGetPaymentRes;
@@ -23,6 +20,8 @@ import it.gov.pagopa.payments.model.partner.StAmountOption;
 import it.gov.pagopa.payments.model.partner.StOutcome;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -69,8 +68,10 @@ class PartnerServiceTest {
         when(factory.createCtPaymentOptionsDescriptionListPA())
                 .thenReturn(factoryUtil.createCtPaymentOptionsDescriptionListPA());
 
+        PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
+        paymentModel.setDebtPositionStatus(DebtPositionStatus.PAID);
         when(gpdClient.getPaymentOption(anyString(), anyString()))
-                .thenReturn(MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class));
+                .thenReturn(paymentModel);
 
         // Test execution
         PaVerifyPaymentNoticeRes responseBody = partnerService.paVerifyPaymentNotice(requestBody);
@@ -120,15 +121,13 @@ class PartnerServiceTest {
 
         try {
             // Test execution
-
             partnerService.paVerifyPaymentNotice(requestBody);
             fail();
         } catch (PartnerValidationException ex) {
-            // Test postcondiction
+            // Test post condition
             assertEquals(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO, ex.getError());
         }
     }
-
 
     @Test
     void paVerifyPaymentTestKOGeneric() throws DatatypeConfigurationException, IOException {
@@ -145,8 +144,38 @@ class PartnerServiceTest {
             partnerService.paVerifyPaymentNotice(requestBody);
             fail();
         } catch (PartnerValidationException ex) {
-            // Test postcondiction
+            // Test post condition
             assertEquals(PaaErrorEnum.PAA_SYSTEM_ERROR, ex.getError());
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"DRAFT", "PUBLISHED", "VALID", "INVALID", "EXPIRED", "PARTIALLY_PAID", "REPORTED" })
+    void paVerifyPaymentNoticeStatusKOTest(String status) throws DatatypeConfigurationException, IOException {
+
+        // Test preconditions
+        PaVerifyPaymentNoticeReq requestBody = PaVerifyPaymentNoticeReqMock.getMock();
+
+        PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
+        paymentModel.setDebtPositionStatus(DebtPositionStatus.valueOf(status));
+        when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
+
+        // Test post condition
+        try {
+            // Test execution
+            partnerService.paVerifyPaymentNotice(requestBody);
+            fail();
+        } catch (PartnerValidationException ex) {
+            // Test post condition
+            if (DebtPositionStatus.valueOf(status).equals(DebtPositionStatus.EXPIRED)) {
+                assertEquals(PaaErrorEnum.PAA_PAGAMENTO_SCADUTO, ex.getError());
+            }
+            else if (DebtPositionStatus.valueOf(status).equals(DebtPositionStatus.INVALID)) {
+                assertEquals(PaaErrorEnum.PAA_PAGAMENTO_ANNULLATO, ex.getError());
+            }
+            else {
+                assertEquals(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO, ex.getError());
+            }
         }
     }
 
