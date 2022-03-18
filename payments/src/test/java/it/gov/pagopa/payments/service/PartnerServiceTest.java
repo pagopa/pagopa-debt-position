@@ -148,7 +148,7 @@ class PartnerServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"DRAFT", "PUBLISHED", "VALID", "INVALID", "EXPIRED", "PARTIALLY_PAID", "REPORTED" })
+    @ValueSource(strings = {"INVALID", "EXPIRED"})
     void paVerifyPaymentNoticeStatusKOTest(String status) throws DatatypeConfigurationException, IOException {
 
         // Test preconditions
@@ -172,7 +172,61 @@ class PartnerServiceTest {
                 assertEquals(PaaErrorEnum.PAA_PAGAMENTO_ANNULLATO, ex.getError());
             }
             else {
+                fail();
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"DRAFT", "PUBLISHED"})
+    void paVerifyPaymentNoticeStatusKOTest2(String status) throws DatatypeConfigurationException, IOException {
+
+        // Test preconditions
+        PaVerifyPaymentNoticeReq requestBody = PaVerifyPaymentNoticeReqMock.getMock();
+
+        PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
+        paymentModel.setDebtPositionStatus(DebtPositionStatus.valueOf(status));
+        when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
+
+        // Test post condition
+        try {
+            // Test execution
+            partnerService.paVerifyPaymentNotice(requestBody);
+            fail();
+        } catch (PartnerValidationException ex) {
+            // Test post condition
+            if (DebtPositionStatus.valueOf(status).equals(DebtPositionStatus.DRAFT) || DebtPositionStatus.valueOf(status).equals(DebtPositionStatus.PUBLISHED)) {
                 assertEquals(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO, ex.getError());
+            }
+            else {
+                fail();
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"PARTIALLY_PAID", "PAID", "REPORTED"})
+    void paVerifyPaymentNoticeStatusKOTest3(String status) throws DatatypeConfigurationException, IOException {
+
+        // Test preconditions
+        PaVerifyPaymentNoticeReq requestBody = PaVerifyPaymentNoticeReqMock.getMock();
+
+        PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
+        paymentModel.setDebtPositionStatus(DebtPositionStatus.valueOf(status));
+        when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
+
+        // Test post condition
+        try {
+            // Test execution
+            partnerService.paVerifyPaymentNotice(requestBody);
+            fail();
+        } catch (PartnerValidationException ex) {
+            // Test post condition
+            if (DebtPositionStatus.valueOf(status).equals(DebtPositionStatus.PARTIALLY_PAID) || DebtPositionStatus.valueOf(status).equals(DebtPositionStatus.PAID) || DebtPositionStatus.valueOf(status).equals(DebtPositionStatus.REPORTED)) {
+                assertEquals(PaaErrorEnum.PAA_PAGAMENTO_DUPLICATO, ex.getError());
+            }
+            else {
+                fail();
             }
         }
     }
