@@ -77,6 +77,7 @@ public class PaymentPositionCRUDService {
 				po.setLastUpdatedDate(currentDate);
 				po.setStatus(PaymentOptionStatus.PO_UNPAID);
 				for (Transfer t: po.getTransfer()) {
+					t.setIuv(po.getIuv());
 					t.setOrganizationFiscalCode(organizationFiscalCode);
 					t.setInsertedDate(currentDate);
 					t.setLastUpdatedDate(currentDate);
@@ -92,7 +93,7 @@ public class PaymentPositionCRUDService {
 			if (e.getCause() instanceof ConstraintViolationException) {
 				String sqlState = ((ConstraintViolationException) e.getCause()).getSQLState();
 				if (sqlState.equals(UNIQUE_KEY_VIOLATION)) {
-					throw new AppException(AppError.DEBT_POSITION_ALREADY_EXIST, organizationFiscalCode);
+					throw new AppException(AppError.DEBT_POSITION_UNIQUE_VIOLATION, organizationFiscalCode);
 				}
 			}
 			throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
@@ -179,6 +180,7 @@ public class PaymentPositionCRUDService {
 				po.setLastUpdatedDate(currentDate);
 				po.setStatus(PaymentOptionStatus.PO_UNPAID);
 				for (Transfer t: po.getTransfer()) {
+					t.setIuv(po.getIuv());
 					t.setOrganizationFiscalCode(organizationFiscalCode);
 					t.setInsertedDate(ppToUpdate.getInsertedDate());
 					t.setLastUpdatedDate(currentDate);

@@ -16,6 +16,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
@@ -38,7 +39,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table (name = "transfer")
+@Table (name = "transfer",
+        uniqueConstraints = {
+	      @UniqueConstraint(
+	          name = "UniqueTransfer",
+	          columnNames = {"iuv", "organization_fiscal_code", "transfer_id"})
+	    })
 public class Transfer implements Serializable {
 
 	/**
@@ -57,6 +63,8 @@ public class Transfer implements Serializable {
 	@NotNull
     @Column (name="transfer_id")
     private String idTransfer;
+	@NotNull 
+	private String iuv;
 	@NotNull
     private long amount;
 	@NotNull

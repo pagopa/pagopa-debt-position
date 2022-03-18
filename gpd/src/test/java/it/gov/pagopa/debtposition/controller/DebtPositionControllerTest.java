@@ -103,6 +103,24 @@ class DebtPositionControllerTest {
 		.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON));
 
 	}
+	
+	@Test
+	void createDebtPosition_Num_Transfers_400() throws Exception {
+		// provo a creare una posizione debitoria dove il numero di trasfers supera il massimo di 5
+		mvc.perform(post("/organizations/400_Num_Transfers_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.get400Mock7())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON));
+
+	}
+	
+	@Test
+	void createDebtPosition_ID_Transfer_400() throws Exception {
+		// provo a creare una posizione debitoria dove l'id_transfer non è compreso tra 1 e 5
+		mvc.perform(post("/organizations/400_ID_Transfer_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.get400Mock8())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON));
+
+	}
 
 	@Test
 	void createDebtPosition_409() throws Exception {
