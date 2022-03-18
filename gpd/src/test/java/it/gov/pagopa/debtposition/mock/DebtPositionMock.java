@@ -655,7 +655,7 @@ public class DebtPositionMock {
 
 	public static TransferDTO createTransfersMock1() {
 		TransferDTO tMock = new TransferDTO();
-		tMock.setIdTransfer("id_1");
+		tMock.setIdTransfer("1");
 		tMock.setIban("IT75I0306902887100000300015");
 		tMock.setAmount(1000);
 		tMock.setRemittanceInformation("causale mock 1");
@@ -667,7 +667,7 @@ public class DebtPositionMock {
 	
 	public static TransferDTO createTransfersMock2() {
 		TransferDTO tMock = new TransferDTO();
-		tMock.setIdTransfer("id_1");
+		tMock.setIdTransfer("1");
 		tMock.setIban("IT75I0306902887100000300015");
 		tMock.setAmount(10);
 		tMock.setRemittanceInformation("causale mock 1");
@@ -680,7 +680,7 @@ public class DebtPositionMock {
 
 	public static TransferDTO createTransfersMultipleMock1() {
 		TransferDTO tMock = new TransferDTO();
-		tMock.setIdTransfer("id tranfer mock multiple 1");
+		tMock.setIdTransfer("1");
 		tMock.setIban("IT75I0306902887100000300005");
 		tMock.setAmount(1000);
 		tMock.setRemittanceInformation("causale mock multiple 1");
@@ -692,7 +692,7 @@ public class DebtPositionMock {
 
 	public static TransferDTO createTransfersMultipleMock2() {
 		TransferDTO tMock = new TransferDTO();
-		tMock.setIdTransfer("id tranfer mock multiple 2");
+		tMock.setIdTransfer("2");
 		tMock.setIban("IT75I0306902887100000300006");
 		tMock.setAmount(500);
 		tMock.setRemittanceInformation("causale mock multiple 2");
@@ -704,7 +704,7 @@ public class DebtPositionMock {
 
 	public static TransferDTO createTransfersMultipleMock3() {
 		TransferDTO tMock = new TransferDTO();
-		tMock.setIdTransfer("id_3");
+		tMock.setIdTransfer("3");
 		tMock.setIban("IT75I0306902887100000300007");
 		tMock.setAmount(10000);
 		tMock.setRemittanceInformation("causale mock multiple 3");
@@ -716,7 +716,7 @@ public class DebtPositionMock {
 
 	public static TransferDTO createTransfersMultipleMock4() {
 		TransferDTO tMock = new TransferDTO();
-		tMock.setIdTransfer("id_4");
+		tMock.setIdTransfer("4");
 		tMock.setIban("IT75I0306902887100000300007");
 		tMock.setAmount(2500);
 		tMock.setRemittanceInformation("causale mock multiple 4");
@@ -728,7 +728,7 @@ public class DebtPositionMock {
 
 	public static TransferDTO createTransfersMultipleMock5() {
 		TransferDTO tMock = new TransferDTO();
-		tMock.setIdTransfer("id_5");
+		tMock.setIdTransfer("5");
 		tMock.setIban("IT75I0306902887100000300007");
 		tMock.setAmount(2500);
 		tMock.setRemittanceInformation("causale mock multiple 5");
