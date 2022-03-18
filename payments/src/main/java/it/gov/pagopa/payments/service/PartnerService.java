@@ -62,7 +62,7 @@ public class PartnerService {
             // with Aux-Digit = 3
             // notice number format is define as follows:
             // 3<segregation code(2n)><IUV base(13n)><IUV check digit(2n)>
-            // GPD service works on IUVs  directly, so we remove the Aux-Digit
+            // GPD service works on IUVs directly, so we remove the Aux-Digit
             paymentOption = gpdClient.getPaymentOption(request.getIdPA(), request.getQrCode().getNoticeNumber().substring(1));
         } catch (FeignException.NotFound e) {
             log.error("[paVerifyPaymentNotice] GPD Error not found", e);
@@ -92,7 +92,7 @@ public class PartnerService {
             // with Aux-Digit = 3
             // notice number format is define as follows:
             // 3<segregation code(2n)><IUV base(13n)><IUV check digit(2n)>
-            // GPD service works on IUVs  directly, so we remove the Aux-Digit
+            // GPD service works on IUVs directly, so we remove the Aux-Digit
             paymentOption = gpdClient.getPaymentOption(request.getIdPA(), request.getQrCode().getNoticeNumber().substring(1));
         } catch (FeignException.NotFound e) {
             log.error("[paGetPayment] GPD Error not found", e);
@@ -126,7 +126,7 @@ public class PartnerService {
             // with Aux-Digit = 3
             // notice number format is define as follows:
             // 3<segregation code(2n)><IUV base(13n)><IUV check digit(2n)>
-            // GPD service works on IUVs  directly, so we remove the Aux-Digit
+            // GPD service works on IUVs directly, so we remove the Aux-Digit
             paymentOption = gpdClient.receiptPaymentOption(request.getIdPA(), request.getReceipt().getNoticeNumber().substring(1), body);
         } catch (FeignException.Conflict e) {
             log.error("[paSendRT] GPD Conflict Error Response", e);

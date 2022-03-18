@@ -226,7 +226,6 @@ class PartnerServiceTest {
         }
     }
 
-
     @Test
     void paGetPaymentTestKOGeneric() throws DatatypeConfigurationException, IOException {
 
@@ -267,7 +266,6 @@ class PartnerServiceTest {
         assertThat(responseBody.getOutcome()).isEqualTo(StOutcome.OK);
     }
 
-
     @Test
     void paSendRTTestKOConflict() throws DatatypeConfigurationException, IOException {
 
@@ -285,6 +283,28 @@ class PartnerServiceTest {
         } catch (PartnerValidationException ex) {
             // Test post condition
             assertEquals(PaaErrorEnum.PAA_PAGAMENTO_DUPLICATO, ex.getError());
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"PO_UNPAID", "PO_PARTIALLY_REPORTED", "PO_REPORTED" })
+    void paSendRTTestKOStatus(String status) throws DatatypeConfigurationException, IOException {
+
+        // Test preconditions
+        PaSendRTReq requestBody = PaSendRTReqMock.getMock();
+
+        PaymentOptionModelResponse paymentOption = MockUtil.readModelFromFile("gpd/receiptPaymentOption.json", PaymentOptionModelResponse.class);
+        paymentOption.setStatus(PaymentOptionStatus.valueOf(status));
+        when(gpdClient.receiptPaymentOption(anyString(), anyString(), any(PaymentOptionModel.class)))
+                .thenReturn(paymentOption);
+
+        try {
+            // Test execution
+            PaSendRTRes responseBody = partnerService.paSendRT(requestBody);
+            fail();
+        } catch (PartnerValidationException ex) {
+            // Test post condition
+            assertEquals(PaaErrorEnum.PAA_SEMANTICA, ex.getError());
         }
     }
 
