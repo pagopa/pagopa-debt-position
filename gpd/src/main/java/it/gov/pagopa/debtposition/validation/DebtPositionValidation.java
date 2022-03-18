@@ -24,8 +24,8 @@ public class DebtPositionValidation {
     private static final String RETENTION_DATE_VALIDATION_ERROR = "Dates congruence error: retention_date must be >= due_date [retention_date=%s; due_date=%s] ";
     private static final String VALIDITY_DATE_VALIDATION_ERROR = "Dates congruence error: validity_date must be >= current_date [validity_date=%s; current_date=%s] ";
     private static final String AMOUNTS_VALIDATION_ERROR = "Amounts congruence error: payment option amount must coincide with the total of the transfers amount [payment_option_amount(in cent)=%s; total_tranfers_amount(in cent)=%s]";
-    private static final String NUM_TRANFERS_VALIDATION_ERROR = "Number of Tranfers congruence error: Each payment option must have a maximum of %s transactions [transactions found=%s]";
-    private static final String TRANFER_ID_VALIDATION_ERROR = "Tranfer ID congruence error: The transaction id not have a value between those expected [transaction id=%s; expected values=%s]";
+    private static final String NUM_TRANSFERS_VALIDATION_ERROR = "Number of transfers congruence error: Each payment option must have a maximum of %s transactions [transactions found=%s]";
+    private static final String TRANSFER_ID_VALIDATION_ERROR = "Transfer ID congruence error: The transaction id not have a value between those expected [transaction id=%s; expected values=%s]";
     
     private enum TransferId {
         N1("1"),N2("2"),N3("3"),N4("4"),N5("5");
@@ -138,7 +138,7 @@ public class DebtPositionValidation {
     	// verifica numero massimo di transazioni per PO
         if (po.getTransfer().size()>maxNumberOfTrasfersForPO) {
         	throw new ValidationException(
-                    String.format(NUM_TRANFERS_VALIDATION_ERROR, 
+                    String.format(NUM_TRANSFERS_VALIDATION_ERROR, 
                     		TransferId.values().length, 
                     		po.getTransfer().size()
                             )
@@ -149,7 +149,7 @@ public class DebtPositionValidation {
         for (Transfer t : po.getTransfer()) {
         	if (null == TransferId.fromValue(t.getIdTransfer())) {
         		throw new ValidationException(
-                        String.format(TRANFER_ID_VALIDATION_ERROR, 
+                        String.format(TRANSFER_ID_VALIDATION_ERROR, 
                         		t.getIdTransfer(), 
                         		Arrays.asList(TransferId.values())
                                 )
@@ -157,7 +157,7 @@ public class DebtPositionValidation {
         	}
         }  
     }
-    
+
     private static void checkPaymentOptionAmounts(final PaymentOption po) {
         long totalTranfersAmout = 0;
         long poAmount = po.getAmount();
