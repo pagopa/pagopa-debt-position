@@ -34,6 +34,10 @@ public class DebtPositionMock {
 		return createPaymentPositionMock3();
 	}
 	
+	public final static PaymentPositionDTO getMock6() {
+		return createPaymentPositionMock5();
+	}
+	
 	public final static PaymentOptionDTO getPayPOMock1() {
 		return createPayForPaymentOptionMock1();
 	}
@@ -138,6 +142,54 @@ public class DebtPositionMock {
 		pPMock.setOfficeName("Ufficio condono");
 		pPMock.setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plus(5, ChronoUnit.SECONDS));
 		pPMock.addPaymentOptions(createPaymentOptionsMock1());
+
+		return pPMock;
+	}
+	
+	public static PaymentPositionDTO createPaymentPositionMock4() {
+
+		PaymentPositionDTO pPMock = new PaymentPositionDTO();
+		// debtor properties
+		pPMock.setFiscalCode("PIVA12345678");
+		pPMock.setType(Type.G);
+		pPMock.setFullName("Cipriani Srl");
+		pPMock.setPhone("3330987654");
+		pPMock.setStreetName("Via di novoli");
+		pPMock.setCivicNumber("50/2");
+		pPMock.setProvince("RM");
+		pPMock.setCountry("IT");
+		pPMock.setEmail("cipriani@roma.it");
+		pPMock.setPostalCode("00100");
+		// payment position properties
+		pPMock.setIupd("12345678901IUPDMOCK3");
+		pPMock.setCompanyName("Comune di Roma");
+		pPMock.setOfficeName("Ufficio condono");
+		pPMock.setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plus(5, ChronoUnit.SECONDS));
+		pPMock.addPaymentOptions(createPaymentOptionsMock1());
+
+		return pPMock;
+	}
+	
+	public static PaymentPositionDTO createPaymentPositionMock5() {
+
+		PaymentPositionDTO pPMock = new PaymentPositionDTO();
+		// debtor properties
+		pPMock.setFiscalCode("PIVA12345678");
+		pPMock.setType(Type.G);
+		pPMock.setFullName("Cipriani Srl");
+		pPMock.setPhone("3330987654");
+		pPMock.setStreetName("Via di novoli");
+		pPMock.setCivicNumber("50/2");
+		pPMock.setProvince("RM");
+		pPMock.setCountry("IT");
+		pPMock.setEmail("cipriani@roma.it");
+		pPMock.setPostalCode("00100");
+		// payment position properties
+		pPMock.setIupd("12345678901IUPDMOCK5");
+		pPMock.setCompanyName("Comune di Roma");
+		pPMock.setOfficeName("Ufficio condono");
+		pPMock.setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plus(5, ChronoUnit.DAYS));
+		pPMock.addPaymentOptions(createPaymentOptionsMock6());
 
 		return pPMock;
 	}
@@ -331,6 +383,7 @@ public class DebtPositionMock {
 
 		return pPMock;
 	}
+	
 
 	public static PaymentPositionDTO createPaymentPosition400Mock1() {
 
@@ -431,6 +484,34 @@ public class DebtPositionMock {
 		pOMock.setIuv("123456IUVMOCK4");
 		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
 		pOMock.setRetentionDate(LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.DAYS));
+		pOMock.setIsPartialPayment(Boolean.FALSE);
+		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
+		pOMock.addTransfers(createTransfersMock1()); 
+
+		return pOMock;
+	}
+	
+	public static PaymentOptionDTO createPaymentOptionsMock5() {
+
+		PaymentOptionDTO pOMock = new PaymentOptionDTO();
+		pOMock.setAmount(1000);
+		pOMock.setIuv("123456IUVMOCK1");
+		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.SECONDS));
+		pOMock.setRetentionDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
+		pOMock.setIsPartialPayment(Boolean.FALSE);
+		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
+		pOMock.addTransfers(createTransfersMock1()); 
+
+		return pOMock;
+	}
+	
+	public static PaymentOptionDTO createPaymentOptionsMock6() {
+
+		PaymentOptionDTO pOMock = new PaymentOptionDTO();
+		pOMock.setAmount(1000);
+		pOMock.setIuv("123456IUVMOCK6");
+		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
+		pOMock.setRetentionDate(LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
 		pOMock.setIsPartialPayment(Boolean.FALSE);
 		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
 		pOMock.addTransfers(createTransfersMock1()); 

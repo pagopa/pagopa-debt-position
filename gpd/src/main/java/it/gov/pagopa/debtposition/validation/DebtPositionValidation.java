@@ -41,6 +41,9 @@ public class DebtPositionValidation {
     	if (DebtPositionStatus.getPaymentPosNotPayableStatus().contains(ppToPay.getStatus())){
 			throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, ppToPay.getOrganizationFiscalCode(), iuv);
 		}
+    	if (DebtPositionStatus.getPaymentPosFullyPaidStatus().contains(ppToPay.getStatus())){
+			throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, ppToPay.getOrganizationFiscalCode(), iuv);
+		} 
     	// Verifico se la posizione debitoria è ancora aperta
     	checkPaymentPositionOpen(ppToPay, iuv);
     	// Verifico se l'opzione di pagamento è pagabile
@@ -138,7 +141,7 @@ public class DebtPositionValidation {
     private static void checkPaymentPositionOpen(PaymentPosition ppToPay, String iuv) {
 		for (PaymentOption po: ppToPay.getPaymentOption()) {
     		if (isPaid(po)) {
-    			throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, po.getOrganizationFiscalCode(), iuv);
+    			throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, po.getOrganizationFiscalCode(), iuv);
     		}
     	}
 	}
@@ -157,12 +160,12 @@ public class DebtPositionValidation {
     			});
     	
     	if (!poToPay.getStatus().equals(PaymentOptionStatus.PO_UNPAID)) {
-    		throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, poToPay.getOrganizationFiscalCode(), iuv);
+    		throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, poToPay.getOrganizationFiscalCode(), iuv);
     	}
     	
-    	// se la posizione debitoria è già in PARTIALLY_PAID e sto provando a pagare una payment option non rateizzata (isPartialPayment = false)
+    	// La posizione debitoria è già in PARTIALLY_PAID ed arriva una richiesta di pagamento su una payment option non rateizzata (isPartialPayment = false) => errore
     	if (ppToPay.getStatus().equals(DebtPositionStatus.PARTIALLY_PAID) && Boolean.FALSE.equals(poToPay.getIsPartialPayment())){
-    		throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, poToPay.getOrganizationFiscalCode(), iuv);
+    		throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, poToPay.getOrganizationFiscalCode(), iuv);
     	}
     	
 	}
