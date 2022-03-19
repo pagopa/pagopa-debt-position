@@ -16,7 +16,7 @@ To invoke k6 load test passing parameter use -e (or --env) flag:
 Call to test the creation of a debt position:
 
 ```
-k6 run gpd/load-test/src/create_debt_postion.js
+k6 run -e BASE_URL=http://localhost:8080 gpd/load-test/src/create_debt_postion.js
 k6 run -e BASE_URL=http://localhost:8080 gpd/load-test/src/payments_workflow.js
 ```
 ## 02. Payment workflow

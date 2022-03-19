@@ -16,9 +16,11 @@ export let options = {
 
 export default function () {
 
+  var urlBasePath = `${__ENV.BASE_URL}`
+
   const creditor_institution_code = randomString(11, "0123456789");
 
-  var url = `http://localhost:8080/organizations/${creditor_institution_code}/debtpositions`;
+  var url = `${urlBasePath}/organizations/${creditor_institution_code}/debtpositions`;
 
   const iupd = makeidMix(35);
   const iuv = makeidMix(35);

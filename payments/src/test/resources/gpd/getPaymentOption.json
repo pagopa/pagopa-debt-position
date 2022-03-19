@@ -29,7 +29,7 @@
   "phone": "string",
   "companyName": "string",
   "officeName": "string",
-  "debtPositionStatus": "DRAFT",
+  "debtPositionStatus": "VALID",
   "transfer": [
     {
       "organizationFiscalCode": "string",
