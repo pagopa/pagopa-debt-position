@@ -28,7 +28,8 @@ public class PaymentPositionActionsService {
 	@Autowired
 	private PaymentPositionRepository paymentPositionRepository;
 	
-	@Transactional(isolation = Isolation.SERIALIZABLE)
+
+	@Transactional
 	public PaymentPosition publish(@NotBlank String organizationFiscalCode, @NotBlank String iupd) {
 		PaymentPosition ppToPublish = paymentPositionCRUDService.getDebtPositionByIUPD(organizationFiscalCode, iupd);
 		if (DebtPositionStatus.getPaymentPosNotPublishableStatus().contains(ppToPublish.getStatus())){
@@ -69,7 +70,8 @@ public class PaymentPositionActionsService {
 		
 	}
 	
-	@Transactional(isolation = Isolation.SERIALIZABLE)
+
+	@Transactional
 	public PaymentPosition invalidate(@NotBlank String organizationFiscalCode, @NotBlank String iupd) {
 		PaymentPosition ppToInvalidate = paymentPositionCRUDService.getDebtPositionByIUPD(organizationFiscalCode, iupd);
 		if (DebtPositionStatus.getPaymentPosNotIvalidableStatus().contains(ppToInvalidate.getStatus())){
