@@ -136,7 +136,7 @@ stages:
               addChangelog: true
 
   - stage: PROD_Deploy_approval
-    condition: and(not(failed('releaseService')), or(eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.REPOSITORY }}', 'payments')), eq('${{ parameters.ENV }}', 'prod'))
+    condition: and(not(failed('releaseService')), in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'dev')) # TODO replace prod with dev
     jobs:
       - job: Deploy_PROD_WaitForApproval
         displayName: Wait for PROD approval
