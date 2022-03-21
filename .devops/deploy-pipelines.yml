@@ -34,16 +34,19 @@ variables:
     CONTAINER_REGISTRY: $(DEV_CONTAINER_REGISTRY)
     CONTAINER_NAMESPACE: $(DEV_CONTAINER_NAMESPACE)
     APP_NAME: $(DEV_WEB_APP_NAME)
+    RESOURCE_GROUP: 'pagopa-d-gpd-rg'
   ${{ if eq(parameters['ENV'], 'uat') }}:
     AZURE_SUBSCRIPTION: $(DEV_AZURE_SUBSCRIPTION)
     CONTAINER_REGISTRY: $(DEV_CONTAINER_REGISTRY)
     CONTAINER_NAMESPACE: $(UAT_CONTAINER_NAMESPACE)
     APP_NAME: $(UAT_WEB_APP_NAME)
+    RESOURCE_GROUP: 'pagopa-u-gpd-rg'
   ${{ if eq(parameters['ENV'], 'prod') }}:
     AZURE_SUBSCRIPTION: $(PROD_AZURE_SUBSCRIPTION)
     CONTAINER_REGISTRY: $(PROD_CONTAINER_REGISTRY)
     CONTAINER_NAMESPACE: $(PROD_CONTAINER_NAMESPACE)
     APP_NAME: $(PROD_WEB_APP_NAME)
+    RESOURCE_GROUP: 'pagopa-p-gpd-rg'
 
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
   MAVEN_OPTS: "-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)"
@@ -132,6 +135,19 @@ stages:
               title: $(title)
               addChangelog: true
 
+  - stage: PROD_Deploy_approval
+    condition: and(not(failed('releaseService')), or(eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.REPOSITORY }}', 'payments')), eq('${{ parameters.ENV }}', 'prod'))
+    jobs:
+      - job: Deploy_PROD_WaitForApproval
+        displayName: Wait for PROD approval
+        pool: server
+        timeoutInMinutes: 4320 # 3 days
+        steps:
+          - task: ManualValidation@0
+            timeoutInMinutes: 4320 # 3 days
+            inputs:
+              onTimeout: 'reject'
+
   # Deploy on Azure
   - stage: deploy
     condition: not(failed('releaseService'))
@@ -200,17 +216,28 @@ stages:
                 latest
                 $(pomversion.next)
 
-          # deploy gdp | payments
-          - task: AzureRMWebAppDeployment@4
-            displayName: Deploy App Service (Microservice)
-            condition: or(eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.REPOSITORY }}', 'payments'))
+          # deploy staging gpd | payments - stage
+          - task: AzureWebAppContainer@1
+            displayName: Staging Deployment Staging App Service
+            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'dev')) # TODO replace DEV with PROD
             inputs:
-              appType: webAppContainer
-              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
-              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
-              DockerNamespace: "${{variables.CONTAINER_NAMESPACE}}"
-              DockerRepository: "${{ parameters.REPOSITORY }}"
-              DockerImageTag: "$(Build.BuildId)"
+              azureSubscription: $(AZURE_SUBSCRIPTION)
+              appName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+              containers: $(CONTAINER_NAMESPACE)/$(parameters.REPOSITORY):$(Build.BuildId)
+              deployToSlotOrASE: true
+              resourceGroupName: $(RESOURCE_GROUP)
+              slotName: staging
+
+          - task: AzureRMWebAppDeployment@4
+              displayName: Deployment App Service
+              condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), in('${{ parameters.ENV }}', 'prod', 'uat')) # TODO replace PROD with DEV
+              inputs:
+                appType: webAppContainer
+                ConnectedServiceName: $(AZURE_SUBSCRIPTION)
+                WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+                DockerNamespace: "${{variables.CONTAINER_NAMESPACE}}"
+                DockerRepository: "${{ parameters.REPOSITORY }}"
+                DockerImageTag: "$(Build.BuildId)"
 
           # deploy reporting-fn
           - task: AzureFunctionAppContainer@1
@@ -221,3 +248,18 @@ stages:
               appName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
               imageName: "${{variables.CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(Build.BuildId)"
               slotName: production
+
+      - job: prodDeployJava
+        dependsOn: PROD_Deploy_approval
+
+          # deploy gpd | payments - swap
+        - task: AzureAppServiceManage@0
+          displayName: Swapping Deployment App Service
+          condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'prod'))
+          inputs:
+            ConnectedServiceName: $(AZURE_SUBSCRIPTION)
+            WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+            ResourceGroupName: $(RESOURCE_GROUP)
+            SourceSlot: staging
+            SwapWithProduction: true
+            Slot: production
