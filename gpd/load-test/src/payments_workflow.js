@@ -30,7 +30,7 @@ export default function () {
   const iuv = makeidMix(35);
   const due_date = new Date().addDays(30);
   const retention_date = new Date().addDays(90);
-  const transfer_id = '01';
+  const transfer_id = '1';
 
   // Create new debt position (no validity date).
   var tag = {
