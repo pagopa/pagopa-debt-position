@@ -77,6 +77,7 @@ CREATE TABLE payment_option (
 	CONSTRAINT fk_payment_position_id FOREIGN KEY (payment_position_id) REFERENCES payment_position(id)
 );
 
+
 CREATE TABLE transfer (
 	id int8 NOT NULL,
 	amount int8 NOT NULL,
@@ -84,6 +85,7 @@ CREATE TABLE transfer (
 	iban varchar(255) NOT NULL,
 	transfer_id varchar(255) NOT NULL,
 	inserted_date timestamp NOT NULL,
+	iuv varchar(255) NOT NULL,
 	last_updated_date timestamp NOT NULL,
 	organization_fiscal_code varchar(255) NOT NULL,
 	postal_iban varchar(255) NULL,
@@ -91,5 +93,6 @@ CREATE TABLE transfer (
 	status varchar(255) NOT NULL,
 	payment_option_id int8 NOT NULL,
 	CONSTRAINT transfer_pkey PRIMARY KEY (id),
+	CONSTRAINT uniquetransfer UNIQUE (iuv, organization_fiscal_code, transfer_id),
 	CONSTRAINT fk_payment_option_id FOREIGN KEY (payment_option_id) REFERENCES payment_option(id)
 );

@@ -3,6 +3,7 @@ package it.gov.pagopa.debtposition.validation;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
@@ -23,6 +24,32 @@ public class DebtPositionValidation {
     private static final String RETENTION_DATE_VALIDATION_ERROR = "Dates congruence error: retention_date must be >= due_date [retention_date=%s; due_date=%s] ";
     private static final String VALIDITY_DATE_VALIDATION_ERROR = "Dates congruence error: validity_date must be >= current_date [validity_date=%s; current_date=%s] ";
     private static final String AMOUNTS_VALIDATION_ERROR = "Amounts congruence error: payment option amount must coincide with the total of the transfers amount [payment_option_amount(in cent)=%s; total_tranfers_amount(in cent)=%s]";
+    private static final String NUM_TRANSFERS_VALIDATION_ERROR = "Number of transfers congruence error: Each payment option must have a maximum of %s transactions [transactions found=%s]";
+    private static final String TRANSFER_ID_VALIDATION_ERROR = "Transfer ID congruence error: The transaction id not have a value between those expected [transaction id=%s; expected values=%s]";
+    
+    private enum TransferId {
+        N1("1"),N2("2"),N3("3"),N4("4"),N5("5");
+
+		TransferId(String value) {
+			this.value = value;
+		}
+		
+		private String value;
+		
+		public static TransferId fromValue(String text) {
+	        for (TransferId t : TransferId.values()) {
+	            if (t.value.equalsIgnoreCase(text)) {
+	                return t;
+	            }
+	        }
+	        return null;
+	    }
+		
+		@Override
+        public String toString() {
+              return value;
+        }
+    }
             
 
     
@@ -33,7 +60,7 @@ public class DebtPositionValidation {
     
     
     public static void checkPaymentPositionInputDataAccurancy(PaymentPosition pp){
-            checkPaymentPositionDatesCongruency(pp);
+            checkPaymentPositionContentCongruency(pp);
     }
     
     public static void checkPaymentPositionPayability(PaymentPosition ppToPay, String iuv) {
@@ -61,7 +88,7 @@ public class DebtPositionValidation {
 
     
     
-    private static void checkPaymentPositionDatesCongruency(final PaymentPosition pp) {
+    private static void checkPaymentPositionContentCongruency(final PaymentPosition pp) {
 
         LocalDateTime today = LocalDateTime.now(ZoneOffset.UTC);
         DateTimeFormatter  dateFormatter = DateTimeFormatter.ofPattern ("yyyy-MM-dd hh:mm:ss");
@@ -97,6 +124,8 @@ public class DebtPositionValidation {
                                 )
                         );
             }
+            
+            chechPaymentOptionTransfers(po);
 
             checkPaymentOptionAmounts(po);
         }
@@ -104,6 +133,31 @@ public class DebtPositionValidation {
 
     }
     
+    private static void chechPaymentOptionTransfers(final PaymentOption po) {
+    	int maxNumberOfTrasfersForPO = TransferId.values().length;
+    	// verifica numero massimo di transazioni per PO
+        if (po.getTransfer().size()>maxNumberOfTrasfersForPO) {
+        	throw new ValidationException(
+                    String.format(NUM_TRANSFERS_VALIDATION_ERROR, 
+                    		TransferId.values().length, 
+                    		po.getTransfer().size()
+                            )
+                    );
+        }   
+        
+        // verifica corretta valorizzazione idTransfer
+        for (Transfer t : po.getTransfer()) {
+        	if (null == TransferId.fromValue(t.getIdTransfer())) {
+        		throw new ValidationException(
+                        String.format(TRANSFER_ID_VALIDATION_ERROR, 
+                        		t.getIdTransfer(), 
+                        		Arrays.asList(TransferId.values())
+                                )
+                        );
+        	}
+        }  
+    }
+
     private static void checkPaymentOptionAmounts(final PaymentOption po) {
         long totalTranfersAmout = 0;
         long poAmount = po.getAmount();

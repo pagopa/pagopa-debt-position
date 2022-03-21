@@ -55,7 +55,8 @@ public class PaymentsService {
 		return po.get();
 	}
 	
-	@Transactional(isolation = Isolation.SERIALIZABLE)
+
+	@Transactional
 	public PaymentOption pay (@NotBlank String organizationFiscalCode,
 			@NotBlank String iuv, @NotNull @Valid PaymentOptionModel paymentOptionModel) {
 
@@ -71,7 +72,8 @@ public class PaymentsService {
 		return this.updatePaymentStatus(ppToPay.get(), iuv, paymentOptionModel);
 	}
 	
-	@Transactional(isolation = Isolation.SERIALIZABLE)
+
+	@Transactional
 	public Transfer report (@NotBlank String organizationFiscalCode,
 			@NotBlank String iuv, @NotBlank String transferId) {
 

@@ -67,6 +67,14 @@ public class DebtPositionMock {
 		return createPaymentPosition400Mock6();
 	}
 	
+	public final static PaymentPositionDTO get400Mock7() {
+		return createPaymentPosition400Mock7();
+	}
+	
+	public final static PaymentPositionDTO get400Mock8() {
+		return createPaymentPosition400Mock8();
+	}
+	
 	public final static PaymentOptionDTO getPayPO400Mock1() {
 		return createPayForPaymentOption400Mock1();
 	}
@@ -311,6 +319,56 @@ public class DebtPositionMock {
 		return pPMock;
 	}
 	
+	public static PaymentPositionDTO createPaymentPosition400Mock7() {
+
+		PaymentPositionDTO pPMock = new PaymentPositionDTO();
+		// debtor properties
+		pPMock.setFiscalCode("MRDPLL54H17D542L");
+		pPMock.setType(Type.F);
+		pPMock.setFullName("Mario Rossi");
+		pPMock.setPhone("3330987654");
+		pPMock.setStreetName("Via di novoli");
+		pPMock.setCivicNumber("50/2");
+		pPMock.setProvince("FI");
+		pPMock.setCountry("IT");
+		pPMock.setEmail("mario@firenze.it");
+		pPMock.setPostalCode("50100");
+		// payment position properties
+		pPMock.setIupd("12345678901IUPDMOCK4");
+		pPMock.setCompanyName("Comune di Firenze");
+		pPMock.setOfficeName("Ufficio tributario");
+		pPMock.addPaymentOptions(createPaymentOptionsMock7());
+		// La validity date è minore della current date
+		pPMock.setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plus(1, ChronoUnit.DAYS));
+
+		return pPMock;
+	}
+	
+	public static PaymentPositionDTO createPaymentPosition400Mock8() {
+
+		PaymentPositionDTO pPMock = new PaymentPositionDTO();
+		// debtor properties
+		pPMock.setFiscalCode("MRDPLL54H17D542L");
+		pPMock.setType(Type.F);
+		pPMock.setFullName("Mario Rossi");
+		pPMock.setPhone("3330987654");
+		pPMock.setStreetName("Via di novoli");
+		pPMock.setCivicNumber("50/2");
+		pPMock.setProvince("FI");
+		pPMock.setCountry("IT");
+		pPMock.setEmail("mario@firenze.it");
+		pPMock.setPostalCode("50100");
+		// payment position properties
+		pPMock.setIupd("12345678901IUPDMOCK4");
+		pPMock.setCompanyName("Comune di Firenze");
+		pPMock.setOfficeName("Ufficio tributario");
+		pPMock.addPaymentOptions(createPaymentOptionsMock8());
+		// La validity date è minore della current date
+		pPMock.setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plus(1, ChronoUnit.DAYS));
+
+		return pPMock;
+	}
+	
 	public static PaymentPositionDTO createPaymentPosition409_Min_Due_Date_Mock1() {
 
 		PaymentPositionDTO pPMock = new PaymentPositionDTO();
@@ -519,6 +577,43 @@ public class DebtPositionMock {
 		return pOMock;
 	}
 	
+	public static PaymentOptionDTO createPaymentOptionsMock7() {
+
+		PaymentOptionDTO pOMock = new PaymentOptionDTO();
+		pOMock.setAmount(1000);
+		pOMock.setIuv("123456IUVMOCK7");
+		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
+		pOMock.setRetentionDate(LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
+		pOMock.setIsPartialPayment(Boolean.FALSE);
+		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
+		pOMock.addTransfers(createTransfersMultipleMock1()); 
+		pOMock.addTransfers(createTransfersMultipleMock2());
+		pOMock.addTransfers(createTransfersMultipleMock3());
+		pOMock.addTransfers(createTransfersMultipleMock4());
+		pOMock.addTransfers(createTransfersMultipleMock5());
+		pOMock.addTransfers(createTransfersMultipleMock6());
+
+		return pOMock;
+	}
+	
+	public static PaymentOptionDTO createPaymentOptionsMock8() {
+
+		PaymentOptionDTO pOMock = new PaymentOptionDTO();
+		pOMock.setAmount(1000);
+		pOMock.setIuv("123456IUVMOCK8");
+		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
+		pOMock.setRetentionDate(LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
+		pOMock.setIsPartialPayment(Boolean.FALSE);
+		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
+		pOMock.addTransfers(createTransfersMultipleMock1()); 
+		pOMock.addTransfers(createTransfersMultipleMock2());
+		pOMock.addTransfers(createTransfersMultipleMock4());
+		pOMock.addTransfers(createTransfersMultipleMock5());
+		pOMock.addTransfers(createTransfersMultipleMock6());
+
+		return pOMock;
+	}
+	
 	public static PaymentOptionDTO createPaymentOptions_Min_Due_Date_Mock1() {
 
 		PaymentOptionDTO pOMock = new PaymentOptionDTO();
@@ -655,7 +750,7 @@ public class DebtPositionMock {
 
 	public static TransferDTO createTransfersMock1() {
 		TransferDTO tMock = new TransferDTO();
-		tMock.setIdTransfer("id_1");
+		tMock.setIdTransfer("1");
 		tMock.setIban("IT75I0306902887100000300015");
 		tMock.setAmount(1000);
 		tMock.setRemittanceInformation("causale mock 1");
@@ -667,7 +762,7 @@ public class DebtPositionMock {
 	
 	public static TransferDTO createTransfersMock2() {
 		TransferDTO tMock = new TransferDTO();
-		tMock.setIdTransfer("id_1");
+		tMock.setIdTransfer("1");
 		tMock.setIban("IT75I0306902887100000300015");
 		tMock.setAmount(10);
 		tMock.setRemittanceInformation("causale mock 1");
@@ -680,7 +775,7 @@ public class DebtPositionMock {
 
 	public static TransferDTO createTransfersMultipleMock1() {
 		TransferDTO tMock = new TransferDTO();
-		tMock.setIdTransfer("id tranfer mock multiple 1");
+		tMock.setIdTransfer("1");
 		tMock.setIban("IT75I0306902887100000300005");
 		tMock.setAmount(1000);
 		tMock.setRemittanceInformation("causale mock multiple 1");
@@ -692,7 +787,7 @@ public class DebtPositionMock {
 
 	public static TransferDTO createTransfersMultipleMock2() {
 		TransferDTO tMock = new TransferDTO();
-		tMock.setIdTransfer("id tranfer mock multiple 2");
+		tMock.setIdTransfer("2");
 		tMock.setIban("IT75I0306902887100000300006");
 		tMock.setAmount(500);
 		tMock.setRemittanceInformation("causale mock multiple 2");
@@ -704,7 +799,7 @@ public class DebtPositionMock {
 
 	public static TransferDTO createTransfersMultipleMock3() {
 		TransferDTO tMock = new TransferDTO();
-		tMock.setIdTransfer("id_3");
+		tMock.setIdTransfer("3");
 		tMock.setIban("IT75I0306902887100000300007");
 		tMock.setAmount(10000);
 		tMock.setRemittanceInformation("causale mock multiple 3");
@@ -716,7 +811,7 @@ public class DebtPositionMock {
 
 	public static TransferDTO createTransfersMultipleMock4() {
 		TransferDTO tMock = new TransferDTO();
-		tMock.setIdTransfer("id_4");
+		tMock.setIdTransfer("4");
 		tMock.setIban("IT75I0306902887100000300007");
 		tMock.setAmount(2500);
 		tMock.setRemittanceInformation("causale mock multiple 4");
@@ -728,7 +823,19 @@ public class DebtPositionMock {
 
 	public static TransferDTO createTransfersMultipleMock5() {
 		TransferDTO tMock = new TransferDTO();
-		tMock.setIdTransfer("id_5");
+		tMock.setIdTransfer("5");
+		tMock.setIban("IT75I0306902887100000300007");
+		tMock.setAmount(2500);
+		tMock.setRemittanceInformation("causale mock multiple 5");
+		tMock.setCategory("10/22252/20");
+		tMock.setPostalIban("IT82E0760113600000000118547");
+
+		return tMock;
+	}
+	
+	public static TransferDTO createTransfersMultipleMock6() {
+		TransferDTO tMock = new TransferDTO();
+		tMock.setIdTransfer("6");
 		tMock.setIban("IT75I0306902887100000300007");
 		tMock.setAmount(2500);
 		tMock.setRemittanceInformation("causale mock multiple 5");

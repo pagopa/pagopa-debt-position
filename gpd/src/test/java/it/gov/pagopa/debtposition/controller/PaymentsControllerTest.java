@@ -421,7 +421,7 @@ class PaymentsControllerTest {
 				.value(DebtPositionStatus.PAID.toString()));
 		
 		// effettuo la rendicontazione per l'unica transazione della PO
-		mvc.perform(post("/organizations/REPORT_200_12345678901/paymentoptions/123456IUVMOCK1/transfers/id_1/report")
+		mvc.perform(post("/organizations/REPORT_200_12345678901/paymentoptions/123456IUVMOCK1/transfers/1/report")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
@@ -470,7 +470,7 @@ class PaymentsControllerTest {
 				.value(DebtPositionStatus.PAID.toString()));
 		
 		// effettuo la rendicontazione per l'unica transazione della PO
-		mvc.perform(post("/organizations/REPORT_Multiple_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/transfers/id_3/report")
+		mvc.perform(post("/organizations/REPORT_Multiple_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/transfers/3/report")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
@@ -519,7 +519,7 @@ class PaymentsControllerTest {
 				.value(DebtPositionStatus.PARTIALLY_PAID.toString()));
 		
 		// effettuo la rendicontazione per la transazione 
-		mvc.perform(post("/organizations/REPORT_Multiple_Partial_12345678901/paymentoptions/123456IUVMULTIPLEMOCK4/transfers/id_4/report")
+		mvc.perform(post("/organizations/REPORT_Multiple_Partial_12345678901/paymentoptions/123456IUVMULTIPLEMOCK4/transfers/4/report")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
@@ -577,7 +577,7 @@ class PaymentsControllerTest {
 				.value(DebtPositionStatus.PAID.toString()));
 		
 		// effettuo la rendicontazione per una delle 2 transazioni della PO 
-		mvc.perform(post("/organizations/REPORT_Multiple_All_Partial_12345678901/paymentoptions/123456IUVMULTIPLEMOCK4/transfers/id_4/report")
+		mvc.perform(post("/organizations/REPORT_Multiple_All_Partial_12345678901/paymentoptions/123456IUVMULTIPLEMOCK4/transfers/4/report")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
@@ -591,7 +591,7 @@ class PaymentsControllerTest {
 				.value(PaymentOptionStatus.PO_PARTIALLY_REPORTED.toString()));
 		
 		// effettuo la rendicontazione per la seconda delle 2 transazioni della PO 
-		mvc.perform(post("/organizations/REPORT_Multiple_All_Partial_12345678901/paymentoptions/123456IUVMULTIPLEMOCK4/transfers/id_5/report")
+		mvc.perform(post("/organizations/REPORT_Multiple_All_Partial_12345678901/paymentoptions/123456IUVMULTIPLEMOCK4/transfers/5/report")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
@@ -663,7 +663,7 @@ class PaymentsControllerTest {
 				.value(DebtPositionStatus.PAID.toString()));
 		
 		// effettuo la rendicontazione per una delle 2 transazioni della PO 
-		mvc.perform(post("/organizations/REPORT_Multiple_All_Partial_Reported_12345678901/paymentoptions/123456IUVMULTIPLEMOCK4/transfers/id_4/report")
+		mvc.perform(post("/organizations/REPORT_Multiple_All_Partial_Reported_12345678901/paymentoptions/123456IUVMULTIPLEMOCK4/transfers/4/report")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
@@ -677,7 +677,7 @@ class PaymentsControllerTest {
 				.value(PaymentOptionStatus.PO_PARTIALLY_REPORTED.toString()));
 		
 		// effettuo la rendicontazione per la seconda delle 2 transazioni della PO 
-		mvc.perform(post("/organizations/REPORT_Multiple_All_Partial_Reported_12345678901/paymentoptions/123456IUVMULTIPLEMOCK4/transfers/id_5/report")
+		mvc.perform(post("/organizations/REPORT_Multiple_All_Partial_Reported_12345678901/paymentoptions/123456IUVMULTIPLEMOCK4/transfers/5/report")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
@@ -698,13 +698,13 @@ class PaymentsControllerTest {
 				.value(PaymentOptionStatus.PO_PAID.toString()));
 		
 		// effettuo la rendicontazione per le 2 transazioni della PO ancora in stato PAID 
-		mvc.perform(post("/organizations/REPORT_Multiple_All_Partial_Reported_12345678901/paymentoptions/123456IUVMULTIPLEMOCK5/transfers/id_4/report")
+		mvc.perform(post("/organizations/REPORT_Multiple_All_Partial_Reported_12345678901/paymentoptions/123456IUVMULTIPLEMOCK5/transfers/4/report")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(TransferStatus.T_REPORTED.toString()));
 		
-		mvc.perform(post("/organizations/REPORT_Multiple_All_Partial_Reported_12345678901/paymentoptions/123456IUVMULTIPLEMOCK5/transfers/id_5/report")
+		mvc.perform(post("/organizations/REPORT_Multiple_All_Partial_Reported_12345678901/paymentoptions/123456IUVMULTIPLEMOCK5/transfers/5/report")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
@@ -744,7 +744,7 @@ class PaymentsControllerTest {
 				.value(DebtPositionStatus.VALID.toString()));
 
 		// effettuo la rendicontazione per l'unica transazione della PO ma senza pagamenti in essere 
-		mvc.perform(post("/organizations/REPORT_409_12345678901/paymentoptions/123456IUVMOCK1/transfers/id_1/report")
+		mvc.perform(post("/organizations/REPORT_409_12345678901/paymentoptions/123456IUVMOCK1/transfers/1/report")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isConflict());
 		
 	}
@@ -777,7 +777,7 @@ class PaymentsControllerTest {
 				.value(DebtPositionStatus.PAID.toString()));
 		
 		// effettuo la rendicontazione per l'unica transazione della PO
-		mvc.perform(post("/organizations/REPORT_Multiple_409_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/transfers/id_3/report")
+		mvc.perform(post("/organizations/REPORT_Multiple_409_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/transfers/3/report")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
@@ -791,7 +791,7 @@ class PaymentsControllerTest {
 				.value(PaymentOptionStatus.PO_REPORTED.toString()));
 		
 		//provo a rendicontare nuovamente la transazione già rendicontata
-		mvc.perform(post("/organizations/REPORT_Multiple_409_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/transfers/id_3/report")
+		mvc.perform(post("/organizations/REPORT_Multiple_409_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/transfers/3/report")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isConflict());
 	}
 	
@@ -816,7 +816,7 @@ class PaymentsControllerTest {
 				.value(PaymentOptionStatus.PO_PAID.toString()));
 
 		// provo a rendicontare una transazione che non esiste
-		mvc.perform(post("/organizations/REPORT_Multiple_404_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/transfers/id_x/report")
+		mvc.perform(post("/organizations/REPORT_Multiple_404_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/transfers/x/report")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
 		
 	}
@@ -872,7 +872,7 @@ class PaymentsControllerTest {
 			Transfer localTransfer = new Transfer();
 			localMockPP.setStatus(DebtPositionStatus.PAID);
 			localMockPO.setStatus(PaymentOptionStatus.PO_PAID);
-			localTransfer.setIdTransfer("Txid");
+			localTransfer.setIdTransfer("1");
 			localMockPO.addTransfer(localTransfer);
 			localMockPO.setIsPartialPayment(false);
 			localMockPO.setIuv("mockIUV");

@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import javax.validation.constraints.NotBlank;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -17,6 +18,7 @@ public class TransferModel implements Serializable {
     private static final long serialVersionUID = 5593063492841435180L;
     
     @NotBlank(message = "id transfer is required")
+    @Schema(type = "string", allowableValues = {"1","2","3","4","5"})
     private String idTransfer;
     @NotBlank(message = "amount is required")
     private long amount;
