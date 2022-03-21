@@ -134,7 +134,8 @@ public class PaymentPositionCRUDService {
 
 	}
 
-	@Transactional(isolation = Isolation.SERIALIZABLE)
+
+	@Transactional
 	public void delete(@NotBlank String organizationFiscalCode, @NotBlank String iupd) {
 		PaymentPosition ppToRemove = this.getDebtPositionByIUPD(organizationFiscalCode, iupd);
 		if (DebtPositionStatus.getPaymentPosAlreadyPaidStatus().contains(ppToRemove.getStatus())){
@@ -144,7 +145,8 @@ public class PaymentPositionCRUDService {
 	}
 
 
-	@Transactional(isolation = Isolation.SERIALIZABLE)
+
+	@Transactional
 	public PaymentPosition update(@NotNull @Valid PaymentPositionModel paymentPositionModel, @NotBlank String organizationFiscalCode) {
 		
 		final String ERROR_UPDATE_LOG_MSG = "Error during debt position update: %s";
