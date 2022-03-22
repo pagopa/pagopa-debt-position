@@ -236,7 +236,6 @@ stages:
               imageName: "${{variables.CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(Build.BuildId)"
               slotName: production
 
-
   # Prod deploy
   - stage: PROD_deploy_approval
     condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'dev')) # TODO replace prod with dev
