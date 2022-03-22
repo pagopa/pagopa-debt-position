@@ -264,7 +264,7 @@ stages:
             inputs:
               onTimeout: 'reject'
   - stage: PROD_swapping_deployment
-    condition: succedeed()
+    condition: succeeded()
     jobs:
       - job: prodDeployJava
         steps:
