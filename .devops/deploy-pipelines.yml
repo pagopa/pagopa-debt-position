@@ -269,7 +269,7 @@ stages:
           - task: AzureAppServiceManage@0
             displayName: Swapping Preview App Service Deploy
             inputs:
-              Action: "Start Swap with Preview"
+              action: "Start Swap with Preview"
               ConnectedServiceName: $(AZURE_SUBSCRIPTION)
               WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
               ResourceGroupName: $(RESOURCE_GROUP)
@@ -287,7 +287,7 @@ stages:
           - task: AzureAppServiceManage@0
             displayName: Complete Swapping App Service Deploy
             inputs:
-              Action: "Complete Swap"
+              action: "Complete Swap"
               ConnectedServiceName: $(AZURE_SUBSCRIPTION)
               WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
               ResourceGroupName: $(RESOURCE_GROUP)
