@@ -251,18 +251,18 @@ stages:
             inputs:
               onTimeout: 'reject'
   - stage: PROD_swapping_deployment
-      condition: not(failed('Deploy_PROD_WaitForApproval'))
-      jobs:
-        - job: prodDeployJava
-          steps:
-            # deploy gpd | payments - swap
-            - task: AzureAppServiceManage@0
-              displayName: Swapping Deployment App Service
+    condition: not(failed('Deploy_PROD_WaitForApproval'))
+    jobs:
+      - job: prodDeployJava
+        steps:
+          # deploy gpd | payments - swap
+          - task: AzureAppServiceManage@0
+            displayName: Swapping Deployment App Service
 
-              inputs:
-                ConnectedServiceName: $(AZURE_SUBSCRIPTION)
-                WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
-                ResourceGroupName: $(RESOURCE_GROUP)
-                SourceSlot: staging
-                SwapWithProduction: true
-                Slot: production
+            inputs:
+              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
+              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+              ResourceGroupName: $(RESOURCE_GROUP)
+              SourceSlot: staging
+              SwapWithProduction: true
+              Slot: production
