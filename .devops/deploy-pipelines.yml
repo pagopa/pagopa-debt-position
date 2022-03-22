@@ -229,15 +229,15 @@ stages:
               slotName: staging
 
           - task: AzureRMWebAppDeployment@4
-              displayName: Deployment App Service
-              condition: and(or(eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.REPOSITORY }}', 'payments'), or(eq('${{ parameters.ENV }}', 'prod'), eq('${{ parameters.ENV }}', 'uat')) # TODO replace PROD with DEV
-              inputs:
-                appType: webAppContainer
-                ConnectedServiceName: $(AZURE_SUBSCRIPTION)
-                WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
-                DockerNamespace: "${{variables.CONTAINER_NAMESPACE}}"
-                DockerRepository: "${{ parameters.REPOSITORY }}"
-                DockerImageTag: "$(Build.BuildId)"
+            displayName: Deployment App Service
+            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), in('${{ parameters.ENV }}', 'prod', 'uat')) # TODO replace PROD with DEV
+            inputs:
+              appType: webAppContainer
+              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
+              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+              DockerNamespace: "${{variables.CONTAINER_NAMESPACE}}"
+              DockerRepository: "${{ parameters.REPOSITORY }}"
+              DockerImageTag: "$(Build.BuildId)"
 
           # deploy reporting-fn
           - task: AzureFunctionAppContainer@1
