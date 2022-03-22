@@ -251,7 +251,7 @@ stages:
 
       # deploy gpd | payments - swap
       - job: prodDeployJava
-        dependsOn: PROD_deploy_approval
+        dependsOn: Deploy_PROD_WaitForApproval
         steps:
           - task: AzureAppServiceManage@0
             displayName: Swapping Deployment App Service
