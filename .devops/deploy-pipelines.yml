@@ -203,20 +203,8 @@ stages:
                 latest
                 $(pomversion.next)
 
-          # deploy staging gpd | payments - stage
-          - task: AzureWebAppContainer@1
-            displayName: Staging Deployment Staging App Service
-            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'dev')) # TODO replace DEV with PROD
-            inputs:
-              azureSubscription: $(AZURE_SUBSCRIPTION)
-              appName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
-              containers: $(CONTAINER_NAMESPACE)/$(parameters.REPOSITORY):$(Build.BuildId)
-              deployToSlotOrASE: true
-              resourceGroupName: $(RESOURCE_GROUP)
-              slotName: staging
-
           - task: AzureRMWebAppDeployment@4
-            displayName: Deployment App Service
+            displayName: "Deployment App Service [DEV|UAT]"
             condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), in('${{ parameters.ENV }}', 'prod', 'uat')) # TODO replace PROD with DEV
             inputs:
               appType: webAppContainer
@@ -225,6 +213,18 @@ stages:
               DockerNamespace: "${{variables.CONTAINER_NAMESPACE}}"
               DockerRepository: "${{ parameters.REPOSITORY }}"
               DockerImageTag: "$(Build.BuildId)"
+
+          # deploy staging gpd | payments - stage
+          - task: AzureWebAppContainer@1
+            displayName: "Deployment Staging App Service [PROD]"
+            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'dev')) # TODO replace DEV with PROD
+            inputs:
+              azureSubscription: $(AZURE_SUBSCRIPTION)
+              appName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+              containers: $(CONTAINER_NAMESPACE)/$(parameters.REPOSITORY):$(Build.BuildId)
+              deployToSlotOrASE: true
+              resourceGroupName: $(RESOURCE_GROUP)
+              slotName: staging
 
           # deploy reporting-fn
           - task: AzureFunctionAppContainer@1
@@ -247,13 +247,14 @@ stages:
         timeoutInMinutes: 4320 # 3 days
         steps:
           - task: ManualValidation@0
+            displayName: Manual Approval
             timeoutInMinutes: 4320 # 3 days
             inputs:
               onTimeout: 'reject'
 
-      # deploy gpd | payments - swap
-      - job: prodDeployJava
-        steps:
+#      - job: prodDeployJava
+#        steps:
+          # deploy gpd | payments - swap
           - task: AzureAppServiceManage@0
             displayName: Swapping Deployment App Service
             condition: succedeed()
