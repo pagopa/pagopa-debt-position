@@ -135,8 +135,8 @@ stages:
               title: $(title)
               addChangelog: true
 
-  - stage: PROD_Deploy_approval
-    condition: and(not(failed('releaseService')), in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'dev')) # TODO replace prod with dev
+  - stage: PROD_deploy_approval
+    condition: in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'dev') # TODO replace prod with dev
     jobs:
       - job: Deploy_PROD_WaitForApproval
         displayName: Wait for PROD approval
@@ -251,7 +251,7 @@ stages:
 
       # deploy gpd | payments - swap
       - job: prodDeployJava
-        dependsOn: PROD_Deploy_approval
+        dependsOn: PROD_deploy_approval
         steps:
           - task: AzureAppServiceManage@0
             displayName: Swapping Deployment App Service
