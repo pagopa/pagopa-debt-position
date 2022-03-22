@@ -136,7 +136,7 @@ stages:
               addChangelog: true
 
   - stage: PROD_deploy_approval
-    condition: in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'dev') # TODO replace prod with dev
+    condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'dev')) # TODO replace prod with dev
     jobs:
       - job: Deploy_PROD_WaitForApproval
         displayName: Wait for PROD approval
