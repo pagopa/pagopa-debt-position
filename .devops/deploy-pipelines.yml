@@ -215,16 +215,29 @@ stages:
               DockerImageTag: "$(Build.BuildId)"
 
           # deploy staging gpd | payments - stage
-          - task: AzureWebAppContainer@1
+#          - task: AzureWebAppContainer@1
+#            displayName: "Deployment Staging App Service [PROD]"
+#            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'dev')) # TODO replace DEV with PROD
+#            inputs:
+#              azureSubscription: $(AZURE_SUBSCRIPTION)
+#              appName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+#              containers: $(CONTAINER_NAMESPACE)/$(parameters.REPOSITORY):$(Build.BuildId)
+#              deployToSlotOrASE: true
+#              resourceGroupName: $(RESOURCE_GROUP)
+#              slotName: staging
+          - task: AzureRMWebAppDeployment@4
             displayName: "Deployment Staging App Service [PROD]"
             condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'dev')) # TODO replace DEV with PROD
             inputs:
-              azureSubscription: $(AZURE_SUBSCRIPTION)
-              appName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
-              containers: $(CONTAINER_NAMESPACE)/$(parameters.REPOSITORY):$(Build.BuildId)
+              appType: webAppContainer
+              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
+              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+              DockerNamespace: "${{variables.CONTAINER_NAMESPACE}}"
+              DockerRepository: "${{ parameters.REPOSITORY }}"
+              DockerImageTag: "$(Build.BuildId)"
               deployToSlotOrASE: true
-              resourceGroupName: $(RESOURCE_GROUP)
               slotName: staging
+              resourceGroupName: $(RESOURCE_GROUP)
 
           # deploy reporting-fn
           - task: AzureFunctionAppContainer@1
@@ -251,7 +264,7 @@ stages:
             inputs:
               onTimeout: 'reject'
   - stage: PROD_swapping_deployment
-    condition: not(failed('Deploy_PROD_WaitForApproval'))
+    condition: succedeed()
     jobs:
       - job: prodDeployJava
         steps:
