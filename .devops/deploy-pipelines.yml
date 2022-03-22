@@ -230,7 +230,7 @@ stages:
 
           - task: AzureRMWebAppDeployment@4
               displayName: Deployment App Service
-              condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), in('${{ parameters.ENV }}', 'prod', 'uat')) # TODO replace PROD with DEV
+              condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), or(eq('${{ parameters.ENV }}', 'prod'), eq('${{ parameters.ENV }}', 'uat')) # TODO replace PROD with DEV
               inputs:
                 appType: webAppContainer
                 ConnectedServiceName: $(AZURE_SUBSCRIPTION)
