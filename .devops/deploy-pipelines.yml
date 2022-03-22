@@ -249,17 +249,17 @@ stages:
               imageName: "${{variables.CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(Build.BuildId)"
               slotName: production
 
+      # deploy gpd | payments - swap
       - job: prodDeployJava
         dependsOn: PROD_Deploy_approval
-
-          # deploy gpd | payments - swap
-        - task: AzureAppServiceManage@0
-          displayName: Swapping Deployment App Service
-          condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'prod'))
-          inputs:
-            ConnectedServiceName: $(AZURE_SUBSCRIPTION)
-            WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
-            ResourceGroupName: $(RESOURCE_GROUP)
-            SourceSlot: staging
-            SwapWithProduction: true
-            Slot: production
+        steps:
+          - task: AzureAppServiceManage@0
+            displayName: Swapping Deployment App Service
+            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'prod'))
+            inputs:
+              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
+              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+              ResourceGroupName: $(RESOURCE_GROUP)
+              SourceSlot: staging
+              SwapWithProduction: true
+              Slot: production
