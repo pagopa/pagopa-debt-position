@@ -266,9 +266,8 @@ stages:
               steps:
                 # deploy gpd | payments - swap
                 - task: AzureAppServiceManage@0
-                  displayName: Complete Swapping App Service Deploy
+                  displayName: Swapping App Service Deploy
                   inputs:
-                    Action: 'Complete Swap'
                     ConnectedServiceName: $(AZURE_SUBSCRIPTION)
                     WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
                     ResourceGroupName: $(RESOURCE_GROUP)
