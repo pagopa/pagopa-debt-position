@@ -215,16 +215,6 @@ stages:
               DockerImageTag: "$(Build.BuildId)"
 
           # deploy staging gpd | payments - stage
-#          - task: AzureWebAppContainer@1
-#            displayName: "Deployment Staging App Service [PROD]"
-#            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'dev')) # TODO replace DEV with PROD
-#            inputs:
-#              azureSubscription: $(AZURE_SUBSCRIPTION)
-#              appName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
-#              containers: $(CONTAINER_NAMESPACE)/$(parameters.REPOSITORY):$(Build.BuildId)
-#              deployToSlotOrASE: true
-#              resourceGroupName: $(RESOURCE_GROUP)
-#              slotName: staging
           - task: AzureRMWebAppDeployment@4
             displayName: "Deployment Staging App Service [PROD]"
             condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'dev')) # TODO replace DEV with PROD
@@ -253,44 +243,48 @@ stages:
   - stage: PROD_deploy_approval
     condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'dev')) # TODO replace prod with dev
     jobs:
-#      - job: Deploy_PROD_WaitForApproval
-#        displayName: Wait for PROD approval
-#        pool: server
-#        timeoutInMinutes: 4320 # 3 days
-#        steps:
-#          - task: ManualValidation@0
-#            displayName: Manual Approval
-#            timeoutInMinutes: 4320 # 3 days
-#            inputs:
-#              onTimeout: 'reject'
-      - job: previewProdDeployJava
+      - job: Deploy_PROD_WaitForApproval
+        displayName: Wait for PROD approval
+        pool: server
+        timeoutInMinutes: 4320 # 3 days
         steps:
-          # deploy gpd | payments - swap
-          - task: AzureAppServiceManage@0
-            displayName: Swapping Preview App Service Deploy
+          - task: ManualValidation@0
+            displayName: Manual Approval
+            timeoutInMinutes: 4320 # 3 days
             inputs:
-              Action: 'Start Swap With Preview'
-              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
-              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
-              ResourceGroupName: $(RESOURCE_GROUP)
-              SourceSlot: staging
-              SwapWithProduction: true
-              Slot: production
+              onTimeout: 'reject'
 
   - stage: PROD_swapping_deployment
     dependsOn: [PROD_deploy_approval]
     condition: succeeded()
     jobs:
-      - job: completeProdDeployJava
-        steps:
-          # deploy gpd | payments - swap
-          - task: AzureAppServiceManage@0
-            displayName: Complete Swapping App Service Deploy
-            inputs:
-              Action: 'Complete Swap'
-              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
-              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
-              ResourceGroupName: $(RESOURCE_GROUP)
-              SourceSlot: staging
-              SwapWithProduction: true
-              Slot: production
+      - deployment: apply
+        continueOnError: false
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                # deploy gpd | payments - swap
+                - task: AzureAppServiceManage@0
+                  displayName: Complete Swapping App Service Deploy
+                  inputs:
+                    Action: 'Complete Swap'
+                    ConnectedServiceName: $(AZURE_SUBSCRIPTION)
+                    WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+                    ResourceGroupName: $(RESOURCE_GROUP)
+                    SourceSlot: staging
+                    SwapWithProduction: true
+                    Slot: production
+#      - job: completeProdDeployJava
+#        steps:
+#          # deploy gpd | payments - swap
+#          - task: AzureAppServiceManage@0
+#            displayName: Complete Swapping App Service Deploy
+#            inputs:
+#              Action: 'Complete Swap'
+#              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
+#              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+#              ResourceGroupName: $(RESOURCE_GROUP)
+#              SourceSlot: staging
+#              SwapWithProduction: true
+#              Slot: production
