@@ -244,12 +244,12 @@ stages:
     condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'dev')) # TODO replace prod with dev
     jobs:
       - job: waitForApprovalPROD
-        displayName: Wait for PROD approval
+        displayName: waiting for approval
         pool: server
         timeoutInMinutes: 4320 # 3 days
         continueOnError: false
         steps:
-          - task: ManualValidation@0
+          - task: ManualIntervention@8
             displayName: Manual Approval
             timeoutInMinutes: 4320 # 3 days
             inputs:
