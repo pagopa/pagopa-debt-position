@@ -158,7 +158,7 @@ stages:
             displayName: Set Maven Cache
 
           - task: Bash@3
-            name: POM version
+            name: pomversion
             inputs:
               targetType: "inline"
               script: |
@@ -168,7 +168,7 @@ stages:
 
           - task: Bash@3
             # When the maven task is installed, mvn can be used in a script
-            name: Maven version
+            name: mvn_get_version
             inputs:
               targetType: "inline"
               script: |
