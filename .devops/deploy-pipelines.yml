@@ -222,7 +222,7 @@ stages:
 
           - task: AzureRMWebAppDeployment@4
             displayName: "Deployment App Service [DEV|UAT]"
-            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), in('${{ parameters.ENV }}', 'prod', 'uat')) # TODO replace PROD with DEV
+            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), in('${{ parameters.ENV }}', 'dev', 'uat'))
             inputs:
               appType: webAppContainer
               ConnectedServiceName: $(AZURE_SUBSCRIPTION)
@@ -234,7 +234,7 @@ stages:
           # deploy staging gpd | payments - stage
           - task: AzureRMWebAppDeployment@4
             displayName: "Deployment Staging App Service [PROD]"
-            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'dev')) # TODO replace DEV with PROD
+            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'prod'))
             inputs:
               appType: webAppContainer
               ConnectedServiceName: $(AZURE_SUBSCRIPTION)
@@ -258,7 +258,7 @@ stages:
 
   # Prod deploy
   - stage: deployApprovalPROD
-    condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'dev')) # TODO replace prod with dev
+    condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'prod'))
     jobs:
       - job: waitForApprovalPROD
         displayName: waiting for approval
