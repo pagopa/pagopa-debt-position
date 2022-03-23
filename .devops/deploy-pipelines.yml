@@ -257,7 +257,7 @@ stages:
               slotName: production
 
   # Prod deploy
-  - stage: deployApproval_PROD
+  - stage: deployApprovalPROD
     condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'dev')) # TODO replace prod with dev
     jobs:
       - job: waitForApprovalPROD
@@ -271,7 +271,7 @@ stages:
             inputs:
               onTimeout: "reject"
       - job: completeProdDeployJava
-        displayName: complete prod  deploy
+        displayName: complete prod deploy
         dependsOn: waitForApprovalPROD
         steps:
           # deploy gpd | payments - swap
