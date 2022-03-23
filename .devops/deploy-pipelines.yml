@@ -260,7 +260,7 @@ stages:
     jobs:
       - deployment: apply
         continueOnError: false
-        environment: 'prod'
+        environment: 'dev'
         strategy:
           runOnce:
             deploy:
