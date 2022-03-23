@@ -260,13 +260,14 @@ stages:
     jobs:
       - deployment: apply
         continueOnError: false
+        environment: 'prod'
         strategy:
           runOnce:
             deploy:
               steps:
                 # deploy gpd | payments - swap
                 - task: AzureAppServiceManage@0
-                  displayName: Swapping App Service Deploy
+                  displayName: Deploy Swapping App Service
                   inputs:
                     ConnectedServiceName: $(AZURE_SUBSCRIPTION)
                     WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
