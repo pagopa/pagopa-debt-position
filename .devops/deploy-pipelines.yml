@@ -260,7 +260,6 @@ stages:
           - task: AzureAppServiceManage@0
             displayName: Swapping App Service Deploy
             inputs:
-              Action: 'Complete Swap'
               ConnectedServiceName: $(AZURE_SUBSCRIPTION)
               WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
               ResourceGroupName: $(RESOURCE_GROUP)
