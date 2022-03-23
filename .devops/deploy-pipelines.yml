@@ -158,7 +158,7 @@ stages:
             displayName: Set Maven Cache
 
           - task: Bash@3
-            name: pomversion
+            name: POM version
             inputs:
               targetType: "inline"
               script: |
@@ -168,7 +168,7 @@ stages:
 
           - task: Bash@3
             # When the maven task is installed, mvn can be used in a script
-            name: mvn_get_version
+            name: Maven version
             inputs:
               targetType: "inline"
               script: |
@@ -176,7 +176,7 @@ stages:
               failOnStderr: true
 
           - task: Maven@3
-            displayName: Build Module
+            displayName: Build Module [DEV]
             condition: eq('${{ parameters.ENV }}', 'dev')
             inputs:
               mavenPomFile: "${{ parameters.REPOSITORY }}/pom.xml"
@@ -192,7 +192,7 @@ stages:
               goals: "install"
 
           - task: Maven@3
-            displayName: Build All
+            displayName: Build All [UAT|PROD]
             condition: in('${{ parameters.ENV }}', 'uat', 'prod')
             inputs:
               mavenPomFile: "./pom.xml"
@@ -257,7 +257,7 @@ stages:
               slotName: production
 
   # Prod deploy
-  - stage: PROD_deploy_approval
+  - stage: deployApproval_PROD
     condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'dev')) # TODO replace prod with dev
     jobs:
       - job: waitForApprovalPROD
@@ -271,6 +271,7 @@ stages:
             inputs:
               onTimeout: "reject"
       - job: completeProdDeployJava
+        displayName: complete prod  deploy
         dependsOn: waitForApprovalPROD
         steps:
           # deploy gpd | payments - swap
@@ -283,20 +284,3 @@ stages:
               SourceSlot: staging
               SwapWithProduction: true
               Slot: production
-
-#  - stage: PROD_swapping_deployment
-#    dependsOn: [PROD_deploy_approval]
-#    jobs:
-#      - job: completeProdDeployJava
-#        steps:
-#          # deploy gpd | payments - swap
-#          - task: AzureAppServiceManage@0
-#            displayName: Complete Swapping App Service Deploy
-#            inputs:
-#              Action: 'Complete Swap'
-#              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
-#              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
-#              ResourceGroupName: $(RESOURCE_GROUP)
-#              SourceSlot: staging
-#              SwapWithProduction: true
-#              Slot: production
