@@ -176,7 +176,24 @@ stages:
               failOnStderr: true
 
           - task: Maven@3
-            displayName: Build
+            displayName: Build Module
+            condition: eq('${{ parameters.ENV }}', 'dev')
+            inputs:
+              mavenPomFile: "${{ parameters.REPOSITORY }}/pom.xml"
+              mavenOptions: "-Xmx3072m $(MAVEN_OPTS)"
+              mavenVersionOption: 'Default'
+              javaHomeOption: "JDKVersion"
+              jdkVersionOption: "1.11"
+              jdkArchitectureOption: "x64"
+              testResultsFiles: "**/surefire-reports/TEST-*.xml"
+              publishJUnitResults: true
+              effectivePomSkip: false
+              sonarQubeRunAnalysis: false
+              goals: "install"
+
+          - task: Maven@3
+            displayName: Build All
+            condition: in('${{ parameters.ENV }}', 'uat', 'prod')
             inputs:
               mavenPomFile: "./pom.xml"
               mavenOptions: "-Xmx3072m $(MAVEN_OPTS)"
