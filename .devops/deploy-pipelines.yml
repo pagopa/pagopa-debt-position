@@ -249,20 +249,16 @@ stages:
         timeoutInMinutes: 4320 # 3 days
         continueOnError: false
         steps:
-          - task: ManualIntervention@8
+          - task: ManualValidation@0
             displayName: Manual Approval
-            timeoutInMinutes: 4320 # 3 days
             inputs:
-              onTimeout: 'reject'
-
-  - stage: PROD_swapping_deployment
-    dependsOn: [PROD_deploy_approval]
-    jobs:
+              onTimeout: "reject"
       - job: completeProdDeployJava
+        dependsOn: waitForApprovalPROD
         steps:
           # deploy gpd | payments - swap
           - task: AzureAppServiceManage@0
-            displayName: Complete Swapping App Service Deploy
+            displayName: Swapping App Service Deploy
             inputs:
               Action: 'Complete Swap'
               ConnectedServiceName: $(AZURE_SUBSCRIPTION)
@@ -271,3 +267,20 @@ stages:
               SourceSlot: staging
               SwapWithProduction: true
               Slot: production
+
+#  - stage: PROD_swapping_deployment
+#    dependsOn: [PROD_deploy_approval]
+#    jobs:
+#      - job: completeProdDeployJava
+#        steps:
+#          # deploy gpd | payments - swap
+#          - task: AzureAppServiceManage@0
+#            displayName: Complete Swapping App Service Deploy
+#            inputs:
+#              Action: 'Complete Swap'
+#              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
+#              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+#              ResourceGroupName: $(RESOURCE_GROUP)
+#              SourceSlot: staging
+#              SwapWithProduction: true
+#              Slot: production
