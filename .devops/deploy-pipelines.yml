@@ -256,35 +256,18 @@ stages:
 
   - stage: PROD_swapping_deployment
     dependsOn: [PROD_deploy_approval]
-    condition: succeeded()
+    condition: and(succeeded(), eq('${{ parameters.ENV }}', 'dev')) # TODO replace prod with dev
     jobs:
-      - deployment: apply
-        continueOnError: false
-        environment: 'dev'
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                # deploy gpd | payments - swap
-                - task: AzureAppServiceManage@0
-                  displayName: Deploy Swapping App Service
-                  inputs:
-                    ConnectedServiceName: $(AZURE_SUBSCRIPTION)
-                    WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
-                    ResourceGroupName: $(RESOURCE_GROUP)
-                    SourceSlot: staging
-                    SwapWithProduction: true
-                    Slot: production
-#      - job: completeProdDeployJava
-#        steps:
-#          # deploy gpd | payments - swap
-#          - task: AzureAppServiceManage@0
-#            displayName: Complete Swapping App Service Deploy
-#            inputs:
-#              Action: 'Complete Swap'
-#              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
-#              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
-#              ResourceGroupName: $(RESOURCE_GROUP)
-#              SourceSlot: staging
-#              SwapWithProduction: true
-#              Slot: production
+      - job: completeProdDeployJava
+        steps:
+          # deploy gpd | payments - swap
+          - task: AzureAppServiceManage@0
+            displayName: Complete Swapping App Service Deploy
+            inputs:
+              Action: 'Complete Swap'
+              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
+              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+              ResourceGroupName: $(RESOURCE_GROUP)
+              SourceSlot: staging
+              SwapWithProduction: true
+              Slot: production
