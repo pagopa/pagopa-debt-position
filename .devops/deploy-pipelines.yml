@@ -298,7 +298,7 @@ stages:
 
       - job: loadTests
         dependsOn: integrationTests
-        condition: eq('${{ parameters.REPOSITORY }}', 'gpd'))
+        condition: eq('${{ parameters.REPOSITORY }}', 'gpd')
         steps:
 
           - script: |
@@ -311,6 +311,7 @@ stages:
           - script: |
               k6 run -e BASE_URL=https://api.${{ parameters.ENV }}.platform.pagopa.it/gpd/api/v1 gpd/load-test/src/create_debt_postion.js
             displayName: 'Run load test create debt position'
+            continueOnError: true
 
           - script: |
               k6 run -e BASE_URL=https://api.${{ parameters.ENV }}.platform.pagopa.it/gpd/api/v1 gpd/load-test/src/payments_workflow.js
