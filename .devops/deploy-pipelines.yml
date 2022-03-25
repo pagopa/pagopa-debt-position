@@ -273,7 +273,8 @@ stages:
 
   # Prod deploy
   - stage: deployApprovalPROD
-    #condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'prod'))
+    condition: eq('${{ parameters.ENV }}', 'dev')
+    dependsOn: deploy
     pool:
       vmImage: "ubuntu-latest"
     jobs:
@@ -287,6 +288,7 @@ stages:
             displayName: Manual Approval
             inputs:
               onTimeout: "reject"
+              
       - job: completeProdDeployJava
         condition: in('${{ parameters.REPOSITORY }}', 'gpd', 'payments')
         displayName: complete prod deploy
@@ -324,6 +326,7 @@ stages:
   - stage: test
     # run stage 'test' only if TEST is equal to true
     condition: and(not(failed('deployJava')), eq('${{ parameters.TEST }}', 'true'))
+    dependsOn: deploy
     pool:
       vmImage: "ubuntu-latest"
     jobs:
