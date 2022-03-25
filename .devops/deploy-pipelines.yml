@@ -140,144 +140,143 @@ stages:
               addChangelog: true
 
   # Deploy on Azure
-#  - stage: deploy
-#    condition: not(failed('releaseService'))
-#    pool:
-#      vmImage: "ubuntu-latest"
-#    jobs:
-#      - job: deployJava
-#        steps:
-#          - checkout: self
-#            clean: true
-#            persistCredentials: true
-#            submodules: true
-#
-#          - task: Cache@2
-#            inputs:
-#              key: 'maven | "$(Agent.OS)" | pom.xml'
-#              restoreKeys: |
-#                maven | "$(Agent.OS)"
-#                maven
-#              path: $(MAVEN_CACHE_FOLDER)
-#            displayName: Set Maven Cache
-#
-#          - task: Bash@3
-#            name: pomversion
-#            inputs:
-#              targetType: "inline"
-#              script: |
-#                version=$(mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)
-#                echo "##vso[task.setvariable variable=next;isOutput=true]$version"
-#              failOnStderr: true
-#
-#          - task: Bash@3
-#            # When the maven task is installed, mvn can be used in a script
-#            name: mvn_get_version
-#            inputs:
-#              targetType: "inline"
-#              script: |
-#                mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout
-#              failOnStderr: true
-#
-#          - task: Maven@3
-#            displayName: Build Module [DEV]
-#            condition: eq('${{ parameters.ENV }}', 'dev')
-#            inputs:
-#              mavenPomFile: "${{ parameters.REPOSITORY }}/pom.xml"
-#              mavenOptions: "-Xmx3072m $(MAVEN_OPTS)"
-#              mavenVersionOption: 'Default'
-#              javaHomeOption: "JDKVersion"
-#              jdkVersionOption: "1.11"
-#              jdkArchitectureOption: "x64"
-#              testResultsFiles: "**/surefire-reports/TEST-*.xml"
-#              publishJUnitResults: true
-#              effectivePomSkip: false
-#              sonarQubeRunAnalysis: false
-#              goals: "install"
-#
-#          - task: Maven@3
-#            displayName: Build All [UAT|PROD]
-#            condition: in('${{ parameters.ENV }}', 'uat', 'prod')
-#            inputs:
-#              mavenPomFile: "./pom.xml"
-#              mavenOptions: "-Xmx3072m $(MAVEN_OPTS)"
-#              mavenVersionOption: 'Default'
-#              javaHomeOption: "JDKVersion"
-#              jdkVersionOption: "1.11"
-#              jdkArchitectureOption: "x64"
-#              testResultsFiles: "**/surefire-reports/TEST-*.xml"
-#              publishJUnitResults: true
-#              effectivePomSkip: false
-#              sonarQubeRunAnalysis: false
-#              goals: "install"
-#
-#          - task: Docker@2
-#            displayName: Build and push image to container registry
-#            inputs:
-#              command: 'buildAndPush'
-#              containerRegistry: '$(CONTAINER_REGISTRY)'
-#              repository: '${{ parameters.REPOSITORY }}'
-#              buildContext: './${{ parameters.REPOSITORY }}'
-#              Dockerfile: './${{ parameters.REPOSITORY }}/Dockerfile.deploy'
-#              tags: |
-#                $(Build.BuildId)
-#                latest
-#                $(pomversion.next)
-#
-#          - task: AzureRMWebAppDeployment@4
-#            displayName: "Deployment App Service [DEV|UAT]"
-#            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), in('${{ parameters.ENV }}', 'dev', 'uat'))
-#            inputs:
-#              appType: webAppContainer
-#              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
-#              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
-#              DockerNamespace: "${{variables.CONTAINER_NAMESPACE}}"
-#              DockerRepository: "${{ parameters.REPOSITORY }}"
-#              DockerImageTag: "$(Build.BuildId)"
-#
-#          # deploy staging gpd | payments - stage
-#          - task: AzureRMWebAppDeployment@4
-#            displayName: "Deployment Staging App Service [PROD]"
-#            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'prod'))
-#            inputs:
-#              appType: webAppContainer
-#              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
-#              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
-#              DockerNamespace: "${{variables.CONTAINER_NAMESPACE}}"
-#              DockerRepository: "${{ parameters.REPOSITORY }}"
-#              DockerImageTag: "$(Build.BuildId)"
-#              deployToSlotOrASE: true
-#              slotName: staging
-#              resourceGroupName: $(RESOURCE_GROUP)
-#
-#          # deploy reporting-fn
-#          - task: AzureFunctionAppContainer@1
-#            displayName: Deploy Function App
-#            condition: in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service')
-#            inputs:
-#              azureSubscription: $(AZURE_SUBSCRIPTION)
-#              appName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
-#              imageName: "${{variables.CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(Build.BuildId)"
-#              slotName: production
+  - stage: deploy
+    condition: not(failed('releaseService'))
+    pool:
+      vmImage: "ubuntu-latest"
+    jobs:
+      - job: deployJava
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+            submodules: true
+
+          - task: Cache@2
+            inputs:
+              key: 'maven | "$(Agent.OS)" | pom.xml'
+              restoreKeys: |
+                maven | "$(Agent.OS)"
+                maven
+              path: $(MAVEN_CACHE_FOLDER)
+            displayName: Set Maven Cache
+
+          - task: Bash@3
+            name: pomversion
+            inputs:
+              targetType: "inline"
+              script: |
+                version=$(mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)
+                echo "##vso[task.setvariable variable=next;isOutput=true]$version"
+              failOnStderr: true
+
+          - task: Bash@3
+            # When the maven task is installed, mvn can be used in a script
+            name: mvn_get_version
+            inputs:
+              targetType: "inline"
+              script: |
+                mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout
+              failOnStderr: true
+
+          - task: Maven@3
+            displayName: Build Module [DEV]
+            condition: eq('${{ parameters.ENV }}', 'dev')
+            inputs:
+              mavenPomFile: "${{ parameters.REPOSITORY }}/pom.xml"
+              mavenOptions: "-Xmx3072m $(MAVEN_OPTS)"
+              mavenVersionOption: 'Default'
+              javaHomeOption: "JDKVersion"
+              jdkVersionOption: "1.11"
+              jdkArchitectureOption: "x64"
+              testResultsFiles: "**/surefire-reports/TEST-*.xml"
+              publishJUnitResults: true
+              effectivePomSkip: false
+              sonarQubeRunAnalysis: false
+              goals: "install"
+
+          - task: Maven@3
+            displayName: Build All [UAT|PROD]
+            condition: in('${{ parameters.ENV }}', 'uat', 'prod')
+            inputs:
+              mavenPomFile: "./pom.xml"
+              mavenOptions: "-Xmx3072m $(MAVEN_OPTS)"
+              mavenVersionOption: 'Default'
+              javaHomeOption: "JDKVersion"
+              jdkVersionOption: "1.11"
+              jdkArchitectureOption: "x64"
+              testResultsFiles: "**/surefire-reports/TEST-*.xml"
+              publishJUnitResults: true
+              effectivePomSkip: false
+              sonarQubeRunAnalysis: false
+              goals: "install"
+
+          - task: Docker@2
+            displayName: Build and push image to container registry
+            inputs:
+              command: 'buildAndPush'
+              containerRegistry: '$(CONTAINER_REGISTRY)'
+              repository: '${{ parameters.REPOSITORY }}'
+              buildContext: './${{ parameters.REPOSITORY }}'
+              Dockerfile: './${{ parameters.REPOSITORY }}/Dockerfile.deploy'
+              tags: |
+                $(Build.BuildId)
+                latest
+                $(pomversion.next)
+
+          - task: AzureRMWebAppDeployment@4
+            displayName: "Deployment App Service [DEV|UAT]"
+            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), in('${{ parameters.ENV }}', 'dev', 'uat'))
+            inputs:
+              appType: webAppContainer
+              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
+              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+              DockerNamespace: "${{variables.CONTAINER_NAMESPACE}}"
+              DockerRepository: "${{ parameters.REPOSITORY }}"
+              DockerImageTag: "$(Build.BuildId)"
+
+          # deploy staging gpd | payments - stage
+          - task: AzureRMWebAppDeployment@4
+            displayName: "Deployment Staging App Service [PROD]"
+            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'prod'))
+            inputs:
+              appType: webAppContainer
+              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
+              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+              DockerNamespace: "${{variables.CONTAINER_NAMESPACE}}"
+              DockerRepository: "${{ parameters.REPOSITORY }}"
+              DockerImageTag: "$(Build.BuildId)"
+              deployToSlotOrASE: true
+              slotName: staging
+              resourceGroupName: $(RESOURCE_GROUP)
+
+          # deploy reporting-fn
+          - task: AzureFunctionAppContainer@1
+            displayName: Deploy Function App
+            condition: in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service')
+            inputs:
+              azureSubscription: $(AZURE_SUBSCRIPTION)
+              appName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
+              imageName: "${{variables.CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(Build.BuildId)"
+              slotName: production
 
   # Integration/Load tests
   - stage: test
     # run stage 'test' only if TEST is equal to true
-#    condition: and(not(failed('deployJava')), eq('${{ parameters.TEST }}', 'true'))
-    condition: eq('${{ parameters.TEST }}', 'true')
+    condition: and(not(failed('deployJava')), eq('${{ parameters.TEST }}', 'true'))
     pool:
       vmImage: "ubuntu-latest"
     jobs:
       # is needed to wait for startup of application
-#      - job: waitStartup
-#        pool: Server
-#        steps:
-#          - task: Delay@1
-#            inputs:
-#              delayForMinutes: '5'
+      - job: waitStartup
+        pool: Server
+        steps:
+          - task: Delay@1
+            inputs:
+              delayForMinutes: '5'
 
       - job: integrationTests
-        # dependsOn: waitStartup
+        dependsOn: waitStartup
         steps:
           - script: |
               git checkout ${{variables['Build.SourceBranchName']}}
