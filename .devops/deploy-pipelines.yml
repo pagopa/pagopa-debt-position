@@ -299,7 +299,7 @@ stages:
 
       - job: loadTests
         dependsOn: integrationTests
-        condition: eq('${{ parameters.REPOSITORY }}', 'gpd'))
+        condition: eq('${{ parameters.REPOSITORY }}', 'gpd')
         steps:
 
           - script: |
