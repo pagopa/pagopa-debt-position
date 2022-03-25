@@ -334,6 +334,7 @@ stages:
   # Prod deploy
   - stage: deployApprovalPROD
     #condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'prod'))
+    dependsOn: []
     pool:
       vmImage: "ubuntu-latest"
     jobs:
