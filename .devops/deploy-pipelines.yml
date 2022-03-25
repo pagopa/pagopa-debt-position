@@ -141,7 +141,8 @@ stages:
 
   # Deploy on Azure
   - stage: deploy
-    condition: not(failed('releaseService'))
+    #condition: not(failed('releaseService'))
+    condition: eq('a', 'b')
     pool:
       vmImage: "ubuntu-latest"
     jobs:
@@ -333,6 +334,7 @@ stages:
   # Prod deploy
   - stage: deployApprovalPROD
     #condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'prod'))
+    condition: succeeded()
     jobs:
       - job: waitForApprovalPROD
         displayName: waiting for approval
