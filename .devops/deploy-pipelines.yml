@@ -253,7 +253,7 @@ stages:
           # deploy reporting-fn
           - task: AzureFunctionAppContainer@1
             displayName: Deploy Function App [DEV|UAT]
-            condition: and(in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service'), in('${{ parameters.ENV }}', 'dev', 'uat'))
+            condition: and(in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service'), in('${{ parameters.ENV }}', 'dev', 'uat', 'prod'))
             inputs:
               azureSubscription: $(AZURE_SUBSCRIPTION)
               appName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
@@ -261,7 +261,7 @@ stages:
               slotName: production
           - task: AzureFunctionAppContainer@1
             displayName: Deploy Function App [PROD]
-            condition: and(in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service'), eq('${{ parameters.ENV }}', 'prod'))
+            condition: and(in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service'), eq('${{ parameters.ENV }}', 'sdfasdfsaf'))
             inputs:
               azureSubscription: $(AZURE_SUBSCRIPTION)
               appName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
