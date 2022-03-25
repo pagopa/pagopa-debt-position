@@ -262,39 +262,39 @@ stages:
 
   # Integration/Load tests
   - stage: test
-      # run stage 'test' only if ENV is equal to 'test'
-      condition: and(not(failed('deployJava')), eq('${{ parameters.ENV }}', 'test'))
-      pool:
-        vmImage: "ubuntu-latest"
-      jobs:
-        # is needed to wait for startup of application
-        - job: waitStartup
-          pool: Server
-          steps:
-            - task: Delay@1
-              inputs:
-                delayForMinutes: '5'
+    # run stage 'test' only if ENV is equal to 'test'
+    condition: and(not(failed('deployJava')), eq('${{ parameters.ENV }}', 'test'))
+    pool:
+      vmImage: "ubuntu-latest"
+    jobs:
+      # is needed to wait for startup of application
+      - job: waitStartup
+        pool: Server
+        steps:
+          - task: Delay@1
+            inputs:
+              delayForMinutes: '5'
 
-        - job: integrationTests
-            dependsOn: waitStartup
-            steps:
-              - script: |
-                  git checkout ${{variables['Build.SourceBranchName']}}
+      - job: integrationTests
+        dependsOn: waitStartup
+        steps:
+          - script: |
+              git checkout ${{variables['Build.SourceBranchName']}}
 
-              - script: |
-                  yarn global add newman
-                displayName: 'newman installation'
+          - script: |
+              yarn global add newman
+            displayName: 'newman installation'
 
-              - script: |
-                  newman run "api-test/Debt Position.postman_collection.json" --environment=api-test/azure.${{ parameters.ENV }}.postman_environment.json --reporters cli,junit --reporter-junit-export Results/debtposition-TEST.xml
-                displayName: 'Run api test'
-                continueOnError: true
+          - script: |
+              newman run "api-test/Debt Position.postman_collection.json" --environment=api-test/azure.${{ parameters.ENV }}.postman_environment.json --reporters cli,junit --reporter-junit-export Results/debtposition-TEST.xml
+            displayName: 'Run api test'
+            continueOnError: true
 
-              - task: PublishTestResults@2
-                inputs:
-                  testResultsFormat: 'JUnit'
-                  testResultsFiles: '**/*-TEST.xml'
-                  searchFolder: '$(System.DefaultWorkingDirectory)'
+          - task: PublishTestResults@2
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/*-TEST.xml'
+              searchFolder: '$(System.DefaultWorkingDirectory)'
 
 
   # Prod deploy
