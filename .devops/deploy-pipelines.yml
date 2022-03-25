@@ -334,7 +334,8 @@ stages:
   # Prod deploy
   - stage: deployApprovalPROD
     #condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'prod'))
-    condition: succeeded()
+    pool:
+      vmImage: "ubuntu-latest"
     jobs:
       - job: waitForApprovalPROD
         displayName: waiting for approval
@@ -365,7 +366,7 @@ stages:
       - job: completeProdDeployFn
         condition: in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service')
         displayName: complete prod function deploy
-        dependsOn: waitForApprovalPROD
+        #dependsOn: waitForApprovalPROD
         steps:
           # deploy functions - swap
           - task: AzureAppServiceManage@0
