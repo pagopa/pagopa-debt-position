@@ -297,6 +297,28 @@ stages:
               testResultsFiles: '**/*-TEST.xml'
               searchFolder: '$(System.DefaultWorkingDirectory)'
 
+      - job: loadTests
+        dependsOn: integrationTests
+        condition: eq('${{ parameters.REPOSITORY }}', 'gpd'))
+        steps:
+
+          - script: |
+              sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+              echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+              sudo apt-get update
+              sudo apt-get install k6
+            displayName: 'k6 installation'
+
+          - script: |
+              k6 run -e BASE_URL=https://api.${{ parameters.ENV }}.platform.pagopa.it/gpd/api/v1 gpd/load-test/src/create_debt_postion.js
+            displayName: 'Run load test create debt position'
+
+          - script: |
+              k6 run -e BASE_URL=https://api.${{ parameters.ENV }}.platform.pagopa.it/gpd/api/v1 gpd/load-test/src/payments_workflow.js
+            displayName: 'Run load test payments workflow'
+            continueOnError: true
+
+
 
   # Prod deploy
   - stage: deployApprovalPROD
