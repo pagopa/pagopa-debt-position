@@ -270,6 +270,57 @@ stages:
 #              slotName: staging
 #              resourceGroupName: $(RESOURCE_GROUP)
 
+
+  # Prod deploy
+  - stage: deployApprovalPROD
+    #condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'prod'))
+    dependsOn: deploy
+    pool:
+      vmImage: "ubuntu-latest"
+    jobs:
+      - job: waitForApprovalPROD
+        displayName: waiting for approval
+        pool: server
+        timeoutInMinutes: 4320 # 3 days
+        continueOnError: false
+        steps:
+          - task: ManualValidation@0
+            displayName: Manual Approval
+            inputs:
+              onTimeout: "reject"
+      - job: completeProdDeployJava
+        condition: in('${{ parameters.REPOSITORY }}', 'gpd', 'payments')
+        displayName: complete prod deploy
+        dependsOn: waitForApprovalPROD
+        steps:
+          # deploy gpd | payments - swap
+          - task: AzureAppServiceManage@0
+            displayName: Swapping App Service Deploy
+            inputs:
+              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
+              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+              ResourceGroupName: $(RESOURCE_GROUP)
+              SourceSlot: staging
+              SwapWithProduction: true
+              Slot: production
+
+      - job: completeProdDeployFn
+        condition: in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service')
+        displayName: complete prod function deploy
+        dependsOn: waitForApprovalPROD
+        steps:
+          # deploy functions - swap
+          - task: AzureAppServiceManage@0
+            displayName: Swapping App Service Deploy
+            inputs:
+              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
+              WebAppName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
+              ResourceGroupName: $(RESOURCE_GROUP)
+              SourceSlot: staging
+              SwapWithProduction: true
+              Slot: production
+
+
   # Integration/Load tests
   - stage: test
     # run stage 'test' only if TEST is equal to true
@@ -327,54 +378,3 @@ stages:
               k6 run -e BASE_URL=https://api.${{ parameters.ENV }}.platform.pagopa.it/gpd/api/v1 gpd/load-test/src/payments_workflow.js
             displayName: 'Run load test payments workflow'
             continueOnError: true
-
-
-
-  # Prod deploy
-  - stage: deployApprovalPROD
-    #condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'prod'))
-    dependsOn: deploy
-    pool:
-      vmImage: "ubuntu-latest"
-    jobs:
-      - job: waitForApprovalPROD
-        displayName: waiting for approval
-        pool: server
-        timeoutInMinutes: 4320 # 3 days
-        continueOnError: false
-        steps:
-          - task: ManualValidation@0
-            displayName: Manual Approval
-            inputs:
-              onTimeout: "reject"
-      - job: completeProdDeployJava
-        condition: in('${{ parameters.REPOSITORY }}', 'gpd', 'payments')
-        displayName: complete prod deploy
-        dependsOn: waitForApprovalPROD
-        steps:
-          # deploy gpd | payments - swap
-          - task: AzureAppServiceManage@0
-            displayName: Swapping App Service Deploy
-            inputs:
-              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
-              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
-              ResourceGroupName: $(RESOURCE_GROUP)
-              SourceSlot: staging
-              SwapWithProduction: true
-              Slot: production
-
-      - job: completeProdDeployFn
-        condition: in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service')
-        displayName: complete prod function deploy
-        dependsOn: waitForApprovalPROD
-        steps:
-          # deploy functions - swap
-          - task: AzureAppServiceManage@0
-            displayName: Swapping App Service Deploy
-            inputs:
-              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
-              WebAppName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
-              ResourceGroupName: $(RESOURCE_GROUP)
-              SourceSlot: staging
-              SwapWithProduction: true
-              Slot: production
