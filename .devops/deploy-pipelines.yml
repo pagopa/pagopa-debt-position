@@ -252,13 +252,23 @@ stages:
 
           # deploy reporting-fn
           - task: AzureFunctionAppContainer@1
-            displayName: Deploy Function App
-            condition: in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service')
+            displayName: Deploy Function App [DEV|UAT]
+            condition: and(in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service'), in('${{ parameters.ENV }}', 'dev', 'uat'))
             inputs:
               azureSubscription: $(AZURE_SUBSCRIPTION)
               appName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
               imageName: "${{variables.CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(Build.BuildId)"
               slotName: production
+          - task: AzureFunctionAppContainer@1
+            displayName: Deploy Function App [PROD]
+            condition: and(in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service'), eq('${{ parameters.ENV }}', 'prod'))
+            inputs:
+              azureSubscription: $(AZURE_SUBSCRIPTION)
+              appName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
+              imageName: "${{variables.CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(Build.BuildId)"
+              deployToSlotOrASE: true
+              slotName: staging
+              resourceGroupName: $(RESOURCE_GROUP)
 
   # Integration/Load tests
   - stage: test
