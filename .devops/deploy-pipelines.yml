@@ -264,7 +264,7 @@ stages:
   - stage: test
     # run stage 'test' only if TEST is equal to true
 #    condition: and(not(failed('deployJava')), eq('${{ parameters.TEST }}', 'true'))
-    condition: eq('${{ parameters.TEST }}', 'true'))
+    condition: eq('${{ parameters.TEST }}', 'true')
     pool:
       vmImage: "ubuntu-latest"
     jobs:
@@ -277,7 +277,7 @@ stages:
 #              delayForMinutes: '5'
 
       - job: integrationTests
-        dependsOn: waitStartup
+        # dependsOn: waitStartup
         steps:
           - script: |
               git checkout ${{variables['Build.SourceBranchName']}}
