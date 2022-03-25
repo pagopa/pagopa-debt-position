@@ -277,7 +277,7 @@ stages:
 #              delayForMinutes: '5'
 
       - job: integrationTests
-        dependsOn: waitStartup
+        # dependsOn: waitStartup
         steps:
           - script: |
               git checkout ${{variables['Build.SourceBranchName']}}
