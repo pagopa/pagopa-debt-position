@@ -218,7 +218,7 @@ class DebtPositionControllerTest {
 		DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		String url = "/organizations/DUEDATEBETWEEN_12345678901/debtpositions?page=0" + "&due_date_from="
 				+ df.format(LocalDateTime.now(ZoneOffset.UTC)) + "&due_date_to="
-				+ df.format(LocalDateTime.now(ZoneOffset.UTC).plus(1, ChronoUnit.DAYS));
+				+ df.format(LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.DAYS));
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(2)))

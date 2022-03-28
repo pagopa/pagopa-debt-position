@@ -11,6 +11,11 @@
       "Host.Results": "Error",
       "Function": "Information",
       "Host.Aggregator": "Trace"
+    },
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": false
+      }
     }
   }
 }
