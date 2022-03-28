@@ -1,6 +1,7 @@
 package it.gov.pagopa.payments.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -12,6 +13,8 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -32,6 +35,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.RetryNoRetry;
+import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
 import com.microsoft.azure.storage.table.CloudTableClient;
 import com.microsoft.azure.storage.table.TableRequestOptions;
@@ -59,6 +63,7 @@ import it.gov.pagopa.payments.model.partner.PaVerifyPaymentNoticeReq;
 import it.gov.pagopa.payments.model.partner.PaVerifyPaymentNoticeRes;
 import it.gov.pagopa.payments.model.partner.StAmountOption;
 import it.gov.pagopa.payments.model.partner.StOutcome;
+import it.gov.pagopa.payments.utils.AzuriteStorageUtil;
 import lombok.extern.slf4j.Slf4j;
 
 @Testcontainers
@@ -340,28 +345,7 @@ class PartnerServiceTest {
             assertEquals(PaaErrorEnum.PAA_SYSTEM_ERROR, ex.getError());
         }
     }
-
-/*
-    @Test
-    void paSendRTTest() throws DatatypeConfigurationException, IOException {
-    	
-        // Test preconditions
-        PaSendRTReq requestBody = PaSendRTReqMock.getMock();
-
-        when(factory.createPaSendRTRes()).thenReturn(factoryUtil.createPaSendRTRes());
-
-        when(gpdClient.receiptPaymentOption(anyString(), anyString(), any(PaymentOptionModel.class)))
-                .thenReturn(MockUtil.readModelFromFile("gpd/receiptPaymentOption.json", PaymentOptionModelResponse.class));
-        
-        
-
-        // Test execution
-        PaSendRTRes responseBody = partnerService.paSendRT(requestBody);
-
-        // Test post condition
-        assertThat(responseBody.getOutcome()).isEqualTo(StOutcome.OK);
-    }
-*/    
+ 
     @Test
     void paSendRTTest() throws DatatypeConfigurationException, IOException {
     	
@@ -498,6 +482,15 @@ class PartnerServiceTest {
             // Test post condition
             assertEquals(PaaErrorEnum.PAA_SYSTEM_ERROR, ex.getError());
         }
+    }
+    
+    @Test
+    void azureStorageTest() throws InvalidKeyException, URISyntaxException, StorageException {
+    	AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString,true);
+    	azuriteStorageUtil.createTable("testTable");
+    	// se arrivo a questa riga la tabella è stata creata
+    	assertTrue(true);
+    	
     }
 
 
