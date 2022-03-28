@@ -1,5 +1,41 @@
 package it.gov.pagopa.payments.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+
+import org.junit.ClassRule;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
+
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.RetryNoRetry;
+import com.microsoft.azure.storage.table.CloudTable;
+import com.microsoft.azure.storage.table.CloudTableClient;
+import com.microsoft.azure.storage.table.TableRequestOptions;
+
 import feign.FeignException;
 import feign.RetryableException;
 import it.gov.pagopa.payments.endpoints.validation.PaymentValidator;
@@ -8,7 +44,12 @@ import it.gov.pagopa.payments.mock.MockUtil;
 import it.gov.pagopa.payments.mock.PaGetPaymentReqMock;
 import it.gov.pagopa.payments.mock.PaSendRTReqMock;
 import it.gov.pagopa.payments.mock.PaVerifyPaymentNoticeReqMock;
-import it.gov.pagopa.payments.model.*;
+import it.gov.pagopa.payments.model.DebtPositionStatus;
+import it.gov.pagopa.payments.model.PaaErrorEnum;
+import it.gov.pagopa.payments.model.PaymentOptionModel;
+import it.gov.pagopa.payments.model.PaymentOptionModelResponse;
+import it.gov.pagopa.payments.model.PaymentOptionStatus;
+import it.gov.pagopa.payments.model.PaymentsModelResponse;
 import it.gov.pagopa.payments.model.partner.ObjectFactory;
 import it.gov.pagopa.payments.model.partner.PaGetPaymentReq;
 import it.gov.pagopa.payments.model.partner.PaGetPaymentRes;
@@ -18,29 +59,11 @@ import it.gov.pagopa.payments.model.partner.PaVerifyPaymentNoticeReq;
 import it.gov.pagopa.payments.model.partner.PaVerifyPaymentNoticeRes;
 import it.gov.pagopa.payments.model.partner.StAmountOption;
 import it.gov.pagopa.payments.model.partner.StOutcome;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
+import lombok.extern.slf4j.Slf4j;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import java.io.IOException;
-import java.math.BigDecimal;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
-
+@Testcontainers
 @ExtendWith(MockitoExtension.class)
+@Slf4j
 class PartnerServiceTest {
 
     @InjectMocks
@@ -56,6 +79,24 @@ class PartnerServiceTest {
     private GpdClient gpdClient;
 
     private final ObjectFactory factoryUtil = new ObjectFactory();
+    
+    
+    @ClassRule @Container
+	public static GenericContainer<?> azurite =
+	      new GenericContainer<>(
+	              DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:latest"))
+	          .withExposedPorts(10001, 10002, 10000);
+
+
+    String storageConnectionString =
+  	      String.format(
+  	          "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://%s:%s/devstoreaccount1;QueueEndpoint=http://%s:%s/devstoreaccount1;BlobEndpoint=http://%s:%s/devstoreaccount1",
+  	          azurite.getContainerIpAddress(),
+  	          azurite.getMappedPort(10002),
+  	          azurite.getContainerIpAddress(),
+  	          azurite.getMappedPort(10001),
+  	          azurite.getContainerIpAddress(),
+  	          azurite.getMappedPort(10000));
 
     @Test
     void paVerifyPaymentNoticeTest() throws DatatypeConfigurationException, IOException {
@@ -300,10 +341,10 @@ class PartnerServiceTest {
         }
     }
 
-
+/*
     @Test
     void paSendRTTest() throws DatatypeConfigurationException, IOException {
-
+    	
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
 
@@ -311,13 +352,50 @@ class PartnerServiceTest {
 
         when(gpdClient.receiptPaymentOption(anyString(), anyString(), any(PaymentOptionModel.class)))
                 .thenReturn(MockUtil.readModelFromFile("gpd/receiptPaymentOption.json", PaymentOptionModelResponse.class));
-
+        
+        
 
         // Test execution
         PaSendRTRes responseBody = partnerService.paSendRT(requestBody);
 
         // Test post condition
         assertThat(responseBody.getOutcome()).isEqualTo(StOutcome.OK);
+    }
+*/    
+    @Test
+    void paSendRTTest() throws DatatypeConfigurationException, IOException {
+    	
+    	var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, paymentValidator));
+
+        // Test preconditions
+        PaSendRTReq requestBody = PaSendRTReqMock.getMock();
+        
+        doNothing().doThrow(PartnerValidationException.class).when(paymentValidator).isAuthorize(anyString(), anyString(), anyString());
+
+        when(factory.createPaSendRTRes()).thenReturn(factoryUtil.createPaSendRTRes());
+
+        when(gpdClient.receiptPaymentOption(anyString(), anyString(), any(PaymentOptionModel.class)))
+                .thenReturn(MockUtil.readModelFromFile("gpd/receiptPaymentOption.json", PaymentOptionModelResponse.class));
+        
+        try {
+        	CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
+        	CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
+        	TableRequestOptions tableRequestOptions = new TableRequestOptions();
+        	tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance());
+        	cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
+        	CloudTable table = cloudTableClient.getTableReference("receiptsTable");
+        	table.createIfNotExists();
+        } catch (Exception e) {
+        	log.info("Error during table creation", e);
+        }
+
+
+        // Test execution
+        PaSendRTRes responseBody = pService.paSendRT(requestBody);
+
+        // Test post condition
+        assertThat(responseBody.getOutcome()).isEqualTo(StOutcome.OK);
+        assertThat(responseBody.getFault()).isNull();
     }
 
     @Test

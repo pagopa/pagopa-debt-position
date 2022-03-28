@@ -1,11 +1,42 @@
 
 package it.gov.pagopa.payments.service;
 
+import java.io.StringWriter;
+import java.math.BigDecimal;
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.namespace.QName;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.table.CloudTable;
+import com.microsoft.azure.storage.table.TableBatchOperation;
+
 import feign.FeignException;
 import feign.RetryableException;
 import it.gov.pagopa.payments.endpoints.validation.PaymentValidator;
 import it.gov.pagopa.payments.endpoints.validation.exceptions.PartnerValidationException;
-import it.gov.pagopa.payments.model.*;
+import it.gov.pagopa.payments.entity.ReceiptEntity;
+import it.gov.pagopa.payments.model.DebtPositionStatus;
+import it.gov.pagopa.payments.model.PaaErrorEnum;
+import it.gov.pagopa.payments.model.PaymentOptionModel;
+import it.gov.pagopa.payments.model.PaymentOptionModelResponse;
+import it.gov.pagopa.payments.model.PaymentOptionStatus;
+import it.gov.pagopa.payments.model.PaymentsModelResponse;
+import it.gov.pagopa.payments.model.PaymentsTransferModelResponse;
 import it.gov.pagopa.payments.model.partner.CtEntityUniqueIdentifier;
 import it.gov.pagopa.payments.model.partner.CtPaymentOptionDescriptionPA;
 import it.gov.pagopa.payments.model.partner.CtPaymentOptionsDescriptionListPA;
@@ -24,20 +55,15 @@ import it.gov.pagopa.payments.model.partner.StAmountOption;
 import it.gov.pagopa.payments.model.partner.StEntityUniqueIdentifierType;
 import it.gov.pagopa.payments.model.partner.StOutcome;
 import it.gov.pagopa.payments.model.partner.StTransferType;
+import it.gov.pagopa.payments.utils.AzuriteStorageUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import java.math.BigDecimal;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class PartnerService {
+	
+	private String storageConnectionString = System.getenv("PAYMENTS_SA_CONNECTION_STRING");
+    private String receiptsTable = System.getenv("RECEIPTS_TABLE");
 
     @Autowired
     private ObjectFactory factory;
@@ -47,6 +73,16 @@ public class PartnerService {
 
     @Autowired
     private PaymentValidator paymentValidator;
+    
+    public PartnerService() {}
+    
+    public PartnerService(ObjectFactory factory, String storageConnectionString, String receiptsTable, GpdClient gpdClient, PaymentValidator paymentValidator) {
+        this.factory = factory;
+    	this.storageConnectionString = storageConnectionString;
+        this.receiptsTable = receiptsTable;
+        this.gpdClient = gpdClient;
+        this.paymentValidator = paymentValidator;
+    }
 
     @Transactional(readOnly = true)
     public PaVerifyPaymentNoticeRes paVerifyPaymentNotice(PaVerifyPaymentNoticeReq request)
@@ -147,10 +183,24 @@ public class PartnerService {
             throw new PartnerValidationException(PaaErrorEnum.PAA_SEMANTICA);
         }
 
+        
+        // save the receipt info 
+        ReceiptEntity receiptEntity = new ReceiptEntity (request.getIdPA(), request.getReceipt().getCreditorReferenceId());
+        String corporate = Optional.ofNullable(request.getReceipt().getDebtor())
+        	.map(
+        		CtSubject::getUniqueIdentifier
+            ).map(
+            	CtEntityUniqueIdentifier::getEntityUniqueIdentifierValue
+            ).orElse("");
+        receiptEntity.setDocument(this.marshal(request));
+        receiptEntity.setCorporate(corporate);
+        this.saveReceipt(receiptEntity);
+        
         log.info("[paSendRT] Generate Response");
         // status is always equals to PO_PAID
         return generatePaSendRTResponse();
     }
+    
 
     /**
      * Verify debt position status
@@ -311,5 +361,43 @@ public class PartnerService {
         result.setOutcome(StOutcome.OK);
         return result;
     }
+    
+    private String marshal(PaSendRTReq paSendRTReq)   {
+    	StringWriter sw = new StringWriter();
+		try {
+			JAXBContext context = JAXBContext.newInstance(PaSendRTReq.class);
+			Marshaller mar= context.createMarshaller();
+	        mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+	        JAXBElement<PaSendRTReq> jaxbElement = 
+	                new JAXBElement<>( new QName("", "paSendRTReq"), 
+	                		PaSendRTReq.class, 
+	                		paSendRTReq);
+	        mar.marshal(jaxbElement, sw);
+		} catch (JAXBException e) {
+			log.error("[paSendRT - marshal] error marshalling receipt: " + e.getMessage(), e);
+            throw new PartnerValidationException(PaaErrorEnum.PAA_SYSTEM_ERROR);
+		}
+        return sw.toString();
+    }
+    
+    private void saveReceipt(ReceiptEntity receiptEntity)  {
+        try {
+        	AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString);
+			azuriteStorageUtil.createTable(receiptsTable);
+			CloudTable table = CloudStorageAccount.parse(storageConnectionString)
+	                .createCloudTableClient()
+	                .getTableReference(receiptsTable);
+			TableBatchOperation batchOperation = new TableBatchOperation();
+
+	        batchOperation.insert(receiptEntity);
+
+	        table.execute(batchOperation);
+		} catch (InvalidKeyException | URISyntaxException | StorageException | RuntimeException e) {
+			log.error("[paSendRT - saveReceipt] error saving receipt: " + e.getMessage(), e);
+            throw new PartnerValidationException(PaaErrorEnum.PAA_SYSTEM_ERROR);
+		}     
+    }
+    
+    
 
 }
