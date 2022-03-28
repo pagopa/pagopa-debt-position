@@ -62,6 +62,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PartnerService {
 	
+	private static final String DEBT_POSITION_STATUS_ERROR = "[Check DP] Debt position status error: "; 
+	
 	private String storageConnectionString = System.getenv("PAYMENTS_SA_CONNECTION_STRING");
     private String receiptsTable = System.getenv("RECEIPTS_TABLE");
 
@@ -208,22 +210,22 @@ public class PartnerService {
      */
     private void checkDebtPositionStatus(PaymentsModelResponse paymentOption) {
         if (paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.EXPIRED)) {
-            log.error("[Check DP] Debt position status error: " + paymentOption.getDebtPositionStatus());
+            log.error(DEBT_POSITION_STATUS_ERROR + paymentOption.getDebtPositionStatus());
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_SCADUTO);
         }
         else if (paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.INVALID)) {
-            log.error("[Check DP] Debt position status error: " + paymentOption.getDebtPositionStatus());
+            log.error(DEBT_POSITION_STATUS_ERROR + paymentOption.getDebtPositionStatus());
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_ANNULLATO);
         }
         else if (paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.DRAFT) ||
                 paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.PUBLISHED)) {
-            log.error("[Check DP] Debt position status error: " + paymentOption.getDebtPositionStatus());
+            log.error(DEBT_POSITION_STATUS_ERROR + paymentOption.getDebtPositionStatus());
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO);
         }
         else if (paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.PARTIALLY_PAID) ||
                 paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.PAID) ||
                 paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.REPORTED)) {
-            log.error("[Check DP] Debt position status error: " + paymentOption.getDebtPositionStatus());
+            log.error(DEBT_POSITION_STATUS_ERROR + paymentOption.getDebtPositionStatus());
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_DUPLICATO);
         }
     }
