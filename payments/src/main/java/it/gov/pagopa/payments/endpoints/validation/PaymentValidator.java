@@ -1,15 +1,14 @@
 package it.gov.pagopa.payments.endpoints.validation;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import feign.FeignException;
 import it.gov.pagopa.payments.endpoints.validation.exceptions.PartnerValidationException;
 import it.gov.pagopa.payments.model.PaaErrorEnum;
 import it.gov.pagopa.payments.service.GpdClient;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
-import java.util.logging.Level;
 
 @Component
 @Slf4j
