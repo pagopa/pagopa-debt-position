@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ReceiptEntity extends TableServiceEntity {
 
-    private String corporate;
+    private String debtor;
     private String document;
 
 

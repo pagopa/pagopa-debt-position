@@ -17,6 +17,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.namespace.QName;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,8 +65,10 @@ public class PartnerService {
 	
 	private static final String DEBT_POSITION_STATUS_ERROR = "[Check DP] Debt position status error: "; 
 	
-	private String storageConnectionString = System.getenv("PAYMENTS_SA_CONNECTION_STRING");
-    private String receiptsTable = System.getenv("RECEIPTS_TABLE");
+	@Value("${payments.sa.connection}")
+	private String storageConnectionString;
+	@Value("${receipts.table}")
+    private String receiptsTable;
 
     @Autowired
     private ObjectFactory factory;
@@ -161,11 +164,19 @@ public class PartnerService {
                 .build();
         PaymentOptionModelResponse paymentOption = null;
         try {
-            // with Aux-Digit = 3
-            // notice number format is define as follows:
-            // 3<segregation code(2n)><IUV base(13n)><IUV check digit(2n)>
-            // GPD service works on IUVs directly, so we remove the Aux-Digit
-            paymentOption = gpdClient.receiptPaymentOption(request.getIdPA(), request.getReceipt().getNoticeNumber().substring(1), body);
+        	// save the receipt info 
+            ReceiptEntity receiptEntity = new ReceiptEntity (request.getIdPA(), request.getReceipt().getCreditorReferenceId());
+            String debtor = Optional.ofNullable(request.getReceipt().getDebtor())
+            	.map(
+            		CtSubject::getUniqueIdentifier
+                ).map(
+                	CtEntityUniqueIdentifier::getEntityUniqueIdentifierValue
+                ).orElse("");
+            receiptEntity.setDocument(this.marshal(request));
+            receiptEntity.setDebtor(debtor);
+            this.saveReceipt(receiptEntity);
+            // GPD service works on IUVs directly, so we use creditorReferenceId (=IUV)
+            paymentOption = gpdClient.receiptPaymentOption(request.getIdPA(), request.getReceipt().getCreditorReferenceId(), body);
         } catch (FeignException.Conflict e) {
             log.error("[paSendRT] GPD Conflict Error Response", e);
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_DUPLICATO);
@@ -184,19 +195,6 @@ public class PartnerService {
             log.error("[paSendRT] Payment Option status error: " + paymentOption.getStatus());
             throw new PartnerValidationException(PaaErrorEnum.PAA_SEMANTICA);
         }
-
-        
-        // save the receipt info 
-        ReceiptEntity receiptEntity = new ReceiptEntity (request.getIdPA(), request.getReceipt().getCreditorReferenceId());
-        String corporate = Optional.ofNullable(request.getReceipt().getDebtor())
-        	.map(
-        		CtSubject::getUniqueIdentifier
-            ).map(
-            	CtEntityUniqueIdentifier::getEntityUniqueIdentifierValue
-            ).orElse("");
-        receiptEntity.setDocument(this.marshal(request));
-        receiptEntity.setCorporate(corporate);
-        this.saveReceipt(receiptEntity);
         
         log.info("[paSendRT] Generate Response");
         // status is always equals to PO_PAID
@@ -364,40 +362,28 @@ public class PartnerService {
         return result;
     }
     
-    private String marshal(PaSendRTReq paSendRTReq)   {
+    private String marshal(PaSendRTReq paSendRTReq) throws JAXBException   {
     	StringWriter sw = new StringWriter();
-		try {
-			JAXBContext context = JAXBContext.newInstance(PaSendRTReq.class);
-			Marshaller mar= context.createMarshaller();
-	        mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-	        JAXBElement<PaSendRTReq> jaxbElement = 
-	                new JAXBElement<>( new QName("", "paSendRTReq"), 
-	                		PaSendRTReq.class, 
-	                		paSendRTReq);
-	        mar.marshal(jaxbElement, sw);
-		} catch (JAXBException e) {
-			log.error("[paSendRT - marshal] error marshalling receipt: " + e.getMessage(), e);
-            throw new PartnerValidationException(PaaErrorEnum.PAA_SYSTEM_ERROR);
-		}
-        return sw.toString();
+    	JAXBContext context = JAXBContext.newInstance(PaSendRTReq.class);
+    	Marshaller mar= context.createMarshaller();
+    	mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+    	JAXBElement<PaSendRTReq> jaxbElement = 
+    			new JAXBElement<>( new QName("", "paSendRTReq"), 
+    					PaSendRTReq.class, 
+    					paSendRTReq);
+    	mar.marshal(jaxbElement, sw);
+    	return sw.toString();
     }
     
-    private void saveReceipt(ReceiptEntity receiptEntity)  {
-        try {
+    private void saveReceipt(ReceiptEntity receiptEntity) throws InvalidKeyException, URISyntaxException, StorageException  {
         	AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString);
 			azuriteStorageUtil.createTable(receiptsTable);
 			CloudTable table = CloudStorageAccount.parse(storageConnectionString)
 	                .createCloudTableClient()
 	                .getTableReference(receiptsTable);
 			TableBatchOperation batchOperation = new TableBatchOperation();
-
-	        batchOperation.insert(receiptEntity);
-
-	        table.execute(batchOperation);
-		} catch (InvalidKeyException | URISyntaxException | StorageException | RuntimeException e) {
-			log.error("[paSendRT - saveReceipt] error saving receipt: " + e.getMessage(), e);
-            throw new PartnerValidationException(PaaErrorEnum.PAA_SYSTEM_ERROR);
-		}     
+	        batchOperation.insertOrReplace(receiptEntity);
+	        table.execute(batchOperation);   
     }
     
     
