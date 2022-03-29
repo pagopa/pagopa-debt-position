@@ -112,3 +112,4 @@ __pycache__
 local.settings.json
 **/*.iml
 /lib/
+**/.env
