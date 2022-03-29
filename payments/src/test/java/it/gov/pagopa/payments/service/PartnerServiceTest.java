@@ -412,7 +412,7 @@ class PartnerServiceTest {
             fail();
         } catch (PartnerValidationException ex) {
             // Test post condition
-            assertEquals(PaaErrorEnum.PAA_PAGAMENTO_DUPLICATO, ex.getError());
+            assertEquals(PaaErrorEnum.PAA_RECEIPT_DUPLICATA, ex.getError());
         }
     }
 
