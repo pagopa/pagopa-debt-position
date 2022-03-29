@@ -14,6 +14,8 @@ public enum PaaErrorEnum {
       "L'id del pagamento ricevuto non esiste"),
   PAA_PAGAMENTO_DUPLICATO("PAA_PAGAMENTO_DUPLICATO", "pagamento duplicato",
           "L'id del pagamento ricevuto  e' duplicato"),
+  PAA_RECEIPT_DUPLICATA("PAA_RECEIPT_DUPLICATA", "pagamento duplicato",
+          "L'id del pagamento ricevuto  e' duplicato"),
   PAA_PAGAMENTO_SCADUTO("PAA_PAGAMENTO_SCADUTO", "pagamento scaduto",
           "L'id del pagamento ricevuto  e' scaduto"),
   PAA_SEMANTICA("PAA_SEMANTICA", "Errore Generico", "Errore Generico"),
