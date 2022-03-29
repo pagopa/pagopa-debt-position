@@ -385,16 +385,30 @@ class PartnerServiceTest {
     @Test
     void paSendRTTestKOConflict() throws DatatypeConfigurationException, IOException {
 
+    	var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, paymentValidator));
+    	
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
 
         var e = Mockito.mock(FeignException.Conflict.class);
         when(gpdClient.receiptPaymentOption(anyString(), anyString(), any(PaymentOptionModel.class)))
                 .thenThrow(e);
+        
+        try {
+        	CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
+        	CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
+        	TableRequestOptions tableRequestOptions = new TableRequestOptions();
+        	tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance());
+        	cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
+        	CloudTable table = cloudTableClient.getTableReference("receiptsTable");
+        	table.createIfNotExists();
+        } catch (Exception ex) {
+        	log.info("Error during table creation", e);
+        }
 
         try {
             // Test execution
-            PaSendRTRes responseBody = partnerService.paSendRT(requestBody);
+            PaSendRTRes responseBody = pService.paSendRT(requestBody);
             fail();
         } catch (PartnerValidationException ex) {
             // Test post condition
@@ -406,6 +420,8 @@ class PartnerServiceTest {
     @ValueSource(strings = {"PO_UNPAID", "PO_PARTIALLY_REPORTED", "PO_REPORTED" })
     void paSendRTTestKOStatus(String status) throws DatatypeConfigurationException, IOException {
 
+    	var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, paymentValidator));
+    	
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
 
@@ -413,10 +429,22 @@ class PartnerServiceTest {
         paymentOption.setStatus(PaymentOptionStatus.valueOf(status));
         when(gpdClient.receiptPaymentOption(anyString(), anyString(), any(PaymentOptionModel.class)))
                 .thenReturn(paymentOption);
+        
+        try {
+        	CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
+        	CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
+        	TableRequestOptions tableRequestOptions = new TableRequestOptions();
+        	tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance());
+        	cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
+        	CloudTable table = cloudTableClient.getTableReference("receiptsTable");
+        	table.createIfNotExists();
+        } catch (Exception ex) {
+        	log.info("Error during table creation", ex);
+        }
 
         try {
             // Test execution
-            PaSendRTRes responseBody = partnerService.paSendRT(requestBody);
+            PaSendRTRes responseBody = pService.paSendRT(requestBody);
             fail();
         } catch (PartnerValidationException ex) {
             // Test post condition
@@ -427,16 +455,30 @@ class PartnerServiceTest {
     @Test
     void paSendRTTestKORetryableException() throws DatatypeConfigurationException, IOException {
 
+    	var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, paymentValidator));
+    	
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
 
         var e = Mockito.mock(RetryableException.class);
         when(gpdClient.receiptPaymentOption(anyString(), anyString(), any(PaymentOptionModel.class)))
                 .thenThrow(e);
+        
+        try {
+        	CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
+        	CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
+        	TableRequestOptions tableRequestOptions = new TableRequestOptions();
+        	tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance());
+        	cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
+        	CloudTable table = cloudTableClient.getTableReference("receiptsTable");
+        	table.createIfNotExists();
+        } catch (Exception ex) {
+        	log.info("Error during table creation", e);
+        }
 
         try {
             // Test execution
-            PaSendRTRes responseBody = partnerService.paSendRT(requestBody);
+            PaSendRTRes responseBody = pService.paSendRT(requestBody);
             fail();
         } catch (PartnerValidationException ex) {
             // Test post condition
@@ -447,16 +489,29 @@ class PartnerServiceTest {
     @Test
     void paSendRTTestKOFeignException() throws DatatypeConfigurationException, IOException {
 
+    	var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, paymentValidator));
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
 
         var e = Mockito.mock(FeignException.class);
         when(gpdClient.receiptPaymentOption(anyString(), anyString(), any(PaymentOptionModel.class)))
                 .thenThrow(e);
+        
+        try {
+        	CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
+        	CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
+        	TableRequestOptions tableRequestOptions = new TableRequestOptions();
+        	tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance());
+        	cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
+        	CloudTable table = cloudTableClient.getTableReference("receiptsTable");
+        	table.createIfNotExists();
+        } catch (Exception ex) {
+        	log.info("Error during table creation", e);
+        }
 
         try {
             // Test execution
-            PaSendRTRes responseBody = partnerService.paSendRT(requestBody);
+            PaSendRTRes responseBody = pService.paSendRT(requestBody);
             fail();
         } catch (PartnerValidationException ex) {
             // Test post condition
@@ -467,16 +522,30 @@ class PartnerServiceTest {
     @Test
     void paSendRTTestKO() throws DatatypeConfigurationException, IOException {
 
+    	var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, paymentValidator));
+    	
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
 
         var e = Mockito.mock(NullPointerException.class);
         when(gpdClient.receiptPaymentOption(anyString(), anyString(), any(PaymentOptionModel.class)))
                 .thenThrow(e);
+        
+        try {
+        	CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
+        	CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
+        	TableRequestOptions tableRequestOptions = new TableRequestOptions();
+        	tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance());
+        	cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
+        	CloudTable table = cloudTableClient.getTableReference("receiptsTable");
+        	table.createIfNotExists();
+        } catch (Exception ex) {
+        	log.info("Error during table creation", e);
+        }
 
         try {
             // Test execution
-            PaSendRTRes responseBody = partnerService.paSendRT(requestBody);
+            PaSendRTRes responseBody = pService.paSendRT(requestBody);
             fail();
         } catch (PartnerValidationException ex) {
             // Test post condition
