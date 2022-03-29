@@ -179,7 +179,7 @@ public class PartnerService {
             paymentOption = gpdClient.receiptPaymentOption(request.getIdPA(), request.getReceipt().getCreditorReferenceId(), body);
         } catch (FeignException.Conflict e) {
             log.error("[paSendRT] GPD Conflict Error Response", e);
-            throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_DUPLICATO);
+            throw new PartnerValidationException(PaaErrorEnum.PAA_RECEIPT_DUPLICATA);
         } catch (RetryableException e) {
             log.error("[paSendRT] GPD Not Reachable", e);
             throw new PartnerValidationException(PaaErrorEnum.PAA_SYSTEM_ERROR);
