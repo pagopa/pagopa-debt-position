@@ -1,11 +1,43 @@
 
 package it.gov.pagopa.payments.service;
 
+import java.io.StringWriter;
+import java.math.BigDecimal;
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.namespace.QName;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.table.CloudTable;
+import com.microsoft.azure.storage.table.TableBatchOperation;
+
 import feign.FeignException;
 import feign.RetryableException;
 import it.gov.pagopa.payments.endpoints.validation.PaymentValidator;
 import it.gov.pagopa.payments.endpoints.validation.exceptions.PartnerValidationException;
-import it.gov.pagopa.payments.model.*;
+import it.gov.pagopa.payments.entity.ReceiptEntity;
+import it.gov.pagopa.payments.model.DebtPositionStatus;
+import it.gov.pagopa.payments.model.PaaErrorEnum;
+import it.gov.pagopa.payments.model.PaymentOptionModel;
+import it.gov.pagopa.payments.model.PaymentOptionModelResponse;
+import it.gov.pagopa.payments.model.PaymentOptionStatus;
+import it.gov.pagopa.payments.model.PaymentsModelResponse;
+import it.gov.pagopa.payments.model.PaymentsTransferModelResponse;
 import it.gov.pagopa.payments.model.partner.CtEntityUniqueIdentifier;
 import it.gov.pagopa.payments.model.partner.CtPaymentOptionDescriptionPA;
 import it.gov.pagopa.payments.model.partner.CtPaymentOptionsDescriptionListPA;
@@ -24,20 +56,19 @@ import it.gov.pagopa.payments.model.partner.StAmountOption;
 import it.gov.pagopa.payments.model.partner.StEntityUniqueIdentifierType;
 import it.gov.pagopa.payments.model.partner.StOutcome;
 import it.gov.pagopa.payments.model.partner.StTransferType;
+import it.gov.pagopa.payments.utils.AzuriteStorageUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import java.math.BigDecimal;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class PartnerService {
+	
+	private static final String DEBT_POSITION_STATUS_ERROR = "[Check DP] Debt position status error: "; 
+	
+	@Value("${payments.sa.connection}")
+	private String storageConnectionString;
+	@Value("${receipts.table}")
+    private String receiptsTable;
 
     @Autowired
     private ObjectFactory factory;
@@ -47,6 +78,16 @@ public class PartnerService {
 
     @Autowired
     private PaymentValidator paymentValidator;
+    
+    public PartnerService() {}
+    
+    public PartnerService(ObjectFactory factory, String storageConnectionString, String receiptsTable, GpdClient gpdClient, PaymentValidator paymentValidator) {
+        this.factory = factory;
+    	this.storageConnectionString = storageConnectionString;
+        this.receiptsTable = receiptsTable;
+        this.gpdClient = gpdClient;
+        this.paymentValidator = paymentValidator;
+    }
 
     @Transactional(readOnly = true)
     public PaVerifyPaymentNoticeRes paVerifyPaymentNotice(PaVerifyPaymentNoticeReq request)
@@ -123,14 +164,22 @@ public class PartnerService {
                 .build();
         PaymentOptionModelResponse paymentOption = null;
         try {
-            // with Aux-Digit = 3
-            // notice number format is define as follows:
-            // 3<segregation code(2n)><IUV base(13n)><IUV check digit(2n)>
-            // GPD service works on IUVs directly, so we remove the Aux-Digit
-            paymentOption = gpdClient.receiptPaymentOption(request.getIdPA(), request.getReceipt().getNoticeNumber().substring(1), body);
+        	// save the receipt info 
+            ReceiptEntity receiptEntity = new ReceiptEntity (request.getIdPA(), request.getReceipt().getCreditorReferenceId());
+            String debtor = Optional.ofNullable(request.getReceipt().getDebtor())
+            	.map(
+            		CtSubject::getUniqueIdentifier
+                ).map(
+                	CtEntityUniqueIdentifier::getEntityUniqueIdentifierValue
+                ).orElse("");
+            receiptEntity.setDocument(this.marshal(request));
+            receiptEntity.setDebtor(debtor);
+            this.saveReceipt(receiptEntity);
+            // GPD service works on IUVs directly, so we use creditorReferenceId (=IUV)
+            paymentOption = gpdClient.receiptPaymentOption(request.getIdPA(), request.getReceipt().getCreditorReferenceId(), body);
         } catch (FeignException.Conflict e) {
             log.error("[paSendRT] GPD Conflict Error Response", e);
-            throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_DUPLICATO);
+            throw new PartnerValidationException(PaaErrorEnum.PAA_RECEIPT_DUPLICATA);
         } catch (RetryableException e) {
             log.error("[paSendRT] GPD Not Reachable", e);
             throw new PartnerValidationException(PaaErrorEnum.PAA_SYSTEM_ERROR);
@@ -146,11 +195,12 @@ public class PartnerService {
             log.error("[paSendRT] Payment Option status error: " + paymentOption.getStatus());
             throw new PartnerValidationException(PaaErrorEnum.PAA_SEMANTICA);
         }
-
+        
         log.info("[paSendRT] Generate Response");
         // status is always equals to PO_PAID
         return generatePaSendRTResponse();
     }
+    
 
     /**
      * Verify debt position status
@@ -158,22 +208,22 @@ public class PartnerService {
      */
     private void checkDebtPositionStatus(PaymentsModelResponse paymentOption) {
         if (paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.EXPIRED)) {
-            log.error("[Check DP] Debt position status error: " + paymentOption.getDebtPositionStatus());
+            log.error(DEBT_POSITION_STATUS_ERROR + paymentOption.getDebtPositionStatus());
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_SCADUTO);
         }
         else if (paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.INVALID)) {
-            log.error("[Check DP] Debt position status error: " + paymentOption.getDebtPositionStatus());
+            log.error(DEBT_POSITION_STATUS_ERROR + paymentOption.getDebtPositionStatus());
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_ANNULLATO);
         }
         else if (paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.DRAFT) ||
                 paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.PUBLISHED)) {
-            log.error("[Check DP] Debt position status error: " + paymentOption.getDebtPositionStatus());
+            log.error(DEBT_POSITION_STATUS_ERROR + paymentOption.getDebtPositionStatus());
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO);
         }
         else if (paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.PARTIALLY_PAID) ||
                 paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.PAID) ||
                 paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.REPORTED)) {
-            log.error("[Check DP] Debt position status error: " + paymentOption.getDebtPositionStatus());
+            log.error(DEBT_POSITION_STATUS_ERROR + paymentOption.getDebtPositionStatus());
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_DUPLICATO);
         }
     }
@@ -311,5 +361,31 @@ public class PartnerService {
         result.setOutcome(StOutcome.OK);
         return result;
     }
+    
+    private String marshal(PaSendRTReq paSendRTReq) throws JAXBException   {
+    	StringWriter sw = new StringWriter();
+    	JAXBContext context = JAXBContext.newInstance(PaSendRTReq.class);
+    	Marshaller mar= context.createMarshaller();
+    	mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+    	JAXBElement<PaSendRTReq> jaxbElement = 
+    			new JAXBElement<>( new QName("", "paSendRTReq"), 
+    					PaSendRTReq.class, 
+    					paSendRTReq);
+    	mar.marshal(jaxbElement, sw);
+    	return sw.toString();
+    }
+    
+    private void saveReceipt(ReceiptEntity receiptEntity) throws InvalidKeyException, URISyntaxException, StorageException  {
+        	AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString);
+			azuriteStorageUtil.createTable(receiptsTable);
+			CloudTable table = CloudStorageAccount.parse(storageConnectionString)
+	                .createCloudTableClient()
+	                .getTableReference(receiptsTable);
+			TableBatchOperation batchOperation = new TableBatchOperation();
+	        batchOperation.insertOrReplace(receiptEntity);
+	        table.execute(batchOperation);   
+    }
+    
+    
 
 }

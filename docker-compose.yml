@@ -31,10 +31,19 @@ services:
       - gpd-net
 
 
+  pgbouncer:
+    environment:
+      - 'DATABASE_URL=postgres://postgres_user_test:postgres_pwd_test@postgres/apd'
+    ports:
+      - '6432:5432'
+    image: edoburu/pgbouncer
+    networks:
+      - gpd-net
+
+
 networks:
   gpd-net:
     driver: bridge
 
     driver_opts:
       com.docker.network.driver.mtu: 1450
-    
