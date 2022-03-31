@@ -63,7 +63,7 @@ public class LoggingAspect {
     }
 
 
-    @AfterReturning(value = "@within(org.springframework.web.bind.annotation.RestController)", returning = "result")
+    @AfterReturning(value = "execution(* it.gov.pagopa.debtposition.controller..*.*(..))", returning = "result")
     public void returnApiInvocation(JoinPoint joinPoint, Object result) {
         log.info("Successful API operation {} - result: {}", joinPoint.getSignature().getName(), result);
     }
