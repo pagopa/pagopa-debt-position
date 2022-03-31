@@ -1,12 +1,9 @@
 package it.gov.pagopa.debtposition.exception;
 
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.hibernate.exception.ConstraintViolationException;
+import it.gov.pagopa.debtposition.model.ProblemJson;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.TypeMismatchException;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,8 +17,8 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import it.gov.pagopa.debtposition.model.ProblemJson;
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -121,42 +118,6 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
                 .detail(detailsMessage)
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-
-    /**
-     * @param ex      {@link DataIntegrityViolationException} exception raised when the SQL statement cannot be executed
-     * @param request from frontend
-     * @return a {@link ProblemJson} as response with the cause and with an appropriated HTTP status
-     */
-    @ExceptionHandler({DataIntegrityViolationException.class})
-    public ResponseEntity<ProblemJson> handleDataIntegrityViolationException(final DataIntegrityViolationException ex, final WebRequest request) {
-        ProblemJson errorResponse = null;
-
-        if (ex.getCause() instanceof ConstraintViolationException) {
-            String sqlState = ((ConstraintViolationException) ex.getCause()).getSQLState();
-            // check the reason of ConstraintViolationException: is true if the object is referenced by a foreign key
-            // more info: https://docs.oracle.com/javadb/10.8.3.0/ref/rrefexcept71493.html
-            if (sqlState.equals(FOREIGN_KEY_VIOLATION)) {
-                log.warn("Can't delete from Database", ex);
-                errorResponse = ProblemJson.builder()
-                        .status(HttpStatus.CONFLICT.value())
-                        .title("Conflict with the current state of the resource")
-                        .detail("There is a relation with other resource. Delete it first.")
-                        .build();
-            }
-        }
-
-        // default response
-        if (errorResponse == null) {
-            log.warn("Data Integrity Violation", ex);
-            errorResponse = ProblemJson.builder()
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .title(INTERNAL_SERVER_ERROR)
-                    .detail(ex.getMessage())
-                    .build();
-        }
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.valueOf(errorResponse.getStatus()));
     }
 
 

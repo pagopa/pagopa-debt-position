@@ -9,7 +9,7 @@ public class ValidationException extends IllegalArgumentException {
 
 
     /**
-     * 
+     *
      */
     public ValidationException() {
     }

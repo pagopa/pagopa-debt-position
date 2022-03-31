@@ -1,26 +1,24 @@
 package it.gov.pagopa.debtposition.model.pd;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
-
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 public class PaymentPositionModel implements Serializable {
- 
+
     /**
      * generated serialVersionUID
      */
@@ -42,7 +40,7 @@ public class PaymentPositionModel implements Serializable {
     private String province;
     private String region;
     private String country;
-    @Email(message="Please provide a valid email address")
+    @Email(message = "Please provide a valid email address")
     private String email;
     private String phone;
 
@@ -55,7 +53,7 @@ public class PaymentPositionModel implements Serializable {
     private DebtPositionStatus status;
 
     private List<PaymentOptionModel> paymentOption = new ArrayList<>();
-    
+
     public void addPaymentOptions(PaymentOptionModel paymentOpt) {
         paymentOption.add(paymentOpt);
     }
