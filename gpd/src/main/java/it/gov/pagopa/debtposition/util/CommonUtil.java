@@ -1,21 +1,20 @@
 package it.gov.pagopa.debtposition.util;
 
+import it.gov.pagopa.debtposition.model.PageInfo;
+import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
+import it.gov.pagopa.debtposition.model.filterandorder.OrderType;
+import lombok.experimental.UtilityClass;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 
-import it.gov.pagopa.debtposition.model.PageInfo;
-import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
-import it.gov.pagopa.debtposition.model.filterandorder.OrderType;
-import lombok.experimental.UtilityClass;
-
 
 @UtilityClass
 public class CommonUtil {
-	
-	
-	/**
+
+
+    /**
      * Get the field name from enumerations that implements {@link OrderType}.
      * See {@link Order} class.
      * The field name identify the column
@@ -27,7 +26,7 @@ public class CommonUtil {
         return Sort.by(filterAndOrder.getOrder().getOrdering(), filterAndOrder.getOrder().getOrderBy().getColumnName());
     }
 
-	/**
+    /**
      * @param example filter
      * @return a new Example using the custom ExampleMatcher
      */
@@ -38,7 +37,7 @@ public class CommonUtil {
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
         return Example.of(example, matcher);
     }
-    
+
     /**
      * @param page Page returned from the database
      * @return return the page info
@@ -52,5 +51,5 @@ public class CommonUtil {
                 .build();
     }
 
-	
+
 }

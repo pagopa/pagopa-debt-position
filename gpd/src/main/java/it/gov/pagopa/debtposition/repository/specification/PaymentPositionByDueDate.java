@@ -1,6 +1,9 @@
 package it.gov.pagopa.debtposition.repository.specification;
 
-import java.time.LocalDateTime;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -8,12 +11,7 @@ import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-
-import org.springframework.data.jpa.domain.Specification;
-
-import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -30,22 +28,20 @@ public class PaymentPositionByDueDate implements Specification<PaymentPosition> 
     private LocalDateTime dateTo;
 
     public Predicate toPredicate(Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-        
+
         // join con fetch immediata in modo da applicare i filtri sul recupero degli oggetti child paymentOption
         Join<?, ?> ppOptionsJoin = (Join<?, ?>) root.fetch(PAYMENT_OPT_JOIN, JoinType.INNER);
-        
+
         if (dateFrom != null && dateTo == null) {
             return cb.greaterThanOrEqualTo(ppOptionsJoin.get(DUEDATE_FIELD), dateFrom);
-        }
-
-        else if (dateFrom == null && dateTo != null) {
+        } else if (dateFrom == null && dateTo != null) {
             return cb.lessThanOrEqualTo(ppOptionsJoin.get(DUEDATE_FIELD), dateTo);
         }
         // testo solo la dateFrom, la dateTo sarà sicuramente not null arrivati a questa if
-        else if (dateFrom != null ) {
+        else if (dateFrom != null) {
             return cb.between(ppOptionsJoin.get(DUEDATE_FIELD), dateFrom, dateTo);
         }
-        
+
         return cb.isTrue(cb.literal(true));
     }
 }

@@ -1,26 +1,5 @@
 package it.gov.pagopa.debtposition.service.pd.crud;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Optional;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
-
-import org.hibernate.exception.ConstraintViolationException;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
-
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
@@ -39,164 +18,181 @@ import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByOrga
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.validation.DebtPositionValidation;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.exception.ConstraintViolationException;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Optional;
 
 
 @Service
 @Slf4j
 public class PaymentPositionCRUDService {
 
-	private static final String UNIQUE_KEY_VIOLATION = "23505";
-	@Autowired
-	private PaymentPositionRepository paymentPositionRepository;
-	@Autowired
-	private ModelMapper modelMapper;
+    private static final String UNIQUE_KEY_VIOLATION = "23505";
+    @Autowired
+    private PaymentPositionRepository paymentPositionRepository;
+    @Autowired
+    private ModelMapper modelMapper;
 
 
-	public PaymentPosition create (@NotNull PaymentPosition debtPosition, @NotBlank String organizationFiscalCode) {
+    public PaymentPosition create(@NotNull PaymentPosition debtPosition, @NotBlank String organizationFiscalCode) {
 
-		final String ERROR_CREATION_LOG_MSG = "Error during debt position creation: %s";
+        final String ERROR_CREATION_LOG_MSG = "Error during debt position creation: %s";
 
-		try {
+        try {
 
-			// verifico la correttezza dei dati in input
-			DebtPositionValidation.checkPaymentPositionInputDataAccurancy(debtPosition);
+            // verifico la correttezza dei dati in input
+            DebtPositionValidation.checkPaymentPositionInputDataAccurancy(debtPosition);
 
-			// predispongo i dati ad uso interno prima dell'aggiornamento
-			LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-			LocalDateTime minDueDate = debtPosition.getPaymentOption().stream().map(PaymentOption::getDueDate).min(LocalDateTime::compareTo).orElse(currentDate);
-			LocalDateTime maxDueDate = debtPosition.getPaymentOption().stream().map(PaymentOption::getDueDate).max(LocalDateTime::compareTo).orElse(currentDate);
-			debtPosition.setMinDueDate(minDueDate);
-			debtPosition.setMaxDueDate(maxDueDate);
-			debtPosition.setInsertedDate(currentDate);
-			debtPosition.setLastUpdatedDate(currentDate);
-			debtPosition.setOrganizationFiscalCode(organizationFiscalCode);
-			debtPosition.setStatus(DebtPositionStatus.DRAFT);
-			for (PaymentOption po : debtPosition.getPaymentOption()) {
-				po.setOrganizationFiscalCode(organizationFiscalCode);
-				po.setInsertedDate(currentDate);
-				po.setLastUpdatedDate(currentDate);
-				po.setStatus(PaymentOptionStatus.PO_UNPAID);
-				for (Transfer t: po.getTransfer()) {
-					t.setIuv(po.getIuv());
-					t.setOrganizationFiscalCode(organizationFiscalCode);
-					t.setInsertedDate(currentDate);
-					t.setLastUpdatedDate(currentDate);
-					t.setStatus(TransferStatus.T_UNREPORTED);
-				}
-			}
+            // predispongo i dati ad uso interno prima dell'aggiornamento
+            LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+            LocalDateTime minDueDate = debtPosition.getPaymentOption().stream().map(PaymentOption::getDueDate).min(LocalDateTime::compareTo).orElse(currentDate);
+            LocalDateTime maxDueDate = debtPosition.getPaymentOption().stream().map(PaymentOption::getDueDate).max(LocalDateTime::compareTo).orElse(currentDate);
+            debtPosition.setMinDueDate(minDueDate);
+            debtPosition.setMaxDueDate(maxDueDate);
+            debtPosition.setInsertedDate(currentDate);
+            debtPosition.setLastUpdatedDate(currentDate);
+            debtPosition.setOrganizationFiscalCode(organizationFiscalCode);
+            debtPosition.setStatus(DebtPositionStatus.DRAFT);
+            for (PaymentOption po : debtPosition.getPaymentOption()) {
+                po.setOrganizationFiscalCode(organizationFiscalCode);
+                po.setInsertedDate(currentDate);
+                po.setLastUpdatedDate(currentDate);
+                po.setStatus(PaymentOptionStatus.PO_UNPAID);
+                for (Transfer t : po.getTransfer()) {
+                    t.setIuv(po.getIuv());
+                    t.setOrganizationFiscalCode(organizationFiscalCode);
+                    t.setInsertedDate(currentDate);
+                    t.setLastUpdatedDate(currentDate);
+                    t.setStatus(TransferStatus.T_UNREPORTED);
+                }
+            }
 
-			// Inserisco la posizione debitoria
-			return paymentPositionRepository.saveAndFlush(debtPosition);
+            // Inserisco la posizione debitoria
+            return paymentPositionRepository.saveAndFlush(debtPosition);
 
-		} catch (DataIntegrityViolationException e) {
-			log.error(String.format(ERROR_CREATION_LOG_MSG,e.getMessage()), e);
-			if (e.getCause() instanceof ConstraintViolationException) {
-				String sqlState = ((ConstraintViolationException) e.getCause()).getSQLState();
-				if (sqlState.equals(UNIQUE_KEY_VIOLATION)) {
-					throw new AppException(AppError.DEBT_POSITION_UNIQUE_VIOLATION, organizationFiscalCode);
-				}
-			}
-			throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
-		} catch (ValidationException e) {
-			throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
-		} catch (Exception e) {
-			log.error(String.format(ERROR_CREATION_LOG_MSG,e.getMessage()), e);
-			throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
-		}
-	}
+        } catch (DataIntegrityViolationException e) {
+            log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
+            if (e.getCause() instanceof ConstraintViolationException) {
+                String sqlState = ((ConstraintViolationException) e.getCause()).getSQLState();
+                if (sqlState.equals(UNIQUE_KEY_VIOLATION)) {
+                    throw new AppException(AppError.DEBT_POSITION_UNIQUE_VIOLATION, organizationFiscalCode);
+                }
+            }
+            throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
+        } catch (ValidationException e) {
+            throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
+        } catch (Exception e) {
+            log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
+            throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
+        }
+    }
 
-	public PaymentPosition getDebtPositionByIUPD (String organizationFiscalCode,
-			String iupd) {
+    public PaymentPosition getDebtPositionByIUPD(String organizationFiscalCode,
+                                                 String iupd) {
 
-		Specification<PaymentPosition> spec = Specification.where(
-				new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
-				.and(new PaymentPositionByIUPD(iupd))
-				);
+        Specification<PaymentPosition> spec = Specification.where(
+                new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
+                        .and(new PaymentPositionByIUPD(iupd))
+        );
 
-		Optional<PaymentPosition> pp = paymentPositionRepository.findOne(spec);
-		if (pp.isEmpty()) {
-			throw new AppException(AppError.DEBT_POSITION_NOT_FOUND, organizationFiscalCode, iupd);
-		}
+        Optional<PaymentPosition> pp = paymentPositionRepository.findOne(spec);
+        if (pp.isEmpty()) {
+            throw new AppException(AppError.DEBT_POSITION_NOT_FOUND, organizationFiscalCode, iupd);
+        }
 
-		return pp.get();
-	}
+        return pp.get();
+    }
 
-	public Page<PaymentPosition> getOrganizationDebtPositions (@Positive Integer limit, @Positive Integer pageNum, FilterAndOrder filterAndOrder){
+    public Page<PaymentPosition> getOrganizationDebtPositions(@Positive Integer limit, @Positive Integer pageNum, FilterAndOrder filterAndOrder) {
 
-		Pageable pageable = PageRequest.of(pageNum, limit, CommonUtil.getSort(filterAndOrder));
+        Pageable pageable = PageRequest.of(pageNum, limit, CommonUtil.getSort(filterAndOrder));
 
-		Specification<PaymentPosition> spec = Specification.where(
-				new PaymentPositionByOrganizationFiscalCode(filterAndOrder.getFilter().getOrganizationFiscalCode())
-				.and(new PaymentPositionByDueDate(
-						filterAndOrder.getFilter().getDueDateFrom(),
-						filterAndOrder.getFilter().getDueDateTo())));
+        Specification<PaymentPosition> spec = Specification.where(
+                new PaymentPositionByOrganizationFiscalCode(filterAndOrder.getFilter().getOrganizationFiscalCode())
+                        .and(new PaymentPositionByDueDate(
+                                filterAndOrder.getFilter().getDueDateFrom(),
+                                filterAndOrder.getFilter().getDueDateTo())));
 
-		return paymentPositionRepository.findAll(spec, pageable);
+        return paymentPositionRepository.findAll(spec, pageable);
 
-	}
-
-
-	@Transactional
-	public void delete(@NotBlank String organizationFiscalCode, @NotBlank String iupd) {
-		PaymentPosition ppToRemove = this.getDebtPositionByIUPD(organizationFiscalCode, iupd);
-		if (DebtPositionStatus.getPaymentPosAlreadyPaidStatus().contains(ppToRemove.getStatus())){
-			throw new AppException(AppError.DEBT_POSITION_PAYMENT_FOUND, organizationFiscalCode, iupd);
-		}
-		paymentPositionRepository.delete(ppToRemove);
-	}
+    }
 
 
+    @Transactional
+    public void delete(@NotBlank String organizationFiscalCode, @NotBlank String iupd) {
+        PaymentPosition ppToRemove = this.getDebtPositionByIUPD(organizationFiscalCode, iupd);
+        if (DebtPositionStatus.getPaymentPosAlreadyPaidStatus().contains(ppToRemove.getStatus())) {
+            throw new AppException(AppError.DEBT_POSITION_PAYMENT_FOUND, organizationFiscalCode, iupd);
+        }
+        paymentPositionRepository.delete(ppToRemove);
+    }
 
-	@Transactional
-	public PaymentPosition update(@NotNull @Valid PaymentPositionModel paymentPositionModel, @NotBlank String organizationFiscalCode) {
-		
-		final String ERROR_UPDATE_LOG_MSG = "Error during debt position update: %s";
 
-		PaymentPosition ppToUpdate = this.getDebtPositionByIUPD(organizationFiscalCode, paymentPositionModel.getIupd());
+    @Transactional
+    public PaymentPosition update(@NotNull @Valid PaymentPositionModel paymentPositionModel, @NotBlank String organizationFiscalCode) {
 
-		if (DebtPositionStatus.getPaymentPosNotUpdatableStatus().contains(ppToUpdate.getStatus())){
-			throw new AppException(AppError.DEBT_POSITION_NOT_UPDATABLE, organizationFiscalCode, paymentPositionModel.getIupd());
-		}
+        final String ERROR_UPDATE_LOG_MSG = "Error during debt position update: %s";
 
-		try {
+        PaymentPosition ppToUpdate = this.getDebtPositionByIUPD(organizationFiscalCode, paymentPositionModel.getIupd());
 
-			// flip model to entity 
-			ppToUpdate.getPaymentOption().clear();
-			modelMapper.map(paymentPositionModel, ppToUpdate);
+        if (DebtPositionStatus.getPaymentPosNotUpdatableStatus().contains(ppToUpdate.getStatus())) {
+            throw new AppException(AppError.DEBT_POSITION_NOT_UPDATABLE, organizationFiscalCode, paymentPositionModel.getIupd());
+        }
 
-			// verifico la correttezza dei dati in input
-			DebtPositionValidation.checkPaymentPositionInputDataAccurancy(ppToUpdate);
+        try {
 
-			// predispongo i dati ad uso interno prima dell'aggiornamento
-			LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-			LocalDateTime minDueDate = ppToUpdate.getPaymentOption().stream().map(PaymentOption::getDueDate).min(LocalDateTime::compareTo).orElse(currentDate);
-			LocalDateTime maxDueDate = ppToUpdate.getPaymentOption().stream().map(PaymentOption::getDueDate).max(LocalDateTime::compareTo).orElse(currentDate);
-			ppToUpdate.setMinDueDate(minDueDate);
-			ppToUpdate.setMaxDueDate(maxDueDate);
-			ppToUpdate.setLastUpdatedDate(currentDate);
-			ppToUpdate.setPublishDate(null);
-			ppToUpdate.setStatus(DebtPositionStatus.DRAFT);
-			for (PaymentOption po : ppToUpdate.getPaymentOption()) {
-				po.setOrganizationFiscalCode(organizationFiscalCode);
-				po.setInsertedDate(ppToUpdate.getInsertedDate());
-				po.setLastUpdatedDate(currentDate);
-				po.setStatus(PaymentOptionStatus.PO_UNPAID);
-				for (Transfer t: po.getTransfer()) {
-					t.setIuv(po.getIuv());
-					t.setOrganizationFiscalCode(organizationFiscalCode);
-					t.setInsertedDate(ppToUpdate.getInsertedDate());
-					t.setLastUpdatedDate(currentDate);
-					t.setStatus(TransferStatus.T_UNREPORTED);
-				}
-			}
+            // flip model to entity
+            ppToUpdate.getPaymentOption().clear();
+            modelMapper.map(paymentPositionModel, ppToUpdate);
 
-			return paymentPositionRepository.saveAndFlush(ppToUpdate);
+            // verifico la correttezza dei dati in input
+            DebtPositionValidation.checkPaymentPositionInputDataAccurancy(ppToUpdate);
 
-		} catch (ValidationException e) {
-			throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
-		} catch (Exception e) {
-			log.error(String.format(ERROR_UPDATE_LOG_MSG,e.getMessage()), e);
-			throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
-		}
-	}
+            // predispongo i dati ad uso interno prima dell'aggiornamento
+            LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+            LocalDateTime minDueDate = ppToUpdate.getPaymentOption().stream().map(PaymentOption::getDueDate).min(LocalDateTime::compareTo).orElse(currentDate);
+            LocalDateTime maxDueDate = ppToUpdate.getPaymentOption().stream().map(PaymentOption::getDueDate).max(LocalDateTime::compareTo).orElse(currentDate);
+            ppToUpdate.setMinDueDate(minDueDate);
+            ppToUpdate.setMaxDueDate(maxDueDate);
+            ppToUpdate.setLastUpdatedDate(currentDate);
+            ppToUpdate.setPublishDate(null);
+            ppToUpdate.setStatus(DebtPositionStatus.DRAFT);
+            for (PaymentOption po : ppToUpdate.getPaymentOption()) {
+                po.setOrganizationFiscalCode(organizationFiscalCode);
+                po.setInsertedDate(ppToUpdate.getInsertedDate());
+                po.setLastUpdatedDate(currentDate);
+                po.setStatus(PaymentOptionStatus.PO_UNPAID);
+                for (Transfer t : po.getTransfer()) {
+                    t.setIuv(po.getIuv());
+                    t.setOrganizationFiscalCode(organizationFiscalCode);
+                    t.setInsertedDate(ppToUpdate.getInsertedDate());
+                    t.setLastUpdatedDate(currentDate);
+                    t.setStatus(TransferStatus.T_UNREPORTED);
+                }
+            }
+
+            return paymentPositionRepository.saveAndFlush(ppToUpdate);
+
+        } catch (ValidationException e) {
+            throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
+        } catch (Exception e) {
+            log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
+            throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
+        }
+    }
 }
