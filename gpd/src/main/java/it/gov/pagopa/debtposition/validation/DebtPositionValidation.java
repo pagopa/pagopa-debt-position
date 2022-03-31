@@ -192,9 +192,8 @@ public class DebtPositionValidation {
     }
 
     private static boolean isPaid(PaymentOption po) {
-        boolean paid = !po.getStatus().equals(PaymentOptionStatus.PO_UNPAID) &&
+        return !po.getStatus().equals(PaymentOptionStatus.PO_UNPAID) &&
                 !po.getIsPartialPayment().equals(true);
-        return paid;
     }
 
     private static void checkTransferAccountable(PaymentPosition ppToReport, String iuv, String transferId) {
