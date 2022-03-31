@@ -1,12 +1,11 @@
 package it.gov.pagopa.debtposition.model.filterandorder;
 
-import javax.validation.constraints.NotNull;
-
-import org.springframework.data.domain.Sort;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.data.domain.Sort;
+
+import javax.validation.constraints.NotNull;
 
 @Getter
 @AllArgsConstructor
@@ -23,7 +22,7 @@ public class Order {
     @Getter
     @AllArgsConstructor
     public enum PaymentPositionOrder implements OrderType {
-    	INSERTED_DATE("insertedDate"),
+        INSERTED_DATE("insertedDate"),
         IUPD("iupd"),
         STATUS("status"),
         COMPANY_NAME("companyName");
