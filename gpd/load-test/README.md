@@ -21,6 +21,9 @@ On Azure
 ```
 k6 run -e BASE_URL=https://api.dev.platform.pagopa.it/gpd/api/v1 gpd/load-test/src/create_debt_postion.js
 k6 run -e BASE_URL=https://api.dev.platform.pagopa.it/gpd/api/v1 gpd/load-test/src/payments_workflow.js
+
+k6 run -e BASE_URL=https://api.uat.platform.pagopa.it/gpd/api/v1 gpd/load-test/src/create_debt_postion.js
+k6 run -e BASE_URL=https://api.uat.platform.pagopa.it/gpd/api/v1 gpd/load-test/src/payments_workflow.js
 ```
 
 On localhost 

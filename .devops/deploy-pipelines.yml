@@ -349,8 +349,9 @@ stages:
             displayName: 'newman installation'
 
           - script: |
-              newman run "api-test/Debt Position.postman_collection.json" --environment=api-test/azure.${{ parameters.ENV }}.postman_environment.json --reporters cli,junit --reporter-junit-export Results/debtposition-TEST.xml
+              newman run "api-test/Debt Position.postman_collection.json" --folder=${{parameters.REPOSITORY}} --environment=api-test/azure.${{ parameters.ENV }}.postman_environment.json --reporters cli,junit --reporter-junit-export Results/debtposition-TEST.xml
             displayName: 'Run api test'
+            condition: in('${{ parameters.REPOSITORY }}', 'gpd', 'payments', 'reporting-analysis')
             continueOnError: true
 
           - task: PublishTestResults@2
