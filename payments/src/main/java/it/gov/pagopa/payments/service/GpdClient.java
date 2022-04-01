@@ -1,10 +1,16 @@
 package it.gov.pagopa.payments.service;
 
 import feign.FeignException;
+import feign.Headers;
+import feign.RequestInterceptor;
+import feign.RequestTemplate;
 import it.gov.pagopa.payments.model.PaymentOptionModel;
 import it.gov.pagopa.payments.model.PaymentOptionModelResponse;
 import it.gov.pagopa.payments.model.PaymentsModelResponse;
+import org.slf4j.MDC;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -14,7 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
-@FeignClient(value = "gpd", url = "${service.gpd.host}")
+@FeignClient(value = "gpd", url = "${service.gpd.host}", configuration = GpdClient.FeignConfiguration.class)
 public interface GpdClient {
 
     @Retryable(exclude = FeignException.FeignClientException.class, maxAttemptsExpression = "${retry.maxAttempts}",
@@ -35,5 +41,14 @@ public interface GpdClient {
                                                     @PathVariable("iuv") String iuv,
                                                     @RequestBody PaymentOptionModel body);
 
+    @Configuration
+    public class FeignConfiguration {
+        static final String HEADER_REQUEST_ID = "X-Request-Id";
+
+        @Bean
+        public RequestInterceptor requestIdInterceptor() {
+            return requestTemplate -> requestTemplate.header(HEADER_REQUEST_ID, MDC.get("requestId"));
+        }
+    }
 
 }
