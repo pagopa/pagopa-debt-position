@@ -27,6 +27,7 @@ export default function() {
 	var urlPaymentsBasePath = `${__ENV.BASE_PAYMENTS_URL}`
 	var idBrokerPA = `${__ENV.ID_BROKER_PA}`
 	var idStation = `${__ENV.ID_STATION}`
+	var service = `${__ENV.LOCAL}`.toLowerCase === "yes" ? "partner" : ""
 
 	const creditor_institution_code = randomString(11, "0123456789");
 	const iupd = makeidMix(35);
@@ -182,7 +183,7 @@ export default function() {
 				paymentRequest: "VerifyPayment",
 			};
 
-			url = `${urlPaymentsBasePath}/partner`;
+			url = `${urlPaymentsBasePath}/${service}`;
 
 			payload = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:nod="http://pagopa-api.pagopa.gov.it/pa/paForNode.xsd">
     <soapenv:Header />
@@ -215,12 +216,9 @@ export default function() {
 				'VerifyPayment status is 200': (r) => r.status === 200,
 			}, tag);
 
-
-
 			check(r, {
 				'VerifyPayment outcome is OK': (r) => (parseHTML(r.body)).find('outcome').get(0).textContent() === 'OK',
 			}, tag);
-
 
 
 			// if the verify payment has OK => activate payment
@@ -230,7 +228,7 @@ export default function() {
 					paymentRequest: "GetPayment",
 				};
 
-				url = `${urlPaymentsBasePath}/partner`;
+				url = `${urlPaymentsBasePath}/${service}`;
 
 				payload = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pafn="http://pagopa-api.pagopa.gov.it/pa/paForNode.xsd">
     <soapenv:Header />
@@ -274,7 +272,7 @@ export default function() {
 						paymentRequest: "SendRT",
 					};
 
-					url = `${urlPaymentsBasePath}/partner`;
+					url = `${urlPaymentsBasePath}/${service}`;
 
 					payload = `<soapenv:Envelope xmlns:pafn="http://pagopa-api.pagopa.gov.it/pa/paForNode.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
     <soapenv:Body>
