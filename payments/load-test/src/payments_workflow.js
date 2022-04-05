@@ -27,7 +27,7 @@ export default function() {
 	var urlPaymentsBasePath = `${__ENV.BASE_PAYMENTS_URL}`
 	var idBrokerPA = `${__ENV.ID_BROKER_PA}`
 	var idStation = `${__ENV.ID_STATION}`
-	var service = `${__ENV.LOCAL}`.toLowerCase === "yes" ? "partner" : ""
+	var service = `${__ENV.LOCAL}`.toLowerCase() === "yes" ? "partner" : ""
 
 	const creditor_institution_code = randomString(11, "0123456789");
 	const iupd = makeidMix(35);
@@ -47,7 +47,6 @@ export default function() {
 
 
 	var url = `${urlGPDBasePath}/organizations/${creditor_institution_code}/debtpositions`;
-
 
 	var payload = JSON.stringify(
 		{
@@ -210,14 +209,13 @@ export default function() {
 
 			r = http.post(url, payload, params);
 
-			console.log("VerifyPayment req - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv_1 + ", Status = " + r.status + ", Outcome = " + parseHTML(r.body).find('outcome').get(0).textContent());
+            console.log("VerifyPayment req - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv_1 + ", Status = " + r.status);
+            if (r.status != 200) {
+                console.error("-> VerifyPayment req - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv_1 + ", Status = " + r.status + ", Body=" + r.body);
+            }
 
 			check(r, {
-				'VerifyPayment status is 200': (r) => r.status === 200,
-			}, tag);
-
-			check(r, {
-				'VerifyPayment outcome is OK': (r) => (parseHTML(r.body)).find('outcome').get(0).textContent() === 'OK',
+				'VerifyPayment status is 200 and outcome is OK': (r) => (r.status === 200 && parseHTML(r.body)).find('outcome').get(0).textContent() === 'OK',
 			}, tag);
 
 
@@ -255,14 +253,13 @@ export default function() {
 
 				r = http.post(url, payload, params);
 
-				console.log("GetPayment req - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv_1 + ", Status = " + r.status + ", Outcome = " + parseHTML(r.body).find('outcome').get(0).textContent());
+                console.log("GetPayment req - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv_1 + ", Status = " + r.status);
+				if (r.status != 200) {
+                    console.error("-> GetPayment req - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv_1 + ", Status = " + r.status + ", Body=" + r.body);
+                }
 
 				check(r, {
-					'ActivatePayment status is 200': (r) => r.status === 200,
-				}, tag);
-
-				check(r, {
-					'ActivatePayment outcome is OK': (r) => (parseHTML(r.body)).find('outcome').get(0).textContent() === 'OK',
+					'ActivatePayment status is 200 and outcome is OK': (r) => (r.status === 200 && parseHTML(r.body)).find('outcome').get(0).textContent() === 'OK',
 				}, tag);
 
 				// if the activate payment has been OK => send receipt
@@ -367,14 +364,13 @@ export default function() {
 
 					r = http.post(url, payload, params);
 
-					console.log("SendRT req - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv_1 + ", Status = " + r.status + ", Outcome = " + parseHTML(r.body).find('outcome').get(0).textContent());
+					console.log("SendRT req - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv_1 + ", Status = " + r.status);
+                    if (r.status != 200) {
+                        console.error("-> SendRT req - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv_1 + ", Status = " + r.status + ", Body=" + r.body);
+                    }
 
 					check(r, {
-						'SendRT status is 200': (r) => r.status === 200,
-					}, tag);
-
-					check(r, {
-						'SendRT outcome is OK': (r) => (parseHTML(r.body)).find('outcome').get(0).textContent() === 'OK',
+						'SendRT status is 200 and outcome is OK': (r) => (r.status === 200 && parseHTML(r.body)).find('outcome').get(0).textContent() === 'OK',
 					}, tag);
 
 				}
