@@ -248,7 +248,7 @@ public class PartnerService {
         response.setOutcome(StOutcome.OK);
 
         // general payment data
-        responseData.setCreditorReferenceId(source.getOrganizationFiscalCode());
+        responseData.setCreditorReferenceId(request.getQrCode().getNoticeNumber().substring(1)); // set IUV from notice number request
         responseData.setPaymentAmount(BigDecimal.valueOf(source.getAmount()));
         responseData.setDueDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(source.getDueDate().toString()));
         responseData.setRetentionDate(source.getRetentionDate() != null
@@ -336,7 +336,7 @@ public class PartnerService {
         transferPa.setIdTransfer(Integer.parseInt(transfer.getIdTransfer()));
         transferPa.setRemittanceInformation(transfer.getRemittanceInformation());
         transferPa.setTransferAmount(BigDecimal.valueOf(transfer.getAmount()));
-        transferPa.setTransferCategory(transfer.getCategory().replace("/", "").substring(1));
+        transferPa.setTransferCategory(transfer.getCategory().replace("/", ""));
         return transferPa;
     }
 

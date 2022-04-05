@@ -297,7 +297,7 @@ class PartnerServiceTest {
         PaGetPaymentRes responseBody = partnerService.paGetPayment(requestBody);
 
         // Test post condition
-        assertThat(responseBody.getData().getCreditorReferenceId()).isEqualTo("77777777777");
+        assertThat(responseBody.getData().getCreditorReferenceId()).isEqualTo("11111111112222222");
         assertThat(responseBody.getData().getDescription()).isEqualTo("string");
         assertThat(responseBody.getData().getDueDate())
                 .isEqualTo(DatatypeFactory.newInstance().newXMLGregorianCalendar("2122-02-24T17:03:59.408"));
