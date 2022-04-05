@@ -151,6 +151,7 @@ class OrganizationHandler(tornado.web.RequestHandler):
     def get(self, idpa):
         print("request received")
         print(f"{self.request}{self.request.body.decode()} - {idpa}")
+        self.set_status(200)
         self.write("OK")
 
 
