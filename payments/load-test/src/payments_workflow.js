@@ -20,7 +20,6 @@ export let options = {
 
 };
 
-
 export default function() {
 
 	var urlGPDBasePath = `${__ENV.BASE_GPD_URL}`
