@@ -41,7 +41,7 @@ public class SoapMessageDispatcher extends MessageDispatcherServlet {
     private static final String SOAP_PREFIX = "soapenv";
 
     @Value("${pt.id_intermediario}")
-    private static String intermediario;
+    private String intermediario;
 
 
     @Override
