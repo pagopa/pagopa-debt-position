@@ -1,18 +1,16 @@
 package it.gov.pagopa.debtposition.exception;
 
-import java.util.Formatter;
-
-import javax.validation.constraints.NotNull;
-
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 
-import lombok.EqualsAndHashCode;
-import lombok.Value;
+import javax.validation.constraints.NotNull;
+import java.util.Formatter;
 
 /**
  * Custom exception.
- * <p> See {@link it.pagopa.pagopa.debtposition.exception.ErrorHandler}
+ * <p> See {@link ErrorHandler}
  */
 @EqualsAndHashCode(callSuper = true)
 @Value

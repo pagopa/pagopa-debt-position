@@ -1,10 +1,9 @@
-package it.gov.pagopa.payments.config;
+package it.gov.pagopa.debtposition.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
-import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -25,7 +24,6 @@ import java.util.stream.StreamSupport;
 @Component
 @Slf4j
 public class LoggingAspect {
-
 
     @Value("${application.name}")
     private String name;
@@ -65,7 +63,17 @@ public class LoggingAspect {
     }
 
 
-    @Around(value = "execution(* it.gov.pagopa.payments.service..*.*(..))")
+    @AfterReturning(value = "execution(* it.gov.pagopa.debtposition.controller..*.*(..))", returning = "result")
+    public void returnApiInvocation(JoinPoint joinPoint, Object result) {
+        log.info("Successful API operation {} - result: {}", joinPoint.getSignature().getName(), result);
+    }
+
+    @AfterReturning(value = "execution(* it.gov.pagopa.debtposition.exception.ErrorHandler.*(..))", returning = "result")
+    public void trowingApiInvocation(JoinPoint joinPoint, Object result) {
+        log.info("Failed API operation {} - error: {}", joinPoint.getSignature().getName(), result);
+    }
+
+    @Around(value = "execution(* it.gov.pagopa.debtposition.repository..*.*(..)) || execution(* it.gov.pagopa.debtposition.service..*.*(..))")
     public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
         long startTime = System.currentTimeMillis();
         Object result = joinPoint.proceed();
@@ -74,14 +82,8 @@ public class LoggingAspect {
         return result;
     }
 
-    @Before(value = "execution(* it.gov.pagopa.payments.service..*.*(..))")
+    @Before(value = "execution(* it.gov.pagopa.debtposition.repository..*.*(..)) || execution(* it.gov.pagopa.debtposition.service..*.*(..))")
     public void logTrace(JoinPoint joinPoint) {
         log.trace("Trace method {} - args: {}", joinPoint.getSignature().toShortString(), joinPoint.getArgs());
     }
-
-    @AfterThrowing(value = "within(it.gov.pagopa.payments..*)", throwing = "ex")
-    public void logAfterThrowing(JoinPoint joinPoint, Exception ex) {
-        log.error("Error raised!", ex);
-    }
-
 }

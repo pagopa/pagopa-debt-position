@@ -1,14 +1,14 @@
 package it.gov.pagopa.debtposition.model.pd.response;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -18,7 +18,7 @@ public class PaymentPositionModelBaseResponse implements Serializable {
      * generated serialVersionUID
      */
     private static final long serialVersionUID = 3162169541264601092L;
-    
+
     private String iupd;
     private String organizationFiscalCode;
     private Type type;
