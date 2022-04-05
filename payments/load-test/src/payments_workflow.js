@@ -209,7 +209,7 @@ export default function() {
 			r = http.post(url, payload, params);
 
             console.log("VerifyPayment req - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv_1 + ", Status = " + r.status);
-            if (r.status != 200) {
+            if (r.status != 200 && r.status != 504) {
                 console.error("-> VerifyPayment req - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv_1 + ", Status = " + r.status + ", Body=" + r.body);
             }
 
@@ -253,7 +253,7 @@ export default function() {
 				r = http.post(url, payload, params);
 
                 console.log("GetPayment req - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv_1 + ", Status = " + r.status);
-				if (r.status != 200) {
+				if (r.status != 200 && r.status != 504) {
                     console.error("-> GetPayment req - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv_1 + ", Status = " + r.status + ", Body=" + r.body);
                 }
 
@@ -364,7 +364,7 @@ export default function() {
 					r = http.post(url, payload, params);
 
 					console.log("SendRT req - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv_1 + ", Status = " + r.status);
-                    if (r.status != 200) {
+                    if (r.status != 200 && r.status != 504) {
                         console.error("-> SendRT req - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv_1 + ", Status = " + r.status + ", Body=" + r.body);
                     }
 
