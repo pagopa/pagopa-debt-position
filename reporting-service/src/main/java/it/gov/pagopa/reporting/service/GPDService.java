@@ -69,7 +69,7 @@ public class GPDService {
         return false;
     }
 
-    private int callSetReport(String idPA, PaymentOption paymentOption, String requestId) {
+    int callSetReport(String idPA, PaymentOption paymentOption, String requestId) {
         try {
             Response response = ClientBuilder.newClient()
                     .target(gpdHost + String.format(GPD_PAYMENT_OPTIONS_SERVICE, idPA, paymentOption.getOptionId(), paymentOption.getTransferId()))
