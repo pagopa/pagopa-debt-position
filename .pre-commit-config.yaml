@@ -1,3 +1,4 @@
+# set GITGUARDIAN_API_KEY in your develop environment
 repos:
   - repo: https://github.com/gitguardian/ggshield
     rev: v1.11.0
