@@ -1,6 +1,7 @@
 import http from 'k6/http';
 import { check } from 'k6';
 import { parseHTML } from "k6/html";
+import { sleep } from 'k6';
 import { makeidNumber, makeidMix, randomString } from './modules/helpers.js';
 
 export let options = {
@@ -176,6 +177,7 @@ export default function() {
 
 		// if the debt position has been correctly published => verify payment 
 		if (r.status === 200) {
+			sleep(2);
 			// Verify Payment.
 			tag = {
 				paymentRequest: "VerifyPayment",
@@ -220,6 +222,7 @@ export default function() {
 
 			// if the verify payment has OK => activate payment
 			if (r.status === 200 && parseHTML(r.body).find('outcome').get(0).textContent() === 'OK') {
+				sleep(4);
 				// Activate Payment.
 				tag = {
 					paymentRequest: "GetPayment",
@@ -263,6 +266,7 @@ export default function() {
 
 				// if the activate payment has been OK => send receipt
 				if (r.status === 200 && parseHTML(r.body).find('outcome').get(0).textContent() === 'OK') {
+					sleep(8);
 					// Get details of a specific payment option.
 					tag = {
 						paymentRequest: "SendRT",
