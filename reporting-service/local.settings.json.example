@@ -14,6 +14,8 @@
       "PAA_PASSWORD": "yourpassword",
       "MAX_RETRY_QUEUING": 5,
       "QUEUE_RETENTION_SEC": 86400,
-      "QUEUE_DELAY_SEC": 3600
+      "QUEUE_DELAY_SEC": 3600,
+      "MAX_ATTEMPTS": 2,
+      "DELAY_ATTEMPS": 2000
     }
   }
