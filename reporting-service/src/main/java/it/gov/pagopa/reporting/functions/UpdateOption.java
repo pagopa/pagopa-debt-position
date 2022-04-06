@@ -8,6 +8,7 @@ import com.microsoft.azure.functions.annotation.QueueTrigger;
 import it.gov.pagopa.reporting.models.OptionsMessage;
 import it.gov.pagopa.reporting.service.GPDService;
 
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,9 +38,14 @@ public class UpdateOption {
 
             GPDService gpdService = this.getGPDServiceInstance();
             options.getPaymentOptions()
+                    .parallelStream()
                     .forEach(paymentOption -> {
                         logger.log(Level.INFO, () -> "Update to RENDICONTATO iuv : " + paymentOption.getOptionId() + " - " + paymentOption.getTransferId());
-                        gpdService.setReport(options.getIdPA(), paymentOption);
+                        var status = gpdService.setReport(options.getIdPA(), paymentOption, logger);
+                        if (!status) {
+                            logger.log(Level.SEVERE, () -> String.format(
+                                    "[UpdateOptionFunction Error] can't update iuv : %s , transfer: %s", paymentOption.getOptionId(), paymentOption.getTransferId()));
+                        }
                     });
 
             logger.log(Level.INFO, () -> "[UpdateOptionFunction END]  processed a message " + message);
