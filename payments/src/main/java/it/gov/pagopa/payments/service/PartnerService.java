@@ -16,6 +16,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.namespace.QName;
 
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -93,10 +94,10 @@ public class PartnerService {
     public PaVerifyPaymentNoticeRes paVerifyPaymentNotice(PaVerifyPaymentNoticeReq request)
             throws DatatypeConfigurationException, PartnerValidationException {
 
-        log.debug("[paVerifyPaymentNotice] isAuthorize check");
+        log.debug("[paVerifyPaymentNotice] isAuthorize check [noticeNumber={}]", request.getQrCode().getNoticeNumber());
         paymentValidator.isAuthorize(request.getIdPA(), request.getIdBrokerPA(), request.getIdStation());
 
-        log.debug("[paVerifyPaymentNotice] get payment option");
+        log.debug("[paVerifyPaymentNotice] get payment option [noticeNumber={}]", request.getQrCode().getNoticeNumber());
         PaymentsModelResponse paymentOption = null;
 
         try {
@@ -106,16 +107,17 @@ public class PartnerService {
             // GPD service works on IUVs directly, so we remove the Aux-Digit
             paymentOption = gpdClient.getPaymentOption(request.getIdPA(), request.getQrCode().getNoticeNumber().substring(1));
         } catch (FeignException.NotFound e) {
-            log.error("[paVerifyPaymentNotice] GPD Error not found", e);
+            log.error("[paVerifyPaymentNotice] GPD Error not found [noticeNumber={}]", request.getQrCode().getNoticeNumber(), e);
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO);
         } catch (Exception e) {
-            log.error("[paVerifyPaymentNotice] GPD Generic Error", e);
+            log.error("[paVerifyPaymentNotice] GPD Generic Error [noticeNumber={}]", request.getQrCode().getNoticeNumber(), e);
             throw new PartnerValidationException(PaaErrorEnum.PAA_SYSTEM_ERROR);
         }
 
         checkDebtPositionStatus(paymentOption);
 
-        log.info("[paVerifyPaymentNotice] Response OK generation");
+        log.info("[paVerifyPaymentNotice] Response OK generation [noticeNumber={}]", request.getQrCode().getNoticeNumber());
+
         return this.generatePaVerifyPaymentNoticeResponse(paymentOption);
     }
 
@@ -123,10 +125,10 @@ public class PartnerService {
     public PaGetPaymentRes paGetPayment(PaGetPaymentReq request)
             throws DatatypeConfigurationException, PartnerValidationException {
 
-        log.debug("[paGetPayment] isAuthorize check");
+        log.debug("[paGetPayment] isAuthorize check [noticeNumber={}]", request.getQrCode().getNoticeNumber());
         paymentValidator.isAuthorize(request.getIdPA(), request.getIdBrokerPA(), request.getIdStation());
 
-        log.debug("[paGetPayment] get payment option");
+        log.debug("[paGetPayment] get payment option [noticeNumber={}]", request.getQrCode().getNoticeNumber());
         PaymentsModelResponse paymentOption = null;
 
         try {
@@ -136,26 +138,26 @@ public class PartnerService {
             // GPD service works on IUVs directly, so we remove the Aux-Digit
             paymentOption = gpdClient.getPaymentOption(request.getIdPA(), request.getQrCode().getNoticeNumber().substring(1));
         } catch (FeignException.NotFound e) {
-            log.error("[paGetPayment] GPD Error not found", e);
+            log.error("[paGetPayment] GPD Error not found [noticeNumber={}]", request.getQrCode().getNoticeNumber(), e);
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO);
         } catch (Exception e) {
-            log.error("[paGetPayment] GPD Generic Error", e);
+            log.error("[paGetPayment] GPD Generic Error [noticeNumber={}]", request.getQrCode().getNoticeNumber(), e);
             throw new PartnerValidationException(PaaErrorEnum.PAA_SYSTEM_ERROR);
         }
 
         checkDebtPositionStatus(paymentOption);
 
-        log.info("[paGetPayment] Response OK generation");
+        log.info("[paGetPayment] Response OK generation [noticeNumber={}]", request.getQrCode().getNoticeNumber());
         return this.generatePaGetPaymentResponse(paymentOption, request);
     }
 
     @Transactional
     public PaSendRTRes paSendRT(PaSendRTReq request) {
 
-        log.debug("[paSendRT] isAuthorize check");
+        log.debug("[paSendRT] isAuthorize check [noticeNumber={}]", request.getReceipt().getNoticeNumber());
         paymentValidator.isAuthorize(request.getIdPA(), request.getIdBrokerPA(), request.getIdStation());
 
-        log.debug(String.format("[paSendRT] get receipt payment option %s", request.getReceipt().getNoticeNumber()));
+        log.debug("[paSendRT] get receipt payment option [noticeNumber={}]", request.getReceipt().getNoticeNumber());
         PaymentOptionModel body = PaymentOptionModel.builder()
                 .idReceipt(request.getReceipt().getReceiptId())
                 .paymentDate(request.getReceipt().getPaymentDateTime().toGregorianCalendar().toZonedDateTime().toLocalDateTime())
@@ -178,25 +180,25 @@ public class PartnerService {
             // GPD service works on IUVs directly, so we use creditorReferenceId (=IUV)
             paymentOption = gpdClient.receiptPaymentOption(request.getIdPA(), request.getReceipt().getCreditorReferenceId(), body);
         } catch (FeignException.Conflict e) {
-            log.error("[paSendRT] GPD Conflict Error Response", e);
+            log.error("[paSendRT] GPD Conflict Error Response [noticeNumber={}]", request.getReceipt().getNoticeNumber(), e);
             throw new PartnerValidationException(PaaErrorEnum.PAA_RECEIPT_DUPLICATA);
         } catch (RetryableException e) {
-            log.error("[paSendRT] GPD Not Reachable", e);
+            log.error("[paSendRT] GPD Not Reachable [noticeNumber={}]", request.getReceipt().getNoticeNumber(), e);
             throw new PartnerValidationException(PaaErrorEnum.PAA_SYSTEM_ERROR);
         } catch (FeignException e) {
-            log.error("[paSendRT] GPD Error Response", e);
+            log.error("[paSendRT] GPD Error Response [noticeNumber={}]", request.getReceipt().getNoticeNumber(), e);
             throw new PartnerValidationException(PaaErrorEnum.PAA_SEMANTICA);
         } catch (Exception e) {
-            log.error("[paSendRT] GPD Generic Error", e);
+            log.error("[paSendRT] GPD Generic Error [noticeNumber={}]", request.getReceipt().getNoticeNumber(), e);
             throw new PartnerValidationException(PaaErrorEnum.PAA_SYSTEM_ERROR);
         }
 
         if (!paymentOption.getStatus().equals(PaymentOptionStatus.PO_PAID)) {
-            log.error("[paSendRT] Payment Option status error: " + paymentOption.getStatus());
+            log.error("[paSendRT] Payment Option [statusError: {}] [noticeNumber={}]", paymentOption.getStatus(),  request.getReceipt().getNoticeNumber());
             throw new PartnerValidationException(PaaErrorEnum.PAA_SEMANTICA);
         }
         
-        log.info("[paSendRT] Generate Response");
+        log.info("[paSendRT] Generate Response [noticeNumber={}]", request.getReceipt().getNoticeNumber());
         // status is always equals to PO_PAID
         return generatePaSendRTResponse();
     }
@@ -207,23 +209,24 @@ public class PartnerService {
      * @param paymentOption {@link PaymentsModelResponse} response from GPD
      */
     private void checkDebtPositionStatus(PaymentsModelResponse paymentOption) {
+        String iuvLog = " [iuv="+ paymentOption.getIuv() + "]";
         if (paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.EXPIRED)) {
-            log.error(DEBT_POSITION_STATUS_ERROR + paymentOption.getDebtPositionStatus());
+            log.error(DEBT_POSITION_STATUS_ERROR + paymentOption.getDebtPositionStatus() + iuvLog);
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_SCADUTO);
         }
         else if (paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.INVALID)) {
-            log.error(DEBT_POSITION_STATUS_ERROR + paymentOption.getDebtPositionStatus());
+            log.error(DEBT_POSITION_STATUS_ERROR + paymentOption.getDebtPositionStatus() + iuvLog);
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_ANNULLATO);
         }
         else if (paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.DRAFT) ||
                 paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.PUBLISHED)) {
-            log.error(DEBT_POSITION_STATUS_ERROR + paymentOption.getDebtPositionStatus());
+            log.error(DEBT_POSITION_STATUS_ERROR + paymentOption.getDebtPositionStatus() + iuvLog);
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO);
         }
         else if (paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.PARTIALLY_PAID) ||
                 paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.PAID) ||
                 paymentOption.getDebtPositionStatus().equals(DebtPositionStatus.REPORTED)) {
-            log.error(DEBT_POSITION_STATUS_ERROR + paymentOption.getDebtPositionStatus());
+            log.error(DEBT_POSITION_STATUS_ERROR + paymentOption.getDebtPositionStatus() + iuvLog);
             throw new PartnerValidationException(PaaErrorEnum.PAA_PAGAMENTO_DUPLICATO);
         }
     }
@@ -259,7 +262,7 @@ public class PartnerService {
         responseData.setCompanyName(Optional.ofNullable(source.getCompanyName()).orElse("NA"));
         responseData.setOfficeName(Optional.ofNullable(source.getOfficeName()).orElse(("NA")));
 
-        // debitor data
+        // debtor data
         uniqueIdentifier.setEntityUniqueIdentifierType(StEntityUniqueIdentifierType.fromValue(source.getType().name()));
 
         uniqueIdentifier.setEntityUniqueIdentifierValue(source.getFiscalCode());
@@ -322,7 +325,6 @@ public class PartnerService {
         result.setOfficeName(Optional.ofNullable(source.getOfficeName()).orElse(("NA")));
         return result;
     }
-
 
     /**
      * @param transfer     GPD response
