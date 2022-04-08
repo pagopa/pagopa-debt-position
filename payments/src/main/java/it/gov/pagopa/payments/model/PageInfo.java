@@ -37,8 +37,8 @@ public class PageInfo {
     @PositiveOrZero
     Integer itemsFound;
 
-    @JsonProperty("total_pages")
-    @Schema(description = "Total number of pages", required = true)
+    @JsonProperty("more_pages")
+    @Schema(description = "More elements on the following pages", required = true)
     @PositiveOrZero
-    Integer totalPages;
+    Boolean morePages;
 }

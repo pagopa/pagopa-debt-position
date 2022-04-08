@@ -1,26 +1,39 @@
 package it.gov.pagopa.payments.model;
 
-import java.util.ArrayList;
+import java.util.List;
 
-import com.microsoft.azure.storage.ResultContinuation;
 import com.microsoft.azure.storage.ResultSegment;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 @Data
-@EqualsAndHashCode(callSuper=false)
-public class PaymentsResultSegment<Object> extends ResultSegment<Object>{
+public class PaymentsResultSegment<T> {
 	
-	private int pageNumber;
-	private ResultSegment resultSegment; 
+	private ResultSegment<T> resultSegment;
 	
-	public PaymentsResultSegment(ArrayList<Object> results, Integer pageSize, ResultContinuation token) {
-		super(results, pageSize, token);
-		// TODO Auto-generated constructor stub
-	}
+	/**
+     * Holds the current page number.
+     */
+	private int currentPageNumber;
 
+    /**
+     * Holds the number of the results.
+     */
+    private int length;
+
+    /**
+     * Holds the size of the requested page.
+     */
+    private Integer pageSize;
+
+    /**
+     * Holds the ArrayList of results.
+     */
+    private List<T> results;
+    
+    /**
+     * Holds the information about more elements to recover.
+     */
+    private boolean hasMoreResults;
 	
-
-
 }
