@@ -5,6 +5,7 @@ import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
 import it.gov.pagopa.reporting.models.BooleanResponseModel;
+import it.gov.pagopa.reporting.models.OptionsMessage;
 import it.gov.pagopa.reporting.models.PaymentOption;
 import it.gov.pagopa.reporting.models.RetryStep;
 import org.junit.ClassRule;
@@ -50,7 +51,7 @@ class OptionServiceIntegrationTest {
 
     @Test
     void optionsProcessingTest()
-            throws ParseException, DatatypeConfigurationException, InvalidKeyException, URISyntaxException, StorageException {
+            throws InvalidKeyException, URISyntaxException, StorageException {
 
         optionsService = spy(new OptionsService(storageConnectionString, flowsQueue, logger));
 
@@ -59,12 +60,38 @@ class OptionServiceIntegrationTest {
         PaymentOption p3 = new PaymentOption("op3", 3, RetryStep.NONE.name());
 
         try {
-            optionsService.optionsProcessing(List.of(p1,p2,p3),idPA, idFlow, dataFlow);
+            optionsService.optionsProcessing(List.of(p1, p2, p3), idPA, idFlow, dataFlow);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
 
-        assertTrue(true);
+        Iterable<CloudQueueMessage> messagges = CloudStorageAccount.parse(storageConnectionString)
+                .createCloudQueueClient().getQueueReference(this.flowsQueue).retrieveMessages(32);
+
+        for (CloudQueueMessage cloudQueueMessage : messagges) {
+
+            assertTrue(cloudQueueMessage.getMessageContentAsString().contains(p1.getOptionId())
+                    || cloudQueueMessage.getMessageContentAsString().contains(p2.getOptionId())
+                    || cloudQueueMessage.getMessageContentAsString().contains(p3.getOptionId()));
+        }
+    }
+
+
+    @Test
+    void insertMessageTest() throws URISyntaxException, InvalidKeyException, StorageException {
+
+        optionsService = spy(new OptionsService(storageConnectionString, flowsQueue, logger));
+
+        PaymentOption p1 = new PaymentOption("op1", 1, RetryStep.NONE.name());
+        PaymentOption p2 = new PaymentOption("op2", 2, RetryStep.NONE.name());
+        PaymentOption p3 = new PaymentOption("op3", 3, RetryStep.NONE.name());
+        OptionsMessage message = new OptionsMessage();
+        message.setIdPA(idPA);
+        message.setIdFlow(idFlow);
+        message.setRetryCount(0);
+        message.setFlowDate(dataFlow);
+        message.setPaymentOptions(List.of(p1, p2, p3));
+        optionsService.insertMessage(message);
 
         Iterable<CloudQueueMessage> messagges = CloudStorageAccount.parse(storageConnectionString)
                 .createCloudQueueClient().getQueueReference(this.flowsQueue).retrieveMessages(32);
