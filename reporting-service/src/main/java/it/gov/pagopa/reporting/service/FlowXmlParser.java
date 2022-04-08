@@ -2,6 +2,7 @@ package it.gov.pagopa.reporting.service;
 
 
 import it.gov.pagopa.reporting.models.PaymentOption;
+import it.gov.pagopa.reporting.models.RetryStep;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -10,19 +11,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FlowXmlParser extends DefaultHandler {
-    private List<PaymentOption> options = new ArrayList<>();
-
+    private final StringBuilder currentValue = new StringBuilder();
+    private final List<PaymentOption> options = new ArrayList<>();
     @Transient
     private String iuv;
-
     @Transient
     private Integer transfer;
 
     public List<PaymentOption> getOptions() {
         return options;
     }
-
-    private final StringBuilder currentValue = new StringBuilder();
 
     @Override
     public void startElement(
@@ -42,10 +40,9 @@ public class FlowXmlParser extends DefaultHandler {
 
         if (qName.equalsIgnoreCase("identificativoUnivocoVersamento")) {
             iuv = currentValue.toString();
-        }
-        else if (qName.equalsIgnoreCase("indiceDatiSingoloPagamento")) {
+        } else if (qName.equalsIgnoreCase("indiceDatiSingoloPagamento")) {
             transfer = Integer.parseInt(currentValue.toString());
-            options.add(new PaymentOption(iuv, transfer));
+            options.add(new PaymentOption(iuv, transfer, RetryStep.NONE.name()));
         }
 
     }

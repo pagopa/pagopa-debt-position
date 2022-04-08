@@ -21,7 +21,7 @@ class GPDServiceTest {
         PaymentOption option = new PaymentOption();
         option.setOptionId("1");
         option.setTransferId(1);
-        boolean result = gpdService.setReport("1", option, logger);
+        boolean result = gpdService.setReport("1", option, logger, any());
         assertFalse(result);
     }
 
@@ -36,7 +36,7 @@ class GPDServiceTest {
         option.setOptionId("1");
         option.setTransferId(1);
 
-        boolean result = gpdService.setReport("1", option, logger);
+        boolean result = gpdService.setReport("1", option, logger, any());
         assertFalse(result);
     }
 
@@ -51,7 +51,7 @@ class GPDServiceTest {
         option.setOptionId("1");
         option.setTransferId(1);
 
-        boolean result = gpdService.setReport("1", option, logger);
+        boolean result = gpdService.setReport("1", option, logger, any());
         assertTrue(result);
     }
 }

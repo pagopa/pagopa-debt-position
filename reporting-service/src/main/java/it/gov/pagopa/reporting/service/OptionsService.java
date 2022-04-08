@@ -20,10 +20,14 @@ import java.util.logging.Logger;
 
 public class OptionsService {
 
-    private String storageConnectionString;
-    private String optionsQueue;
-    private Logger logger;
-    private int optionsForMessage = 2;
+    private final String storageConnectionString;
+    private final String optionsQueue;
+    private final Logger logger;
+    private final int optionsForMessage = 2;
+
+    private final String delay = System.getenv("DELAY_ATTEMPS");
+    private final String timeToLiveInSeconds = System.getenv("QUEUE_RETENTION_SEC");
+
 
     public OptionsService(String storageConnectionString, String optionsQueue, Logger logger) {
 
@@ -56,6 +60,7 @@ public class OptionsService {
             optionsMsg.setIdPA(idPA);
             optionsMsg.setIdFlow(idFlow);
             optionsMsg.setPaymentOptions(partitionOption);
+            optionsMsg.setRetryCount(0);
             messages.add(new ObjectMapper().writeValueAsString(optionsMsg));
         }
 
@@ -82,6 +87,27 @@ public class OptionsService {
         }
 
         this.logger.log(Level.INFO, "[OptionsService] END options queue ");
+    }
+
+    public void insertMessage(OptionsMessage msg) {
+
+        try {
+            logger.log(Level.INFO, () -> "[OptionsService] pushing debt position in queue [" + optionsQueue + "]: " + msg);
+
+            AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString, null, optionsQueue, null);
+            azuriteStorageUtil.createQueue();
+
+            CloudQueue queue = CloudStorageAccount.parse(storageConnectionString).
+                    createCloudQueueClient()
+                    .getQueueReference(optionsQueue);
+
+            int timeToLive = timeToLiveInSeconds != null ? Integer.parseInt(timeToLiveInSeconds) : 60;
+            int initialVisibilityDelay = delay != null ? Integer.parseInt(delay) : 0;
+
+            queue.addMessage(new CloudQueueMessage(new ObjectMapper().writeValueAsString(msg)), timeToLive, initialVisibilityDelay, null, null);
+        } catch (URISyntaxException | StorageException | InvalidKeyException | JsonProcessingException e) {
+            this.logger.log(Level.SEVERE, () -> "[OptionsService ERROR] Error " + e);
+        }
     }
 
 }

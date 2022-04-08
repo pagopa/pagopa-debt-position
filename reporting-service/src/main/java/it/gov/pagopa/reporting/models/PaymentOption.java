@@ -14,4 +14,6 @@ public class PaymentOption {
     private String optionId;
     private Integer transferId;
 
+    // retry
+    private String retryAction; // CREATE | PUBLISH
 }

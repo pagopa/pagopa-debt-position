@@ -18,4 +18,7 @@ public class OptionsMessage {
     private String flowDate;
     private List<PaymentOption> paymentOptions;
 
+    // retry
+    private Integer retryCount;
+
 }
