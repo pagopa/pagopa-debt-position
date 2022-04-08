@@ -32,7 +32,7 @@ public class ReceiptsInfo {
     @Schema(required = true)
     @NotNull
     @Valid
-    private List<ReceiptEntity> receiptsList;
+    private List<ReceiptModelResponse> receiptsList;
 
     @JsonProperty("page_info")
     @Schema(required = true)

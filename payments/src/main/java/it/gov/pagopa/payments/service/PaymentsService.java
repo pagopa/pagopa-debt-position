@@ -91,15 +91,17 @@ public class PaymentsService {
 				String debtorFilter       = TableQuery.generateFilterCondition("Debtor", TableQuery.QueryComparisons.EQUAL, debtor);
 				filter = TableQuery.combineFilters(filter, Operators.AND, debtorFilter);
 			}
-			
+
+			String[] columns = new String[]{"PartitionKey", "RowKey", "Debtor"};
+			TableQuery<ReceiptEntity> tq = TableQuery.from(ReceiptEntity.class);
+			tq.setColumns(columns);
+
 			// first page results
-			ResultSegment<ReceiptEntity> result = table.executeSegmented(TableQuery.from(ReceiptEntity.class).where(filter).take(limit), null);
+			ResultSegment<ReceiptEntity> result = table.executeSegmented(tq.select(columns).where(filter).take(limit), null);
 			
 			if (pageNum > 0) {
-				for (int i=1; i<=pageNum; i++) {
-					if (result.getHasMoreResults()) {
-						result = table.executeSegmented(TableQuery.from(ReceiptEntity.class).where(filter).take(limit), result.getContinuationToken());
-					}
+				for (int i=1; i<=pageNum && result.getHasMoreResults(); i++) {
+					result = table.executeSegmented(TableQuery.from(ReceiptEntity.class).where(filter).take(limit), result.getContinuationToken());
 				}
 			}
 			
