@@ -113,3 +113,4 @@ local.settings.json
 **/*.iml
 /lib/
 **/.env
+bin/
