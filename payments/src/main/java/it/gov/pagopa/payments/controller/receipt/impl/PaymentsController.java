@@ -1,23 +1,20 @@
 package it.gov.pagopa.payments.controller.receipt.impl;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.validation.Valid;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Positive;
 
-import it.gov.pagopa.payments.model.ReceiptModelResponse;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
-import com.microsoft.azure.storage.ResultSegment;
-
 import it.gov.pagopa.payments.controller.receipt.IPaymentsController;
 import it.gov.pagopa.payments.entity.ReceiptEntity;
+import it.gov.pagopa.payments.model.PaymentsResultSegment;
+import it.gov.pagopa.payments.model.ReceiptModelResponse;
 import it.gov.pagopa.payments.model.ReceiptsInfo;
 import it.gov.pagopa.payments.service.PaymentsService;
 import it.gov.pagopa.payments.utils.CommonUtil;
@@ -45,18 +42,21 @@ public class PaymentsController implements IPaymentsController {
 		return new ResponseEntity<>(receipt.getDocument(), HttpStatus.OK);
 	}
 
+
 	@Override
-	public ResponseEntity<ReceiptsInfo> getOrganizationReceipts(String organizationFiscalCode, @Positive Integer limit,
-			@Positive Integer page, @Valid String debtor) {
+	public ResponseEntity<ReceiptsInfo> getOrganizationReceipts(String organizationFiscalCode,
+			@Positive @Max(999) Integer limit, @Positive Integer page, String debtor) {
 		log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationReceipts",
 				String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode) + "; debtor= " + debtor));
 		
-		ResultSegment<ReceiptEntity> receipts = paymentsService.getOrganizationReceipts(limit,page,organizationFiscalCode,debtor);
+		PaymentsResultSegment<ReceiptEntity> receipts = paymentsService.getOrganizationReceipts(limit,page,organizationFiscalCode,debtor);
 		return new ResponseEntity<>(ReceiptsInfo.builder()
                 .receiptsList(receipts.getResults().stream().map(receiptEntity -> modelMapper.map(receiptEntity, ReceiptModelResponse.class)).collect(Collectors.toList()))
                 .pageInfo(CommonUtil.buildPageInfo(receipts))
                 .build(),
                 HttpStatus.OK);
 	}
+
+	
 
 }
