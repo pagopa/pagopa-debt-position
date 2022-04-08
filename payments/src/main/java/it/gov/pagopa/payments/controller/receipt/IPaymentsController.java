@@ -1,6 +1,6 @@
 package it.gov.pagopa.payments.controller.receipt;
 
-import javax.validation.Valid;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Positive;
 
 import org.springframework.http.MediaType;
@@ -45,14 +45,15 @@ public interface IPaymentsController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Obtained all organization payment positions.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ReceiptsInfo.class))),
             @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
+            @ApiResponse(responseCode = "404", description = "No receipts found.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
             @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
     @GetMapping(value = "/payments/{organizationfiscalcode}/receipts",
             produces = {"application/json"})
     ResponseEntity<ReceiptsInfo> getOrganizationReceipts(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
-            @Positive @Parameter(description = "Number of elements on one page. Default = 50") @RequestParam(required = false, defaultValue = "50") Integer limit,
-            @Positive @Parameter(description = "Page number. Page value starts from 0", required = true) @RequestParam Integer page,
-            @Valid @Parameter(description = "Filter by debtor") @RequestParam(value = "debtor", required = false) String debtor);
+            @Positive @Parameter(description = "Number of elements on one page") @RequestParam(required = false) @Max(999) Integer limit,
+            @Positive @Parameter(description = "Page number. Page value starts from 0") @RequestParam(required = false, defaultValue = "0") Integer page,
+            @Parameter(description = "Filter by debtor") @RequestParam(required = false) String debtor);
 
 }
