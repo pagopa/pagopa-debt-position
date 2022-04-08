@@ -21,9 +21,9 @@ class OptionsMessageTest {
         optionsMessage.setIdFlow("idFlow");
         optionsMessage.setFlowDate("2015-04-24 11:15:00");
 
-        PaymentOption p1 = new PaymentOption("op1", 1);
-        PaymentOption p2 = new PaymentOption("op2", 2);
-        PaymentOption p3 = new PaymentOption("op3", 3);
+        PaymentOption p1 = new PaymentOption("op1", 1, "NONE");
+        PaymentOption p2 = new PaymentOption("op2", 2, "NONE");
+        PaymentOption p3 = new PaymentOption("op3", 3, "NONE");
 
         optionsMessage.setPaymentOptions (List.of(p1,p2,p3));
 

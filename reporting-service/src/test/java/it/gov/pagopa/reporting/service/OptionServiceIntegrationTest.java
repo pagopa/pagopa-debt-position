@@ -6,6 +6,7 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
 import it.gov.pagopa.reporting.models.BooleanResponseModel;
 import it.gov.pagopa.reporting.models.PaymentOption;
+import it.gov.pagopa.reporting.models.RetryStep;
 import org.junit.ClassRule;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
@@ -53,9 +54,9 @@ class OptionServiceIntegrationTest {
 
         optionsService = spy(new OptionsService(storageConnectionString, flowsQueue, logger));
 
-        PaymentOption p1 = new PaymentOption("op1", 1);
-        PaymentOption p2 = new PaymentOption("op2", 2);
-        PaymentOption p3 = new PaymentOption("op3", 3);
+        PaymentOption p1 = new PaymentOption("op1", 1, RetryStep.NONE.name());
+        PaymentOption p2 = new PaymentOption("op2", 2, RetryStep.NONE.name());
+        PaymentOption p3 = new PaymentOption("op3", 3, RetryStep.NONE.name());
 
         try {
             optionsService.optionsProcessing(List.of(p1,p2,p3),idPA, idFlow, dataFlow);

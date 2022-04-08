@@ -1,6 +1,7 @@
 package it.gov.pagopa.reporting.service;
 
 import it.gov.pagopa.reporting.models.PaymentOption;
+import it.gov.pagopa.reporting.models.RetryStep;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -21,8 +22,8 @@ class GPDServiceTest {
         PaymentOption option = new PaymentOption();
         option.setOptionId("1");
         option.setTransferId(1);
-        boolean result = gpdService.setReport("1", option, logger, any());
-        assertFalse(result);
+        var result = gpdService.setReport("1", option, logger, "123");
+        assertEquals(RetryStep.RETRY, result);
     }
 
     @Test
@@ -36,8 +37,8 @@ class GPDServiceTest {
         option.setOptionId("1");
         option.setTransferId(1);
 
-        boolean result = gpdService.setReport("1", option, logger, any());
-        assertFalse(result);
+        var result = gpdService.setReport("1", option, logger, "123");
+        assertEquals(RetryStep.ERROR, result);
     }
 
     @Test
@@ -51,7 +52,7 @@ class GPDServiceTest {
         option.setOptionId("1");
         option.setTransferId(1);
 
-        boolean result = gpdService.setReport("1", option, logger, any());
-        assertTrue(result);
+        var result = gpdService.setReport("1", option, logger, "123");
+        assertEquals(RetryStep.DONE, result);
     }
 }
