@@ -1,10 +1,14 @@
 package it.gov.pagopa.payments.controller.receipt.impl;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 
+import it.gov.pagopa.payments.model.ReceiptModelResponse;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,9 +29,10 @@ public class PaymentsController implements IPaymentsController {
 
 	private static final String LOG_BASE_HEADER_INFO = "[RequestMethod: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
 	private static final String LOG_BASE_PARAMS_DETAIL = "organizationFiscalCode= %s";
-	/*
-	 * @Autowired private ModelMapper modelMapper;
-	 */ 
+
+ 	@Autowired
+ 	private ModelMapper modelMapper;
+
 	@Autowired 
 	private PaymentsService paymentsService;
 	
@@ -48,13 +53,10 @@ public class PaymentsController implements IPaymentsController {
 		
 		ResultSegment<ReceiptEntity> receipts = paymentsService.getOrganizationReceipts(limit,page,organizationFiscalCode,debtor);
 		return new ResponseEntity<>(ReceiptsInfo.builder()
-                .receiptsList(receipts.getResults())
+                .receiptsList(receipts.getResults().stream().map(receiptEntity -> modelMapper.map(receiptEntity, ReceiptModelResponse.class)).collect(Collectors.toList()))
                 .pageInfo(CommonUtil.buildPageInfo(receipts))
                 .build(),
                 HttpStatus.OK);
 	}
-	
-	
-	
 
 }
