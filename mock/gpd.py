@@ -56,6 +56,7 @@ class reportsHandler(tornado.web.RequestHandler):
     def post(self, idpa, iuv, idtransfer):
         print("request received")
         print(f"{self.request}{self.request.body.decode()} - {idpa} - {iuv} - {idtransfer}")
+        self.set_status(500)
         self.write(json.dumps(dict()))
 
 
