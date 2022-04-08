@@ -1,28 +1,24 @@
 package it.gov.pagopa.reporting.service;
 
 import it.gov.pagopa.reporting.models.PaymentOption;
+import it.gov.pagopa.reporting.models.RetryStep;
 import lombok.SneakyThrows;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static java.lang.Thread.sleep;
-
 public class GPDService {
 
-    private final String gpdHost = System.getenv("GPD_HOST");
-    private final String maxAttemps = System.getenv("MAX_ATTEMPTS");
-    private final String delay = System.getenv("DELAY_ATTEMPS");
     // /organizations/:idEC/paymentoptions/:IUV/transfers/{transferid}/report
     private static final String GPD_PAYMENT_OPTIONS_SERVICE = "/organizations/%s/paymentoptions/%s/transfers/%s/report";
-
     private static GPDService instance = null;
+    private final String gpdHost = System.getenv("GPD_HOST");
+
 
     private GPDService() {
     }
@@ -40,33 +36,29 @@ public class GPDService {
      * @param idPA          fiscal code
      * @param paymentOption payment option
      * @param logger        for logging
+     * @param invocationId
      * @return return true if the report is set correctly
      */
     @SneakyThrows
-    public boolean setReport(String idPA, PaymentOption paymentOption, Logger logger) {
-        int maxAttemptsValue = Integer.parseInt(Optional.ofNullable(maxAttemps)
-                .orElse("1")); // for testing
-        int delayValue = Integer.parseInt(Optional.ofNullable(delay)
-                .orElse("0")); // for testing
-        for (int i = 1; i <= maxAttemptsValue; i++) {
-            var requestId = UUID.randomUUID().toString();
+    public RetryStep setReport(String idPA, PaymentOption paymentOption, Logger logger, String invocationId) {
+        var requestId = UUID.randomUUID().toString();
 
-            logger.log(Level.INFO, () -> String.format(
-                    "[requestId=%s][GPD CALL][setReport] RENDICONTATO iuv : %s , transfer: %s", requestId, paymentOption.getOptionId(), paymentOption.getTransferId()));
+        logger.log(Level.INFO, () -> String.format(
+                "[id=%s][requestId=%s][GPD CALL][setReport] RENDICONTATO iuv : %s , transfer: %s", invocationId, requestId, paymentOption.getOptionId(), paymentOption.getTransferId()));
 
-            int status = callSetReport(idPA, paymentOption, requestId);
-            if (status == 200) {
-                return true;
-            }
-            if (status >= 400 && status < 500) {
-                // skip retry if the status is 4xx
-                return false;
-            }
-            sleep(delayValue);
-            logger.log(Level.WARNING, () -> String.format(
-                    "[requestId=%s][GPD Error][setReport] Retry for RENDICONTATO iuv : %s , transfer: %s", requestId, paymentOption.getOptionId(), paymentOption.getTransferId()));
+        int status = callSetReport(idPA, paymentOption, requestId);
+        if (status == 200) {
+            return RetryStep.DONE;
         }
-        return false;
+        logger.log(Level.WARNING, () -> String.format(
+                "[id=%s][requestId=%s][GPD CALL][setReport] HTTP error status %s for iuv : %s , transfer: %s", invocationId, requestId, status, paymentOption.getOptionId(), paymentOption.getTransferId()));
+
+        if (status >= 400 && status < 500) {
+            // skip retry if the status is 4xx
+            return RetryStep.ERROR;
+        }
+
+        return RetryStep.RETRY;
     }
 
     int callSetReport(String idPA, PaymentOption paymentOption, String requestId) {

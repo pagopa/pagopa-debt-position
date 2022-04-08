@@ -23,8 +23,8 @@ import java.util.logging.Logger;
  * Azure Functions with Azure Blob trigger.
  */
 public class ElaborateOptions {
-    private String storageConnectionString = System.getenv("FLOW_SA_CONNECTION_STRING");
-    private String optionsQueue = System.getenv("OPTIONS_QUEUE");
+    private final String storageConnectionString = System.getenv("FLOW_SA_CONNECTION_STRING");
+    private final String optionsQueue = System.getenv("OPTIONS_QUEUE");
 
     /**
      * This function will be invoked when a new or updated blob is detected at the
@@ -60,7 +60,7 @@ public class ElaborateOptions {
             String[] flowInfo = name.split("##");
             String dataFlow = flowInfo[0];
             String idPA = flowInfo[1];
-            String idFlow = flowInfo[2].substring(0,flowInfo[2].length()-4); // remove extension file;
+            String idFlow = flowInfo[2].substring(0, flowInfo[2].length() - 4); // remove extension file;
             logger.log(Level.INFO, () -> "Processing flow " + idPA + "/" + idFlow + " with date " + dataFlow);
 
             // step 11

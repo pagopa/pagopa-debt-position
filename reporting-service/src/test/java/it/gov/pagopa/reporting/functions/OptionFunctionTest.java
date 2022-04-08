@@ -42,7 +42,7 @@ class OptionFunctionTest {
 
         verify(context, times(1)).getLogger();
 
-        verify(gpdServiceFake, times(2)).setReport(anyString(), any(), any());
+        verify(gpdServiceFake, times(2)).setReport(anyString(), any(), any(), any());
     }
 
     @Test

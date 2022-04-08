@@ -13,16 +13,16 @@ public class NodeService {
 
     private static final URL WSD_URL = PagamentiTelematiciRPTservice.WSDL_LOCATION;
 
-    private String identificativoIntemediarioPA;
-    private String identificativoStazioneIntermediarioPA;
-    private String paaPassword;
-    private PagamentiTelematiciRPTservice ss;
-    private PagamentiTelematiciRPT port;
+    private final String identificativoIntemediarioPA;
+    private final String identificativoStazioneIntermediarioPA;
+    private final String paaPassword;
+    private final PagamentiTelematiciRPTservice ss;
+    private final PagamentiTelematiciRPT port;
     private Holder<FaultBean> nodoChiediFlussoRendicontazioneFault;
     private Holder<DataHandler> reportingXml;
 
     public NodeService(String identificativoIntemediarioPA, String identificativoStazioneIntermediarioPA,
-            String paaPassword) {
+                       String paaPassword) {
 
         this.identificativoIntemediarioPA = identificativoIntemediarioPA;
         this.identificativoStazioneIntermediarioPA = identificativoStazioneIntermediarioPA;
@@ -31,13 +31,13 @@ public class NodeService {
         this.port = ss.getPagamentiTelematiciRPTPort();
     }
 
-    public void setNodoChiediFlussoRendicontazioneFault(Holder<FaultBean> fault) {
-        this.nodoChiediFlussoRendicontazioneFault = fault;
-    }
-
     public FaultBean getNodoChiediFlussoRendicontazioneFault() {
 
         return nodoChiediFlussoRendicontazioneFault != null ? nodoChiediFlussoRendicontazioneFault.value : null;
+    }
+
+    public void setNodoChiediFlussoRendicontazioneFault(Holder<FaultBean> fault) {
+        this.nodoChiediFlussoRendicontazioneFault = fault;
     }
 
     public void setNodoChiediFlussoRendicontazioneXmlReporting(Holder<DataHandler> reportingXml) {

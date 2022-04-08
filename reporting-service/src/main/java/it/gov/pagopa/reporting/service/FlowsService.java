@@ -37,7 +37,7 @@ public class FlowsService {
     private final int timeToLiveInSeconds;
     private final int initialVisibilityDelayInSeconds;
     private final int maxRetryQueuing;
-    private Logger logger;
+    private final Logger logger;
 
     public FlowsService(String storageConnectionString, String identificativoIntemediarioPA,
                         String identificativoStazioneIntermediarioPA, String paaPassword, String containerBlob, String flowsQueue,
@@ -89,11 +89,9 @@ public class FlowsService {
                     logger.log(Level.INFO, () ->
                             "[RetrieveDetails/FlowsService] Uploaded in " + this.containerBlob);
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 logger.log(Level.SEVERE, () -> "[RetrieveDetails/FlowsService] Upload failed in " + this.containerBlob);
-            }
-            catch (ClientTransportException e) {
+            } catch (ClientTransportException e) {
                 logger.log(Level.SEVERE, () -> "[NODO Connection down] " + idPA + " - " + flow.getIdentificativoFlusso());
 
                 if (retry < maxRetryQueuing) {
