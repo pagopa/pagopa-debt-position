@@ -67,7 +67,7 @@ public class UpdateOption {
     }
 
     private void handleFailedRows(Logger logger, OptionsMessage options, List<PaymentOption> failed, String invocationId) {
-        int maxRetry = maxAttempts != null ? Integer.parseInt(maxAttempts) : 0;
+        int maxRetry = getMaxRetry();
 
         // if elem is failed with 4xx HTTP status code, it isn't retryable
         var notRetryable = failed.stream()
@@ -100,6 +100,10 @@ public class UpdateOption {
             notRetryable.forEach(elem -> logger.log(Level.SEVERE, () -> String.format(
                     "[id=%s][UpdateOptionFunction Error] can't update iuv : %s , transfer: %s", invocationId, elem.getOptionId(), elem.getTransferId())));
         }
+    }
+
+    protected int getMaxRetry() {
+        return maxAttempts != null ? Integer.parseInt(maxAttempts) : 0;
     }
 
     public GPDService getGPDServiceInstance() {

@@ -100,6 +100,7 @@ class OptionFunctionTest {
 
         when(gpdServiceFake.setReport(anyString(), any(), any(), any())).thenReturn(RetryStep.RETRY);
         when(function.getGPDServiceInstance()).thenReturn(gpdServiceFake);
+        when(function.getMaxRetry()).thenReturn(2);
 
         function.run(message, context);
 
