@@ -113,6 +113,20 @@ class PaymentsServiceTest {
 		}
 	}
 	
+	@Test
+	void getReceiptByOrganizationFCAndIUV_500() throws Exception {
+
+		String wrongStorageConnectionString = "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://%s:%s/devstoreaccount1;QueueEndpoint=http://%s:%s/devstoreaccount1;BlobEndpoint=http://%s:%s/devstoreaccount1";
+		var paymentsService = spy(new PaymentsService(wrongStorageConnectionString, "receiptsTable"));
+		
+		try {
+			paymentsService.getReceiptByOrganizationFCAndIUV("org123456", "iuv0");
+		} catch(AppException e) {
+			assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, e.getHttpStatus());
+		}
+		
+	}
+	
 	/**
 	 *  GET RECEIPTS
 	 */
@@ -185,6 +199,20 @@ class PaymentsServiceTest {
 		PaymentsResultSegment<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", "debtor15");
 		assertNotNull(res);
 		assertEquals(0, res.getResults().size());
+		
+	}
+	
+	@Test
+	void getOrganizationReceipts_500() throws Exception {
+
+		String wrongStorageConnectionString = "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://%s:%s/devstoreaccount1;QueueEndpoint=http://%s:%s/devstoreaccount1;BlobEndpoint=http://%s:%s/devstoreaccount1";
+		var paymentsService = spy(new PaymentsService(wrongStorageConnectionString, "receiptsTable"));
+		
+		try {
+			paymentsService.getOrganizationReceipts(null, null, "org123456", null);
+		} catch(AppException e) {
+			assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, e.getHttpStatus());
+		}
 		
 	}
 	
