@@ -25,12 +25,14 @@ import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
 import com.microsoft.azure.storage.table.TableBatchOperation;
+import com.microsoft.azure.storage.table.TableOperation;
 
 import feign.FeignException;
 import feign.RetryableException;
 import it.gov.pagopa.payments.endpoints.validation.PaymentValidator;
 import it.gov.pagopa.payments.endpoints.validation.exceptions.PartnerValidationException;
 import it.gov.pagopa.payments.entity.ReceiptEntity;
+import it.gov.pagopa.payments.entity.Status;
 import it.gov.pagopa.payments.model.DebtPositionStatus;
 import it.gov.pagopa.payments.model.PaaErrorEnum;
 import it.gov.pagopa.payments.model.PaymentOptionModel;
@@ -178,6 +180,10 @@ public class PartnerService {
             this.saveReceipt(receiptEntity);
             // GPD service works on IUVs directly, so we use creditorReferenceId (=IUV)
             paymentOption = gpdClient.receiptPaymentOption(request.getIdPA(), request.getReceipt().getCreditorReferenceId(), body);
+            if (null != paymentOption && paymentOption.getStatus().equals(PaymentOptionStatus.PO_PAID)) {
+            	receiptEntity.setStatus(Status.PAID.name());
+            	this.updateReceipt (receiptEntity);
+            }
         } catch (FeignException.Conflict e) {
             log.error("[paSendRT] GPD Conflict Error Response [noticeNumber={}]", request.getReceipt().getNoticeNumber(), e);
             throw new PartnerValidationException(PaaErrorEnum.PAA_RECEIPT_DUPLICATA);
@@ -386,6 +392,16 @@ public class PartnerService {
 	        batchOperation.insertOrReplace(receiptEntity);
 	        table.execute(batchOperation);   
     }
+    
+    private void updateReceipt(ReceiptEntity receiptEntity) throws InvalidKeyException, URISyntaxException, StorageException  {
+    	AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString);
+		azuriteStorageUtil.createTable(receiptsTable);
+		CloudTable table = CloudStorageAccount.parse(storageConnectionString)
+                .createCloudTableClient()
+                .getTableReference(receiptsTable);
+		TableOperation updateOperation = TableOperation.merge(receiptEntity);
+        table.execute(updateOperation);   
+}
     
     
 
