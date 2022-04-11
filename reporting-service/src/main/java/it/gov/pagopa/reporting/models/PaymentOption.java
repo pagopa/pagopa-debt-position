@@ -15,5 +15,5 @@ public class PaymentOption {
     private Integer transferId;
 
     // retry
-    private String retryAction; // CREATE | PUBLISH
+    private String retryAction;
 }
