@@ -128,7 +128,7 @@ class PaymentsServiceTest {
 	}
 	
 	@Test
-	void getOrganizationReceipts_page_and_limit_filter() throws Exception {
+	void getOrganizationReceipts_page_and_limit_filters() throws Exception {
 
 		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable"));
 		
@@ -137,6 +137,54 @@ class PaymentsServiceTest {
 		assertEquals(5, res.getResults().size());
 		assertEquals(0, res.getCurrentPageNumber());
 		assertEquals(true, res.isHasMoreResults());
+		
+	}
+	
+	@Test
+	void getOrganizationReceipts_debtor_filter() throws Exception {
+
+		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable"));
+		
+		PaymentsResultSegment<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", "debtor5");
+		assertNotNull(res);
+		assertEquals(1, res.getResults().size());
+		assertEquals(0, res.getCurrentPageNumber());
+		
+	}
+	
+	@Test
+	void getOrganizationReceipts_all_filters() throws Exception {
+
+		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable"));
+		
+		PaymentsResultSegment<ReceiptEntity> res = paymentsService.getOrganizationReceipts(5, 0, "org123456", "debtor5");
+		assertNotNull(res);
+		assertEquals(1, res.getResults().size());
+		assertEquals(0, res.getCurrentPageNumber());
+		
+	}
+	
+	@Test
+	void getOrganizationReceipts_404_page_not_exist() throws Exception {
+
+		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable"));
+		
+		try {
+			paymentsService.getOrganizationReceipts(5, 3, "org123456", null);
+		} catch(AppException e) {
+			assertEquals(HttpStatus.NOT_FOUND, e.getHttpStatus());
+		}
+		
+	}
+	
+	@Test
+	void getOrganizationReceipts_debtor_not_exist() throws Exception {
+
+		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable"));
+		
+		PaymentsResultSegment<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", "debtor15");
+		assertNotNull(res);
+		assertEquals(0, res.getResults().size());
 		
 	}
 	
