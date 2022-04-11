@@ -1,7 +1,8 @@
 package it.gov.pagopa.payments.exception;
 
-import lombok.Getter;
 import org.springframework.http.HttpStatus;
+
+import lombok.Getter;
 
 
 @Getter
@@ -15,9 +16,9 @@ public enum AppError {
     UNKNOWN(null, null, null);
 
 
-    public final HttpStatus httpStatus;
-    public final String title;
-    public final String details;
+    final HttpStatus httpStatus;
+    final String title;
+    final String details;
 
 
     AppError(HttpStatus httpStatus, String title, String details) {
