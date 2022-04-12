@@ -80,7 +80,7 @@ public class UpdateOption {
 
         // retry only if maxRetry is not reached
         if (!retryable.isEmpty() && options.getRetryCount() < maxRetry) {
-            notRetryable.forEach(elem -> logger.log(Level.WARNING, () -> String.format(
+            retryable.forEach(elem -> logger.log(Level.WARNING, () -> String.format(
                     "[id=%s][GPD Error][setReport] Retry for RENDICONTATO iuv : %s , transfer: %s", invocationId, elem.getOptionId(), elem.getTransferId())));
             // insert message in queue
             var queueService = getOptionQueueService(logger);
