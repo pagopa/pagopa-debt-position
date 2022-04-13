@@ -1,5 +1,7 @@
 # Payments
+
 - [Payments](#payments)
+  * [Api Documentation 📖](#api-documentation---)
   * [Technology Stack 📚](#technology-stack---)
   * [Start Project Locally 🚀](#start-project-locally---)
     + [Prerequisites](#prerequisites)
@@ -13,6 +15,10 @@
     - [Load testing](#load-testing)
   * [Mainteiners 👨‍💻](#mainteiners------)
   
+---
+## Api Documentation 📖
+See the [OpenApi 3 here.](https://editor.swagger.io/?url=https://raw.githubusercontent.com/pagopa/pagopa-debt-position/main/payments/openapi/openapi.json)
+
 ---
 
 ## Technology Stack 📚
