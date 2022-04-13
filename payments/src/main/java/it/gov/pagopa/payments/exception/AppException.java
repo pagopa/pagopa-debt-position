@@ -1,20 +1,20 @@
 package it.gov.pagopa.payments.exception;
 
-import lombok.EqualsAndHashCode;
-import lombok.Value;
+import java.util.Formatter;
+
+import javax.validation.constraints.NotNull;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.NotNull;
-import java.util.Formatter;
+import lombok.Getter;
 
 /**
  * Custom exception.
  * <p> See {@link ErrorHandler}
  */
-@EqualsAndHashCode(callSuper = true)
-@Value
 @Validated
+@Getter
 public class AppException extends RuntimeException {
 
     /**

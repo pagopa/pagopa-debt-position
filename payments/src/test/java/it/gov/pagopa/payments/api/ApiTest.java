@@ -1,5 +1,6 @@
 package it.gov.pagopa.payments.api;
 
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,6 +31,12 @@ class ApiTest {
 
     @Test
     void applicationContextLoaded() {
+        assertTrue(true); // it just tests that an error has not occurred
+    }
+
+    @Test
+    void applicationContextTest() {
+        PaymentsApplication.main(new String[]{});
         assertTrue(true); // it just tests that an error has not occurred
     }
 }
