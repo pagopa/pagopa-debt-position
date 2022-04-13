@@ -2,7 +2,6 @@ package it.gov.pagopa.payments.entity;
 
 import com.microsoft.azure.storage.table.TableServiceEntity;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -10,11 +9,11 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
-@Builder
 public class ReceiptEntity extends TableServiceEntity {
 
     private String debtor;
     private String document;
+    private String status = Status.CREATED.name();
 
 
     public ReceiptEntity(String organizationFiscalCode, String iuv) {
