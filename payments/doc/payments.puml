@@ -1,0 +1,119 @@
+@startuml Payments
+title Payment process activated by the PSP
+
+participant GPD
+participant Payments
+participant pagoPA
+participant PSP
+actor       User
+
+== verify phase (optional) ==
+
+User [#blue]-> PSP: Payment Notice
+
+PSP -> pagoPA: verifyPaymentNotice req
+activate pagoPA
+pagoPA -> Payments: paVerifyPaymentNotice req
+activate Payments
+
+Payments -> GPD : **GET** /organizations/{organizationfiscalcode}
+activate GPD
+GPD -> Payments : res
+deactivate GPD
+
+alt res <color green>OK</color>
+
+    Payments -> GPD : **GET** /organizations/{organizationfiscalcode}/paymentoptions/{iuv}
+    activate GPD
+    GPD -> Payments : res
+    deactivate GPD
+    Payments -> pagoPA: paVerifyPaymentNotice res
+    deactivate Payments
+    pagoPA -> PSP: verifyPaymentNotice res
+    deactivate pagoPA
+    PSP [#blue]-> User: Notice verified and updated
+
+else res <color red>KO</color>
+
+    Payments -> pagoPA: paVerifyPaymentNotice res KO **PAA_ID_DOMINIO_ERRATO**
+    pagoPA -> PSP: verifyPaymentNotice res KO **PAA_ID_DOMINIO_ERRATO**
+    PSP [#red]-> User: Error response
+end
+
+
+== activate phase ==
+
+User [#blue]-> PSP: Confirm willingness to pay
+PSP -> pagoPA: activatePaymentNotice req
+activate pagoPA
+pagoPA -> pagoPA: token generation (<color blue>token</color>)
+pagoPA -> Payments: paGetPayment req
+activate Payments
+
+Payments -> GPD : **GET** /organizations/{organizationfiscalcode}
+activate GPD
+GPD -> Payments : res
+deactivate GPD
+
+alt res <color green>OK</color>
+
+    Payments -> GPD : **GET** /organizations/{organizationfiscalcode}/paymentoptions/{iuv}
+    activate GPD
+    GPD -> Payments : res
+    deactivate GPD
+    Payments -> pagoPA: paGetPayment res
+    deactivate Payments
+    pagoPA --> PSP: activatePaymentNotice res (<color blue>token</color>)
+    deactivate pagoPA
+
+    PSP [#blue]-> User: Payment page
+
+else res <color red>KO</color>
+
+    Payments -> pagoPA: paGetPayment res KO **PAA_ID_DOMINIO_ERRATO**
+    pagoPA -> PSP: activatePaymentNotice res KO **PAA_ID_DOMINIO_ERRATO**
+    PSP [#red]-> User: Error response
+end
+
+
+
+
+== send receipt phase ==
+
+User [#blue]-> PSP: Pay
+
+PSP -> pagoPA: sendPaymentOutcome req (<color blue>token</color>)
+activate pagoPA
+pagoPA --> PSP: sendPaymentOutcome res
+deactivate pagoPA
+opt Only in case of outcome + 
+    pagoPA -> pagoPA: receipt generation (idReceipt=<color blue>token</color>)
+    loop for each Payments in transfer list
+
+        pagoPA -> Payments: paSendRT req (idReceipt=<color blue>token</color>)
+        activate Payments
+
+        Payments -> GPD : **GET** /organizations/{organizationfiscalcode}
+        activate GPD
+        GPD -> Payments : res
+        deactivate GPD
+
+        alt res <color green>OK</color>
+
+            Payments -> GPD : **POST** /organizations/{organizationfiscalcode}/paymentoptions/{iuv}/pay
+            activate GPD
+            GPD -> Payments : res
+            deactivate GPD
+            Payments --> pagoPA: paSendRT res
+            deactivate Payments
+
+        else res <color red>KO</color>
+            Payments -> pagoPA: paSendRT res KO **PAA_ID_DOMINIO_ERRATO**
+        end
+
+
+    end 
+end
+
+
+@enduml

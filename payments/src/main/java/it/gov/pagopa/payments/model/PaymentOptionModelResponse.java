@@ -11,7 +11,11 @@ import java.util.List;
 @NoArgsConstructor
 public class PaymentOptionModelResponse implements Serializable {
 
-    private String iuv;
+    /**
+	 * generated serialVersionUID
+	 */
+	private static final long serialVersionUID = -3105963604242460898L;
+	private String iuv;
     private String organizationFiscalCode;
     private long amount;
     private String description;
