@@ -25,12 +25,12 @@ public class AppException extends RuntimeException {
     /**
      * title returned to the response when this exception occurred
      */
-    private String title;
+    private final String title;
 
     /**
      * http status returned to the response when this exception occurred
      */
-    private HttpStatus httpStatus;
+    private final HttpStatus httpStatus;
 
     /**
      * @param appError Response template returned to the response
