@@ -27,4 +27,6 @@ public class PaymentOptionModel implements Serializable {
     private String pspCompany;
     @NotBlank(message = "idReceipt is required")
     private String idReceipt;
+    @NotBlank(message = "fee is required")
+    private String fee = "0";
 }
