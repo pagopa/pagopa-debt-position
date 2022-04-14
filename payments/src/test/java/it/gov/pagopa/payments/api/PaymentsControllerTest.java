@@ -27,7 +27,7 @@ import it.gov.pagopa.payments.controller.receipt.impl.PaymentsController;
 import it.gov.pagopa.payments.entity.ReceiptEntity;
 import it.gov.pagopa.payments.exception.AppError;
 import it.gov.pagopa.payments.exception.AppException;
-import it.gov.pagopa.payments.model.PaymentsResultSegment;
+import it.gov.pagopa.payments.model.PaymentsResult;
 import it.gov.pagopa.payments.model.ReceiptsInfo;
 import it.gov.pagopa.payments.service.PaymentsService;
 
@@ -95,7 +95,7 @@ class PaymentsControllerTest {
 	@Test
 	void getOrganizationReceipts_200() throws Exception {
 		//precondition
-		PaymentsResultSegment<ReceiptEntity> receipts = new PaymentsResultSegment<ReceiptEntity>();
+		PaymentsResult<ReceiptEntity> receipts = new PaymentsResult<ReceiptEntity>();
 		receipts.setResults(new ArrayList<ReceiptEntity>());
 		when(paymentsService.getOrganizationReceipts(anyInt(),anyInt(),anyString(), anyString())).thenReturn(receipts);
 		

@@ -7,12 +7,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.ResultSegment;
@@ -28,7 +30,7 @@ import it.gov.pagopa.payments.exception.AppError;
 import it.gov.pagopa.payments.exception.AppException;
 import it.gov.pagopa.payments.model.PaymentOptionStatus;
 import it.gov.pagopa.payments.model.PaymentsModelResponse;
-import it.gov.pagopa.payments.model.PaymentsResultSegment;
+import it.gov.pagopa.payments.model.PaymentsResult;
 import it.gov.pagopa.payments.utils.AzuriteStorageUtil;
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,8 +61,8 @@ public class PaymentsService {
 	}
 
 
-	public ReceiptEntity getReceiptByOrganizationFCAndIUV(@NotBlank String organizationFiscalCode,
-			@NotBlank String iuv) {
+	public ReceiptEntity getReceiptByOrganizationFCAndIUV(@Validated @NotBlank String organizationFiscalCode,
+			@Validated @NotBlank String iuv) {
 		
 		final String LOG_BASE_PARAMS_DETAIL = "organizationFiscalCode= %s, iuv=%s";
 
@@ -98,16 +100,14 @@ public class PaymentsService {
 
 	}
 	
-	public PaymentsResultSegment<ReceiptEntity> getOrganizationReceipts(@Positive Integer limit, @Positive Integer pageNum, @NotBlank String organizationFiscalCode,
+	public PaymentsResult<ReceiptEntity> getOrganizationReceipts(@Positive Integer limit, @Min(0) Integer pageNum, @NotBlank String organizationFiscalCode,
 			String debtor) {
 
 		final String LOG_BASE_PARAMS_DETAIL = "organizationFiscalCode= %s, debtor=%s";
-		final int FIRST_PAGE_NUMBER = 0;
 
 		AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString);
 		try {
 			azuriteStorageUtil.createTable(receiptsTable);
-
 
 			CloudTable table = CloudStorageAccount.parse(storageConnectionString)
 					.createCloudTableClient()
@@ -118,46 +118,13 @@ public class PaymentsService {
 				String debtorFilter       = TableQuery.generateFilterCondition(DEBTOR_FIELD, TableQuery.QueryComparisons.EQUAL, debtor);
 				filter = TableQuery.combineFilters(filter, Operators.AND, debtorFilter);
 			}
-			
 
-			String[] columns = new String[]{PARTITION_KEY_FIELD, ROW_KEY_FIELD, DEBTOR_FIELD};
-			TableQuery<ReceiptEntity> tq = TableQuery.from(ReceiptEntity.class);
-			tq.setColumns(columns);
-
-			PaymentsResultSegment<ReceiptEntity> result = new PaymentsResultSegment<>();
+			PaymentsResult<ReceiptEntity> result;
 			
 			if (null == limit) {
-				 List<ReceiptEntity> listOfEntity = StreamSupport.stream(table.execute(tq.select(columns).where(filter)).spliterator(), false).collect(Collectors.toList());
-				 result.setResults(listOfEntity);
-				 result.setCurrentPageNumber(FIRST_PAGE_NUMBER);
-				 result.setPageSize(listOfEntity.size());
-				 result.setLength(listOfEntity.size());
-				 result.setHasMoreResults(false);
+				result = this.getNotSegmentedReceipts(table, filter);
 			} else {
-				// first page results
-				ResultSegment<ReceiptEntity> segmentedRes = table.executeSegmented(tq.select(columns).where(filter).take(limit), null);
-				result.setLength(segmentedRes.getLength());
-				result.setPageSize(segmentedRes.getPageSize());
-				result.setCurrentPageNumber(FIRST_PAGE_NUMBER);
-				result.setResults(segmentedRes.getResults());
-				result.setHasMoreResults(segmentedRes.getHasMoreResults());
-				
-				if (pageNum > 0) {
-					for (int i=1; i<=pageNum; i++) {
-						if (segmentedRes.getHasMoreResults()) {
-							segmentedRes = table.executeSegmented(TableQuery.from(ReceiptEntity.class).where(filter).take(limit), segmentedRes.getContinuationToken());
-							result.setLength(segmentedRes.getLength());
-							result.setPageSize(segmentedRes.getPageSize());
-							result.setCurrentPageNumber(i);
-							result.setResults(segmentedRes.getResults());
-							result.setHasMoreResults(segmentedRes.getHasMoreResults());
-							
-						}
-						else {
-							throw new AppException(AppError.RECEIPTS_NOT_FOUND, organizationFiscalCode, pageNum);
-						}
-					}
-				}
+				result = this.getSegmentedReceipts(limit, pageNum, organizationFiscalCode, table, filter);
 			}
 			
 			return this.getGPDCheckedReceiptsList(table, result);
@@ -168,6 +135,59 @@ public class PaymentsService {
 		}
 
     }
+
+	private PaymentsResult<ReceiptEntity> getSegmentedReceipts(Integer limit, Integer pageNum, String organizationFiscalCode, CloudTable table, String filter) throws StorageException {
+		final int FIRST_PAGE_NUMBER = 0;
+		String[] columns = new String[]{PARTITION_KEY_FIELD, ROW_KEY_FIELD, DEBTOR_FIELD};
+		TableQuery<ReceiptEntity> tq = TableQuery.from(ReceiptEntity.class);
+		tq.setColumns(columns);
+		PaymentsResult<ReceiptEntity> result = new PaymentsResult<>();
+		// first page results
+		ResultSegment<ReceiptEntity> segmentedRes = table.executeSegmented(tq.select(columns).where(filter).take(limit), null);
+		result.setLength(segmentedRes.getLength());
+		result.setPageSize(segmentedRes.getPageSize());
+		result.setCurrentPageNumber(FIRST_PAGE_NUMBER);
+		result.setResults(segmentedRes.getResults());
+		result.setHasMoreResults(segmentedRes.getHasMoreResults());
+		
+		if(result.getResults().isEmpty()) {
+			throw new AppException(AppError.RECEIPTS_NOT_FOUND, organizationFiscalCode, pageNum);
+		}
+		
+		if (pageNum > 0) {
+			for (int i=1; i<=pageNum; i++) {
+				if (segmentedRes.getHasMoreResults()) {
+					segmentedRes = table.executeSegmented(TableQuery.from(ReceiptEntity.class).where(filter).take(limit), segmentedRes.getContinuationToken());
+					result.setLength(segmentedRes.getLength());
+					result.setPageSize(segmentedRes.getPageSize());
+					result.setCurrentPageNumber(i);
+					result.setResults(segmentedRes.getResults());
+					result.setHasMoreResults(segmentedRes.getHasMoreResults());
+					
+				}
+				else {
+					throw new AppException(AppError.RECEIPTS_NOT_FOUND, organizationFiscalCode, pageNum);
+				}
+			}
+		}
+		
+		return result;
+	}
+
+	private PaymentsResult<ReceiptEntity> getNotSegmentedReceipts(CloudTable table, String filter) {
+		 final int FIRST_PAGE_NUMBER = 0;
+		 String[] columns = new String[]{PARTITION_KEY_FIELD, ROW_KEY_FIELD, DEBTOR_FIELD};
+		 TableQuery<ReceiptEntity> tq = TableQuery.from(ReceiptEntity.class);
+		 tq.setColumns(columns);
+		 PaymentsResult<ReceiptEntity> result = new PaymentsResult<>();
+		 List<ReceiptEntity> listOfEntity = StreamSupport.stream(table.execute(tq.select(columns).where(filter)).spliterator(), false).collect(Collectors.toList());
+		 result.setResults(listOfEntity);
+		 result.setCurrentPageNumber(FIRST_PAGE_NUMBER);
+		 result.setPageSize(listOfEntity.size());
+		 result.setLength(listOfEntity.size());
+		 result.setHasMoreResults(false);
+		 return result;
+	}
 	
 	public void checkGPDDebtPosStatus (CloudTable table, ReceiptEntity receipt) {
 		// the check on GPD is necessary if the status of the receipt is different from PAID
@@ -188,7 +208,7 @@ public class PaymentsService {
 		}	
 	}
 	
-	public PaymentsResultSegment<ReceiptEntity> getGPDCheckedReceiptsList(CloudTable table, PaymentsResultSegment<ReceiptEntity> result){
+	public PaymentsResult<ReceiptEntity> getGPDCheckedReceiptsList(CloudTable table, PaymentsResult<ReceiptEntity> result){
 		// for all the receipts in the azure table, only those that have been already PAID status or are in PAID status on GPD are returned
 		List<ReceiptEntity> checkedReceipts = new ArrayList<>();
 		for (ReceiptEntity re: result.getResults()) {

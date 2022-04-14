@@ -1,10 +1,13 @@
 package it.gov.pagopa.payments.controller.receipt;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.Positive;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,17 +27,18 @@ import it.gov.pagopa.payments.model.ReceiptsInfo;
 
 @Tag(name = "Payments receipts API")
 @RequestMapping
+@Validated
 public interface IPaymentsController {
 
     @Operation(summary = "Return the details of a specific receipt.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getReceiptByIUV", tags = {"Get Receipt"})
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Obtained receipt details.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(name = "ReceiptResponse", implementation = String.class))),
+            @ApiResponse(responseCode = "200", description = "Obtained receipt details.", content = @Content(mediaType = MediaType.APPLICATION_XML_VALUE, schema = @Schema(name = "ReceiptResponse", implementation = String.class))),
             @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
             @ApiResponse(responseCode = "404", description = "No receipt found.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
             @ApiResponse(responseCode = "422", description = "Unable to process the request.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
             @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
     @GetMapping(value = "/payments/{organizationfiscalcode}/receipts/{iuv}",
-            produces = {"application/json"})
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     ResponseEntity<String> getReceiptByIUV(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
@@ -50,12 +54,12 @@ public interface IPaymentsController {
             @ApiResponse(responseCode = "422", description = "Unable to process the request.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
             @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
     @GetMapping(value = "/payments/{organizationfiscalcode}/receipts",
-            produces = {"application/json"})
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     ResponseEntity<ReceiptsInfo> getOrganizationReceipts(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
-            @Positive @Parameter(description = "Number of elements on one page") @RequestParam(required = false) @Max(999) Integer limit,
-            @Positive @Parameter(description = "Page number. Page value starts from 0") @RequestParam(required = false, defaultValue = "0") Integer page,
+            @Valid @Parameter(description = "Number of elements on one page") @RequestParam(required = false) @Positive @Max(999) Integer limit,
+            @Valid @Parameter(description = "Page number. Page value starts from 0") @RequestParam(required = false, defaultValue = "0") @Min(0) Integer page,
             @Parameter(description = "Filter by debtor") @RequestParam(required = false) String debtor);
 
 }

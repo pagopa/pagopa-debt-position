@@ -7,7 +7,7 @@ import com.microsoft.azure.storage.ResultSegment;
 import lombok.Data;
 
 @Data
-public class PaymentsResultSegment<T> {
+public class PaymentsResult<T> {
 	
 	private ResultSegment<T> resultSegment;
 	
