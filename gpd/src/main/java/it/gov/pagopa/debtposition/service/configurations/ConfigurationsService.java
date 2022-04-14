@@ -36,8 +36,8 @@ public class ConfigurationsService {
     public void checkOrganization(@NotEmpty String organizationFiscalCode) {
         Specification<PaymentPosition> spec = Specification.where(
                 new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode));
-        List<PaymentPosition> ppList = paymentPositionRepository.findAll(spec);
-        if (ppList.isEmpty()) {
+        long numOfOrgs = paymentPositionRepository.count(spec);
+        if (numOfOrgs <= 0) {
             throw new AppException(AppError.ORGANIZATION_NOT_FOUND, organizationFiscalCode);
         }
     }

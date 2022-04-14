@@ -715,6 +715,7 @@ public class DebtPositionMock {
 		pOMock.setPaymentMethod("Bonifico");
 		pOMock.setPspCompany("Intesa San Paolo");
 		pOMock.setIdReceipt("TRN987654321");
+		pOMock.setFee(0);
 
 		return pOMock;
 	}

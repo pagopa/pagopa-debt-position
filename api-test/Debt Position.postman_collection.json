@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "a6cde3ce-ccad-4eff-ae58-a09048535654",
+		"_postman_id": "8cba95b0-b315-4425-86be-4bf055442c1f",
 		"name": "Debt Position",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -3048,6 +3048,221 @@
 							"raw": "{{payment-host}}",
 							"host": [
 								"{{payment-host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getReceiptByIUV",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"document XML\", () => {\r",
+									"    var responseJson = xml2Json(responseBody);\r",
+									"    var documentIdPa = responseJson['paSendRTReq']['idPA'];\r",
+									"    pm.expect(documentIdPa).to.eql(pm.globals.get(\"creditor_institution_code\"));\r",
+									"\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/payments/{{creditor_institution_code}}/receipts/{{iuv_saved_multi_total}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"payments",
+								"{{creditor_institution_code}}",
+								"receipts",
+								"{{iuv_saved_multi_total}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getReceiptByIUV_404",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {\r",
+									"  pm.response.to.have.status(404);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/payments/{{creditor_institution_code}}/receipts/{{iuv_not_existent}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"payments",
+								"{{creditor_institution_code}}",
+								"receipts",
+								"{{iuv_not_existent}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getReceipts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {\r",
+									"  pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"The receipt list\", () => {\r",
+									"    //parse the response JSON and test three properties\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.receipts_list).to.have.lengthOf(1);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/payments/{{creditor_institution_code}}/receipts?page=0&limit=10",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"payments",
+								"{{creditor_institution_code}}",
+								"receipts"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getReceipts_404_wrong_page_num",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {\r",
+									"  pm.response.to.have.status(404);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/payments/{{creditor_institution_code}}/receipts?page=1&limit=10",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"payments",
+								"{{creditor_institution_code}}",
+								"receipts"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getReceipts_404_wrong_organization",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {\r",
+									"  pm.response.to.have.status(404);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/payments/{{creditor_institution_code}}/receipts?page=1&limit=10",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"payments",
+								"{{creditor_institution_code}}",
+								"receipts"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
 							]
 						}
 					},
