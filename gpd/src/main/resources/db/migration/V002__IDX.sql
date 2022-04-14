@@ -1,0 +1,1 @@
+CREATE INDEX idx_organization_fiscal_code ON payment_position (organization_fiscal_code);

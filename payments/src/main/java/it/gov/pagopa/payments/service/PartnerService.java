@@ -164,6 +164,7 @@ public class PartnerService {
                 .paymentDate(request.getReceipt().getPaymentDateTime().toGregorianCalendar().toZonedDateTime().toLocalDateTime())
                 .pspCompany(request.getReceipt().getPSPCompanyName())
                 .paymentMethod(request.getReceipt().getPaymentMethod())
+                .fee(String.valueOf(this.getFeeInCent(request.getReceipt().getFee())))
                 .build();
         PaymentOptionModelResponse paymentOption = new PaymentOptionModelResponse();
         try {
@@ -393,15 +394,23 @@ public class PartnerService {
 	        table.execute(batchOperation);   
     }
     
-    private void updateReceipt(ReceiptEntity receiptEntity) throws InvalidKeyException, URISyntaxException, StorageException  {
-    	AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString);
+	private void updateReceipt(ReceiptEntity receiptEntity)
+			throws InvalidKeyException, URISyntaxException, StorageException {
+		AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString);
 		azuriteStorageUtil.createTable(receiptsTable);
-		CloudTable table = CloudStorageAccount.parse(storageConnectionString)
-                .createCloudTableClient()
-                .getTableReference(receiptsTable);
+		CloudTable table = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
+				.getTableReference(receiptsTable);
 		TableOperation updateOperation = TableOperation.merge(receiptEntity);
-        table.execute(updateOperation);   
-}
+		table.execute(updateOperation);
+	}
+	
+	private long getFeeInCent (BigDecimal fee) {
+		long feeInCent = 0;
+		if (null != fee) {
+			feeInCent = fee.multiply(BigDecimal.valueOf(100)).longValue();
+		}
+		return feeInCent;
+	}
     
     
 

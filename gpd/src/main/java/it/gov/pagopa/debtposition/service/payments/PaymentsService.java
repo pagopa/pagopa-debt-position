@@ -118,6 +118,7 @@ public class PaymentsService {
                 po.setPaymentMethod(paymentOptionModel.getPaymentMethod());
                 po.setPspCompany(paymentOptionModel.getPspCompany());
                 po.setIdReceipt(paymentOptionModel.getIdReceipt());
+                po.setFee(Long.parseLong(paymentOptionModel.getFee()));
                 po.setStatus(PaymentOptionStatus.PO_PAID);
                 // se la payment option è di tipo partial incremento il contatore
                 if (Boolean.TRUE.equals(po.getIsPartialPayment())) {
