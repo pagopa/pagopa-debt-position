@@ -31,8 +31,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PaymentsService {
 
+	
 	private static final String PARTITION_KEY_FIELD = "PartitionKey";
 	private static final String ROW_KEY_FIELD = "RowKey";
+	private static final String DEBTOR_FIELD = "Debtor";
 	
 	@Value("${payments.sa.connection}")
 	private String storageConnectionString;
@@ -98,12 +100,12 @@ public class PaymentsService {
 
 			String filter = TableQuery.generateFilterCondition(PARTITION_KEY_FIELD, TableQuery.QueryComparisons.EQUAL, organizationFiscalCode);
 			if (null != debtor) {
-				String debtorFilter       = TableQuery.generateFilterCondition("Debtor", TableQuery.QueryComparisons.EQUAL, debtor);
+				String debtorFilter       = TableQuery.generateFilterCondition(DEBTOR_FIELD, TableQuery.QueryComparisons.EQUAL, debtor);
 				filter = TableQuery.combineFilters(filter, Operators.AND, debtorFilter);
 			}
 			
 
-			String[] columns = new String[]{PARTITION_KEY_FIELD, ROW_KEY_FIELD, "Debtor"};
+			String[] columns = new String[]{PARTITION_KEY_FIELD, ROW_KEY_FIELD, DEBTOR_FIELD};
 			TableQuery<ReceiptEntity> tq = TableQuery.from(ReceiptEntity.class);
 			tq.setColumns(columns);
 
