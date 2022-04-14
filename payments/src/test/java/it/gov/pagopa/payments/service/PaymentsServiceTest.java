@@ -2,7 +2,9 @@ package it.gov.pagopa.payments.service;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.testcontainers.containers.GenericContainer;
@@ -30,11 +33,16 @@ import com.microsoft.azure.storage.table.TableRequestOptions;
 import it.gov.pagopa.payments.entity.ReceiptEntity;
 import it.gov.pagopa.payments.entity.Status;
 import it.gov.pagopa.payments.exception.AppException;
+import it.gov.pagopa.payments.mock.MockUtil;
+import it.gov.pagopa.payments.model.PaymentsModelResponse;
 import it.gov.pagopa.payments.model.PaymentsResultSegment;
 
 @Testcontainers
 @ExtendWith(MockitoExtension.class)
 class PaymentsServiceTest {
+	
+	@Mock
+    private GpdClient gpdClient;
 		
 	@ClassRule @Container
 	public static GenericContainer<?> azurite =
@@ -98,7 +106,7 @@ class PaymentsServiceTest {
 	@Test
 	void getReceiptByOrganizationFCAndIUV() throws Exception {
 		
-		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable"));
+		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable", gpdClient));
 		
 		ReceiptEntity re = paymentsService.getReceiptByOrganizationFCAndIUV("org123456", "iuv0");
 		assertEquals("org123456", re.getPartitionKey());
@@ -109,7 +117,7 @@ class PaymentsServiceTest {
 	@Test
 	void getReceiptByOrganizationFCAndIUV_404() throws Exception {
 		
-		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable"));
+		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable", gpdClient));
 		
 		try {
 			paymentsService.getReceiptByOrganizationFCAndIUV("org123456", "iuvx");
@@ -122,7 +130,7 @@ class PaymentsServiceTest {
 	void getReceiptByOrganizationFCAndIUV_500() throws Exception {
 
 		String wrongStorageConnectionString = "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://%s:%s/devstoreaccount1;QueueEndpoint=http://%s:%s/devstoreaccount1;BlobEndpoint=http://%s:%s/devstoreaccount1";
-		var paymentsService = spy(new PaymentsService(wrongStorageConnectionString, "receiptsTable"));
+		var paymentsService = spy(new PaymentsService(wrongStorageConnectionString, "receiptsTable", gpdClient));
 		
 		try {
 			paymentsService.getReceiptByOrganizationFCAndIUV("org123456", "iuv0");
@@ -138,7 +146,11 @@ class PaymentsServiceTest {
 	@Test
 	void getOrganizationReceipts_noFilter() throws Exception {
 
-		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable"));
+		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable", gpdClient));
+		
+		// precondition
+		PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
+		when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
 		
 		PaymentsResultSegment<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", null);
 		assertNotNull(res);
@@ -149,7 +161,11 @@ class PaymentsServiceTest {
 	@Test
 	void getOrganizationReceipts_page_and_limit_filters() throws Exception {
 
-		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable"));
+		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable", gpdClient));
+		
+		// precondition
+		PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
+		when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
 		
 		PaymentsResultSegment<ReceiptEntity> res = paymentsService.getOrganizationReceipts(5, 0, "org123456", null);
 		assertNotNull(res);
@@ -162,7 +178,11 @@ class PaymentsServiceTest {
 	@Test
 	void getOrganizationReceipts_debtor_filter() throws Exception {
 
-		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable"));
+		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable", gpdClient));
+		
+		// precondition
+		PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
+		when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
 		
 		PaymentsResultSegment<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", "debtor5");
 		assertNotNull(res);
@@ -174,7 +194,11 @@ class PaymentsServiceTest {
 	@Test
 	void getOrganizationReceipts_all_filters() throws Exception {
 
-		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable"));
+		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable", gpdClient));
+		
+		// precondition
+		PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
+		when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
 		
 		PaymentsResultSegment<ReceiptEntity> res = paymentsService.getOrganizationReceipts(5, 0, "org123456", "debtor5");
 		assertNotNull(res);
@@ -186,7 +210,7 @@ class PaymentsServiceTest {
 	@Test
 	void getOrganizationReceipts_404_page_not_exist() throws Exception {
 
-		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable"));
+		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable", gpdClient));
 		
 		try {
 			paymentsService.getOrganizationReceipts(5, 3, "org123456", null);
@@ -199,7 +223,7 @@ class PaymentsServiceTest {
 	@Test
 	void getOrganizationReceipts_debtor_not_exist() throws Exception {
 
-		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable"));
+		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable", gpdClient));
 		
 		PaymentsResultSegment<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", "debtor15");
 		assertNotNull(res);
@@ -211,7 +235,7 @@ class PaymentsServiceTest {
 	void getOrganizationReceipts_500() throws Exception {
 
 		String wrongStorageConnectionString = "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://%s:%s/devstoreaccount1;QueueEndpoint=http://%s:%s/devstoreaccount1;BlobEndpoint=http://%s:%s/devstoreaccount1";
-		var paymentsService = spy(new PaymentsService(wrongStorageConnectionString, "receiptsTable"));
+		var paymentsService = spy(new PaymentsService(wrongStorageConnectionString, "receiptsTable", gpdClient));
 		
 		try {
 			paymentsService.getOrganizationReceipts(null, null, "org123456", null);
@@ -227,7 +251,7 @@ class PaymentsServiceTest {
 	@Test
 	void getGPDCheckedReceiptsList() throws Exception {
 		
-		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable"));
+		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable", gpdClient));
 		
 		List<ReceiptEntity> receipts = new ArrayList<>();
 		ReceiptEntity re1 = new ReceiptEntity("111", "aaa");
@@ -254,6 +278,39 @@ class PaymentsServiceTest {
 		assertEquals(mock.getResults().size(), result.getResults().size());
 	}
 	
+	
+	/**
+	 *  GPD CHECK
+	 */
+	@Test
+	void getGPDCheckedReceiptsList_GPDCheckFail() throws Exception {
+		
+		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable", gpdClient));
+		
+		List<ReceiptEntity> receipts = new ArrayList<>();
+		ReceiptEntity re1 = new ReceiptEntity("111", "aaa");
+		ReceiptEntity re2 = new ReceiptEntity("222", "bbb");
+		ReceiptEntity re3 = new ReceiptEntity("333", "ccc");
+		receipts.add(re1);
+		receipts.add(re2);
+		receipts.add(re3);
+		PaymentsResultSegment<ReceiptEntity> mock = new PaymentsResultSegment<>();
+		mock.setCurrentPageNumber(0);
+		mock.setHasMoreResults(false);
+		mock.setPageSize(5);
+		mock.setLength(receipts.size());
+		mock.setResults(receipts);
+		
+		// GPD risponde sempre UNPAID
+		PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption_PO_UNPAID.json", PaymentsModelResponse.class);
+        when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
+		
+		PaymentsResultSegment<ReceiptEntity> result = paymentsService.getGPDCheckedReceiptsList(table, mock);
+		
+		// tutte le ricevute sono state scartate
+		assertEquals(0, result.getLength());
+		assertEquals(0, result.getResults().size());
+	}
 	
 	
 
