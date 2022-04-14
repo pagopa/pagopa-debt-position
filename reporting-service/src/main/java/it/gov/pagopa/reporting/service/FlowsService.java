@@ -11,7 +11,10 @@ import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
+import com.microsoft.azure.storage.table.CloudTable;
+import com.microsoft.azure.storage.table.TableOperation;
 import com.sun.xml.ws.client.ClientTransportException;
+import it.gov.pagopa.reporting.entities.FlowEntity;
 import it.gov.pagopa.reporting.models.FlowsMessage;
 import it.gov.pagopa.reporting.servicewsdl.FaultBean;
 import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
@@ -34,6 +37,7 @@ public class FlowsService {
     private final String paaPassword;
     private final String containerBlob;
     private final String flowsQueue;
+    private final String flowsTable;
     private final int timeToLiveInSeconds;
     private final int initialVisibilityDelayInSeconds;
     private final int maxRetryQueuing;
@@ -41,7 +45,7 @@ public class FlowsService {
 
     public FlowsService(String storageConnectionString, String identificativoIntemediarioPA,
                         String identificativoStazioneIntermediarioPA, String paaPassword, String containerBlob, String flowsQueue,
-                        int maxRetryQueuing, int timeToLiveInSeconds, int initialVisibilityDelayInSeconds, Logger logger) {
+                        String flowsTable, int maxRetryQueuing, int timeToLiveInSeconds, int initialVisibilityDelayInSeconds, Logger logger) {
 
         this.storageConnectionString = storageConnectionString;
         this.identificativoIntemediarioPA = identificativoIntemediarioPA;
@@ -49,6 +53,7 @@ public class FlowsService {
         this.paaPassword = paaPassword;
         this.containerBlob = containerBlob;
         this.flowsQueue = flowsQueue;
+        this.flowsTable = flowsTable;
         this.timeToLiveInSeconds = timeToLiveInSeconds;
         this.initialVisibilityDelayInSeconds = initialVisibilityDelayInSeconds;
         this.maxRetryQueuing = maxRetryQueuing;
@@ -102,6 +107,13 @@ public class FlowsService {
                     }
                 } else {
                     logger.log(Level.SEVERE, () -> "[NODO Connection down]  Max retry exceeded.");
+
+                    try {
+                        removeFlowFromFlowsTable(idPA, flow);
+                    } catch (URISyntaxException | StorageException | InvalidKeyException ex) {
+                        logger.log(Level.SEVERE, () -> "[RetrieveDetails/FlowsService] Problem to delete flow from FlowsTable: "
+                                + idPA + " - " + flow.getIdentificativoFlusso());
+                    }
                 }
             }
         });
@@ -139,6 +151,15 @@ public class FlowsService {
         fm.setRetry(retry);
         String message = new ObjectMapper().writeValueAsString(fm);
         queue.addMessage(new CloudQueueMessage(message), timeToLiveInSeconds, initialVisibilityDelayInSeconds, null, null);
+    }
+
+    protected void removeFlowFromFlowsTable(String idPA, TipoIdRendicontazione flow) throws URISyntaxException, InvalidKeyException, StorageException {
+        CloudTable table = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
+                .getTableReference(this.flowsTable);
+
+        FlowEntity flowEntity = new FlowEntity(flow.getIdentificativoFlusso(), flow.getDataOraFlusso().toString(), idPA);
+        TableOperation operation = TableOperation.delete(flowEntity);
+        table.execute(operation);
     }
 
     public NodeService getNodeServiceInstance() {

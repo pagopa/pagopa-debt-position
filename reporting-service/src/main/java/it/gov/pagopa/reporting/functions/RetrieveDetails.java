@@ -55,7 +55,7 @@ public class RetrieveDetails {
         String queueDelaySec = getVars("QUEUE_DELAY_SEC");
         return new FlowsService(System.getenv("FLOW_SA_CONNECTION_STRING"), System.getenv("PAA_ID_INTERMEDIARIO"),
                 System.getenv("PAA_STAZIONE_INT"), System.getenv("PAA_PASSWORD"), System.getenv("FLOWS_XML_BLOB"), System.getenv("FLOWS_QUEUE"),
-                Integer.parseInt(maxRetryQueuing), Integer.parseInt(queueRetentionSec), Integer.parseInt(queueDelaySec),
+                System.getenv("FLOWS_TABLE"), Integer.parseInt(maxRetryQueuing), Integer.parseInt(queueRetentionSec), Integer.parseInt(queueDelaySec),
                 logger);
     }
 
