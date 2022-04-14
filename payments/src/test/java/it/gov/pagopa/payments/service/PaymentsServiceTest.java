@@ -4,6 +4,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.spy;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.ClassRule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +28,7 @@ import com.microsoft.azure.storage.table.TableBatchOperation;
 import com.microsoft.azure.storage.table.TableRequestOptions;
 
 import it.gov.pagopa.payments.entity.ReceiptEntity;
+import it.gov.pagopa.payments.entity.Status;
 import it.gov.pagopa.payments.exception.AppException;
 import it.gov.pagopa.payments.model.PaymentsResultSegment;
 
@@ -70,6 +74,7 @@ class PaymentsServiceTest {
     		ReceiptEntity receiptEntity = new ReceiptEntity("org123456","iuv"+i);
     		receiptEntity.setDebtor("debtor"+i);
     		receiptEntity.setDocument("XML"+i);
+    		receiptEntity.setStatus(Status.PAID.name());
 	        batchOperation.insertOrReplace(receiptEntity);   
     	}
     	table.execute(batchOperation);
@@ -111,6 +116,20 @@ class PaymentsServiceTest {
 		} catch(AppException e) {
 			assertEquals(HttpStatus.NOT_FOUND, e.getHttpStatus());
 		}
+	}
+	
+	@Test
+	void getReceiptByOrganizationFCAndIUV_500() throws Exception {
+
+		String wrongStorageConnectionString = "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://%s:%s/devstoreaccount1;QueueEndpoint=http://%s:%s/devstoreaccount1;BlobEndpoint=http://%s:%s/devstoreaccount1";
+		var paymentsService = spy(new PaymentsService(wrongStorageConnectionString, "receiptsTable"));
+		
+		try {
+			paymentsService.getReceiptByOrganizationFCAndIUV("org123456", "iuv0");
+		} catch(AppException e) {
+			assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, e.getHttpStatus());
+		}
+		
 	}
 	
 	/**
@@ -187,6 +206,54 @@ class PaymentsServiceTest {
 		assertEquals(0, res.getResults().size());
 		
 	}
+	
+	@Test
+	void getOrganizationReceipts_500() throws Exception {
+
+		String wrongStorageConnectionString = "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://%s:%s/devstoreaccount1;QueueEndpoint=http://%s:%s/devstoreaccount1;BlobEndpoint=http://%s:%s/devstoreaccount1";
+		var paymentsService = spy(new PaymentsService(wrongStorageConnectionString, "receiptsTable"));
+		
+		try {
+			paymentsService.getOrganizationReceipts(null, null, "org123456", null);
+		} catch(AppException e) {
+			assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, e.getHttpStatus());
+		}
+		
+	}
+	
+	/**
+	 *  GPD CHECK
+	 */
+	@Test
+	void getGPDCheckedReceiptsList() throws Exception {
+		
+		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable"));
+		
+		List<ReceiptEntity> receipts = new ArrayList<>();
+		ReceiptEntity re1 = new ReceiptEntity("111", "aaa");
+		re1.setStatus(Status.PAID.name());
+		ReceiptEntity re2 = new ReceiptEntity("222", "bbb");
+		re2.setStatus(Status.PAID.name());
+		ReceiptEntity re3 = new ReceiptEntity("333", "ccc");
+		re3.setStatus(Status.PAID.name());
+		receipts.add(re1);
+		receipts.add(re2);
+		receipts.add(re3);
+		PaymentsResultSegment<ReceiptEntity> mock = new PaymentsResultSegment<>();
+		mock.setCurrentPageNumber(0);
+		mock.setHasMoreResults(false);
+		mock.setPageSize(5);
+		mock.setLength(receipts.size());
+		mock.setResults(receipts);
+		
+		
+		
+		PaymentsResultSegment<ReceiptEntity> result = paymentsService.getGPDCheckedReceiptsList(table, mock);
+		
+		assertEquals(mock.getLength(), result.getLength());
+		assertEquals(mock.getResults().size(), result.getResults().size());
+	}
+	
 	
 	
 

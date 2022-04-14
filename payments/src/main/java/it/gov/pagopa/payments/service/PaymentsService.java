@@ -2,6 +2,7 @@ package it.gov.pagopa.payments.service;
 
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -9,6 +10,7 @@ import java.util.stream.StreamSupport;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -16,12 +18,16 @@ import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.ResultSegment;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
+import com.microsoft.azure.storage.table.TableOperation;
 import com.microsoft.azure.storage.table.TableQuery;
 import com.microsoft.azure.storage.table.TableQuery.Operators;
 
 import it.gov.pagopa.payments.entity.ReceiptEntity;
+import it.gov.pagopa.payments.entity.Status;
 import it.gov.pagopa.payments.exception.AppError;
 import it.gov.pagopa.payments.exception.AppException;
+import it.gov.pagopa.payments.model.PaymentOptionStatus;
+import it.gov.pagopa.payments.model.PaymentsModelResponse;
 import it.gov.pagopa.payments.model.PaymentsResultSegment;
 import it.gov.pagopa.payments.utils.AzuriteStorageUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -31,13 +37,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PaymentsService {
 
+	
 	private static final String PARTITION_KEY_FIELD = "PartitionKey";
 	private static final String ROW_KEY_FIELD = "RowKey";
+	private static final String DEBTOR_FIELD = "Debtor";
 	
 	@Value("${payments.sa.connection}")
 	private String storageConnectionString;
 	@Value("${receipts.table}")
 	private String receiptsTable;
+	
+	@Autowired
+    private GpdClient gpdClient;
 	
 	public PaymentsService() {}
 	
@@ -71,8 +82,13 @@ public class PaymentsService {
 			if (!result.iterator().hasNext()) {
 				throw new AppException(AppError.RECEIPT_NOT_FOUND, organizationFiscalCode, iuv);
 			}
+			
+			ReceiptEntity receipt = result.iterator().next();
+			
+			// check debt position status on gpd 
+			this.checkGPDDebtPosStatus(table, receipt);
 
-			return result.iterator().next();
+			return receipt;
 		}
 		catch (InvalidKeyException | URISyntaxException | StorageException e) {
 			log.error("[getReceiptByOrganizationFCAndIUV] Payments Generic Error " + String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv), e);
@@ -98,12 +114,12 @@ public class PaymentsService {
 
 			String filter = TableQuery.generateFilterCondition(PARTITION_KEY_FIELD, TableQuery.QueryComparisons.EQUAL, organizationFiscalCode);
 			if (null != debtor) {
-				String debtorFilter       = TableQuery.generateFilterCondition("Debtor", TableQuery.QueryComparisons.EQUAL, debtor);
+				String debtorFilter       = TableQuery.generateFilterCondition(DEBTOR_FIELD, TableQuery.QueryComparisons.EQUAL, debtor);
 				filter = TableQuery.combineFilters(filter, Operators.AND, debtorFilter);
 			}
 			
 
-			String[] columns = new String[]{PARTITION_KEY_FIELD, ROW_KEY_FIELD, "Debtor"};
+			String[] columns = new String[]{PARTITION_KEY_FIELD, ROW_KEY_FIELD, DEBTOR_FIELD};
 			TableQuery<ReceiptEntity> tq = TableQuery.from(ReceiptEntity.class);
 			tq.setColumns(columns);
 
@@ -142,7 +158,8 @@ public class PaymentsService {
 					}
 				}
 			}
-			return result;
+			
+			return this.getGPDCheckedReceiptsList(table, result);
 		}
 		catch (InvalidKeyException | URISyntaxException | StorageException e) {
 			log.error("[getReceiptByOrganizationFCAndIUV] Payments Generic Error " + String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, debtor), e);
@@ -150,5 +167,41 @@ public class PaymentsService {
 		}
 
     }
+	
+	public void checkGPDDebtPosStatus (CloudTable table, ReceiptEntity receipt) {
+		// the check on GPD is necessary if the status of the receipt is different from PAID
+		if(!receipt.getStatus().equals(Status.PAID.name())) {
+			PaymentsModelResponse paymentOption = gpdClient.getPaymentOption(receipt.getPartitionKey(), receipt.getRowKey());
+			if (null != paymentOption && !PaymentOptionStatus.PO_PAID.equals(paymentOption.getStatus())) {
+				throw new AppException(AppError.UNPROCESSABLE_RECEIPT, paymentOption.getStatus(), receipt.getPartitionKey(), receipt.getRowKey());
+			}
+			// if no exception is raised the status on GPD is correctly in PAID -> for congruence update receipt status
+			receipt.setStatus(Status.PAID.name());
+			TableOperation updateOperation = TableOperation.merge(receipt);
+	        try {
+				table.execute(updateOperation);
+			} catch (StorageException e) {
+				log.error("[checkGPDDebtPosStatus] Non-blocking error: "
+						+ "Exception during the update status in table "+ receiptsTable +" for ReceiptEntity [pk:"+receipt.getPartitionKey()+", rk:"+receipt.getRowKey()+"]", e);
+			}   
+		}	
+	}
+	
+	public PaymentsResultSegment<ReceiptEntity> getGPDCheckedReceiptsList(CloudTable table, PaymentsResultSegment<ReceiptEntity> result){
+		// for all the receipts in the azure table, only those that have been already PAID status or are in PAID status on GPD are returned
+		List<ReceiptEntity> checkedReceipts = new ArrayList<>();
+		for (ReceiptEntity re: result.getResults()) {
+			try {
+				this.checkGPDDebtPosStatus(table, re);
+				checkedReceipts.add(re);
+			} catch (AppException e) {
+				log.error("[getGPDCheckedReceiptsList] Non-blocking error: "
+						+ "Receipt is not in an eligible state on GPD in order to be returned to the caller", e);
+			}
+		}
+		result.setResults(checkedReceipts);
+		result.setLength(checkedReceipts.size());
+		return result;
+	}
 
 }
