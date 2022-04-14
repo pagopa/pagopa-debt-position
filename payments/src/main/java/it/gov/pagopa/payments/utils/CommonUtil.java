@@ -17,7 +17,7 @@ public class CommonUtil {
      * @return return the page info
      */
 
-    public <T> PageInfo buildPageInfo(PaymentsResultSegment<ReceiptEntity> receipts) {
+    public PageInfo buildPageInfo(PaymentsResultSegment<ReceiptEntity> receipts) {
         return PageInfo.builder()
                 .limit(receipts.getPageSize())
                 .morePages(receipts.isHasMoreResults())

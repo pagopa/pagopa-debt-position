@@ -31,6 +31,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PaymentsService {
 
+	private static final String PARTITION_KEY_FIELD = "PartitionKey";
+	private static final String ROW_KEY_FIELD = "RowKey";
+	
 	@Value("${payments.sa.connection}")
 	private String storageConnectionString;
 	@Value("${receipts.table}")
@@ -58,8 +61,8 @@ public class PaymentsService {
 					.createCloudTableClient()
 					.getTableReference(receiptsTable);
 
-			String partitionKeyFilter = TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, organizationFiscalCode);
-			String rowKeyFilter       = TableQuery.generateFilterCondition("RowKey", TableQuery.QueryComparisons.EQUAL, iuv);
+			String partitionKeyFilter = TableQuery.generateFilterCondition(PARTITION_KEY_FIELD, TableQuery.QueryComparisons.EQUAL, organizationFiscalCode);
+			String rowKeyFilter       = TableQuery.generateFilterCondition(ROW_KEY_FIELD, TableQuery.QueryComparisons.EQUAL, iuv);
 
 			String filter = TableQuery.combineFilters(partitionKeyFilter, Operators.AND, rowKeyFilter);
 
@@ -93,14 +96,14 @@ public class PaymentsService {
 					.createCloudTableClient()
 					.getTableReference(receiptsTable);
 
-			String filter = TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, organizationFiscalCode);
+			String filter = TableQuery.generateFilterCondition(PARTITION_KEY_FIELD, TableQuery.QueryComparisons.EQUAL, organizationFiscalCode);
 			if (null != debtor) {
 				String debtorFilter       = TableQuery.generateFilterCondition("Debtor", TableQuery.QueryComparisons.EQUAL, debtor);
 				filter = TableQuery.combineFilters(filter, Operators.AND, debtorFilter);
 			}
 			
 
-			String[] columns = new String[]{"PartitionKey", "RowKey", "Debtor"};
+			String[] columns = new String[]{PARTITION_KEY_FIELD, ROW_KEY_FIELD, "Debtor"};
 			TableQuery<ReceiptEntity> tq = TableQuery.from(ReceiptEntity.class);
 			tq.setColumns(columns);
 
@@ -116,7 +119,6 @@ public class PaymentsService {
 			} else {
 				// first page results
 				ResultSegment<ReceiptEntity> segmentedRes = table.executeSegmented(tq.select(columns).where(filter).take(limit), null);
-				//result.setResultSegment(segmentedRes);
 				result.setLength(segmentedRes.getLength());
 				result.setPageSize(segmentedRes.getPageSize());
 				result.setCurrentPageNumber(FIRST_PAGE_NUMBER);
@@ -127,7 +129,6 @@ public class PaymentsService {
 					for (int i=1; i<=pageNum; i++) {
 						if (segmentedRes.getHasMoreResults()) {
 							segmentedRes = table.executeSegmented(TableQuery.from(ReceiptEntity.class).where(filter).take(limit), segmentedRes.getContinuationToken());
-							//result.setResultSegment(segmentedRes);
 							result.setLength(segmentedRes.getLength());
 							result.setPageSize(segmentedRes.getPageSize());
 							result.setCurrentPageNumber(i);
