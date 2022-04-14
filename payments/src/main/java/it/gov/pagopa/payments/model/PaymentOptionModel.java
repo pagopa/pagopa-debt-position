@@ -16,6 +16,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class PaymentOptionModel implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7904798992919216489L;
+
 	@NotNull(message = "paymentDate is required")
     private LocalDateTime paymentDate;
 
@@ -27,4 +32,8 @@ public class PaymentOptionModel implements Serializable {
 
 	@NotBlank(message = "idReceipt is required")
     private String idReceipt;
+	
+	@NotBlank(message = "fee is required")
+	@Builder.Default
+    private String fee = "0";
 }
