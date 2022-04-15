@@ -44,7 +44,7 @@ public class UpdateOption {
 
             GPDService gpdService = this.getGPDServiceInstance();
             var failed = options.getPaymentOptions()
-                    .parallelStream()
+                    .stream()
                     .filter(paymentOption -> {
                         var retryStep = gpdService.setReport(options.getIdPA(), paymentOption, logger, invocationId);
                         paymentOption.setRetryAction(retryStep.name());
