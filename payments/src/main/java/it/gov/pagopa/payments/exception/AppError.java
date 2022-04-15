@@ -27,3 +27,5 @@ public enum AppError {
         this.details = details;
     }
 }
+
+

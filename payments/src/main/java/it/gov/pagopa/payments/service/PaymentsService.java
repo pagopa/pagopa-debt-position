@@ -30,7 +30,7 @@ import it.gov.pagopa.payments.exception.AppError;
 import it.gov.pagopa.payments.exception.AppException;
 import it.gov.pagopa.payments.model.PaymentOptionStatus;
 import it.gov.pagopa.payments.model.PaymentsModelResponse;
-import it.gov.pagopa.payments.model.PaymentsResultSegment;
+import it.gov.pagopa.payments.model.PaymentsResult;
 import it.gov.pagopa.payments.utils.AzuriteStorageUtil;
 import lombok.extern.slf4j.Slf4j;
 
@@ -100,7 +100,7 @@ public class PaymentsService {
 
 	}
 	
-	public PaymentsResultSegment<ReceiptEntity> getOrganizationReceipts(@Positive Integer limit, @Min(0) Integer pageNum, @NotBlank String organizationFiscalCode,
+	public PaymentsResult<ReceiptEntity> getOrganizationReceipts(@Positive Integer limit, @Min(0) Integer pageNum, @NotBlank String organizationFiscalCode,
 			String debtor) {
 
 		final String LOG_BASE_PARAMS_DETAIL = "organizationFiscalCode= %s, debtor=%s";
@@ -119,7 +119,7 @@ public class PaymentsService {
 				filter = TableQuery.combineFilters(filter, Operators.AND, debtorFilter);
 			}
 
-			PaymentsResultSegment<ReceiptEntity> result;
+			PaymentsResult<ReceiptEntity> result;
 			
 			if (null == limit) {
 				result = this.getNotSegmentedReceipts(table, filter);
@@ -136,12 +136,12 @@ public class PaymentsService {
 
     }
 
-	private PaymentsResultSegment<ReceiptEntity> getSegmentedReceipts(Integer limit, Integer pageNum, String organizationFiscalCode, CloudTable table, String filter) throws StorageException {
+	private PaymentsResult<ReceiptEntity> getSegmentedReceipts(Integer limit, Integer pageNum, String organizationFiscalCode, CloudTable table, String filter) throws StorageException {
 		final int FIRST_PAGE_NUMBER = 0;
 		String[] columns = new String[]{PARTITION_KEY_FIELD, ROW_KEY_FIELD, DEBTOR_FIELD};
 		TableQuery<ReceiptEntity> tq = TableQuery.from(ReceiptEntity.class);
 		tq.setColumns(columns);
-		PaymentsResultSegment<ReceiptEntity> result = new PaymentsResultSegment<>();
+		PaymentsResult<ReceiptEntity> result = new PaymentsResult<>();
 		// first page results
 		ResultSegment<ReceiptEntity> segmentedRes = table.executeSegmented(tq.select(columns).where(filter).take(limit), null);
 		result.setLength(segmentedRes.getLength());
@@ -174,12 +174,12 @@ public class PaymentsService {
 		return result;
 	}
 
-	private PaymentsResultSegment<ReceiptEntity> getNotSegmentedReceipts(CloudTable table, String filter) {
+	private PaymentsResult<ReceiptEntity> getNotSegmentedReceipts(CloudTable table, String filter) {
 		 final int FIRST_PAGE_NUMBER = 0;
 		 String[] columns = new String[]{PARTITION_KEY_FIELD, ROW_KEY_FIELD, DEBTOR_FIELD};
 		 TableQuery<ReceiptEntity> tq = TableQuery.from(ReceiptEntity.class);
 		 tq.setColumns(columns);
-		 PaymentsResultSegment<ReceiptEntity> result = new PaymentsResultSegment<>();
+		 PaymentsResult<ReceiptEntity> result = new PaymentsResult<>();
 		 List<ReceiptEntity> listOfEntity = StreamSupport.stream(table.execute(tq.select(columns).where(filter)).spliterator(), false).collect(Collectors.toList());
 		 result.setResults(listOfEntity);
 		 result.setCurrentPageNumber(FIRST_PAGE_NUMBER);
@@ -208,7 +208,7 @@ public class PaymentsService {
 		}	
 	}
 	
-	public PaymentsResultSegment<ReceiptEntity> getGPDCheckedReceiptsList(CloudTable table, PaymentsResultSegment<ReceiptEntity> result){
+	public PaymentsResult<ReceiptEntity> getGPDCheckedReceiptsList(CloudTable table, PaymentsResult<ReceiptEntity> result){
 		// for all the receipts in the azure table, only those that have been already PAID status or are in PAID status on GPD are returned
 		List<ReceiptEntity> checkedReceipts = new ArrayList<>();
 		for (ReceiptEntity re: result.getResults()) {

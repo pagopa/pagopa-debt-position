@@ -51,12 +51,7 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
     @Override
     public ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         log.warn("Input not readable: ", ex);
-        var errorResponse = ProblemJson.builder()
-                .status(HttpStatus.BAD_REQUEST.value())
-                .title(BAD_REQUEST)
-                .detail(ex.getMessage())
-                .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return generateErrorResponse(ex.getMessage());
     }
 
     /**
@@ -71,12 +66,7 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
     @Override
     public ResponseEntity<Object> handleMissingServletRequestParameter(MissingServletRequestParameterException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         log.warn("Missing request parameter: ", ex);
-        var errorResponse = ProblemJson.builder()
-                .status(HttpStatus.BAD_REQUEST.value())
-                .title(BAD_REQUEST)
-                .detail(ex.getMessage())
-                .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return generateErrorResponse(ex.getMessage());
     }
 
 
@@ -92,12 +82,7 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         log.warn("Type mismatch: ", ex);
-        var errorResponse = ProblemJson.builder()
-                .status(HttpStatus.BAD_REQUEST.value())
-                .title(BAD_REQUEST)
-                .detail(String.format("Invalid value %s for property %s", ex.getValue(), ((MethodArgumentTypeMismatchException) ex).getName()))
-                .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return generateErrorResponse(String.format("Invalid value %s for property %s", ex.getValue(), ((MethodArgumentTypeMismatchException) ex).getName()));
     }
 
     /**
@@ -117,12 +102,7 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
         }
         var detailsMessage = String.join(", ", details);
         log.warn("Input not valid: " + detailsMessage);
-        var errorResponse = ProblemJson.builder()
-                .status(HttpStatus.BAD_REQUEST.value())
-                .title(BAD_REQUEST)
-                .detail(detailsMessage)
-                .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return generateErrorResponse(detailsMessage);
     }
 
     /**
@@ -194,4 +174,13 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+    
+    private ResponseEntity<Object> generateErrorResponse(String errorMsg) {
+		var errorResponse = ProblemJson.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .title(BAD_REQUEST)
+                .detail(errorMsg)
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+	}
 }

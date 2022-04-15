@@ -35,7 +35,7 @@ import it.gov.pagopa.payments.entity.Status;
 import it.gov.pagopa.payments.exception.AppException;
 import it.gov.pagopa.payments.mock.MockUtil;
 import it.gov.pagopa.payments.model.PaymentsModelResponse;
-import it.gov.pagopa.payments.model.PaymentsResultSegment;
+import it.gov.pagopa.payments.model.PaymentsResult;
 
 @Testcontainers
 @ExtendWith(MockitoExtension.class)
@@ -152,7 +152,7 @@ class PaymentsServiceTest {
 		PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
 		when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
 		
-		PaymentsResultSegment<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", null);
+		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", null);
 		assertNotNull(res);
 		assertEquals(10, res.getResults().size());
 		
@@ -167,7 +167,7 @@ class PaymentsServiceTest {
 		PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
 		when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
 		
-		PaymentsResultSegment<ReceiptEntity> res = paymentsService.getOrganizationReceipts(5, 0, "org123456", null);
+		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(5, 0, "org123456", null);
 		assertNotNull(res);
 		assertEquals(5, res.getResults().size());
 		assertEquals(0, res.getCurrentPageNumber());
@@ -184,7 +184,7 @@ class PaymentsServiceTest {
 		PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
 		when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
 		
-		PaymentsResultSegment<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", "debtor5");
+		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", "debtor5");
 		assertNotNull(res);
 		assertEquals(1, res.getResults().size());
 		assertEquals(0, res.getCurrentPageNumber());
@@ -200,7 +200,7 @@ class PaymentsServiceTest {
 		PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
 		when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
 		
-		PaymentsResultSegment<ReceiptEntity> res = paymentsService.getOrganizationReceipts(5, 0, "org123456", "debtor5");
+		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(5, 0, "org123456", "debtor5");
 		assertNotNull(res);
 		assertEquals(1, res.getResults().size());
 		assertEquals(0, res.getCurrentPageNumber());
@@ -225,7 +225,7 @@ class PaymentsServiceTest {
 
 		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable", gpdClient));
 		
-		PaymentsResultSegment<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", "debtor15");
+		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", "debtor15");
 		assertNotNull(res);
 		assertEquals(0, res.getResults().size());
 		
@@ -263,7 +263,7 @@ class PaymentsServiceTest {
 		receipts.add(re1);
 		receipts.add(re2);
 		receipts.add(re3);
-		PaymentsResultSegment<ReceiptEntity> mock = new PaymentsResultSegment<>();
+		PaymentsResult<ReceiptEntity> mock = new PaymentsResult<>();
 		mock.setCurrentPageNumber(0);
 		mock.setHasMoreResults(false);
 		mock.setPageSize(5);
@@ -272,16 +272,13 @@ class PaymentsServiceTest {
 		
 		
 		
-		PaymentsResultSegment<ReceiptEntity> result = paymentsService.getGPDCheckedReceiptsList(table, mock);
+		PaymentsResult<ReceiptEntity> result = paymentsService.getGPDCheckedReceiptsList(table, mock);
 		
 		assertEquals(mock.getLength(), result.getLength());
 		assertEquals(mock.getResults().size(), result.getResults().size());
 	}
 	
 	
-	/**
-	 *  GPD CHECK
-	 */
 	@Test
 	void getGPDCheckedReceiptsList_GPDCheckFail() throws Exception {
 		
@@ -294,7 +291,7 @@ class PaymentsServiceTest {
 		receipts.add(re1);
 		receipts.add(re2);
 		receipts.add(re3);
-		PaymentsResultSegment<ReceiptEntity> mock = new PaymentsResultSegment<>();
+		PaymentsResult<ReceiptEntity> mock = new PaymentsResult<>();
 		mock.setCurrentPageNumber(0);
 		mock.setHasMoreResults(false);
 		mock.setPageSize(5);
@@ -305,7 +302,7 @@ class PaymentsServiceTest {
 		PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption_PO_UNPAID.json", PaymentsModelResponse.class);
         when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
 		
-		PaymentsResultSegment<ReceiptEntity> result = paymentsService.getGPDCheckedReceiptsList(table, mock);
+		PaymentsResult<ReceiptEntity> result = paymentsService.getGPDCheckedReceiptsList(table, mock);
 		
 		// tutte le ricevute sono state scartate
 		assertEquals(0, result.getLength());

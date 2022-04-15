@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "8cba95b0-b315-4425-86be-4bf055442c1f",
+		"_postman_id": "e1c2871a-4f03-4166-8f29-193207f91e4f",
 		"name": "Debt Position",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -3079,12 +3079,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/payments/{{creditor_institution_code}}/receipts/{{iuv_saved_multi_total}}",
-							"protocol": "http",
+							"raw": "{{payment-host-rest }}/payments/{{creditor_institution_code}}/receipts/{{iuv_saved_multi_total}}",
 							"host": [
-								"localhost"
+								"{{payment-host-rest }}"
 							],
-							"port": "8080",
 							"path": [
 								"payments",
 								"{{creditor_institution_code}}",
@@ -3114,12 +3112,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/payments/{{creditor_institution_code}}/receipts/{{iuv_not_existent}}",
-							"protocol": "http",
+							"raw": "{{payment-host-rest }}/payments/{{creditor_institution_code}}/receipts/{{iuv_not_existent}}",
 							"host": [
-								"localhost"
+								"{{payment-host-rest }}"
 							],
-							"port": "8080",
 							"path": [
 								"payments",
 								"{{creditor_institution_code}}",
@@ -3155,12 +3151,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/payments/{{creditor_institution_code}}/receipts?page=0&limit=10",
-							"protocol": "http",
+							"raw": "{{payment-host-rest }}/payments/{{creditor_institution_code}}/receipts?page=0&limit=10",
 							"host": [
-								"localhost"
+								"{{payment-host-rest }}"
 							],
-							"port": "8080",
 							"path": [
 								"payments",
 								"{{creditor_institution_code}}",
@@ -3199,12 +3193,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/payments/{{creditor_institution_code}}/receipts?page=1&limit=10",
-							"protocol": "http",
+							"raw": "{{payment-host-rest }}/payments/{{creditor_institution_code}}/receipts?page=1&limit=10",
 							"host": [
-								"localhost"
+								"{{payment-host-rest }}"
 							],
-							"port": "8080",
 							"path": [
 								"payments",
 								"{{creditor_institution_code}}",
@@ -3243,12 +3235,53 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/payments/{{creditor_institution_code}}/receipts?page=1&limit=10",
-							"protocol": "http",
+							"raw": "{{payment-host-rest }}/payments/{{organization_not_existent}}/receipts?page=0&limit=10",
 							"host": [
-								"localhost"
+								"{{payment-host-rest }}"
 							],
-							"port": "8080",
+							"path": [
+								"payments",
+								"{{organization_not_existent}}",
+								"receipts"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getReceipts_500_validation_check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"check_status\", function () {\r",
+									"  pm.response.to.have.status(500);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{payment-host-rest }}/payments/{{creditor_institution_code}}/receipts?page=-1&limit=-10",
+							"host": [
+								"{{payment-host-rest }}"
+							],
 							"path": [
 								"payments",
 								"{{creditor_institution_code}}",
@@ -3257,11 +3290,11 @@
 							"query": [
 								{
 									"key": "page",
-									"value": "1"
+									"value": "-1"
 								},
 								{
 									"key": "limit",
-									"value": "10"
+									"value": "-10"
 								}
 							]
 						}

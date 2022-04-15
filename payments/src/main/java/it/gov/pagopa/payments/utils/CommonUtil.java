@@ -2,7 +2,7 @@ package it.gov.pagopa.payments.utils;
 
 import it.gov.pagopa.payments.entity.ReceiptEntity;
 import it.gov.pagopa.payments.model.PageInfo;
-import it.gov.pagopa.payments.model.PaymentsResultSegment;
+import it.gov.pagopa.payments.model.PaymentsResult;
 import lombok.experimental.UtilityClass;
 
 
@@ -17,7 +17,7 @@ public class CommonUtil {
      * @return return the page info
      */
 
-    public PageInfo buildPageInfo(PaymentsResultSegment<ReceiptEntity> receipts) {
+    public PageInfo buildPageInfo(PaymentsResult<ReceiptEntity> receipts) {
         return PageInfo.builder()
                 .limit(receipts.getPageSize())
                 .morePages(receipts.isHasMoreResults())
