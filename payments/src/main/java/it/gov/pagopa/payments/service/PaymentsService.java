@@ -41,9 +41,10 @@ public class PaymentsService {
 	
 	public PaymentsService() {}
 	
-	public PaymentsService(String storageConnectionString, String receiptsTable) {
+	public PaymentsService(String storageConnectionString, String receiptsTable, GpdClient gpdClient) {
 		this.storageConnectionString = storageConnectionString;
 		this.receiptsTable = receiptsTable;
+		this.gpdClient = gpdClient;
 	}
 
 
