@@ -325,7 +325,7 @@ stages:
   # Integration/Load tests
   - stage: test
     # run stage 'test' only if TEST is equal to true
-    condition: and(not(failed('deployJava')), eq('${{ parameters.TEST }}', 'true'))
+    condition: and(and(not(failed('deployJava')),ne('${{ parameters.ENV }}', 'prod') ), eq('${{ parameters.TEST }}', 'true'))
     dependsOn: deploy
     pool:
       vmImage: "ubuntu-latest"
