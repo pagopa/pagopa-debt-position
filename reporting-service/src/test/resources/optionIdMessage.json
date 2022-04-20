@@ -1,0 +1,18 @@
+{
+  "idPA": "77777777777",
+  "idFlow": "00595780131",
+  "flowDate": 1627293600000,
+  "paymentOptions": [
+    {
+      "optionId": "09909090909",
+      "transferId": "1",
+      "retryAction": "RETRY"
+    },
+    {
+      "optionId": "09909090909",
+      "transferId": "1",
+      "retryAction": "ERROR"
+    }
+  ],
+  "retryCount": 1
+}

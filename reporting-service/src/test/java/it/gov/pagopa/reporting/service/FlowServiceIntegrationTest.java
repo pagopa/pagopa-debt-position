@@ -5,8 +5,13 @@ import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.models.BlobItem;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.table.CloudTable;
+import com.microsoft.azure.storage.table.TableOperation;
+import com.microsoft.azure.storage.table.TableResult;
 import com.sun.xml.ws.client.ClientTransportException;
+import it.gov.pagopa.reporting.entities.FlowEntity;
 import it.gov.pagopa.reporting.servicewsdl.FaultBean;
 import it.gov.pagopa.reporting.servicewsdl.TipoIdRendicontazione;
 import org.junit.ClassRule;
@@ -31,6 +36,7 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
@@ -40,15 +46,23 @@ class FlowServiceIntegrationTest {
     @ClassRule
     @Container
     public static GenericContainer<?> azurite = new GenericContainer<>(
-            DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:latest")).withExposedPorts(10001,
-            10002, 10000);
+            DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:latest")).withExposedPorts(10000, 10001, 10002);
 
     Logger logger = Logger.getLogger("testlogging");
 
     String storageConnectionString = String.format(
-            "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://%s:%s/devstoreaccount1;QueueEndpoint=http://%s:%s/devstoreaccount1",
-            azurite.getContainerIpAddress(), azurite.getMappedPort(10000), azurite.getContainerIpAddress(),
-            azurite.getMappedPort(10001));
+            "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;" +
+                    "AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;" +
+                    "BlobEndpoint=http://%s:%s/devstoreaccount1;" +
+                    "QueueEndpoint=http://%s:%s/devstoreaccount1;" +
+                    "TableEndpoint=http://%s:%s/devstoreaccount1",
+            azurite.getContainerIpAddress(),
+            azurite.getMappedPort(10000),
+            azurite.getContainerIpAddress(),
+            azurite.getMappedPort(10001),
+            azurite.getContainerIpAddress(),
+            azurite.getMappedPort(10002)
+    );
     String flowsTable = "testtable";
     String flowsQueue = "testqueue";
 
@@ -60,7 +74,7 @@ class FlowServiceIntegrationTest {
 
         flowsService = spy(new FlowsService(storageConnectionString, "identificativoIntemediarioPA",
                 "identificativoStazioneIntermediarioPA", "nodePassword",
-                "container", "queue", 1, 60, 0, logger));
+                "container", "queue", "flows", 1, 60, 0, logger));
 
         NodeService nodeService = mock(NodeService.class);
         doReturn(mock(DataHandler.class)).when(nodeService)
@@ -109,7 +123,7 @@ class FlowServiceIntegrationTest {
 
         flowsService = spy(new FlowsService(storageConnectionString, "identificativoIntemediarioPA",
                 "identificativoStazioneIntermediarioPA", "nodePassword",
-                "container", "queue", 1, 60, 0, logger));
+                "container", "queue", "flows", 1, 60, 0, logger));
 
         NodeService nodeService = mock(NodeService.class);
         doReturn(mock(FaultBean.class)).when(nodeService).getNodoChiediFlussoRendicontazioneFault();
@@ -146,7 +160,7 @@ class FlowServiceIntegrationTest {
 
         flowsService = spy(new FlowsService(storageConnectionString, "identificativoIntemediarioPA",
                 "identificativoStazioneIntermediarioPA", "nodePassword",
-                "container", "queue", maxRetry, 60, 0, logger));
+                "container", "queue", "flows", maxRetry, 60, 0, logger));
 
         NodeService nodeService = mock(NodeService.class);
 
@@ -184,7 +198,7 @@ class FlowServiceIntegrationTest {
 
         flowsService = spy(new FlowsService(storageConnectionString, "identificativoIntemediarioPA",
                 "identificativoStazioneIntermediarioPA", "nodePassword",
-                "container", "queue", 1, 60, 0, logger));
+                "container", "queue", "flows",1, 60, 0, logger));
 
         NodeService nodeService = mock(NodeService.class);
         doReturn(mock(DataHandler.class)).when(nodeService).getNodoChiediElencoFlussiRendicontazioneXmlReporting();
@@ -214,4 +228,48 @@ class FlowServiceIntegrationTest {
 
         verify(flowsService, times(0)).reQueuingMessage(anyString(), any(), anyInt());
     }
+
+    @Test
+    void flowsProcessingNodeKOTest_3()
+            throws ParseException, DatatypeConfigurationException, InvalidKeyException, URISyntaxException, StorageException, JsonProcessingException {
+
+        flowsService = spy(new FlowsService(storageConnectionString, "identificativoIntemediarioPA",
+                "identificativoStazioneIntermediarioPA", "nodePassword",
+                "container", flowsQueue, flowsTable, 1, 60, 0, logger));
+
+        NodeService nodeService = mock(NodeService.class);
+
+        doThrow(ClientTransportException.class).when(nodeService).callNodoChiediFlussoRendicontazione(anyString(), anyString());
+
+        doReturn(nodeService).when(flowsService).getNodeServiceInstance();
+
+        String idPA = "77777777777";
+        // flow definition
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        Date date1 = format.parse("2014-04-24 11:15:00");
+        GregorianCalendar cal1 = new GregorianCalendar();
+        cal1.setTime(date1);
+        TipoIdRendicontazione flow = new TipoIdRendicontazione();
+        String id1 = UUID.randomUUID().toString();
+        flow.setIdentificativoFlusso(id1);
+        flow.setDataOraFlusso(DatatypeFactory.newInstance().newXMLGregorianCalendar(
+                DatatypeFactory.newInstance().newXMLGregorianCalendar(cal1).toGregorianCalendar()));
+
+        // add flow in FlowsTable
+        CloudTable table = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
+                .getTableReference(this.flowsTable);
+
+        table.createIfNotExists();
+
+        table.execute(TableOperation.insert(new FlowEntity(flow.getIdentificativoFlusso(), flow.getDataOraFlusso().toString(), idPA)));
+
+        List<TipoIdRendicontazione> flows = Arrays.asList(flow);
+
+        flowsService.flowsXmlDownloading(flows, idPA, 1);
+
+        TableResult count = table.execute(TableOperation.retrieve(idPA, flow.getIdentificativoFlusso(), FlowEntity.class));
+        
+        assertNull(count.getResult());
+    }
+
 }
