@@ -30,7 +30,7 @@ import it.gov.pagopa.payments.model.ReceiptsInfo;
 @Validated
 public interface IPaymentsController {
 
-    @Operation(summary = "Return the details of a specific receipt.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getReceiptByIUV", tags = {"Get Receipt"})
+    @Operation(summary = "Return the details of a specific receipt.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getReceiptByIUV", tags = {"Payments receipts API"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Obtained receipt details.", content = @Content(mediaType = MediaType.APPLICATION_XML_VALUE, schema = @Schema(name = "ReceiptResponse", implementation = String.class))),
             @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
@@ -46,7 +46,7 @@ public interface IPaymentsController {
             @PathVariable("iuv") String iuv);
 
     
-    @Operation(summary = "Return the list of the organization receipts.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizationReceipts", tags = {"Get Receipts List"})
+    @Operation(summary = "Return the list of the organization receipts.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizationReceipts", tags = {"Payments receipts API"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Obtained all organization payment positions.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ReceiptsInfo.class))),
             @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
