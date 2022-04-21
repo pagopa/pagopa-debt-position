@@ -38,7 +38,7 @@ public interface IPaymentsController {
             @ApiResponse(responseCode = "422", description = "Unable to process the request.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
             @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
     @GetMapping(value = "/payments/{organizationfiscalcode}/receipts/{iuv}",
-            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+            produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
     ResponseEntity<String> getReceiptByIUV(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
