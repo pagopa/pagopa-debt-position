@@ -168,7 +168,7 @@ public class PartnerService {
                 .build();
         PaymentOptionModelResponse paymentOption = new PaymentOptionModelResponse();
         try {
-        	// save the receipt info 
+        	// save the receipt info with status CREATED
             ReceiptEntity receiptEntity = new ReceiptEntity (request.getIdPA(), request.getReceipt().getCreditorReferenceId());
             String debtor = Optional.ofNullable(request.getReceipt().getDebtor())
             	.map(
@@ -181,6 +181,7 @@ public class PartnerService {
             this.saveReceipt(receiptEntity);
             // GPD service works on IUVs directly, so we use creditorReferenceId (=IUV)
             paymentOption = gpdClient.receiptPaymentOption(request.getIdPA(), request.getReceipt().getCreditorReferenceId(), body);
+            // update receipt status to PAID
             if (PaymentOptionStatus.PO_PAID.equals(paymentOption.getStatus())) {
             	receiptEntity.setStatus(Status.PAID.name());
             	this.updateReceipt (receiptEntity);

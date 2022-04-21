@@ -2,8 +2,11 @@
 PagoPA service to manage EC debtor positions
 ---
 ## Api Documentation 📖
-
+### GPD
 See the [OpenApi 3 here.](https://editor.swagger.io/?url=https://raw.githubusercontent.com/pagopa/pagopa-debt-position/main/gpd/openapi/openapi.json)
+
+### Payments
+See the [OpenApi 3 here.](https://editor.swagger.io/?url=https://raw.githubusercontent.com/pagopa/pagopa-debt-position/main/payments/openapi/openapi.json)
 
 ---
 ## Technology Stack

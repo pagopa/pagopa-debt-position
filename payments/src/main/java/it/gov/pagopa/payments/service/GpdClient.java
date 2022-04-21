@@ -1,12 +1,5 @@
 package it.gov.pagopa.payments.service;
 
-import feign.FeignException;
-import feign.Headers;
-import feign.RequestInterceptor;
-import feign.RequestTemplate;
-import it.gov.pagopa.payments.model.PaymentOptionModel;
-import it.gov.pagopa.payments.model.PaymentOptionModelResponse;
-import it.gov.pagopa.payments.model.PaymentsModelResponse;
 import org.slf4j.MDC;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +11,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import feign.FeignException;
+import feign.RequestInterceptor;
+import it.gov.pagopa.payments.model.PaymentOptionModel;
+import it.gov.pagopa.payments.model.PaymentOptionModelResponse;
+import it.gov.pagopa.payments.model.PaymentsModelResponse;
 
 
 @FeignClient(value = "gpd", url = "${service.gpd.host}", configuration = GpdClient.FeignConfiguration.class)
