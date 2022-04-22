@@ -1,6 +1,7 @@
 package it.gov.pagopa.payments.service;
 
 import org.slf4j.MDC;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,7 @@ import it.gov.pagopa.payments.model.PaymentsModelResponse;
 @FeignClient(value = "gpd", url = "${service.gpd.host}", configuration = GpdClient.FeignConfiguration.class)
 public interface GpdClient {
 
+    @Cacheable("getOrganization")
     @Retryable(exclude = FeignException.FeignClientException.class, maxAttemptsExpression = "${retry.maxAttempts}",
             backoff = @Backoff(delayExpression = "${retry.maxDelay}"))
     @GetMapping(value = "/organizations/{organizationfiscalcode}")
@@ -41,7 +43,7 @@ public interface GpdClient {
                                                     @RequestBody PaymentOptionModel body);
 
     @Configuration
-    public class FeignConfiguration {
+    class FeignConfiguration {
         static final String HEADER_REQUEST_ID = "X-Request-Id";
 
         @Bean
