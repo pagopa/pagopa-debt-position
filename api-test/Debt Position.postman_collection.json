@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "8cba95b0-b315-4425-86be-4bf055442c1f",
+		"_postman_id": "9e3afb5f-cb20-4451-bcbf-9e182fcfe8f4",
 		"name": "Debt Position",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -2655,618 +2655,698 @@
 			"name": "payments",
 			"item": [
 				{
-					"name": "createDebtPosition_multiOptions",
-					"event": [
+					"name": "api test suite",
+					"item": [
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"check_status\", function () {",
-									"  pm.response.to.have.status(201);",
-									"});",
-									"",
-									"pm.globals.set(\"creditor_saved_multi\", pm.globals.get(\"creditor_institution_code\"));",
-									"pm.globals.set(\"iupd_saved_multi\", pm.globals.get(\"iupd\"));",
-									"pm.globals.set(\"iuv_saved_multi_total\", pm.globals.get(\"iuv1\"));",
-									"pm.globals.set(\"iuv_saved_multi_partial_1\", pm.globals.get(\"iuv2\"));",
-									"pm.globals.set(\"iuv_saved_multi_partial_2\", pm.globals.get(\"iuv3\"));",
-									"pm.globals.set(\"txid_saved_1\", pm.globals.get(\"txid1\"));",
-									"pm.globals.set(\"txid_saved_2\", pm.globals.get(\"txid2\"));",
-									"pm.globals.set(\"txid_saved_3\", pm.globals.get(\"txid3\"));",
-									"pm.globals.set(\"txid_saved_4\", pm.globals.get(\"txid4\"));",
-									"pm.globals.set(\"txid_saved_5\", pm.globals.get(\"txid5\"));",
-									"pm.globals.set(\"txid_saved_6\", pm.globals.get(\"txid6\"));",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"iupd\": \"{{iupd}}\",\r\n  \"type\": \"F\",\r\n  \"fiscalCode\": \"JHNDOE00A01F205N\",\r\n  \"fullName\": \"John Doe\",\r\n  \"streetName\": \"streetName\",\r\n  \"civicNumber\": \"11\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"city\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"RM\",\r\n  \"country\": \"IT\",\r\n  \"email\": \"lorem@lorem.com\",\r\n  \"phone\": \"333-123456789\",\r\n  \"companyName\": \"companyName\",\r\n  \"officeName\": \"officeName\",\r\n  \"paymentOption\": [\r\n    {\r\n      \"iuv\": \"{{iuv1}}\",\r\n      \"amount\": 10000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE opt 1 FINAL\",\r\n      \"isPartialPayment\": false,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"{{txid1}}\",\r\n          \"amount\": 9000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"{{txid2}}\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"iuv\": \"{{iuv2}}\",\r\n      \"amount\": 5000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE opt 2 NOT FINAL\",\r\n      \"isPartialPayment\": true,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"{{txid3}}\",\r\n          \"amount\": 4000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"{{txid4}}\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"iuv\": \"{{iuv3}}\",\r\n      \"amount\": 5000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE opt 3 NOT FINAL\",\r\n      \"isPartialPayment\": true,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"{{txid5}}\",\r\n          \"amount\": 4000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"{{txid6}}\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{gpdhost}}/organizations/{{creditor_institution_code}}/debtpositions",
-							"host": [
-								"{{gpdhost}}"
-							],
-							"path": [
-								"organizations",
-								"{{creditor_institution_code}}",
-								"debtpositions"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "publishDebtPosition_multiOption",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"check_status\", function () {",
-									"  pm.response.to.have.status(200);",
-									"});",
-									"",
-									"",
-									""
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{gpdhost}}/organizations/{{creditor_saved_multi}}/debtpositions/{{iupd_saved_multi}}/publish",
-							"host": [
-								"{{gpdhost}}"
-							],
-							"path": [
-								"organizations",
-								"{{creditor_saved_multi}}",
-								"debtpositions",
-								"{{iupd_saved_multi}}",
-								"publish"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "verify payment",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"check_status\", function () {",
-									"  pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"outcome OK\", () => {",
-									"    var responseJson = xml2Json(responseBody);",
-									"    var outcome = responseJson['soapenv:Envelope']['soapenv:Body']['ns3:paVerifyPaymentNoticeRes']['outcome'];",
-									"    pm.expect(outcome).to.eql(\"OK\");",
-									"",
-									"});",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "SOAPAction",
-								"value": "paVerifyPaymentNotice",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "text/xml",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:nod=\"http://pagopa-api.pagopa.gov.it/pa/paForNode.xsd\">\n    <soapenv:Header />\n    <soapenv:Body>\n        <nod:paVerifyPaymentNoticeReq>\n            <idPA>{{creditor_saved_multi}}</idPA>\n            <idBrokerPA>{{idBrokerPA}}</idBrokerPA>\n            <idStation>{{idStation}}</idStation>\n            <qrCode>\n                <fiscalCode>{{creditor_saved_multi}}</fiscalCode>\n                <noticeNumber>3{{iuv_saved_multi_total}}</noticeNumber>\n            </qrCode>\n        </nod:paVerifyPaymentNoticeReq>\n    </soapenv:Body>\n</soapenv:Envelope>",
-							"options": {
-								"raw": {
-									"language": "xml"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{payment-host}}",
-							"host": [
-								"{{payment-host}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "activate payment",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"check_status\", function () {",
-									"  pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"outcome OK\", () => {",
-									"    var responseJson = xml2Json(responseBody);",
-									"    var outcome = responseJson['soapenv:Envelope']['soapenv:Body']['ns3:paGetPaymentRes']['outcome'];",
-									"    pm.expect(outcome).to.eql(\"OK\");",
-									"",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "SOAPAction",
-								"value": "paGetPayment",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "text/xml",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:pafn=\"http://pagopa-api.pagopa.gov.it/pa/paForNode.xsd\">\n    <soapenv:Header />\n    <soapenv:Body>\n        <pafn:paGetPaymentReq>\n            <idPA>{{creditor_saved_multi}}</idPA>\n            <idBrokerPA>{{idBrokerPA}}</idBrokerPA>\n            <idStation>{{idStation}}</idStation>\n            <qrCode>\n                <fiscalCode>{{creditor_saved_multi}}</fiscalCode>\n                <noticeNumber>3{{iuv_saved_multi_total}}</noticeNumber>\n            </qrCode>\n            <amount>10.00</amount>\n        </pafn:paGetPaymentReq>\n    </soapenv:Body>\n</soapenv:Envelope>",
-							"options": {
-								"raw": {
-									"language": "xml"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{payment-host}}",
-							"host": [
-								"{{payment-host}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "send receipt",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"check_status\", function () {",
-									"  pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"outcome OK\", () => {",
-									"    var responseJson = xml2Json(responseBody);",
-									"    var outcome = responseJson['soapenv:Envelope']['soapenv:Body']['ns3:paSendRTRes']['outcome'];",
-									"    pm.expect(outcome).to.eql(\"OK\");",
-									"",
-									"});",
-									""
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"function makeidMix(length) {",
-									"    var result           = '';",
-									"    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
-									"    var charactersLength = characters.length;",
-									"    for ( var i = 0; i < length; i++ ) {",
-									"      result += characters.charAt(Math.floor(Math.random() * charactersLength));",
-									"    }",
-									"    return result;",
-									"}",
-									"",
-									"pm.globals.set(\"receiptId\", makeidMix(33));"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "SOAPAction",
-								"value": "paSendRT",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "text/xml",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "  \n<soapenv:Envelope xmlns:pafn=\"http://pagopa-api.pagopa.gov.it/pa/paForNode.xsd\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">\n    <soapenv:Body>\n        <pafn:paSendRTReq>\n            <idPA>{{creditor_saved_multi}}</idPA>\n            <idBrokerPA>{{idBrokerPA}}</idBrokerPA>\n            <idStation>{{idStation}}</idStation>\n            <receipt>\n                <receiptId>{{receiptId}}</receiptId>\n                <noticeNumber>3{{iuv_saved_multi_total}}</noticeNumber>\n                <fiscalCode>{{creditor_saved_multi}}</fiscalCode>\n                <outcome>OK</outcome>\n                <creditorReferenceId>{{iuv_saved_multi_total}}</creditorReferenceId>\n                <paymentAmount>30.00</paymentAmount>\n                <description>test</description>\n                <companyName>company EC</companyName>\n                <officeName>office EC</officeName>\n                <debtor>\n                    <uniqueIdentifier>\n                        <entityUniqueIdentifierType>F</entityUniqueIdentifierType>\n                        <entityUniqueIdentifierValue>JHNDOE00A01F205N</entityUniqueIdentifierValue>\n                    </uniqueIdentifier>\n                    <fullName>John Doe</fullName>\n                    <streetName>street</streetName>\n                    <civicNumber>12</civicNumber>\n                    <postalCode>89020</postalCode>\n                    <city>city</city>\n                    <stateProvinceRegion>MI</stateProvinceRegion>\n                    <country>IT</country>\n                    <e-mail>john.doe@test.it</e-mail>\n                </debtor>\n                <transferList>\n                    <transfer>\n                        <idTransfer>1</idTransfer>\n                        <transferAmount>20.00</transferAmount>\n                        <fiscalCodePA>{{creditor_saved_multi}}</fiscalCodePA>\n                        <IBAN>IT0000000000000000000000000</IBAN>\n                        <remittanceInformation>remittanceInformation1</remittanceInformation>\n                        <transferCategory>G</transferCategory>\n                    </transfer>\n                    <transfer>\n                        <idTransfer>2</idTransfer>\n                        <transferAmount>10.00</transferAmount>\n                        <fiscalCodePA>{{creditor_saved_multi}}</fiscalCodePA>\n                        <IBAN>IT0000000000000000000000001</IBAN>\n                        <remittanceInformation>remittanceInformation2</remittanceInformation>\n                        <transferCategory>G</transferCategory>\n                    </transfer>\n                </transferList>\n                <idPSP>88888888888</idPSP>\n                <pspFiscalCode>88888888888</pspFiscalCode>\n                <pspPartitaIVA>88888888888</pspPartitaIVA>\n                <PSPCompanyName>PSP name</PSPCompanyName>\n                <idChannel>88888888888_01</idChannel>\n                <channelDescription>app</channelDescription>\n                <payer>\n                    <uniqueIdentifier>\n                        <entityUniqueIdentifierType>F</entityUniqueIdentifierType>\n                        <entityUniqueIdentifierValue>JHNDOE00A01F205N</entityUniqueIdentifierValue>\n                    </uniqueIdentifier>\n                    <fullName>John Doe</fullName>\n                    <streetName>street</streetName>\n                    <civicNumber>12</civicNumber>\n                    <postalCode>89020</postalCode>\n                    <city>city</city>\n                    <stateProvinceRegion>MI</stateProvinceRegion>\n                    <country>IT</country>\n                    <e-mail>john.doe@test.it</e-mail>\n                </payer>\n                <paymentMethod>creditCard</paymentMethod>\n                <fee>2.00</fee>\n                <paymentDateTime>2021-10-01T17:48:22</paymentDateTime>\n                <applicationDate>2021-10-01</applicationDate>\n                <transferDate>2021-10-02</transferDate>\n                <metadata>\n                    <mapEntry>\n                        <key>keytest</key>\n                        <value>1</value>\n                    </mapEntry>\n                </metadata>\n            </receipt>\n        </pafn:paSendRTReq>\n    </soapenv:Body>\n</soapenv:Envelope>",
-							"options": {
-								"raw": {
-									"language": "xml"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{payment-host}}",
-							"host": [
-								"{{payment-host}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "verify payment KO PAA_PAGAMENTO_SCONOSCIUTO",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"check_status\", function () {",
-									"  pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"outcome OK\", () => {",
-									"    var responseJson = xml2Json(responseBody);",
-									"    var outcome = responseJson['soapenv:Envelope']['soapenv:Body']['ns2:paVerifyPaymentNoticeRes']['outcome'];",
-									"    var faultCode = responseJson['soapenv:Envelope']['soapenv:Body']['ns2:paVerifyPaymentNoticeRes']['fault']['faultCode'];",
-									"",
-									"    pm.expect(outcome).to.eql(\"KO\");",
-									"    pm.expect(faultCode).to.eql(\"PAA_PAGAMENTO_SCONOSCIUTO\");",
-									"",
-									"});",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "SOAPAction",
-								"value": "paVerifyPaymentNotice",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "text/xml",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:nod=\"http://pagopa-api.pagopa.gov.it/pa/paForNode.xsd\">\n    <soapenv:Header />\n    <soapenv:Body>\n        <nod:paVerifyPaymentNoticeReq>\n            <idPA>{{creditor_saved_multi}}</idPA>\n            <idBrokerPA>{{idBrokerPA}}</idBrokerPA>\n            <idStation>{{idStation}}</idStation>\n            <qrCode>\n                <fiscalCode>{{creditor_saved_multi}}</fiscalCode>\n                <noticeNumber>312345678901234567</noticeNumber>\n            </qrCode>\n        </nod:paVerifyPaymentNoticeReq>\n    </soapenv:Body>\n</soapenv:Envelope>",
-							"options": {
-								"raw": {
-									"language": "xml"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{payment-host}}",
-							"host": [
-								"{{payment-host}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "verify payment KO PAA_PAGAMENTO_DUPLICATO",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"check_status\", function () {",
-									"  pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"outcome OK\", () => {",
-									"    var responseJson = xml2Json(responseBody);",
-									"    var outcome = responseJson['soapenv:Envelope']['soapenv:Body']['ns2:paVerifyPaymentNoticeRes']['outcome'];",
-									"    var faultCode = responseJson['soapenv:Envelope']['soapenv:Body']['ns2:paVerifyPaymentNoticeRes']['fault']['faultCode'];",
-									"",
-									"    pm.expect(outcome).to.eql(\"KO\");",
-									"    pm.expect(faultCode).to.eql(\"PAA_PAGAMENTO_DUPLICATO\");",
-									"",
-									"});",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "SOAPAction",
-								"value": "paVerifyPaymentNotice",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "text/xml",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:nod=\"http://pagopa-api.pagopa.gov.it/pa/paForNode.xsd\">\n    <soapenv:Header />\n    <soapenv:Body>\n        <nod:paVerifyPaymentNoticeReq>\n            <idPA>{{creditor_saved_multi}}</idPA>\n            <idBrokerPA>{{idBrokerPA}}</idBrokerPA>\n            <idStation>{{idStation}}</idStation>\n            <qrCode>\n                <fiscalCode>{{creditor_saved_multi}}</fiscalCode>\n                <noticeNumber>3{{iuv_saved_multi_total}}</noticeNumber>\n            </qrCode>\n        </nod:paVerifyPaymentNoticeReq>\n    </soapenv:Body>\n</soapenv:Envelope>",
-							"options": {
-								"raw": {
-									"language": "xml"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{payment-host}}",
-							"host": [
-								"{{payment-host}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "getReceiptByIUV",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"check_status\", function () {\r",
-									"  pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"document XML\", () => {\r",
-									"    var responseJson = xml2Json(responseBody);\r",
-									"    var documentIdPa = responseJson['paSendRTReq']['idPA'];\r",
-									"    pm.expect(documentIdPa).to.eql(pm.globals.get(\"creditor_institution_code\"));\r",
-									"\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/payments/{{creditor_institution_code}}/receipts/{{iuv_saved_multi_total}}",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"payments",
-								"{{creditor_institution_code}}",
-								"receipts",
-								"{{iuv_saved_multi_total}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "getReceiptByIUV_404",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"check_status\", function () {\r",
-									"  pm.response.to.have.status(404);\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/payments/{{creditor_institution_code}}/receipts/{{iuv_not_existent}}",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"payments",
-								"{{creditor_institution_code}}",
-								"receipts",
-								"{{iuv_not_existent}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "getReceipts",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"check_status\", function () {\r",
-									"  pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"The receipt list\", () => {\r",
-									"    //parse the response JSON and test three properties\r",
-									"    const responseJson = pm.response.json();\r",
-									"    pm.expect(responseJson.receipts_list).to.have.lengthOf(1);\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/payments/{{creditor_institution_code}}/receipts?page=0&limit=10",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"payments",
-								"{{creditor_institution_code}}",
-								"receipts"
-							],
-							"query": [
+							"name": "healthCheck",
+							"event": [
 								{
-									"key": "page",
-									"value": "0"
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {\r",
+											"  pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"document XML\", () => {\r",
+											"    var responseJson = xml2Json(responseBody);\r",
+											"    var documentIdPa = responseJson['paSendRTReq']['idPA'];\r",
+											"    pm.expect(documentIdPa).to.eql(pm.globals.get(\"creditor_institution_code\"));\r",
+											"\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{payment-host-rest}}/info",
+									"host": [
+										"{{payment-host-rest}}"
+									],
+									"path": [
+										"info"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "createDebtPosition_multiOptions",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {",
+											"  pm.response.to.have.status(201);",
+											"});",
+											"",
+											"pm.globals.set(\"creditor_saved_multi\", pm.globals.get(\"creditor_institution_code\"));",
+											"pm.globals.set(\"iupd_saved_multi\", pm.globals.get(\"iupd\"));",
+											"pm.globals.set(\"iuv_saved_multi_total\", pm.globals.get(\"iuv1\"));",
+											"pm.globals.set(\"iuv_saved_multi_partial_1\", pm.globals.get(\"iuv2\"));",
+											"pm.globals.set(\"iuv_saved_multi_partial_2\", pm.globals.get(\"iuv3\"));",
+											"pm.globals.set(\"txid_saved_1\", pm.globals.get(\"txid1\"));",
+											"pm.globals.set(\"txid_saved_2\", pm.globals.get(\"txid2\"));",
+											"pm.globals.set(\"txid_saved_3\", pm.globals.get(\"txid3\"));",
+											"pm.globals.set(\"txid_saved_4\", pm.globals.get(\"txid4\"));",
+											"pm.globals.set(\"txid_saved_5\", pm.globals.get(\"txid5\"));",
+											"pm.globals.set(\"txid_saved_6\", pm.globals.get(\"txid6\"));",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"iupd\": \"{{iupd}}\",\r\n  \"type\": \"F\",\r\n  \"fiscalCode\": \"JHNDOE00A01F205N\",\r\n  \"fullName\": \"John Doe\",\r\n  \"streetName\": \"streetName\",\r\n  \"civicNumber\": \"11\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"city\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"RM\",\r\n  \"country\": \"IT\",\r\n  \"email\": \"lorem@lorem.com\",\r\n  \"phone\": \"333-123456789\",\r\n  \"companyName\": \"companyName\",\r\n  \"officeName\": \"officeName\",\r\n  \"paymentOption\": [\r\n    {\r\n      \"iuv\": \"{{iuv1}}\",\r\n      \"amount\": 10000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE opt 1 FINAL\",\r\n      \"isPartialPayment\": false,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"{{txid1}}\",\r\n          \"amount\": 9000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"{{txid2}}\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"iuv\": \"{{iuv2}}\",\r\n      \"amount\": 5000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE opt 2 NOT FINAL\",\r\n      \"isPartialPayment\": true,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"{{txid3}}\",\r\n          \"amount\": 4000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"{{txid4}}\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"iuv\": \"{{iuv3}}\",\r\n      \"amount\": 5000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE opt 3 NOT FINAL\",\r\n      \"isPartialPayment\": true,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"{{txid5}}\",\r\n          \"amount\": 4000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"{{txid6}}\",\r\n          \"amount\": 1000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gpdhost}}/organizations/{{creditor_institution_code}}/debtpositions",
+									"host": [
+										"{{gpdhost}}"
+									],
+									"path": [
+										"organizations",
+										"{{creditor_institution_code}}",
+										"debtpositions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "publishDebtPosition_multiOption",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
 								},
 								{
-									"key": "limit",
-									"value": "10"
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
 								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "getReceipts_404_wrong_page_num",
-					"event": [
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{gpdhost}}/organizations/{{creditor_saved_multi}}/debtpositions/{{iupd_saved_multi}}/publish",
+									"host": [
+										"{{gpdhost}}"
+									],
+									"path": [
+										"organizations",
+										"{{creditor_saved_multi}}",
+										"debtpositions",
+										"{{iupd_saved_multi}}",
+										"publish"
+									]
+								}
+							},
+							"response": []
+						},
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"check_status\", function () {\r",
-									"  pm.response.to.have.status(404);\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/payments/{{creditor_institution_code}}/receipts?page=1&limit=10",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"payments",
-								"{{creditor_institution_code}}",
-								"receipts"
-							],
-							"query": [
+							"name": "verify payment",
+							"event": [
 								{
-									"key": "page",
-									"value": "1"
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"outcome OK\", () => {",
+											"    var responseJson = xml2Json(responseBody);",
+											"    var outcome = responseJson['soapenv:Envelope']['soapenv:Body']['ns3:paVerifyPaymentNoticeRes']['outcome'];",
+											"    pm.expect(outcome).to.eql(\"OK\");",
+											"",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "SOAPAction",
+										"value": "paVerifyPaymentNotice",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "text/xml",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:nod=\"http://pagopa-api.pagopa.gov.it/pa/paForNode.xsd\">\n    <soapenv:Header />\n    <soapenv:Body>\n        <nod:paVerifyPaymentNoticeReq>\n            <idPA>{{creditor_saved_multi}}</idPA>\n            <idBrokerPA>{{idBrokerPA}}</idBrokerPA>\n            <idStation>{{idStation}}</idStation>\n            <qrCode>\n                <fiscalCode>{{creditor_saved_multi}}</fiscalCode>\n                <noticeNumber>3{{iuv_saved_multi_total}}</noticeNumber>\n            </qrCode>\n        </nod:paVerifyPaymentNoticeReq>\n    </soapenv:Body>\n</soapenv:Envelope>",
+									"options": {
+										"raw": {
+											"language": "xml"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{payment-host}}",
+									"host": [
+										"{{payment-host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "activate payment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"outcome OK\", () => {",
+											"    var responseJson = xml2Json(responseBody);",
+											"    var outcome = responseJson['soapenv:Envelope']['soapenv:Body']['ns3:paGetPaymentRes']['outcome'];",
+											"    pm.expect(outcome).to.eql(\"OK\");",
+											"",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "SOAPAction",
+										"value": "paGetPayment",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "text/xml",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:pafn=\"http://pagopa-api.pagopa.gov.it/pa/paForNode.xsd\">\n    <soapenv:Header />\n    <soapenv:Body>\n        <pafn:paGetPaymentReq>\n            <idPA>{{creditor_saved_multi}}</idPA>\n            <idBrokerPA>{{idBrokerPA}}</idBrokerPA>\n            <idStation>{{idStation}}</idStation>\n            <qrCode>\n                <fiscalCode>{{creditor_saved_multi}}</fiscalCode>\n                <noticeNumber>3{{iuv_saved_multi_total}}</noticeNumber>\n            </qrCode>\n            <amount>10.00</amount>\n        </pafn:paGetPaymentReq>\n    </soapenv:Body>\n</soapenv:Envelope>",
+									"options": {
+										"raw": {
+											"language": "xml"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{payment-host}}",
+									"host": [
+										"{{payment-host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "send receipt",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"outcome OK\", () => {",
+											"    var responseJson = xml2Json(responseBody);",
+											"    var outcome = responseJson['soapenv:Envelope']['soapenv:Body']['ns3:paSendRTRes']['outcome'];",
+											"    pm.expect(outcome).to.eql(\"OK\");",
+											"",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
 								},
 								{
-									"key": "limit",
-									"value": "10"
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"function makeidMix(length) {",
+											"    var result           = '';",
+											"    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+											"    var charactersLength = characters.length;",
+											"    for ( var i = 0; i < length; i++ ) {",
+											"      result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+											"    }",
+											"    return result;",
+											"}",
+											"",
+											"pm.globals.set(\"receiptId\", makeidMix(33));"
+										],
+										"type": "text/javascript"
+									}
 								}
-							]
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "SOAPAction",
+										"value": "paSendRT",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "text/xml",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "  \n<soapenv:Envelope xmlns:pafn=\"http://pagopa-api.pagopa.gov.it/pa/paForNode.xsd\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">\n    <soapenv:Body>\n        <pafn:paSendRTReq>\n            <idPA>{{creditor_saved_multi}}</idPA>\n            <idBrokerPA>{{idBrokerPA}}</idBrokerPA>\n            <idStation>{{idStation}}</idStation>\n            <receipt>\n                <receiptId>{{receiptId}}</receiptId>\n                <noticeNumber>3{{iuv_saved_multi_total}}</noticeNumber>\n                <fiscalCode>{{creditor_saved_multi}}</fiscalCode>\n                <outcome>OK</outcome>\n                <creditorReferenceId>{{iuv_saved_multi_total}}</creditorReferenceId>\n                <paymentAmount>30.00</paymentAmount>\n                <description>test</description>\n                <companyName>company EC</companyName>\n                <officeName>office EC</officeName>\n                <debtor>\n                    <uniqueIdentifier>\n                        <entityUniqueIdentifierType>F</entityUniqueIdentifierType>\n                        <entityUniqueIdentifierValue>JHNDOE00A01F205N</entityUniqueIdentifierValue>\n                    </uniqueIdentifier>\n                    <fullName>John Doe</fullName>\n                    <streetName>street</streetName>\n                    <civicNumber>12</civicNumber>\n                    <postalCode>89020</postalCode>\n                    <city>city</city>\n                    <stateProvinceRegion>MI</stateProvinceRegion>\n                    <country>IT</country>\n                    <e-mail>john.doe@test.it</e-mail>\n                </debtor>\n                <transferList>\n                    <transfer>\n                        <idTransfer>1</idTransfer>\n                        <transferAmount>20.00</transferAmount>\n                        <fiscalCodePA>{{creditor_saved_multi}}</fiscalCodePA>\n                        <IBAN>IT0000000000000000000000000</IBAN>\n                        <remittanceInformation>remittanceInformation1</remittanceInformation>\n                        <transferCategory>G</transferCategory>\n                    </transfer>\n                    <transfer>\n                        <idTransfer>2</idTransfer>\n                        <transferAmount>10.00</transferAmount>\n                        <fiscalCodePA>{{creditor_saved_multi}}</fiscalCodePA>\n                        <IBAN>IT0000000000000000000000001</IBAN>\n                        <remittanceInformation>remittanceInformation2</remittanceInformation>\n                        <transferCategory>G</transferCategory>\n                    </transfer>\n                </transferList>\n                <idPSP>88888888888</idPSP>\n                <pspFiscalCode>88888888888</pspFiscalCode>\n                <pspPartitaIVA>88888888888</pspPartitaIVA>\n                <PSPCompanyName>PSP name</PSPCompanyName>\n                <idChannel>88888888888_01</idChannel>\n                <channelDescription>app</channelDescription>\n                <payer>\n                    <uniqueIdentifier>\n                        <entityUniqueIdentifierType>F</entityUniqueIdentifierType>\n                        <entityUniqueIdentifierValue>JHNDOE00A01F205N</entityUniqueIdentifierValue>\n                    </uniqueIdentifier>\n                    <fullName>John Doe</fullName>\n                    <streetName>street</streetName>\n                    <civicNumber>12</civicNumber>\n                    <postalCode>89020</postalCode>\n                    <city>city</city>\n                    <stateProvinceRegion>MI</stateProvinceRegion>\n                    <country>IT</country>\n                    <e-mail>john.doe@test.it</e-mail>\n                </payer>\n                <paymentMethod>creditCard</paymentMethod>\n                <fee>2.00</fee>\n                <paymentDateTime>2021-10-01T17:48:22</paymentDateTime>\n                <applicationDate>2021-10-01</applicationDate>\n                <transferDate>2021-10-02</transferDate>\n                <metadata>\n                    <mapEntry>\n                        <key>keytest</key>\n                        <value>1</value>\n                    </mapEntry>\n                </metadata>\n            </receipt>\n        </pafn:paSendRTReq>\n    </soapenv:Body>\n</soapenv:Envelope>",
+									"options": {
+										"raw": {
+											"language": "xml"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{payment-host}}",
+									"host": [
+										"{{payment-host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getReceiptByIUV",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {\r",
+											"  pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"document XML\", () => {\r",
+											"    var responseJson = xml2Json(responseBody);\r",
+											"    var documentIdPa = responseJson['paSendRTReq']['idPA'];\r",
+											"    pm.expect(documentIdPa).to.eql(pm.globals.get(\"creditor_institution_code\"));\r",
+											"\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{payment-host-rest}}/payments/{{creditor_institution_code}}/receipts/{{iuv_saved_multi_total}}",
+									"host": [
+										"{{payment-host-rest}}"
+									],
+									"path": [
+										"payments",
+										"{{creditor_institution_code}}",
+										"receipts",
+										"{{iuv_saved_multi_total}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getReceipts",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {\r",
+											"  pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"The receipt list\", () => {\r",
+											"    //parse the response JSON and test three properties\r",
+											"    const responseJson = pm.response.json();\r",
+											"    pm.expect(responseJson.receipts_list).to.have.lengthOf(1);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{payment-host-rest}}/payments/{{creditor_institution_code}}/receipts?page=0&limit=10",
+									"host": [
+										"{{payment-host-rest}}"
+									],
+									"path": [
+										"payments",
+										"{{creditor_institution_code}}",
+										"receipts"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "0"
+										},
+										{
+											"key": "limit",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
-					"name": "getReceipts_404_wrong_organization",
-					"event": [
+					"name": "api test error",
+					"item": [
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"check_status\", function () {\r",
-									"  pm.response.to.have.status(404);\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/payments/{{creditor_institution_code}}/receipts?page=1&limit=10",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"payments",
-								"{{creditor_institution_code}}",
-								"receipts"
-							],
-							"query": [
+							"name": "verify payment KO PAA_PAGAMENTO_SCONOSCIUTO",
+							"event": [
 								{
-									"key": "page",
-									"value": "1"
-								},
-								{
-									"key": "limit",
-									"value": "10"
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"outcome OK\", () => {",
+											"    var responseJson = xml2Json(responseBody);",
+											"    var outcome = responseJson['soapenv:Envelope']['soapenv:Body']['ns2:paVerifyPaymentNoticeRes']['outcome'];",
+											"    var faultCode = responseJson['soapenv:Envelope']['soapenv:Body']['ns2:paVerifyPaymentNoticeRes']['fault']['faultCode'];",
+											"",
+											"    pm.expect(outcome).to.eql(\"KO\");",
+											"    pm.expect(faultCode).to.eql(\"PAA_PAGAMENTO_SCONOSCIUTO\");",
+											"",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
 								}
-							]
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "SOAPAction",
+										"value": "paVerifyPaymentNotice",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "text/xml",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:nod=\"http://pagopa-api.pagopa.gov.it/pa/paForNode.xsd\">\n    <soapenv:Header />\n    <soapenv:Body>\n        <nod:paVerifyPaymentNoticeReq>\n            <idPA>{{creditor_saved_multi}}</idPA>\n            <idBrokerPA>{{idBrokerPA}}</idBrokerPA>\n            <idStation>{{idStation}}</idStation>\n            <qrCode>\n                <fiscalCode>{{creditor_saved_multi}}</fiscalCode>\n                <noticeNumber>312345678901234567</noticeNumber>\n            </qrCode>\n        </nod:paVerifyPaymentNoticeReq>\n    </soapenv:Body>\n</soapenv:Envelope>",
+									"options": {
+										"raw": {
+											"language": "xml"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{payment-host}}",
+									"host": [
+										"{{payment-host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "verify payment KO PAA_PAGAMENTO_DUPLICATO",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"outcome OK\", () => {",
+											"    var responseJson = xml2Json(responseBody);",
+											"    var outcome = responseJson['soapenv:Envelope']['soapenv:Body']['ns2:paVerifyPaymentNoticeRes']['outcome'];",
+											"    var faultCode = responseJson['soapenv:Envelope']['soapenv:Body']['ns2:paVerifyPaymentNoticeRes']['fault']['faultCode'];",
+											"",
+											"    pm.expect(outcome).to.eql(\"KO\");",
+											"    pm.expect(faultCode).to.eql(\"PAA_PAGAMENTO_DUPLICATO\");",
+											"",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "SOAPAction",
+										"value": "paVerifyPaymentNotice",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "text/xml",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:nod=\"http://pagopa-api.pagopa.gov.it/pa/paForNode.xsd\">\n    <soapenv:Header />\n    <soapenv:Body>\n        <nod:paVerifyPaymentNoticeReq>\n            <idPA>{{creditor_saved_multi}}</idPA>\n            <idBrokerPA>{{idBrokerPA}}</idBrokerPA>\n            <idStation>{{idStation}}</idStation>\n            <qrCode>\n                <fiscalCode>{{creditor_saved_multi}}</fiscalCode>\n                <noticeNumber>3{{iuv_saved_multi_total}}</noticeNumber>\n            </qrCode>\n        </nod:paVerifyPaymentNoticeReq>\n    </soapenv:Body>\n</soapenv:Envelope>",
+									"options": {
+										"raw": {
+											"language": "xml"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{payment-host}}",
+									"host": [
+										"{{payment-host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getReceiptByIUV_404",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {\r",
+											"  pm.response.to.have.status(404);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{payment-host-rest}}/payments/{{creditor_institution_code}}/receipts/{{iuv_not_existent}}",
+									"host": [
+										"{{payment-host-rest}}"
+									],
+									"path": [
+										"payments",
+										"{{creditor_institution_code}}",
+										"receipts",
+										"{{iuv_not_existent}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getReceipts_404_wrong_page_num",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {\r",
+											"  pm.response.to.have.status(404);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{payment-host-rest}}/payments/{{creditor_institution_code}}/receipts?page=1&limit=10",
+									"host": [
+										"{{payment-host-rest}}"
+									],
+									"path": [
+										"payments",
+										"{{creditor_institution_code}}",
+										"receipts"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getReceipts_404_wrong_organization",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {\r",
+											"  pm.response.to.have.status(404);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{payment-host-rest}}/payments/{{organization_not_existent}}/receipts?page=0&limit=10",
+									"host": [
+										"{{payment-host-rest}}"
+									],
+									"path": [
+										"payments",
+										"{{organization_not_existent}}",
+										"receipts"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "0"
+										},
+										{
+											"key": "limit",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getReceipts_500_validation_check",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {\r",
+											"  pm.response.to.have.status(500);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{payment-host-rest}}/payments/{{creditor_institution_code}}/receipts?page=-1&limit=-10",
+									"host": [
+										"{{payment-host-rest}}"
+									],
+									"path": [
+										"payments",
+										"{{creditor_institution_code}}",
+										"receipts"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "-1"
+										},
+										{
+											"key": "limit",
+											"value": "-10"
+										}
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				}
 			]
 		},
