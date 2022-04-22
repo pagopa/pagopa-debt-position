@@ -114,3 +114,4 @@ local.settings.json
 /lib/
 **/.env
 bin/
+*azure.properties

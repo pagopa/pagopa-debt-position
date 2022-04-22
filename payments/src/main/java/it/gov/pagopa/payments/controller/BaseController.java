@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.Hidden;
 import it.gov.pagopa.payments.model.AppInfo;
 import it.gov.pagopa.payments.model.ProblemJson;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +27,14 @@ public class BaseController {
 
     @Value("${properties.environment}")
     private String environment;
+
+    /**
+     * @return 200 OK
+     */
+    @Hidden
+    @GetMapping("")
+    @ResponseStatus(HttpStatus.OK)
+    public void home() {}
 
 
     @Operation(summary = "health check", description = "Return OK if application is started", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, tags = {"Home"})
