@@ -29,7 +29,7 @@ public interface PaymentPositionRepository extends JpaRepository<PaymentPosition
 
     // Regola 6 - Una posizione va in expired nel momento in cui si raggiunge la max_due_date e lo stato sia rimasto fermo in valid
     @Modifying
-    @Query("update PaymentPosition pp set pp.status = :status, pp.lastUpdatedDate = :currentDate, pp.version=pp.version+1 where pp.maxDueDate < :currentDate and pp.status='VALID'")
+    @Query("update PaymentPosition pp set pp.status = :status, pp.lastUpdatedDate = :currentDate, pp.version=pp.version+1 where pp.maxDueDate < :currentDate and pp.status='VALID' and pp.switchToExpired IS TRUE")
     int updatePaymentPositionStatusToExpired(@Param(value = "currentDate") LocalDateTime currentDate, @Param(value = "status") DebtPositionStatus status);
 
     // Derived Query - using method naming convention - get parent PaymentPosition from child PaymentOption properties
