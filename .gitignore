@@ -114,3 +114,6 @@ local.settings.json
 /lib/
 **/.env
 bin/
+
+**/application-azure.properties
+.cache_ggshield
