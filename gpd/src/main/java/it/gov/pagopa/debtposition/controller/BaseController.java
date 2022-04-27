@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
 
@@ -30,13 +31,12 @@ public class BaseController {
 
 
     /**
-     * @return redirect to Swagger page documentation
+     * @return 200 OK
      */
     @Hidden
     @GetMapping("")
-    public RedirectView home() {
-        return new RedirectView("/swagger-ui.html");
-    }
+    @ResponseStatus(HttpStatus.OK)
+    public void home() {}
 
     /**
      * Health Check
