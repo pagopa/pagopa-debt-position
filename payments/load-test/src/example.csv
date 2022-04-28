@@ -1,0 +1,2 @@
+id;pa_id_istat;pa_id_catasto;pa_id_fiscal_code;pa_id_cbill;pa_pec_email;pa_referent_email;pa_referent_name;amount;debtor_id_fiscal_code;debtor_name;debtor_email;payment_notice_number;note
+1;01002501002;D969;00856930102;BYI45;comunegenova@mail.it;mariorossi@mail.it;Mario Rossi;9066;1345354345;Lorem ipsum;lorem@pec.loremit;347164993070184562;
