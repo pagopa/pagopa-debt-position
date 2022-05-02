@@ -19,14 +19,11 @@ public class PaymentOptionModel implements Serializable {
      */
     private static final long serialVersionUID = 661757182968854177L;
 
-    @NotNull(message = "paymentDate is required")
     private LocalDateTime paymentDate;
-    @NotBlank(message = "paymentMethod is required")
     private String paymentMethod;
     @NotBlank(message = "pspCompany is required")
     private String pspCompany;
     @NotBlank(message = "idReceipt is required")
     private String idReceipt;
-    @NotBlank(message = "fee is required")
     private String fee = "0";
 }
