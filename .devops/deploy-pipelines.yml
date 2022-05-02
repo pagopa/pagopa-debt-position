@@ -282,7 +282,6 @@ stages:
         displayName: waiting for approval
         pool: server
         timeoutInMinutes: 4320 # 3 days
-        continueOnError: false
         steps:
           - task: ManualValidation@0
             displayName: Manual Approval
