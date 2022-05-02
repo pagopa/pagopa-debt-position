@@ -160,12 +160,12 @@ class PaymentsControllerTest {
 	@Test
 	void payPaymentOption_200_with_only_required_receipt_fields() throws Exception {
 		// creo una posizione debitoria (senza 'validity date' impostata)
-		mvc.perform(post("/organizations/PAY_12345678901/debtpositions")
+		mvc.perform(post("/organizations/PAY_12345678911/debtpositions")
 						.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 
 		// porto in pubblicata/validata lo stato della posizione debitoria
-		mvc.perform(post("/organizations/PAY_12345678901/debtpositions/12345678901IUPDMOCK1/publish")
+		mvc.perform(post("/organizations/PAY_12345678911/debtpositions/12345678901IUPDMOCK1/publish")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
 		// effettuo la notifica di pagamento e verifico lo stato in paid
@@ -173,7 +173,7 @@ class PaymentsControllerTest {
 		data.setPaymentDate(null);
 		data.setPaymentMethod(null);
 		data.setFee(0); // because it is a long initialized to 0
-		mvc.perform(post("/organizations/PAY_12345678901/paymentoptions/123456IUVMOCK1/pay")
+		mvc.perform(post("/organizations/PAY_12345678911/paymentoptions/123456IUVMOCK1/pay")
 						.content(TestUtil.toJson(data))
 						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -182,7 +182,7 @@ class PaymentsControllerTest {
 						.value(PaymentOptionStatus.PO_PAID.toString()));
 
 		// recupero l'intera posizione debitoria e verifico lo stato in paid
-		mvc.perform(get("/organizations/PAY_12345678901/debtpositions/12345678901IUPDMOCK1")
+		mvc.perform(get("/organizations/PAY_12345678911/debtpositions/12345678901IUPDMOCK1")
 						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.status")
