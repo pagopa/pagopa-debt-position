@@ -14,10 +14,7 @@ http://localhost:8080/swagger-ui/index.html
 
 ```
 or that for `yaml` version
-```aidl
-#http://localhost:8080/v3/api-docs/
-```
->>>>>>> 7edcf7a (fix base path gpd payments)
+```http://localhost:8080/v3/api-docs/```
 
 ---
 ## Technology Stack

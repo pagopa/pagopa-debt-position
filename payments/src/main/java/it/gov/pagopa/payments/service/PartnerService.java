@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -158,10 +159,12 @@ public class PartnerService {
         log.debug("[paSendRT] isAuthorize check [noticeNumber={}]", request.getReceipt().getNoticeNumber());
         paymentValidator.isAuthorize(request.getIdPA(), request.getIdBrokerPA(), request.getIdStation());
 
+        LocalDateTime paymentDateTime = request.getReceipt().getPaymentDateTime() != null ? request.getReceipt().getPaymentDateTime().toGregorianCalendar().toZonedDateTime().toLocalDateTime() : null;
+
         log.debug("[paSendRT] get receipt payment option [noticeNumber={}]", request.getReceipt().getNoticeNumber());
         PaymentOptionModel body = PaymentOptionModel.builder()
                 .idReceipt(request.getReceipt().getReceiptId())
-                .paymentDate(request.getReceipt().getPaymentDateTime().toGregorianCalendar().toZonedDateTime().toLocalDateTime())
+                .paymentDate(paymentDateTime)
                 .pspCompany(request.getReceipt().getPSPCompanyName())
                 .paymentMethod(request.getReceipt().getPaymentMethod())
                 .fee(String.valueOf(this.getFeeInCent(request.getReceipt().getFee())))
