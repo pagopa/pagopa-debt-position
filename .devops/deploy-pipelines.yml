@@ -179,6 +179,7 @@ stages:
             inputs:
               targetType: "inline"
               script: |
+                apt install maven
                 mvn clean flyway:info -Dflyway.configFiles=apdFlywayConfig.conf
               failOnStderr: true
               workingDirectory: ${{ parameters.REPOSITORY }}
