@@ -153,10 +153,10 @@ stages:
               addChangelog: true
 
   # DB migrations
-  - stage: db_migrations
+  - stage: db_uat_migrations
     condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'))
     pool:
-      vmImage: "ubuntu-latest"
+      name: pagopa-uat-linux
     jobs:
       - job: dbMigrations
         steps:
