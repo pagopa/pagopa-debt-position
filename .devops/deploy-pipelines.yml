@@ -39,18 +39,31 @@ variables:
     CONTAINER_NAMESPACE: $(DEV_CONTAINER_NAMESPACE)
     APP_NAME: $(DEV_WEB_APP_NAME)
     RESOURCE_GROUP: 'pagopa-d-gpd-rg'
+    DATASOURCE_USERNAME: $(DEV_SPRING_DATASOURCE_USERNAME)
+    DATASOURCE_PASSWORD: $(DEV_SPRING_DATASOURCE_PASSWORD)
+    DATASOURCE_URL: $(DEV_SPRING_DATASOURCE_URL)
+
   ${{ if eq(parameters['ENV'], 'uat') }}:
     AZURE_SUBSCRIPTION: $(UAT_AZURE_SUBSCRIPTION)
     CONTAINER_REGISTRY: $(UAT_CONTAINER_REGISTRY)
     CONTAINER_NAMESPACE: $(UAT_CONTAINER_NAMESPACE)
     APP_NAME: $(UAT_WEB_APP_NAME)
     RESOURCE_GROUP: 'pagopa-u-gpd-rg'
+    DATASOURCE_USERNAME_: $(UAT_SPRING_DATASOURCE_USERNAME)
+    DATASOURCE_PASSWORD_: $(UAT_SPRING_DATASOURCE_PASSWORD)
+    DATASOURCE_URL_: $(UAT_SPRING_DATASOURCE_URL)
+
   ${{ if eq(parameters['ENV'], 'prod') }}:
     AZURE_SUBSCRIPTION: $(PROD_AZURE_SUBSCRIPTION)
     CONTAINER_REGISTRY: $(PROD_CONTAINER_REGISTRY)
     CONTAINER_NAMESPACE: $(PROD_CONTAINER_NAMESPACE)
     APP_NAME: $(PROD_WEB_APP_NAME)
     RESOURCE_GROUP: 'pagopa-p-gpd-rg'
+    DATASOURCE_USERNAME: $(PROD_SPRING_DATASOURCE_USERNAME)
+    DATASOURCE_PASSWORD: $(PROD_SPRING_DATASOURCE_PASSWORD)
+    DATASOURCE_URL: $(PROD_SPRING_DATASOURCE_URL)
+
+  SCHEMA_NAME: $(SCHEMA_NAME)
 
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
   MAVEN_OPTS: "-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)"
@@ -139,9 +152,45 @@ stages:
               title: $(title)
               addChangelog: true
 
+  # DB migrations
+  - stage: db_migrations
+    condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'))
+    pool:
+      vmImage: "ubuntu-latest"
+    jobs:
+      - job: dbMigrations
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+            submodules: true
+
+          - task: Cache@2
+            inputs:
+              key: 'maven | "$(Agent.OS)" | pom.xml'
+              restoreKeys: |
+                maven | "$(Agent.OS)"
+                maven
+              path: $(MAVEN_CACHE_FOLDER)
+            displayName: Set Maven Cache
+
+          - task: Bash@3
+            name: dbmigrationsflyway
+            inputs:
+              targetType: "inline"
+              script: |
+                mvn clean flyway:info -Dflyway.configFiles=apdFlywayConfig.conf
+              failOnStderr: true
+              workdir: ${{ parameters.REPOSITORY }}
+              env:
+                SPRING_DATASOURCE_USERNAME: $(DATASOURCE_USERNAME)
+                SPRING_DATASOURCE_PASSWORD: $(DATASOURCE_USERNAME)
+                SPRING_DATASOURCE_URL: $(DATASOURCE_URL)
+                GPD_SCHEMA_NAME: $(SCHEMA_NAME)
+
   # Deploy on Azure
   - stage: deploy
-    condition: not(failed('releaseService'))
+    condition: not(failed('dbMigrations'))
     pool:
       vmImage: "ubuntu-latest"
     jobs:
