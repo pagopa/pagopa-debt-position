@@ -54,7 +54,7 @@ if env == "local":
     payments_endpoint="http://127.0.0.1:8080/partner"
 else:
     account_name = "pagopa{}paymentssa".format(env[0])
-    table_name = args.table_name or "pagopa{}paymentssareceiptstableF".format(env[0])
+    table_name = args.table_name or "pagopa{}paymentssareceiptstable".format(env[0])
     endpoint = "https://{}.table.core.windows.net/".format(account_name)
     payments_endpoint = "https://pagopa-{}-app-payments.azurewebsites.net/partner".format(env[0])
 
