@@ -179,15 +179,13 @@ stages:
             inputs:
               targetType: "inline"
               script: |
-                apt install maven
-                mvn clean flyway:info -Dflyway.configFiles=apdFlywayConfig.conf
+                docker run -e SPRING_DATASOURCE_URL='$(DATASOURCE_URL)' \
+                -e SPRING_DATASOURCE_USERNAME='$(DATASOURCE_USERNAME)' \
+                -e SPRING_DATASOURCE_PASSWORD='$(DATASOURCE_PASSWORD)' \
+                -e GPD_SCHEMA_NAME='$(APD_SCHEMA_NAME)' \
+                --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:info -Dflyway.configFiles=apdFlywayConfig.conf               
               failOnStderr: true
               workingDirectory: ${{ parameters.REPOSITORY }}
-            env:
-              SPRING_DATASOURCE_USERNAME: $(DATASOURCE_USERNAME)
-              SPRING_DATASOURCE_PASSWORD: $(DATASOURCE_PASSWORD)
-              SPRING_DATASOURCE_URL: $(DATASOURCE_URL)
-              GPD_SCHEMA_NAME: $(APD_SCHEMA_NAME)
 
   # Deploy on Azure
   - stage: deploy
