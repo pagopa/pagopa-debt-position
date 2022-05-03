@@ -181,12 +181,12 @@ stages:
               script: |
                 mvn clean flyway:info -Dflyway.configFiles=apdFlywayConfig.conf
               failOnStderr: true
-              workdir: ${{ parameters.REPOSITORY }}
-              env:
-                SPRING_DATASOURCE_USERNAME: $(DATASOURCE_USERNAME)
-                SPRING_DATASOURCE_PASSWORD: $(DATASOURCE_PASSWORD)
-                SPRING_DATASOURCE_URL: $(DATASOURCE_URL)
-                GPD_SCHEMA_NAME: $(SCHEMA_NAME)
+              workingDirectory: ${{ parameters.REPOSITORY }}
+            env:
+              SPRING_DATASOURCE_USERNAME: $(DATASOURCE_USERNAME)
+              SPRING_DATASOURCE_PASSWORD: $(DATASOURCE_PASSWORD)
+              SPRING_DATASOURCE_URL: $(DATASOURCE_URL)
+              GPD_SCHEMA_NAME: $(SCHEMA_NAME)
 
   # Deploy on Azure
   - stage: deploy
