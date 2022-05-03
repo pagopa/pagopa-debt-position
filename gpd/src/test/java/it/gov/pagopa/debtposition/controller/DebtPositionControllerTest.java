@@ -162,7 +162,7 @@ class DebtPositionControllerTest {
 	 */
 	@Test
 	void getDebtPositionList() throws Exception {
-		// creo due posizioni debitorie e le recupero
+		// creo due posizioni debitorie e recupero tutte le payment_option di entrambe
 		mvc.perform(post("/organizations/LIST_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock2())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
@@ -171,7 +171,10 @@ class DebtPositionControllerTest {
 				.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
 
-		String url = "/organizations/LIST_12345678901/debtpositions?page=0";
+		DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		String url = "/organizations/LIST_12345678901/debtpositions?page=0" + "&due_date_from="
+				+ df.format(LocalDateTime.now(ZoneOffset.UTC)) + "&due_date_to="
+				+ df.format(LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(2)))
@@ -183,7 +186,7 @@ class DebtPositionControllerTest {
 	
 	@Test
 	void getDebtPositionListOrdered() throws Exception {
-		// creo due posizioni debitorie e le recupero
+		// creo due posizioni debitorie e le recupero con ordinamento
 		mvc.perform(post("/organizations/LIST_ORDERED_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock2())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
@@ -192,7 +195,10 @@ class DebtPositionControllerTest {
 				.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
 
-		String url = "/organizations/LIST_ORDERED_12345678901/debtpositions?page=0&orderby=INSERTED_DATE&ordering=DESC";
+		DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		String url = "/organizations/LIST_ORDERED_12345678901/debtpositions?page=0&orderby=INSERTED_DATE&ordering=DESC" + "&due_date_from="
+				+ df.format(LocalDateTime.now(ZoneOffset.UTC)) + "&due_date_to="
+				+ df.format(LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));;
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(2)))
@@ -205,8 +211,8 @@ class DebtPositionControllerTest {
 	}
 
 	@Test
-	void getDebtPositionListDueDateBetween() throws Exception {
-		// creo due posizioni debitorie ed estraggo per intervallo di date
+	void getDebtPositionList_partial() throws Exception {
+		// creo due posizioni debitorie ed estraggo per intervallo di date che non comprende tutte le payment_option create
 		mvc.perform(post("/organizations/DUEDATEBETWEEN_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock2())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
@@ -223,10 +229,11 @@ class DebtPositionControllerTest {
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(2)))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[*].iuv")
+				// manca la payment_option che ha una due_date maggiore di quella inserita nella ricerca
 				.value(Matchers.hasSize(1)))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[*].iuv")
 				.value(Matchers.hasSize(3)));	}
-
+/*
 	@Test
 	void getDebtPositionListDueDateGreaterThanOrEqual() throws Exception {
 		// creo due posizioni debitorie ed estraggo quelle con due_date >= due_date_from
@@ -270,21 +277,35 @@ class DebtPositionControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[*].iuv")
 				.value(Matchers.hasSize(3)));
 	}
-
+*/
 	@Test
 	void getDebtPositionList_404() throws Exception {
-		// provo a recuperare una posizione debitoria che non esiste
-		String url = "/organizations/LIST404_12345678901/debtpositions";
-		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest())
-		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
+		// provo a recuperare una posizione debitoria con una url sbagliata
+		DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		String url = "/organizations/LIST404_12345678901/debtpositions" + "&due_date_from="
+				+ df.format(LocalDateTime.now(ZoneOffset.UTC)) + "&due_date_to="
+				+ df.format(LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
 	}
 
 	@Test
-	void getDebtPositionListDueDate_404() throws Exception {
-		// provo a recuperare una posizione debitoria passando una due_date_from con un formato diverso da quello atteso
+	void getDebtPositionListDueDate_400() throws Exception {
+		// provo a recuperare una posizione debitoria passando le date con un formato diverso da quello atteso
 		DateTimeFormatter df = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 		String url = "/organizations/LIST404_12345678901/debtpositions?page=0" + "&due_date_from="
-				+ df.format(LocalDateTime.now(ZoneOffset.UTC).plus(3, ChronoUnit.DAYS));
+				+ df.format(LocalDateTime.now(ZoneOffset.UTC)) + "&due_date_to="
+				+ df.format(LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
+	}
+	
+	@Test
+	void getDebtPositionListDueDate_Interval_400() throws Exception {
+		// provo a recuperare una posizione debitoria passando un intervallo di date troppo ampio 
+		DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		String url = "/organizations/LIST404_12345678901/debtpositions?page=0" + "&due_date_from="
+				+ df.format(LocalDateTime.now(ZoneOffset.UTC)) + "&due_date_to="
+				+ df.format(LocalDateTime.now(ZoneOffset.UTC).plus(60, ChronoUnit.DAYS));
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
 	}

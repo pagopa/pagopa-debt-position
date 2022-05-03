@@ -1,13 +1,13 @@
 package it.gov.pagopa.debtposition.model.payments;
 
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
+import javax.validation.constraints.NotBlank;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.io.Serializable;
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
