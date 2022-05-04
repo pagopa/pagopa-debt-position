@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "cadb75b5-5bbb-4070-ad6f-2fdd75a599e5",
+		"_postman_id": "978cba54-881b-41b6-bf69-74468f456d66",
 		"name": "Debt Position",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -376,57 +376,6 @@
 							"response": []
 						},
 						{
-							"name": "getOrganizationDebtPositions_no_filter",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"check_status\", function () {",
-											"  pm.response.to.have.status(200);",
-											"});",
-											"",
-											"pm.test(\"The response properties\", () => {",
-											"    //parse the response JSON and test tree properties",
-											"    const responseJson = pm.response.json();",
-											"    pm.expect(responseJson.payment_position_list).to.have.lengthOf(2);",
-											"    pm.expect(responseJson.payment_position_list[0].paymentOption).to.have.lengthOf(1);",
-											"    pm.expect(responseJson.payment_position_list[0].organizationFiscalCode).to.eql(pm.globals.get(\"creditor_saved\"));",
-											"    pm.expect(responseJson.payment_position_list[0].status).to.eql(\"DRAFT\");",
-											"    pm.expect(responseJson.payment_position_list[0].paymentOption[0].isPartialPayment).to.be.a('boolean');",
-											"    pm.expect(responseJson.payment_position_list[0].paymentOption[0].isPartialPayment).to.eql(false);",
-											"",
-											"});"
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{gpdhost}}/organizations/{{creditor_saved}}/debtpositions/?page=0",
-									"host": [
-										"{{gpdhost}}"
-									],
-									"path": [
-										"organizations",
-										"{{creditor_saved}}",
-										"debtpositions",
-										""
-									],
-									"query": [
-										{
-											"key": "page",
-											"value": "0"
-										}
-									]
-								}
-							},
-							"response": []
-						},
-						{
 							"name": "getOrganizationDebtPositions_orderBy",
 							"event": [
 								{
@@ -465,7 +414,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{gpdhost}}/organizations/{{creditor_saved}}/debtpositions/?page=0&orderby=INSERTED_DATE&ordering=ASC",
+									"raw": "{{gpdhost}}/organizations/{{creditor_saved}}/debtpositions/?page=0&due_date_from={{now_date}}&due_date_to={{now_date_more_30_days}}&orderby=INSERTED_DATE&ordering=ASC",
 									"host": [
 										"{{gpdhost}}"
 									],
@@ -481,6 +430,14 @@
 											"value": "0"
 										},
 										{
+											"key": "due_date_from",
+											"value": "{{now_date}}"
+										},
+										{
+											"key": "due_date_to",
+											"value": "{{now_date_more_30_days}}"
+										},
+										{
 											"key": "orderby",
 											"value": "INSERTED_DATE"
 										},
@@ -494,7 +451,7 @@
 							"response": []
 						},
 						{
-							"name": "getOrganizationDebtPositions_filter_by_duedate_from",
+							"name": "getOrganizationDebtPositions_defaultOrder",
 							"event": [
 								{
 									"listen": "test",
@@ -524,7 +481,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{gpdhost}}/organizations/{{creditor_saved}}/debtpositions/?page=0&due_date_from={{now_date}}",
+									"raw": "{{gpdhost}}/organizations/{{creditor_saved}}/debtpositions/?page=0&due_date_from={{now_date}}&due_date_to={{now_date_more_30_days}}",
 									"host": [
 										"{{gpdhost}}"
 									],
@@ -542,6 +499,10 @@
 										{
 											"key": "due_date_from",
 											"value": "{{now_date}}"
+										},
+										{
+											"key": "due_date_to",
+											"value": "{{now_date_more_30_days}}"
 										}
 									]
 								}
@@ -549,7 +510,7 @@
 							"response": []
 						},
 						{
-							"name": "getOrganizationDebtPositions_filter_by_duedate_to",
+							"name": "getOrganizationDebtPositions_firstPage",
 							"event": [
 								{
 									"listen": "test",
@@ -562,7 +523,12 @@
 											"pm.test(\"The response properties\", () => {",
 											"    //parse the response JSON and test three properties",
 											"    const responseJson = pm.response.json();",
-											"    pm.expect(responseJson.payment_position_list).to.have.lengthOf(0);",
+											"    pm.expect(responseJson.payment_position_list).to.have.lengthOf(1);",
+											"    pm.expect(responseJson.payment_position_list[0].paymentOption).to.have.lengthOf(1);",
+											"    pm.expect(responseJson.payment_position_list[0].organizationFiscalCode).to.eql(pm.globals.get(\"creditor_saved\"));",
+											"    pm.expect(responseJson.payment_position_list[0].status).to.eql(\"DRAFT\");",
+											"    pm.expect(responseJson.payment_position_list[0].paymentOption[0].isPartialPayment).to.be.a('boolean');",
+											"    pm.expect(responseJson.payment_position_list[0].paymentOption[0].isPartialPayment).to.eql(false);",
 											"",
 											"});"
 										],
@@ -574,7 +540,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{gpdhost}}/organizations/{{creditor_saved}}/debtpositions/?page=0&due_date_to={{now_date}}",
+									"raw": "{{gpdhost}}/organizations/{{creditor_saved}}/debtpositions/?page=0&due_date_from={{now_date}}&due_date_to={{now_date_more_30_days}}&limit=1",
 									"host": [
 										"{{gpdhost}}"
 									],
@@ -590,8 +556,79 @@
 											"value": "0"
 										},
 										{
-											"key": "due_date_to",
+											"key": "due_date_from",
 											"value": "{{now_date}}"
+										},
+										{
+											"key": "due_date_to",
+											"value": "{{now_date_more_30_days}}"
+										},
+										{
+											"key": "limit",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getOrganizationDebtPositions_secondPage",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"The response properties\", () => {",
+											"    //parse the response JSON and test three properties",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.payment_position_list).to.have.lengthOf(1);",
+											"    pm.expect(responseJson.payment_position_list[0].paymentOption).to.have.lengthOf(1);",
+											"    pm.expect(responseJson.payment_position_list[0].organizationFiscalCode).to.eql(pm.globals.get(\"creditor_saved\"));",
+											"    pm.expect(responseJson.payment_position_list[0].status).to.eql(\"DRAFT\");",
+											"    pm.expect(responseJson.payment_position_list[0].paymentOption[0].isPartialPayment).to.be.a('boolean');",
+											"    pm.expect(responseJson.payment_position_list[0].paymentOption[0].isPartialPayment).to.eql(false);",
+											"",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{gpdhost}}/organizations/{{creditor_saved}}/debtpositions/?page=1&due_date_from={{now_date}}&due_date_to={{now_date_more_30_days}}&limit=1",
+									"host": [
+										"{{gpdhost}}"
+									],
+									"path": [
+										"organizations",
+										"{{creditor_saved}}",
+										"debtpositions",
+										""
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "due_date_from",
+											"value": "{{now_date}}"
+										},
+										{
+											"key": "due_date_to",
+											"value": "{{now_date_more_30_days}}"
+										},
+										{
+											"key": "limit",
+											"value": "1"
 										}
 									]
 								}
@@ -2473,6 +2510,53 @@
 							"response": []
 						},
 						{
+							"name": "getOrganizationDebtPositions_400",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {",
+											"  pm.response.to.have.status(400);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{gpdhost}}/organizations/{{creditor_saved}}/debtpositions/?page=0&due_date_from={{now_date_more_30_days}}&due_date_to={{now_date}}",
+									"host": [
+										"{{gpdhost}}"
+									],
+									"path": [
+										"organizations",
+										"{{creditor_saved}}",
+										"debtpositions",
+										""
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "0"
+										},
+										{
+											"key": "due_date_from",
+											"value": "{{now_date_more_30_days}}"
+										},
+										{
+											"key": "due_date_to",
+											"value": "{{now_date}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "getPaymentOptionByIUV_404",
 							"event": [
 								{
@@ -2607,13 +2691,6 @@
 							"pm.globals.set(\"iuv2\", makeidNumber(iuv_length));",
 							"pm.globals.set(\"iuv3\", makeidNumber(iuv_length));",
 							"",
-							"//pm.globals.set(\"txid1\", makeidMix(iuv_length))",
-							"//pm.globals.set(\"txid2\", makeidMix(iuv_length))",
-							"//pm.globals.set(\"txid3\", makeidMix(iuv_length))",
-							"//pm.globals.set(\"txid4\", makeidMix(iuv_length))",
-							"//pm.globals.set(\"txid5\", makeidMix(iuv_length))",
-							"//pm.globals.set(\"txid6\", makeidMix(iuv_length))",
-							"",
 							"pm.globals.set(\"txid1\", \"1\")",
 							"pm.globals.set(\"txid2\", \"2\")",
 							"pm.globals.set(\"txid3\", \"1\")",
@@ -2622,18 +2699,18 @@
 							"pm.globals.set(\"txid6\", \"2\")",
 							"",
 							"pm.globals.set(\"validity_date\", new Date().addDays(10));",
-							"pm.globals.set(\"due_date\", new Date().addDays(30));",
+							"pm.globals.set(\"due_date\", new Date().addDays(25));",
 							"pm.globals.set(\"retention_date\", new Date().addDays(90));",
 							"pm.globals.set(\"invalid_due_date\", new Date().subDays(5));",
 							"pm.globals.set(\"payment_date\", getDateNowISOSubMin(15));",
 							"",
 							"pm.globals.set(\"now_date\", new Date().toISOString().split('T')[0]);",
+							"pm.globals.set(\"now_date_more_30_days\", new Date().addDays(30).toISOString().split('T')[0]);",
 							"pm.globals.set(\"organization_not_existent\", \"FAKEORG_\"+makeidNumber(11));",
 							"pm.globals.set(\"iupd_not_existent\", \"FAKEIUPD_\"+makeidMix(iuv_length));",
 							"pm.globals.set(\"iuv_not_existent\", \"FAKEIUV_\"+makeidMix(iuv_length));",
 							"pm.globals.set(\"txid_not_existent\", \"FAKETxID_\" +makeidMix(iuv_length))",
 							"",
-							"//pm.globals.set(\"iuv_tipo\", _.random(0, 6));",
 							"",
 							"",
 							""
