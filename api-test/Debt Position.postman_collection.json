@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "869d42cb-7a13-48fd-88c9-291673567031",
+		"_postman_id": "cadb75b5-5bbb-4070-ad6f-2fdd75a599e5",
 		"name": "Debt Position",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -3459,7 +3459,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"check_status\", function () {",
-									"  pm.response.to.have.status(404);",
+									"  pm.response.to.have.status(200);",
 									"});",
 									""
 								],
@@ -3471,12 +3471,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{reporting-analysis-host}}/api/organizations/{{creditor_institution_code}}/reportings",
+							"raw": "{{reporting-analysis-host}}/organizations/{{creditor_institution_code}}/reportings",
 							"host": [
 								"{{reporting-analysis-host}}"
 							],
 							"path": [
-								"api",
 								"organizations",
 								"{{creditor_institution_code}}",
 								"reportings"
@@ -3505,12 +3504,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{reporting-analysis-host}}/api/organizations/{{creditor_institution_code}}/reportings/:flowId/date/:date",
+							"raw": "{{reporting-analysis-host}}/organizations/{{creditor_institution_code}}/reportings/:flowId/date/:date",
 							"host": [
 								"{{reporting-analysis-host}}"
 							],
 							"path": [
-								"api",
 								"organizations",
 								"{{creditor_institution_code}}",
 								"reportings",
