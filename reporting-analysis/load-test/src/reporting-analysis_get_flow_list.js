@@ -5,7 +5,7 @@ import { generateFakeStringArray, randomString } from './modules/helpers.js';
 export let options = {
 	summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(95)', 'p(99)', 'p(99.99)', 'count'],
 	stages: [
-		{ duration: '10s', target: 5 }, // simulate ramp-up of traffic from 1 to 50 users over 1 minutes.
+		{ duration: '1m', target: 5 }, // simulate ramp-up of traffic from 1 to 50 users over 1 minutes.
 	],
 	thresholds: {
 		http_req_failed: ['rate<0.01'], // http errors should be less than 1%
