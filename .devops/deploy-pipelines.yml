@@ -152,7 +152,9 @@ stages:
               title: $(title)
               addChangelog: true
 
-  # DB migrations
+  # DB migrations DEV
+  # DB migrations PROD
+  # DB migrations UAT
   - stage: db_uat_migrations
     condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'))
     pool:
