@@ -260,7 +260,7 @@ stages:
 
   # Deploy on Azure
   - stage: deploy
-    condition: or(not(failed('dbMigrationsDEV')),not(failed('dbMigrationsUAT')),not(failed('dbMigrationsPROD')))
+    condition: and(or(succeeded('dbMigrationsDEV'),skipped('dbMigrationsDEV')) ,or(succeeded('dbMigrationsUAT'),skipped('dbMigrationsUAT')),or(succeeded('dbMigrationsPROD'),skipped('dbMigrationsPROD'))
     pool:
       vmImage: "ubuntu-latest"
     jobs:
