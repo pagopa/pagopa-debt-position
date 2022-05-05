@@ -260,7 +260,7 @@ stages:
 
   # Deploy on Azure
   - stage: deploy
-    condition: and(or(succeeded('dbMigrationsDEV'),eq(dependencies.dbMigrationsDEV.result,'Skipped')) ,or(succeeded('dbMigrationsUAT'),eq(dependencies.dbMigrationsUAT.result,'Skipped')),or(succeeded('dbMigrationsPROD'),eq(dependencies.dbMigrationsPROD.result,'Skipped')))  
+    condition: or(in(dependencies.dbMigrationsDEV.result, 'Succeeded', 'Skipped'), in(dependencies.dbMigrationsUAT.result, 'Succeeded', 'Skipped'), in(dependencies.dbMigrationsPROD.result, 'Succeeded', 'Skipped')) 
     pool:
       vmImage: "ubuntu-latest"
     jobs:
