@@ -39,9 +39,9 @@ variables:
     CONTAINER_NAMESPACE: $(DEV_CONTAINER_NAMESPACE)
     APP_NAME: $(DEV_WEB_APP_NAME)
     RESOURCE_GROUP: 'pagopa-d-gpd-rg'
-    DATASOURCE_USERNAME: $(DEV_SPRING_DATASOURCE_USERNAME)
-    DATASOURCE_PASSWORD: $(DEV_SPRING_DATASOURCE_PASSWORD)
-    DATASOURCE_URL: $(DEV_SPRING_DATASOURCE_URL)
+    DATASOURCE_USERNAME: $(DEV_POSTGRES_DATASOURCE_USERNAME)
+    DATASOURCE_PASSWORD: $(DEV_POSTGRES_DATASOURCE_PASSWORD)
+    DATASOURCE_URL: $(DEV_POSTGRES_DATASOURCE_URL)
 
   ${{ if eq(parameters['ENV'], 'uat') }}:
     AZURE_SUBSCRIPTION: $(UAT_AZURE_SUBSCRIPTION)
@@ -49,9 +49,9 @@ variables:
     CONTAINER_NAMESPACE: $(UAT_CONTAINER_NAMESPACE)
     APP_NAME: $(UAT_WEB_APP_NAME)
     RESOURCE_GROUP: 'pagopa-u-gpd-rg'
-    DATASOURCE_USERNAME: $(UAT_SPRING_DATASOURCE_USERNAME)
-    DATASOURCE_PASSWORD: $(UAT_SPRING_DATASOURCE_PASSWORD)
-    DATASOURCE_URL: $(UAT_SPRING_DATASOURCE_URL)
+    DATASOURCE_USERNAME: $(UAT_POSTGRES_DATASOURCE_USERNAME)
+    DATASOURCE_PASSWORD: $(UAT_POSTGRES_DATASOURCE_PASSWORD)
+    DATASOURCE_URL: $(UAT_POSTGRES_DATASOURCE_URL)
 
   ${{ if eq(parameters['ENV'], 'prod') }}:
     AZURE_SUBSCRIPTION: $(PROD_AZURE_SUBSCRIPTION)
@@ -59,9 +59,9 @@ variables:
     CONTAINER_NAMESPACE: $(PROD_CONTAINER_NAMESPACE)
     APP_NAME: $(PROD_WEB_APP_NAME)
     RESOURCE_GROUP: 'pagopa-p-gpd-rg'
-    DATASOURCE_USERNAME: $(PROD_SPRING_DATASOURCE_USERNAME)
-    DATASOURCE_PASSWORD: $(PROD_SPRING_DATASOURCE_PASSWORD)
-    DATASOURCE_URL: $(PROD_SPRING_DATASOURCE_URL)
+    DATASOURCE_USERNAME: $(PROD_POSTGRES_DATASOURCE_USERNAME)
+    DATASOURCE_PASSWORD: $(PROD_POSTGRES_DATASOURCE_PASSWORD)
+    DATASOURCE_URL: $(PROD_POSTGRES_DATASOURCE_URL)
 
   APD_SCHEMA_NAME: $(SCHEMA_NAME)
 
@@ -153,14 +153,12 @@ stages:
               addChangelog: true
 
   # DB migrations DEV
-  # DB migrations PROD
-  # DB migrations UAT
-  - stage: db_uat_migrations
-    condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'))
+  - stage: db_dev_migrations
+    condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'dev'))
     pool:
       name: pagopa-uat-linux
     jobs:
-      - job: dbMigrations
+      - job: dbMigrationsDEV
         steps:
           - checkout: self
             clean: true
@@ -177,7 +175,7 @@ stages:
             displayName: Set Maven Cache
 
           - task: Bash@3
-            name: dbmigrationsflyway
+            name: dbmigrationsflywayValidate
             inputs:
               targetType: "inline"
               script: |
@@ -185,13 +183,84 @@ stages:
                 -e SPRING_DATASOURCE_USERNAME='$(DATASOURCE_USERNAME)' \
                 -e SPRING_DATASOURCE_PASSWORD='$(DATASOURCE_PASSWORD)' \
                 -e GPD_SCHEMA_NAME='$(APD_SCHEMA_NAME)' \
-                --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:info -Dflyway.configFiles=apdFlywayConfig.conf               
+                --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:validate -Dflyway.configFiles=apdFlywayConfig.conf
+              failOnStderr: true
+              workingDirectory: ${{ parameters.REPOSITORY }}
+
+
+  # DB migrations UAT
+  - stage: db_uat_migrations
+    condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'uat'))
+    pool:
+      name: pagopa-uat-linux
+    jobs:
+      - job: dbMigrationsUAT
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+            submodules: true
+
+          - task: Cache@2
+            inputs:
+              key: 'maven | "$(Agent.OS)" | pom.xml'
+              restoreKeys: |
+                maven | "$(Agent.OS)"
+                maven
+              path: $(MAVEN_CACHE_FOLDER)
+            displayName: Set Maven Cache
+
+          - task: Bash@3
+            name: dbmigrationsflywayValidate
+            inputs:
+              targetType: "inline"
+              script: |
+                docker run -e SPRING_DATASOURCE_URL='$(DATASOURCE_URL)' \
+                -e SPRING_DATASOURCE_USERNAME='$(DATASOURCE_USERNAME)' \
+                -e SPRING_DATASOURCE_PASSWORD='$(DATASOURCE_PASSWORD)' \
+                -e GPD_SCHEMA_NAME='$(APD_SCHEMA_NAME)' \
+                --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:validate -Dflyway.configFiles=apdFlywayConfig.conf
+              failOnStderr: true
+              workingDirectory: ${{ parameters.REPOSITORY }}
+
+  # DB migrations PROD
+  - stage: db_prod_migrations
+    condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'prod'))
+    pool:
+      name: pagopa-uat-linux
+    jobs:
+      - job: dbMigrationsPROD
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+            submodules: true
+
+          - task: Cache@2
+            inputs:
+              key: 'maven | "$(Agent.OS)" | pom.xml'
+              restoreKeys: |
+                maven | "$(Agent.OS)"
+                maven
+              path: $(MAVEN_CACHE_FOLDER)
+            displayName: Set Maven Cache
+
+          - task: Bash@3
+            name: dbmigrationsflywayValidate
+            inputs:
+              targetType: "inline"
+              script: |
+                docker run -e SPRING_DATASOURCE_URL='$(DATASOURCE_URL)' \
+                -e SPRING_DATASOURCE_USERNAME='$(DATASOURCE_USERNAME)' \
+                -e SPRING_DATASOURCE_PASSWORD='$(DATASOURCE_PASSWORD)' \
+                -e GPD_SCHEMA_NAME='$(APD_SCHEMA_NAME)' \
+                --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:validate -Dflyway.configFiles=apdFlywayConfig.conf
               failOnStderr: true
               workingDirectory: ${{ parameters.REPOSITORY }}
 
   # Deploy on Azure
   - stage: deploy
-    condition: not(failed('dbMigrations'))
+    condition: or(not(failed('dbMigrationsDEV')),not(failed('dbMigrationsUAT')),not(failed('dbMigrationsPROD')))
     pool:
       vmImage: "ubuntu-latest"
     jobs:
