@@ -270,16 +270,12 @@ stages:
           - script: |
               git config --global user.name "$(GIT_USERNAME)"
               git config --global user.email "$(GIT_EMAIL)"
-            displayName: Set Git global config        
-         # - checkout: self
-#            clean: true
- #           persistCredentials: true
-  #          submodules: true
-          - checkout: none
+            displayName: Set Git global config
 
-          - download: current
-            artifact: Bundle
-
+          - script: |
+              echo "Checkout on ${{variables['Build.SourceBranchName']}}"
+              git checkout ${{variables['Build.SourceBranchName']}}
+            displayName: Checkout on source branch
 
           - task: Cache@2
             inputs:
