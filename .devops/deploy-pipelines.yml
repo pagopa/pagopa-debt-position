@@ -39,18 +39,31 @@ variables:
     CONTAINER_NAMESPACE: $(DEV_CONTAINER_NAMESPACE)
     APP_NAME: $(DEV_WEB_APP_NAME)
     RESOURCE_GROUP: 'pagopa-d-gpd-rg'
+    DATASOURCE_USERNAME: $(DEV_POSTGRES_DATASOURCE_USERNAME)
+    DATASOURCE_PASSWORD: $(DEV_POSTGRES_DATASOURCE_PASSWORD)
+    DATASOURCE_URL: $(DEV_POSTGRES_DATASOURCE_URL)
+
   ${{ if eq(parameters['ENV'], 'uat') }}:
     AZURE_SUBSCRIPTION: $(UAT_AZURE_SUBSCRIPTION)
     CONTAINER_REGISTRY: $(UAT_CONTAINER_REGISTRY)
     CONTAINER_NAMESPACE: $(UAT_CONTAINER_NAMESPACE)
     APP_NAME: $(UAT_WEB_APP_NAME)
     RESOURCE_GROUP: 'pagopa-u-gpd-rg'
+    DATASOURCE_USERNAME: $(UAT_POSTGRES_DATASOURCE_USERNAME)
+    DATASOURCE_PASSWORD: $(UAT_POSTGRES_DATASOURCE_PASSWORD)
+    DATASOURCE_URL: $(UAT_POSTGRES_DATASOURCE_URL)
+
   ${{ if eq(parameters['ENV'], 'prod') }}:
     AZURE_SUBSCRIPTION: $(PROD_AZURE_SUBSCRIPTION)
     CONTAINER_REGISTRY: $(PROD_CONTAINER_REGISTRY)
     CONTAINER_NAMESPACE: $(PROD_CONTAINER_NAMESPACE)
     APP_NAME: $(PROD_WEB_APP_NAME)
     RESOURCE_GROUP: 'pagopa-p-gpd-rg'
+    DATASOURCE_USERNAME: $(PROD_POSTGRES_DATASOURCE_USERNAME)
+    DATASOURCE_PASSWORD: $(PROD_POSTGRES_DATASOURCE_PASSWORD)
+    DATASOURCE_URL: $(PROD_POSTGRES_DATASOURCE_URL)
+
+  APD_SCHEMA_NAME: $(SCHEMA_NAME)
 
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
   MAVEN_OPTS: "-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)"
@@ -139,9 +152,115 @@ stages:
               title: $(title)
               addChangelog: true
 
+  # DB migrations DEV
+  - stage: db_dev_migrations
+    condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'dev'))
+    pool:
+      name: pagopa-dev-linux
+    jobs:
+      - job: dbMigrationsDEV
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+            submodules: true
+
+          - task: Cache@2
+            inputs:
+              key: 'maven | "$(Agent.OS)" | pom.xml'
+              restoreKeys: |
+                maven | "$(Agent.OS)"
+                maven
+              path: $(MAVEN_CACHE_FOLDER)
+            displayName: Set Maven Cache
+
+          - task: Bash@3
+            name: dbmigrationsflywayValidate
+            inputs:
+              targetType: "inline"
+              script: |
+                docker run -e SPRING_DATASOURCE_URL='$(DATASOURCE_URL)' \
+                -e SPRING_DATASOURCE_USERNAME='$(DATASOURCE_USERNAME)' \
+                -e SPRING_DATASOURCE_PASSWORD='$(DATASOURCE_PASSWORD)' \
+                -e GPD_SCHEMA_NAME='$(APD_SCHEMA_NAME)' \
+                --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:validate -Dflyway.configFiles=apdFlywayConfig.conf
+              failOnStderr: true
+              workingDirectory: ${{ parameters.REPOSITORY }}
+
+
+  # DB migrations UAT
+  - stage: db_uat_migrations
+    condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'uat'))
+    pool:
+      name: pagopa-uat-linux
+    jobs:
+      - job: dbMigrationsUAT
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+            submodules: true
+
+          - task: Cache@2
+            inputs:
+              key: 'maven | "$(Agent.OS)" | pom.xml'
+              restoreKeys: |
+                maven | "$(Agent.OS)"
+                maven
+              path: $(MAVEN_CACHE_FOLDER)
+            displayName: Set Maven Cache
+
+          - task: Bash@3
+            name: dbmigrationsflywayValidate
+            inputs:
+              targetType: "inline"
+              script: |
+                docker run -e SPRING_DATASOURCE_URL='$(DATASOURCE_URL)' \
+                -e SPRING_DATASOURCE_USERNAME='$(DATASOURCE_USERNAME)' \
+                -e SPRING_DATASOURCE_PASSWORD='$(DATASOURCE_PASSWORD)' \
+                -e GPD_SCHEMA_NAME='$(APD_SCHEMA_NAME)' \
+                --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:validate -Dflyway.configFiles=apdFlywayConfig.conf
+              failOnStderr: true
+              workingDirectory: ${{ parameters.REPOSITORY }}
+
+  # DB migrations PROD
+  - stage: db_prod_migrations
+    condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'prod'))
+    pool:
+      name: pagopa-prod-linux
+    jobs:
+      - job: dbMigrationsPROD
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+            submodules: true
+
+          - task: Cache@2
+            inputs:
+              key: 'maven | "$(Agent.OS)" | pom.xml'
+              restoreKeys: |
+                maven | "$(Agent.OS)"
+                maven
+              path: $(MAVEN_CACHE_FOLDER)
+            displayName: Set Maven Cache
+
+          - task: Bash@3
+            name: dbmigrationsflywayValidate
+            inputs:
+              targetType: "inline"
+              script: |
+                docker run -e SPRING_DATASOURCE_URL='$(DATASOURCE_URL)' \
+                -e SPRING_DATASOURCE_USERNAME='$(DATASOURCE_USERNAME)' \
+                -e SPRING_DATASOURCE_PASSWORD='$(DATASOURCE_PASSWORD)' \
+                -e GPD_SCHEMA_NAME='$(APD_SCHEMA_NAME)' \
+                --rm -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:validate -Dflyway.configFiles=apdFlywayConfig.conf
+              failOnStderr: true
+              workingDirectory: ${{ parameters.REPOSITORY }}
+
   # Deploy on Azure
   - stage: deploy
-    condition: not(failed('releaseService'))
+    condition: and(in(dependencies.db_dev_migrations.result, 'Succeeded', 'Skipped'), in(dependencies.db_uat_migrations.result, 'Succeeded', 'Skipped'), in(dependencies.db_prod_migrations.result, 'Succeeded', 'Skipped'))
     pool:
       vmImage: "ubuntu-latest"
     jobs:
@@ -180,26 +299,9 @@ stages:
               failOnStderr: true
 
           - task: Maven@3
-            displayName: Build Module [DEV]
-            condition: eq('${{ parameters.ENV }}', 'dev')
+            displayName: Build Module
             inputs:
               mavenPomFile: "${{ parameters.REPOSITORY }}/pom.xml"
-              mavenOptions: "-Xmx3072m $(MAVEN_OPTS)"
-              mavenVersionOption: 'Default'
-              javaHomeOption: "JDKVersion"
-              jdkVersionOption: "1.11"
-              jdkArchitectureOption: "x64"
-              testResultsFiles: "**/surefire-reports/TEST-*.xml"
-              publishJUnitResults: true
-              effectivePomSkip: false
-              sonarQubeRunAnalysis: false
-              goals: "install"
-
-          - task: Maven@3
-            displayName: Build All [UAT|PROD]
-            condition: in('${{ parameters.ENV }}', 'uat', 'prod')
-            inputs:
-              mavenPomFile: "./pom.xml"
               mavenOptions: "-Xmx3072m $(MAVEN_OPTS)"
               mavenVersionOption: 'Default'
               javaHomeOption: "JDKVersion"
@@ -282,7 +384,6 @@ stages:
         displayName: waiting for approval
         pool: server
         timeoutInMinutes: 4320 # 3 days
-        continueOnError: false
         steps:
           - task: ManualValidation@0
             displayName: Manual Approval
@@ -290,7 +391,7 @@ stages:
               onTimeout: "reject"
               
       - job: completeProdDeployJava
-        condition: in('${{ parameters.REPOSITORY }}', 'gpd', 'payments')
+        condition: and(succeeded('waitForApprovalPROD'), in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'))
         displayName: complete prod deploy
         dependsOn: waitForApprovalPROD
         steps:
