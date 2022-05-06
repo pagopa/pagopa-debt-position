@@ -261,6 +261,7 @@ stages:
   # Deploy on Azure
   - stage: deploy
     #condition: and(in(dependencies.db_dev_migrations.result, 'Succeeded', 'Skipped'), in(dependencies.db_uat_migrations.result, 'Succeeded', 'Skipped'), in(dependencies.db_prod_migrations.result, 'Succeeded', 'Skipped'))
+    condition: always()
     pool:
       vmImage: "ubuntu-latest"
     jobs:
