@@ -125,6 +125,9 @@ stages:
               git push origin ${{variables['Build.SourceBranchName']}}
               git push --tags
 
+          - publish: $(System.DefaultWorkingDirectory)
+            artifact: Bundle
+
           - script: |
               HEAD_SHA=$(git rev-parse HEAD)
               TAG="${{ parameters.REPOSITORY }}/$(pomversion.next)"
@@ -266,11 +269,15 @@ stages:
     jobs:
       - job: deployJava
         steps:
-#          - checkout: self
-          - checkout: git://pagopa/pagopa-debt-position@refs/tags/${{variables['Build.SourceBranchName']}}
-            clean: true
-            persistCredentials: true
-            submodules: true
+         # - checkout: self
+#            clean: true
+ #           persistCredentials: true
+  #          submodules: true
+          - checkout: none
+
+          - download: current
+            artifact: Bundle
+
 
           - task: Cache@2
             inputs:
