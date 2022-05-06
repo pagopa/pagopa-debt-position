@@ -82,7 +82,7 @@ stages:
   # Create a release
   - stage: release_service
     # bump version on main branch and if SEMVER is not 'skip'
-    # condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne('${{ parameters.SEMVER }}', 'skip'))
+    condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne('${{ parameters.SEMVER }}', 'skip'))
     pool:
       vmImage: "ubuntu-latest"
     jobs:
@@ -189,8 +189,7 @@ stages:
 
   # DB migrations UAT
   - stage: db_uat_migrations
-    # condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'uat'))
-    condition: false
+    condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'uat'))
     pool:
       name: pagopa-uat-linux
     jobs:
@@ -260,8 +259,7 @@ stages:
 
   # Deploy on Azure
   - stage: deploy
-    #condition: and(in(dependencies.db_dev_migrations.result, 'Succeeded', 'Skipped'), in(dependencies.db_uat_migrations.result, 'Succeeded', 'Skipped'), in(dependencies.db_prod_migrations.result, 'Succeeded', 'Skipped'))
-    condition: always()
+    condition: and(in(dependencies.db_dev_migrations.result, 'Succeeded', 'Skipped'), in(dependencies.db_uat_migrations.result, 'Succeeded', 'Skipped'), in(dependencies.db_prod_migrations.result, 'Succeeded', 'Skipped'))
     pool:
       vmImage: "ubuntu-latest"
     jobs:
