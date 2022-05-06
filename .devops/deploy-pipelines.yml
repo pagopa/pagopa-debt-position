@@ -156,7 +156,7 @@ stages:
   - stage: db_dev_migrations
     condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'dev'))
     pool:
-      name: pagopa-uat-linux
+      name: pagopa-dev-linux
     jobs:
       - job: dbMigrationsDEV
         steps:
@@ -227,7 +227,7 @@ stages:
   - stage: db_prod_migrations
     condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'prod'))
     pool:
-      name: pagopa-uat-linux
+      name: pagopa-prod-linux
     jobs:
       - job: dbMigrationsPROD
         steps:
