@@ -266,7 +266,8 @@ stages:
     jobs:
       - job: deployJava
         steps:
-          - checkout: self
+#          - checkout: self
+          - checkout: git://pagopa/pagopa-debt-position@refs/tags/${{variables['Build.SourceBranchName']}}
             clean: true
             persistCredentials: true
             submodules: true
