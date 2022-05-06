@@ -82,7 +82,7 @@ stages:
   # Create a release
   - stage: release_service
     # bump version on main branch and if SEMVER is not 'skip'
-    # condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne('${{ parameters.SEMVER }}', 'skip'))
+    condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne('${{ parameters.SEMVER }}', 'skip'))
     pool:
       vmImage: "ubuntu-latest"
     jobs:
