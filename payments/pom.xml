@@ -13,7 +13,7 @@
 
     <groupId>it.gov.pagopa</groupId>
     <artifactId>payments</artifactId>
-    <version>0.0.10</version>
+    <version>0.0.11</version>
     <name>Payments</name>
     <description>Payments</description>
 
