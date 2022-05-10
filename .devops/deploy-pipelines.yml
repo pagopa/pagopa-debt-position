@@ -187,7 +187,6 @@ stages:
               failOnStderr: true
               workingDirectory: ${{ parameters.REPOSITORY }}
 
-
   # DB migrations UAT
   - stage: db_uat_migrations
     condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'uat'))
@@ -266,10 +265,15 @@ stages:
     jobs:
       - job: deployJava
         steps:
-          - checkout: self
-            clean: true
-            persistCredentials: true
-            submodules: true
+          - script: |
+              git config --global user.name "$(GIT_USERNAME)"
+              git config --global user.email "$(GIT_EMAIL)"
+            displayName: Set Git global config
+
+          - script: |
+              echo "Checkout on ${{variables['Build.SourceBranchName']}}"
+              git checkout ${{variables['Build.SourceBranchName']}}
+            displayName: Checkout on source branch
 
           - task: Cache@2
             inputs:
