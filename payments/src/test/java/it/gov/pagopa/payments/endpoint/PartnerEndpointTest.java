@@ -99,4 +99,26 @@ class PartnerEndpointTest {
     assertThat(response.getValue()).isEqualTo(responseBody);
   }
 
+  @Test
+  void paSendRTTest_only_with_required_receipt_fields() throws DatatypeConfigurationException {
+
+    // Test preconditions
+    PaSendRTReq requestBody = PaSendRTReqMock.getMock();
+    // set to null paymentMethod, paymentDateTime and Fee
+    requestBody.getReceipt().setPaymentDateTime(null);
+    requestBody.getReceipt().setPaymentMethod(null);
+    requestBody.getReceipt().setFee(null);
+    PaSendRTRes responseBody = PaSendRTResMock.getMock();
+    JAXBElement<PaSendRTReq> request = factoryUtil.createPaSendRTReq(requestBody);
+
+    when(partnerService.paSendRT(requestBody)).thenReturn(responseBody);
+    when(factory.createPaSendRTRes(responseBody)).thenReturn(factoryUtil.createPaSendRTRes(responseBody));
+
+    // Test execution
+    JAXBElement<PaSendRTRes> response = partnerEndpoint.paSendRT(request);
+
+    // Test postcondiction
+    assertThat(response.getValue()).isEqualTo(responseBody);
+  }
+
 }

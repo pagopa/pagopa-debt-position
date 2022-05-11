@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.namespace.QName;
 
+import com.microsoft.azure.storage.table.TableQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -158,10 +160,12 @@ public class PartnerService {
         log.debug("[paSendRT] isAuthorize check [noticeNumber={}]", request.getReceipt().getNoticeNumber());
         paymentValidator.isAuthorize(request.getIdPA(), request.getIdBrokerPA(), request.getIdStation());
 
+        LocalDateTime paymentDateTime = request.getReceipt().getPaymentDateTime() != null ? request.getReceipt().getPaymentDateTime().toGregorianCalendar().toZonedDateTime().toLocalDateTime() : null;
+
         log.debug("[paSendRT] get receipt payment option [noticeNumber={}]", request.getReceipt().getNoticeNumber());
         PaymentOptionModel body = PaymentOptionModel.builder()
                 .idReceipt(request.getReceipt().getReceiptId())
-                .paymentDate(request.getReceipt().getPaymentDateTime().toGregorianCalendar().toZonedDateTime().toLocalDateTime())
+                .paymentDate(paymentDateTime)
                 .pspCompany(request.getReceipt().getPSPCompanyName())
                 .paymentMethod(request.getReceipt().getPaymentMethod())
                 .fee(String.valueOf(this.getFeeInCent(request.getReceipt().getFee())))
@@ -187,7 +191,14 @@ public class PartnerService {
             	this.updateReceipt (receiptEntity);
             }
         } catch (FeignException.Conflict e) {
-            log.error("[paSendRT] GPD Conflict Error Response [noticeNumber={}]", request.getReceipt().getNoticeNumber(), e);
+            try {
+                log.error("[paSendRT] GPD Conflict Error Response [noticeNumber={}]", request.getReceipt().getNoticeNumber(), e);
+                ReceiptEntity receiptEntity = this.getReceipt(request.getIdPA(), request.getReceipt().getCreditorReferenceId());
+                receiptEntity.setStatus(Status.PAID.name());
+                this.updateReceipt (receiptEntity);
+            } catch (Exception ex) {
+                log.error("[paSendRT] GPD Generic Error [noticeNumber={}] during receipt status update", request.getReceipt().getNoticeNumber(), e);
+            }
             throw new PartnerValidationException(PaaErrorEnum.PAA_RECEIPT_DUPLICATA);
         } catch (RetryableException e) {
             log.error("[paSendRT] GPD Not Reachable [noticeNumber={}]", request.getReceipt().getNoticeNumber(), e);
@@ -385,14 +396,31 @@ public class PartnerService {
     }
     
     private void saveReceipt(ReceiptEntity receiptEntity) throws InvalidKeyException, URISyntaxException, StorageException  {
-        	AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString);
-			azuriteStorageUtil.createTable(receiptsTable);
-			CloudTable table = CloudStorageAccount.parse(storageConnectionString)
-	                .createCloudTableClient()
-	                .getTableReference(receiptsTable);
-			TableBatchOperation batchOperation = new TableBatchOperation();
-	        batchOperation.insertOrReplace(receiptEntity);
-	        table.execute(batchOperation);   
+        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString);
+        azuriteStorageUtil.createTable(receiptsTable);
+        CloudTable table = CloudStorageAccount.parse(storageConnectionString)
+                .createCloudTableClient()
+                .getTableReference(receiptsTable);
+        TableBatchOperation batchOperation = new TableBatchOperation();
+        batchOperation.insertOrReplace(receiptEntity);
+        table.execute(batchOperation);
+    }
+
+    private ReceiptEntity getReceipt(String organizationFiscalCode, String iuv) throws InvalidKeyException, URISyntaxException, StorageException  {
+        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString);
+        azuriteStorageUtil.createTable(receiptsTable);
+
+        CloudTable table = CloudStorageAccount.parse(storageConnectionString)
+                .createCloudTableClient()
+                .getTableReference(receiptsTable);
+
+        TableQuery<ReceiptEntity> query = TableQuery.from(ReceiptEntity.class)
+                .where(TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, organizationFiscalCode))
+                .where(TableQuery.generateFilterCondition("RowKey", TableQuery.QueryComparisons.EQUAL, iuv));
+
+        Iterable<ReceiptEntity> result = table.execute(query);
+
+        return result.iterator().next();
     }
     
 	private void updateReceipt(ReceiptEntity receiptEntity)

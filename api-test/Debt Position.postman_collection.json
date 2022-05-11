@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "9e3afb5f-cb20-4451-bcbf-9e182fcfe8f4",
+		"_postman_id": "cadb75b5-5bbb-4070-ad6f-2fdd75a599e5",
 		"name": "Debt Position",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -904,7 +904,7 @@
 							"response": []
 						},
 						{
-							"name": "payPaymentOption_partial_2",
+							"name": "payPaymentOption_partial_2_onlyPspCompany",
 							"event": [
 								{
 									"listen": "test",
@@ -941,7 +941,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"paymentDate\": \"{{payment_date}}\",\r\n  \"paymentMethod\": \"bonifico\",\r\n  \"pspCompany\": \"Intesa San Paolo\",\r\n  \"idReceipt\": \"TRN123456789\"\r\n}",
+									"raw": "{\r\n  \"pspCompany\": \"Intesa San Paolo\",\r\n  \"idReceipt\": \"TRN123456789\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1949,7 +1949,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"paymentMethod\": \"bonifico\",\r\n  \"pspCompany\": \"Intesa San Paolo\",\r\n  \"idReceipt\": \"TRN123456789\"\r\n}",
+									"raw": "{\r\n  \"idReceipt\": \"TRN123456789\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2667,13 +2667,7 @@
 											"pm.test(\"check_status\", function () {\r",
 											"  pm.response.to.have.status(200);\r",
 											"});\r",
-											"\r",
-											"pm.test(\"document XML\", () => {\r",
-											"    var responseJson = xml2Json(responseBody);\r",
-											"    var documentIdPa = responseJson['paSendRTReq']['idPA'];\r",
-											"    pm.expect(documentIdPa).to.eql(pm.globals.get(\"creditor_institution_code\"));\r",
-											"\r",
-											"});"
+											""
 										],
 										"type": "text/javascript"
 									}
@@ -2987,13 +2981,7 @@
 											"pm.test(\"check_status\", function () {\r",
 											"  pm.response.to.have.status(200);\r",
 											"});\r",
-											"\r",
-											"pm.test(\"document XML\", () => {\r",
-											"    var responseJson = xml2Json(responseBody);\r",
-											"    var documentIdPa = responseJson['paSendRTReq']['idPA'];\r",
-											"    pm.expect(documentIdPa).to.eql(pm.globals.get(\"creditor_institution_code\"));\r",
-											"\r",
-											"});"
+											""
 										],
 										"type": "text/javascript"
 									}
@@ -3003,13 +2991,13 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{payment-host-rest}}/payments/{{creditor_institution_code}}/receipts/{{iuv_saved_multi_total}}",
+									"raw": "{{payment-host-rest}}/payments/{{creditor_saved_multi}}/receipts/{{iuv_saved_multi_total}}",
 									"host": [
 										"{{payment-host-rest}}"
 									],
 									"path": [
 										"payments",
-										"{{creditor_institution_code}}",
+										"{{creditor_saved_multi}}",
 										"receipts",
 										"{{iuv_saved_multi_total}}"
 									]
@@ -3042,13 +3030,13 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{payment-host-rest}}/payments/{{creditor_institution_code}}/receipts?page=0&limit=10",
+									"raw": "{{payment-host-rest}}/payments/{{creditor_saved_multi}}/receipts?page=0&limit=10",
 									"host": [
 										"{{payment-host-rest}}"
 									],
 									"path": [
 										"payments",
-										"{{creditor_institution_code}}",
+										"{{creditor_saved_multi}}",
 										"receipts"
 									],
 									"query": [
@@ -3348,6 +3336,116 @@
 						}
 					]
 				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"function getDateNowISOAddMin(minutesToAdd) {",
+							"    const currentDate = new Date();",
+							"    const date = new Date(currentDate.getTime() + minutesToAdd*60000);",
+							"    return date.toISOString();    ",
+							"}",
+							"",
+							"function getDateNowISOSubMin(minutesToSub) {",
+							"    const currentDate = new Date();",
+							"    const date = new Date(currentDate.getTime() - minutesToSub*60000);",
+							"    return date.toISOString();    ",
+							"}",
+							"",
+							"",
+							"Date.prototype.addDays = function(days) {",
+							"    var date = new Date(this.valueOf());",
+							"    date.setDate(date.getDate() + days);",
+							"    return date;",
+							"}",
+							"",
+							"var date = new Date();",
+							"console.log(date.addDays(5));",
+							"",
+							"",
+							"function makeidMix(length) {",
+							"    var result           = '';",
+							"    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+							"    var charactersLength = characters.length;",
+							"    for ( var i = 0; i < length; i++ ) {",
+							"      result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+							"    }",
+							"    return result;",
+							"}",
+							"",
+							"function makeidNumber(length) {",
+							"    var result           = '';",
+							"    var characters       = '0123456789';",
+							"    var charactersLength = characters.length;",
+							"    for ( var i = 0; i < length; i++ ) {",
+							"      result += characters.charAt(Math.floor(Math.random() * ",
+							" charactersLength));",
+							"   }",
+							"   return result;",
+							"}",
+							"",
+							"Date.prototype.subDays = function(days) {",
+							"    var date = new Date(this.valueOf());",
+							"    date.setDate(date.getDate() - days);",
+							"    return date;",
+							"}",
+							"",
+							"iuv_length = 17;",
+							"",
+							"// set global vars",
+							"pm.globals.set(\"creditor_institution_code\", makeidNumber(11));",
+							"pm.globals.set(\"iupd\", makeidMix(iuv_length));",
+							"pm.globals.set(\"iupd2\", makeidMix(iuv_length));",
+							"pm.globals.set(\"iuv\", makeidNumber(iuv_length));",
+							"pm.globals.set(\"iuv1\", makeidNumber(iuv_length));",
+							"pm.globals.set(\"iuv2\", makeidNumber(iuv_length));",
+							"pm.globals.set(\"iuv3\", makeidNumber(iuv_length));",
+							"",
+							"//pm.globals.set(\"txid1\", makeidMix(iuv_length))",
+							"//pm.globals.set(\"txid2\", makeidMix(iuv_length))",
+							"//pm.globals.set(\"txid3\", makeidMix(iuv_length))",
+							"//pm.globals.set(\"txid4\", makeidMix(iuv_length))",
+							"//pm.globals.set(\"txid5\", makeidMix(iuv_length))",
+							"//pm.globals.set(\"txid6\", makeidMix(iuv_length))",
+							"",
+							"pm.globals.set(\"txid1\", \"1\")",
+							"pm.globals.set(\"txid2\", \"2\")",
+							"pm.globals.set(\"txid3\", \"1\")",
+							"pm.globals.set(\"txid4\", \"2\")",
+							"pm.globals.set(\"txid5\", \"1\")",
+							"pm.globals.set(\"txid6\", \"2\")",
+							"",
+							"pm.globals.set(\"validity_date\", new Date().addDays(10));",
+							"pm.globals.set(\"due_date\", new Date().addDays(30));",
+							"pm.globals.set(\"retention_date\", new Date().addDays(90));",
+							"pm.globals.set(\"invalid_due_date\", new Date().subDays(5));",
+							"pm.globals.set(\"payment_date\", getDateNowISOSubMin(15));",
+							"",
+							"pm.globals.set(\"now_date\", new Date().toISOString().split('T')[0]);",
+							"pm.globals.set(\"organization_not_existent\", \"FAKEORG_\"+makeidNumber(11));",
+							"pm.globals.set(\"iupd_not_existent\", \"FAKEIUPD_\"+makeidMix(iuv_length));",
+							"pm.globals.set(\"iuv_not_existent\", \"FAKEIUV_\"+makeidMix(iuv_length));",
+							"pm.globals.set(\"txid_not_existent\", \"FAKETxID_\" +makeidMix(iuv_length))",
+							"",
+							"//pm.globals.set(\"iuv_tipo\", _.random(0, 6));",
+							"",
+							"",
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
 			]
 		},
 		{
@@ -3361,7 +3459,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"check_status\", function () {",
-									"  pm.response.to.have.status(404);",
+									"  pm.response.to.have.status(200);",
 									"});",
 									""
 								],
@@ -3373,12 +3471,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{reporting-analysis-host}}/api/organizations/{{creditor_institution_code}}/reportings",
+							"raw": "{{reporting-analysis-host}}/organizations/{{creditor_institution_code}}/reportings",
 							"host": [
 								"{{reporting-analysis-host}}"
 							],
 							"path": [
-								"api",
 								"organizations",
 								"{{creditor_institution_code}}",
 								"reportings"
@@ -3407,12 +3504,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{reporting-analysis-host}}/api/organizations/{{creditor_institution_code}}/reportings/:flowId/date/:date",
+							"raw": "{{reporting-analysis-host}}/organizations/{{creditor_institution_code}}/reportings/:flowId/date/:date",
 							"host": [
 								"{{reporting-analysis-host}}"
 							],
 							"path": [
-								"api",
 								"organizations",
 								"{{creditor_institution_code}}",
 								"reportings",

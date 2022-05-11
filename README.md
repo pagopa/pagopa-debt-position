@@ -8,6 +8,14 @@ See the [OpenApi 3 here.](https://editor.swagger.io/?url=https://raw.githubuserc
 ### Payments
 See the [OpenApi 3 here.](https://editor.swagger.io/?url=https://raw.githubusercontent.com/pagopa/pagopa-debt-position/main/payments/openapi/openapi.json)
 
+In local env typing following url on browser for ui interface: 
+```
+http://localhost:8080/swagger-ui/index.html
+
+```
+or that for `yaml` version
+```http://localhost:8080/v3/api-docs/```
+
 ---
 ## Technology Stack
 - Java 11
