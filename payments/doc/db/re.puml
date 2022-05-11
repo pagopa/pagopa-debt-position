@@ -1,0 +1,16 @@
+@startuml ER-debtPosition
+left to right direction
+
+title ER - Receipt
+
+
+entity ReceiptTable {
+  * partitionkey (idDominio)
+  * rowkey (IUV)
+  --
+  * timestamp
+  status (CREATED or PAID)
+  debtor
+  document
+}
+@enduml

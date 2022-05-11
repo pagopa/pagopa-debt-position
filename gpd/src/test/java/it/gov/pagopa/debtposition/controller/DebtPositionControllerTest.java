@@ -309,6 +309,17 @@ class DebtPositionControllerTest {
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
 	}
+	
+	@Test
+	void getDebtPositionListDueDate_InversionDate_400() throws Exception {
+		// provo a recuperare una posizione debitoria passando un intervallo di date invertito (from > to) 
+		DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		String url = "/organizations/LIST404_12345678901/debtpositions?page=0" + "&due_date_from="
+				+ df.format(LocalDateTime.now(ZoneOffset.UTC).plus(60, ChronoUnit.DAYS)) + "&due_date_to="
+				+ df.format(LocalDateTime.now(ZoneOffset.UTC));
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
+	}
 
 	/**
 	 * DELETE DEBT POSITION
