@@ -36,6 +36,7 @@ public class ConvertPPModelToPPEntityForUpdate implements Converter<PaymentPosit
         destination.setStreetName(source.getStreetName());
         destination.setType(source.getType());
         destination.setValidityDate(source.getValidityDate());
+        destination.setSwitchToExpired(null != source.getSwitchToExpired() && source.getSwitchToExpired());
 
         List<PaymentOptionModel> paymentOpts = source.getPaymentOption();
         if (null != paymentOpts && !paymentOpts.isEmpty()) {
