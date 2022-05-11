@@ -42,6 +42,7 @@ public class PaymentPositionDTO implements Serializable {
     private LocalDateTime insertedDate;
     private LocalDateTime publishDate;
     private LocalDateTime validityDate;
+    private Boolean switchToExpired;
     private DebtPositionStatus status;
 
     private List<PaymentOptionDTO> paymentOption = new ArrayList<>();

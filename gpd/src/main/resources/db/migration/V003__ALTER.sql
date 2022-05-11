@@ -1,0 +1,1 @@
+ALTER TABLE payment_position ADD COLUMN "switch_to_expired" BOOLEAN NOT NULL DEFAULT FALSE;
