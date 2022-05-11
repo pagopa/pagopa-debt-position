@@ -46,7 +46,7 @@ public class PaymentPositionModel implements Serializable {
     @Email(message = "Please provide a valid email address")
     private String email;
     private String phone;
-    @Schema(description = "flag to force the debt position to expire after the due date", example = "false", defaultValue = "false")
+    @Schema(description = "feature flag to enable the debt position to expire after the due date", example = "false", defaultValue = "false")
     private Boolean switchToExpired;
 
     // Payment Position properties
