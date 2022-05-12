@@ -148,9 +148,6 @@ class PaymentsServiceTest {
 
 		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable", gpdClient));
 		
-		// precondition
-		PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
-		when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
 		
 		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", null);
 		assertNotNull(res);
@@ -163,9 +160,6 @@ class PaymentsServiceTest {
 
 		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable", gpdClient));
 		
-		// precondition
-		PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
-		when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
 		
 		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(5, 0, "org123456", null);
 		assertNotNull(res);
@@ -180,10 +174,6 @@ class PaymentsServiceTest {
 
 		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable", gpdClient));
 		
-		// precondition
-		PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
-		when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
-		
 		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", "debtor5");
 		assertNotNull(res);
 		assertEquals(1, res.getResults().size());
@@ -196,9 +186,6 @@ class PaymentsServiceTest {
 
 		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable", gpdClient));
 		
-		// precondition
-		PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
-		when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
 		
 		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(5, 0, "org123456", "debtor5");
 		assertNotNull(res);

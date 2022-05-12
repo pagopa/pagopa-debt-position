@@ -192,7 +192,7 @@ public class PaymentsService {
 	
 	public void checkGPDDebtPosStatus (CloudTable table, ReceiptEntity receipt) {
 		// the check on GPD is necessary if the status of the receipt is different from PAID
-		if(!receipt.getStatus().equals(Status.PAID.name())) {
+		if(!receipt.getStatus().trim().equalsIgnoreCase(Status.PAID.name())) {
 			PaymentsModelResponse paymentOption = gpdClient.getPaymentOption(receipt.getPartitionKey(), receipt.getRowKey());
 			if (null != paymentOption && !PaymentOptionStatus.PO_PAID.equals(paymentOption.getStatus())) {
 				throw new AppException(AppError.UNPROCESSABLE_RECEIPT, paymentOption.getStatus(), receipt.getPartitionKey(), receipt.getRowKey());
