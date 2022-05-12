@@ -152,7 +152,7 @@ class PaymentsServiceTest {
 		PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
 		when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
 		
-		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", null);
+		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", null, null);
 		assertNotNull(res);
 		assertEquals(10, res.getResults().size());
 		
@@ -167,7 +167,7 @@ class PaymentsServiceTest {
 		PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
 		when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
 		
-		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(5, 0, "org123456", null);
+		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(5, 0, "org123456", null, null);
 		assertNotNull(res);
 		assertEquals(5, res.getResults().size());
 		assertEquals(0, res.getCurrentPageNumber());
@@ -184,7 +184,23 @@ class PaymentsServiceTest {
 		PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
 		when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
 		
-		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", "debtor5");
+		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", "debtor5", null);
+		assertNotNull(res);
+		assertEquals(1, res.getResults().size());
+		assertEquals(0, res.getCurrentPageNumber());
+		
+	}
+	
+	@Test
+	void getOrganizationReceipts_service_filter() throws Exception {
+
+		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable", gpdClient));
+		
+		// precondition
+		PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
+		when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
+		
+		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", null, "31");
 		assertNotNull(res);
 		assertEquals(1, res.getResults().size());
 		assertEquals(0, res.getCurrentPageNumber());
@@ -200,7 +216,7 @@ class PaymentsServiceTest {
 		PaymentsModelResponse paymentModel = MockUtil.readModelFromFile("gpd/getPaymentOption.json", PaymentsModelResponse.class);
 		when(gpdClient.getPaymentOption(anyString(), anyString())).thenReturn(paymentModel);
 		
-		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(5, 0, "org123456", "debtor5");
+		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(5, 0, "org123456", "debtor5", "iuv5");
 		assertNotNull(res);
 		assertEquals(1, res.getResults().size());
 		assertEquals(0, res.getCurrentPageNumber());
@@ -213,7 +229,7 @@ class PaymentsServiceTest {
 		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable", gpdClient));
 		
 		try {
-			paymentsService.getOrganizationReceipts(5, 3, "org123456", null);
+			paymentsService.getOrganizationReceipts(5, 3, "org123456", null, null);
 		} catch(AppException e) {
 			assertEquals(HttpStatus.NOT_FOUND, e.getHttpStatus());
 		}
@@ -225,7 +241,7 @@ class PaymentsServiceTest {
 
 		var paymentsService = spy(new PaymentsService(storageConnectionString, "receiptsTable", gpdClient));
 		
-		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", "debtor15");
+		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", "debtor15", null);
 		assertNotNull(res);
 		assertEquals(0, res.getResults().size());
 		
@@ -238,7 +254,7 @@ class PaymentsServiceTest {
 		var paymentsService = spy(new PaymentsService(wrongStorageConnectionString, "receiptsTable", gpdClient));
 		
 		try {
-			paymentsService.getOrganizationReceipts(null, null, "org123456", null);
+			paymentsService.getOrganizationReceipts(null, null, "org123456", null, null);
 		} catch(AppException e) {
 			assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, e.getHttpStatus());
 		}
