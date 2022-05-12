@@ -26,7 +26,7 @@ import java.time.LocalDate;
 @RequestMapping
 public interface IConfigurationsController {
 
-    @Operation(summary = "Return the list of the organizations.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizations", tags = {"Get Organization List"})
+    @Operation(summary = "Return the list of the organizations.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizations")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Obtained organizations to add and delete.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = OrganizationListModelResponse.class))),
             @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
@@ -37,7 +37,7 @@ public interface IConfigurationsController {
 			@Valid @Parameter(description = "Filter from date (use the format yyyy-MM-dd)") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "since", required = true)
 					LocalDate since);
 
-    @Operation(summary = "Check the existence of the organization.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "checkOrganization", tags = {"Check Organization"})
+    @Operation(summary = "Check the existence of the organization.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "checkOrganization")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "The organization is registered.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = String.class))),
             @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),

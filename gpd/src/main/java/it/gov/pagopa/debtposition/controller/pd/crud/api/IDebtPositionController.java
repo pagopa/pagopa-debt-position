@@ -35,7 +35,7 @@ import java.time.LocalDate;
 @RequestMapping
 public interface IDebtPositionController {
 
-    @Operation(summary = "The Organization creates a debt Position.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "createPosition", tags = {"Create Debt Position"})
+    @Operation(summary = "The Organization creates a debt Position.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "createPosition")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Request created."),
             @ApiResponse(responseCode = "400", description = "Malformed request.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
@@ -51,7 +51,7 @@ public interface IDebtPositionController {
             @Valid @RequestBody PaymentPositionModel paymentPositionModel);
 
 
-    @Operation(summary = "Return the details of a specific debt position.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizationDebtPositionByIUPD", tags = {"Get Debt Position"})
+    @Operation(summary = "Return the details of a specific debt position.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizationDebtPositionByIUPD")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Obtained debt position details.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(name = "PaymentPositionResponse", implementation = PaymentPositionModelBaseResponse.class))),
             @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
@@ -66,7 +66,7 @@ public interface IDebtPositionController {
             @PathVariable("iupd") String iupd);
 
 
-    @Operation(summary = "Return the list of the organization debt positions.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizationDebtPositions", tags = {"Get Debt Positions List"})
+    @Operation(summary = "Return the list of the organization debt positions.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizationDebtPositions")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Obtained all organization payment positions.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = PaymentPositionsInfo.class))),
             @ApiResponse(responseCode = "400", description = "Malformed request.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
@@ -80,13 +80,13 @@ public interface IDebtPositionController {
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
             @Positive @Parameter(description = "Number of elements on one page. Default = 50") @RequestParam(required = false, defaultValue = "50") Integer limit,
             @Positive @Parameter(description = "Page number. Page value starts from 0", required = true) @RequestParam Integer page,
-            @Valid @Parameter(description = "Filter from due_date (if provided use the format yyyy-MM-dd)") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "due_date_from", required = false) LocalDate dueDateFrom,
-            @Valid @Parameter(description = "Filter to due_date (if provided use the format yyyy-MM-dd)") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "due_date_to", required = false) LocalDate dueDateTo,
+            @Valid @Parameter(description = "Filter from due_date (if provided use the format yyyy-MM-dd)") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "due_date_from", required = true) LocalDate dueDateFrom,
+            @Valid @Parameter(description = "Filter to due_date (if provided use the format yyyy-MM-dd)") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "due_date_to", required = true) LocalDate dueDateTo,
             @RequestParam(required = false, name = "orderby", defaultValue = "COMPANY_NAME") @Parameter(description = "Order by INSERTED_DATE, COMPANY_NAME, IUPD or STATUS") Order.PaymentPositionOrder orderBy,
             @RequestParam(required = false, name = "ordering", defaultValue = "DESC") @Parameter(description = "Direction of ordering") Sort.Direction ordering);
 
 
-    @Operation(summary = "The Organization deletes a debt position", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "deletePosition", tags = {"Delete Debt Position"})
+    @Operation(summary = "The Organization deletes a debt position", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "deletePosition")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Operation completed successfully."),
             @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
@@ -102,7 +102,7 @@ public interface IDebtPositionController {
             @PathVariable("iupd") String iupd);
 
 
-    @Operation(summary = "The Organization updates a debt position ", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "updatePosition", tags = {"Update Debt Positions"})
+    @Operation(summary = "The Organization updates a debt position ", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "updatePosition")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Request updated."),
             @ApiResponse(responseCode = "400", description = "Malformed request.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),

@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -43,6 +44,8 @@ import java.util.Optional;
 public class PaymentPositionCRUDService {
 
     private static final String UNIQUE_KEY_VIOLATION = "23505";
+    @Value("${max.days.interval}")
+    private String maxDaysInterval;
     @Autowired
     private PaymentPositionRepository paymentPositionRepository;
     @Autowired
@@ -119,6 +122,9 @@ public class PaymentPositionCRUDService {
     }
 
     public Page<PaymentPosition> getOrganizationDebtPositions(@Positive Integer limit, @Positive Integer pageNum, FilterAndOrder filterAndOrder) {
+    	
+    	// verifico la correttezza dell'intervallo di date fornito
+        DebtPositionValidation.checkDatesInterval(filterAndOrder.getFilter().getDueDateFrom(), filterAndOrder.getFilter().getDueDateTo(), Integer.parseInt(maxDaysInterval));
 
         Pageable pageable = PageRequest.of(pageNum, limit, CommonUtil.getSort(filterAndOrder));
 

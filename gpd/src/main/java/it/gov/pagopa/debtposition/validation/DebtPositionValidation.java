@@ -11,6 +11,7 @@ import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -56,6 +57,13 @@ public class DebtPositionValidation {
         }
         // Verifico se la transazione è rendicontabile
         checkTransferAccountable(ppToReport, iuv, transferId);
+    }
+    
+    public static void checkDatesInterval (LocalDateTime from, LocalDateTime to, int maxDaysInterval) {
+    	if (!(from.isBefore(to) || from.isEqual(to)) || Duration.between(from, to).toDays() > maxDaysInterval) {
+    		throw new AppException(AppError.DEBT_POSITION_NOT_RECOVERABLE, from, to, Duration.between(from, to).toDays(), maxDaysInterval);
+    	}
+    	
     }
 
     private static void checkPaymentPositionContentCongruency(final PaymentPosition pp) {

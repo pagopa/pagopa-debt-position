@@ -29,8 +29,7 @@ public class PaymentPositionByDueDate implements Specification<PaymentPosition> 
 
     public Predicate toPredicate(Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
 
-        // join con fetch immediata in modo da applicare i filtri sul recupero degli oggetti child paymentOption
-        Join<?, ?> ppOptionsJoin = (Join<?, ?>) root.fetch(PAYMENT_OPT_JOIN, JoinType.INNER);
+    	Join<?, ?> ppOptionsJoin = root.join(PAYMENT_OPT_JOIN, JoinType.INNER);
 
         if (dateFrom != null && dateTo == null) {
             return cb.greaterThanOrEqualTo(ppOptionsJoin.get(DUEDATE_FIELD), dateFrom);

@@ -28,7 +28,7 @@ import javax.validation.Valid;
 @RequestMapping
 public interface IPaymentsController {
 
-    @Operation(summary = "Return the details of a specific payment option.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizationPaymentOptionByIUV", tags = {"Get Payment Option"})
+    @Operation(summary = "Return the details of a specific payment option.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizationPaymentOptionByIUV")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Obtained payment option details.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(name = "PaymentPositionResponse", implementation = PaymentOptionWithDebtorInfoModelResponse.class))),
             @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
@@ -42,7 +42,7 @@ public interface IPaymentsController {
             @Parameter(description = "IUV (Unique Payment Identification). Alphanumeric code that uniquely associates and identifies three key elements of a payment: reason, payer, amount", required = true)
             @PathVariable("iuv") String iuv);
 
-    @Operation(summary = "The Organization paid a payment option.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "payPaymentOption", tags = {"Pay Payment Option"})
+    @Operation(summary = "The Organization paid a payment option.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "payPaymentOption")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Request paid."),
             @ApiResponse(responseCode = "400", description = "Malformed request.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
@@ -61,7 +61,7 @@ public interface IPaymentsController {
             @PathVariable("iuv") String iuv,
             @Valid @RequestBody PaymentOptionModel paymentOptionModel);
 
-    @Operation(summary = "The organization reports a transaction.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "reportTransfer", tags = {"Report Transfer"})
+    @Operation(summary = "The organization reports a transaction.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "reportTransfer")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Request reported."),
             @ApiResponse(responseCode = "400", description = "Malformed request.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),

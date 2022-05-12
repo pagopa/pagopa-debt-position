@@ -20,6 +20,7 @@ public enum AppError {
     DEBT_POSITION_PUBLISH_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "The debt position publish is failed", "Publish failed for the debt position with Organization Fiscal Code %s and IUPD %s"),
     DEBT_POSITION_INVALIDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "The debt position invalidate is failed", "Invalidate failed for the debt position with Organization Fiscal Code %s and IUPD %s"),
     DEBT_POSITION_NOT_INVALIDABLE(HttpStatus.CONFLICT, "Existing related payment found or not in invalidable state", "A payment transaction has already been carried out or, the debt position with Organization Fiscal Code %s and IUPD %s, is not in invalidable state"),
+    DEBT_POSITION_NOT_RECOVERABLE(HttpStatus.BAD_REQUEST, "The debt positions cannot be recovered", "Debt positions cannot be recovered. Verify that due_date_to >= due_date_from and that the interval between the two dates not exceed the maximum number of days allowed [due_date_from= %s, due_date_to= %s, days_between_from_to= %s, max_days_interval= %s]"),
     PAYMENT_OPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "Not found the payment option", "Not found a payment option for Organization Fiscal Code %s and IUV %s"),
     PAYMENT_OPTION_NOT_PAYABLE(HttpStatus.UNPROCESSABLE_ENTITY, "Not in payable state", "The payment option with Organization Fiscal Code %s and IUV %s is not in payable state"),
     PAYMENT_OPTION_ALREADY_PAID(HttpStatus.CONFLICT, "Existing related payment found", "A payment transaction has already been carried out for the Organization Fiscal Code %s and IUV %s"),
