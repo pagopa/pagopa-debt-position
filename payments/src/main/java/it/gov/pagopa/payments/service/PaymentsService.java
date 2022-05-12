@@ -43,6 +43,7 @@ public class PaymentsService {
 	private static final String PARTITION_KEY_FIELD = "PartitionKey";
 	private static final String ROW_KEY_FIELD = "RowKey";
 	private static final String DEBTOR_FIELD = "Debtor";
+	private static final String STATUS_FIELD = "Status";
 	
 	@Value("${payments.sa.connection}")
 	private String storageConnectionString;
@@ -138,7 +139,7 @@ public class PaymentsService {
 
 	private PaymentsResult<ReceiptEntity> getSegmentedReceipts(Integer limit, Integer pageNum, String organizationFiscalCode, CloudTable table, String filter) throws StorageException {
 		final int FIRST_PAGE_NUMBER = 0;
-		String[] columns = new String[]{PARTITION_KEY_FIELD, ROW_KEY_FIELD, DEBTOR_FIELD};
+		String[] columns = new String[]{PARTITION_KEY_FIELD, ROW_KEY_FIELD, DEBTOR_FIELD, STATUS_FIELD};
 		TableQuery<ReceiptEntity> tq = TableQuery.from(ReceiptEntity.class);
 		tq.setColumns(columns);
 		PaymentsResult<ReceiptEntity> result = new PaymentsResult<>();
@@ -176,7 +177,7 @@ public class PaymentsService {
 
 	private PaymentsResult<ReceiptEntity> getNotSegmentedReceipts(CloudTable table, String filter) {
 		 final int FIRST_PAGE_NUMBER = 0;
-		 String[] columns = new String[]{PARTITION_KEY_FIELD, ROW_KEY_FIELD, DEBTOR_FIELD};
+		 String[] columns = new String[]{PARTITION_KEY_FIELD, ROW_KEY_FIELD, DEBTOR_FIELD, STATUS_FIELD};
 		 TableQuery<ReceiptEntity> tq = TableQuery.from(ReceiptEntity.class);
 		 tq.setColumns(columns);
 		 PaymentsResult<ReceiptEntity> result = new PaymentsResult<>();
