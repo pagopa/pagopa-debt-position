@@ -25,6 +25,7 @@ import com.microsoft.azure.storage.table.TableQuery;
 import com.microsoft.azure.storage.table.TableQuery.Operators;
 import com.microsoft.azure.storage.table.TableQuery.QueryComparisons;
 
+import feign.FeignException;
 import it.gov.pagopa.payments.entity.ReceiptEntity;
 import it.gov.pagopa.payments.entity.Status;
 import it.gov.pagopa.payments.exception.AppError;
@@ -170,7 +171,12 @@ public class PaymentsService {
 			try {
 				this.checkGPDDebtPosStatus(table, re);
 				checkedReceipts.add(re);
-			} catch (AppException e) {
+			} 
+			catch (FeignException.NotFound e ) {
+				log.error("[getGPDCheckedReceiptsList] Non-blocking error: "
+						+ "get not found exception in the recovery of payment options", e);
+			}
+			catch (AppException e) {
 				log.error("[getGPDCheckedReceiptsList] Non-blocking error: "
 						+ "Receipt is not in an eligible state on GPD in order to be returned to the caller", e);
 			}
@@ -228,7 +234,7 @@ public class PaymentsService {
 		 List<ReceiptEntity> listOfEntity = StreamSupport.stream(table.execute(tq.select(columns).where(filter)).spliterator(), false).collect(Collectors.toList());
 		 result.setResults(listOfEntity);
 		 result.setCurrentPageNumber(FIRST_PAGE_NUMBER);
-		 result.setPageSize(listOfEntity.size());
+		 //result.setPageSize(listOfEntity.size());
 		 result.setLength(listOfEntity.size());
 		 result.setHasMoreResults(false);
 		 return result;
