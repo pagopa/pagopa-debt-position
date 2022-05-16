@@ -158,7 +158,7 @@ class PaymentsServiceTest {
 		
 		PaymentsResult<ReceiptEntity> res = paymentsService.getOrganizationReceipts(null, null, "org123456", null, null);
 		assertNotNull(res);
-		assertEquals(10, res.getResults().size());
+		assertEquals(15, res.getResults().size());
 		
 	}
 	
