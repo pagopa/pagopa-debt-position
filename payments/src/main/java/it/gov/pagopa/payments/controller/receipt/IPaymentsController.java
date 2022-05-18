@@ -51,7 +51,6 @@ public interface IPaymentsController {
             @ApiResponse(responseCode = "200", description = "Obtained all organization payment positions.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ReceiptsInfo.class))),
             @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
             @ApiResponse(responseCode = "404", description = "No receipts found.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
-            @ApiResponse(responseCode = "422", description = "Unable to process the request.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
             @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
     @GetMapping(value = "/payments/{organizationfiscalcode}/receipts",
             produces = {MediaType.APPLICATION_JSON_VALUE})
@@ -60,6 +59,7 @@ public interface IPaymentsController {
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
             @Valid @Parameter(description = "Number of elements on one page") @RequestParam(required = false) @Positive @Max(999) Integer limit,
             @Valid @Parameter(description = "Page number. Page value starts from 0") @RequestParam(required = false, defaultValue = "0") @Min(0) Integer page,
-            @Parameter(description = "Filter by debtor") @RequestParam(required = false) String debtor);
+            @Parameter(description = "Filter by debtor") @RequestParam(required = false) String debtor,
+            @Parameter(description = "Filter by service") @RequestParam(required = false) String service);
 
 }

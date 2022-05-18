@@ -28,12 +28,12 @@ public class PageInfo {
     Integer page;
 
     @JsonProperty("limit")
-    @Schema(description = "Required number of items per page", required = true)
+    @Schema(description = "Number of items per page", required = false)
     @Positive
     Integer limit;
 
     @JsonProperty("items_found")
-    @Schema(description = "Number of items found. (The last page may have fewer elements than required)", required = true)
+    @Schema(description = "Number of items found", required = true)
     @PositiveOrZero
     Integer itemsFound;
 
