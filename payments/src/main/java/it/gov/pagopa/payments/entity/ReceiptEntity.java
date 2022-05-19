@@ -14,6 +14,7 @@ public class ReceiptEntity extends TableServiceEntity {
     private String debtor;
     private String document;
     private String status = Status.CREATED.name();
+   
 
 
     public ReceiptEntity(String organizationFiscalCode, String iuv) {

@@ -1,0 +1,1 @@
+CREATE INDEX idx_due_date ON payment_option (due_date);

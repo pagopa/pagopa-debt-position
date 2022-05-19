@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "cadb75b5-5bbb-4070-ad6f-2fdd75a599e5",
+		"_postman_id": "265da2b2-ef40-4c4a-8c7e-7351db1902d9",
 		"name": "Debt Position",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -376,57 +376,6 @@
 							"response": []
 						},
 						{
-							"name": "getOrganizationDebtPositions_no_filter",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"check_status\", function () {",
-											"  pm.response.to.have.status(200);",
-											"});",
-											"",
-											"pm.test(\"The response properties\", () => {",
-											"    //parse the response JSON and test tree properties",
-											"    const responseJson = pm.response.json();",
-											"    pm.expect(responseJson.payment_position_list).to.have.lengthOf(2);",
-											"    pm.expect(responseJson.payment_position_list[0].paymentOption).to.have.lengthOf(1);",
-											"    pm.expect(responseJson.payment_position_list[0].organizationFiscalCode).to.eql(pm.globals.get(\"creditor_saved\"));",
-											"    pm.expect(responseJson.payment_position_list[0].status).to.eql(\"DRAFT\");",
-											"    pm.expect(responseJson.payment_position_list[0].paymentOption[0].isPartialPayment).to.be.a('boolean');",
-											"    pm.expect(responseJson.payment_position_list[0].paymentOption[0].isPartialPayment).to.eql(false);",
-											"",
-											"});"
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{gpdhost}}/organizations/{{creditor_saved}}/debtpositions/?page=0",
-									"host": [
-										"{{gpdhost}}"
-									],
-									"path": [
-										"organizations",
-										"{{creditor_saved}}",
-										"debtpositions",
-										""
-									],
-									"query": [
-										{
-											"key": "page",
-											"value": "0"
-										}
-									]
-								}
-							},
-							"response": []
-						},
-						{
 							"name": "getOrganizationDebtPositions_orderBy",
 							"event": [
 								{
@@ -465,7 +414,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{gpdhost}}/organizations/{{creditor_saved}}/debtpositions/?page=0&orderby=INSERTED_DATE&ordering=ASC",
+									"raw": "{{gpdhost}}/organizations/{{creditor_saved}}/debtpositions/?page=0&due_date_from={{now_date}}&due_date_to={{now_date_more_30_days}}&orderby=INSERTED_DATE&ordering=ASC",
 									"host": [
 										"{{gpdhost}}"
 									],
@@ -481,6 +430,14 @@
 											"value": "0"
 										},
 										{
+											"key": "due_date_from",
+											"value": "{{now_date}}"
+										},
+										{
+											"key": "due_date_to",
+											"value": "{{now_date_more_30_days}}"
+										},
+										{
 											"key": "orderby",
 											"value": "INSERTED_DATE"
 										},
@@ -494,7 +451,7 @@
 							"response": []
 						},
 						{
-							"name": "getOrganizationDebtPositions_filter_by_duedate_from",
+							"name": "getOrganizationDebtPositions_defaultOrder",
 							"event": [
 								{
 									"listen": "test",
@@ -524,7 +481,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{gpdhost}}/organizations/{{creditor_saved}}/debtpositions/?page=0&due_date_from={{now_date}}",
+									"raw": "{{gpdhost}}/organizations/{{creditor_saved}}/debtpositions/?page=0&due_date_from={{now_date}}&due_date_to={{now_date_more_30_days}}",
 									"host": [
 										"{{gpdhost}}"
 									],
@@ -542,6 +499,10 @@
 										{
 											"key": "due_date_from",
 											"value": "{{now_date}}"
+										},
+										{
+											"key": "due_date_to",
+											"value": "{{now_date_more_30_days}}"
 										}
 									]
 								}
@@ -549,7 +510,7 @@
 							"response": []
 						},
 						{
-							"name": "getOrganizationDebtPositions_filter_by_duedate_to",
+							"name": "getOrganizationDebtPositions_firstPage",
 							"event": [
 								{
 									"listen": "test",
@@ -562,7 +523,12 @@
 											"pm.test(\"The response properties\", () => {",
 											"    //parse the response JSON and test three properties",
 											"    const responseJson = pm.response.json();",
-											"    pm.expect(responseJson.payment_position_list).to.have.lengthOf(0);",
+											"    pm.expect(responseJson.payment_position_list).to.have.lengthOf(1);",
+											"    pm.expect(responseJson.payment_position_list[0].paymentOption).to.have.lengthOf(1);",
+											"    pm.expect(responseJson.payment_position_list[0].organizationFiscalCode).to.eql(pm.globals.get(\"creditor_saved\"));",
+											"    pm.expect(responseJson.payment_position_list[0].status).to.eql(\"DRAFT\");",
+											"    pm.expect(responseJson.payment_position_list[0].paymentOption[0].isPartialPayment).to.be.a('boolean');",
+											"    pm.expect(responseJson.payment_position_list[0].paymentOption[0].isPartialPayment).to.eql(false);",
 											"",
 											"});"
 										],
@@ -574,7 +540,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{gpdhost}}/organizations/{{creditor_saved}}/debtpositions/?page=0&due_date_to={{now_date}}",
+									"raw": "{{gpdhost}}/organizations/{{creditor_saved}}/debtpositions/?page=0&due_date_from={{now_date}}&due_date_to={{now_date_more_30_days}}&limit=1",
 									"host": [
 										"{{gpdhost}}"
 									],
@@ -590,8 +556,79 @@
 											"value": "0"
 										},
 										{
-											"key": "due_date_to",
+											"key": "due_date_from",
 											"value": "{{now_date}}"
+										},
+										{
+											"key": "due_date_to",
+											"value": "{{now_date_more_30_days}}"
+										},
+										{
+											"key": "limit",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getOrganizationDebtPositions_secondPage",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"The response properties\", () => {",
+											"    //parse the response JSON and test three properties",
+											"    const responseJson = pm.response.json();",
+											"    pm.expect(responseJson.payment_position_list).to.have.lengthOf(1);",
+											"    pm.expect(responseJson.payment_position_list[0].paymentOption).to.have.lengthOf(1);",
+											"    pm.expect(responseJson.payment_position_list[0].organizationFiscalCode).to.eql(pm.globals.get(\"creditor_saved\"));",
+											"    pm.expect(responseJson.payment_position_list[0].status).to.eql(\"DRAFT\");",
+											"    pm.expect(responseJson.payment_position_list[0].paymentOption[0].isPartialPayment).to.be.a('boolean');",
+											"    pm.expect(responseJson.payment_position_list[0].paymentOption[0].isPartialPayment).to.eql(false);",
+											"",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{gpdhost}}/organizations/{{creditor_saved}}/debtpositions/?page=1&due_date_from={{now_date}}&due_date_to={{now_date_more_30_days}}&limit=1",
+									"host": [
+										"{{gpdhost}}"
+									],
+									"path": [
+										"organizations",
+										"{{creditor_saved}}",
+										"debtpositions",
+										""
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "due_date_from",
+											"value": "{{now_date}}"
+										},
+										{
+											"key": "due_date_to",
+											"value": "{{now_date_more_30_days}}"
+										},
+										{
+											"key": "limit",
+											"value": "1"
 										}
 									]
 								}
@@ -2473,6 +2510,53 @@
 							"response": []
 						},
 						{
+							"name": "getOrganizationDebtPositions_400",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {",
+											"  pm.response.to.have.status(400);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{gpdhost}}/organizations/{{creditor_saved}}/debtpositions/?page=0&due_date_from={{now_date_more_30_days}}&due_date_to={{now_date}}",
+									"host": [
+										"{{gpdhost}}"
+									],
+									"path": [
+										"organizations",
+										"{{creditor_saved}}",
+										"debtpositions",
+										""
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "0"
+										},
+										{
+											"key": "due_date_from",
+											"value": "{{now_date_more_30_days}}"
+										},
+										{
+											"key": "due_date_to",
+											"value": "{{now_date}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "getPaymentOptionByIUV_404",
 							"event": [
 								{
@@ -2607,13 +2691,6 @@
 							"pm.globals.set(\"iuv2\", makeidNumber(iuv_length));",
 							"pm.globals.set(\"iuv3\", makeidNumber(iuv_length));",
 							"",
-							"//pm.globals.set(\"txid1\", makeidMix(iuv_length))",
-							"//pm.globals.set(\"txid2\", makeidMix(iuv_length))",
-							"//pm.globals.set(\"txid3\", makeidMix(iuv_length))",
-							"//pm.globals.set(\"txid4\", makeidMix(iuv_length))",
-							"//pm.globals.set(\"txid5\", makeidMix(iuv_length))",
-							"//pm.globals.set(\"txid6\", makeidMix(iuv_length))",
-							"",
 							"pm.globals.set(\"txid1\", \"1\")",
 							"pm.globals.set(\"txid2\", \"2\")",
 							"pm.globals.set(\"txid3\", \"1\")",
@@ -2622,18 +2699,18 @@
 							"pm.globals.set(\"txid6\", \"2\")",
 							"",
 							"pm.globals.set(\"validity_date\", new Date().addDays(10));",
-							"pm.globals.set(\"due_date\", new Date().addDays(30));",
+							"pm.globals.set(\"due_date\", new Date().addDays(25));",
 							"pm.globals.set(\"retention_date\", new Date().addDays(90));",
 							"pm.globals.set(\"invalid_due_date\", new Date().subDays(5));",
 							"pm.globals.set(\"payment_date\", getDateNowISOSubMin(15));",
 							"",
 							"pm.globals.set(\"now_date\", new Date().toISOString().split('T')[0]);",
+							"pm.globals.set(\"now_date_more_30_days\", new Date().addDays(30).toISOString().split('T')[0]);",
 							"pm.globals.set(\"organization_not_existent\", \"FAKEORG_\"+makeidNumber(11));",
 							"pm.globals.set(\"iupd_not_existent\", \"FAKEIUPD_\"+makeidMix(iuv_length));",
 							"pm.globals.set(\"iuv_not_existent\", \"FAKEIUV_\"+makeidMix(iuv_length));",
 							"pm.globals.set(\"txid_not_existent\", \"FAKETxID_\" +makeidMix(iuv_length))",
 							"",
-							"//pm.globals.set(\"iuv_tipo\", _.random(0, 6));",
 							"",
 							"",
 							""
@@ -2782,6 +2859,116 @@
 										"{{creditor_saved_multi}}",
 										"debtpositions",
 										"{{iupd_saved_multi}}",
+										"publish"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "createNewDebtPositionSameOrganization_CanoneUnico",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {",
+											"  pm.response.to.have.status(201);",
+											"});",
+											"pm.globals.set(\"iupd_saved_2\", pm.globals.get(\"iupd2\"));",
+											"pm.globals.set(\"iuv_cu\", pm.globals.get(\"iuvCU\"));",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"function makeidNumber(length) {\r",
+											"    var result           = '';\r",
+											"    var characters       = '0123456789';\r",
+											"    var charactersLength = characters.length;\r",
+											"    for ( var i = 0; i < length; i++ ) {\r",
+											"      result += characters.charAt(Math.floor(Math.random() * \r",
+											" charactersLength));\r",
+											"   }\r",
+											"   return result;\r",
+											"}\r",
+											"\r",
+											"pm.globals.set(\"iuvCU\", \"47\" + makeidNumber(15));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"iupd\": \"{{iupd2}}\",\r\n  \"type\": \"F\",\r\n  \"fiscalCode\": \"JHNDOE00A01F205N\",\r\n  \"fullName\": \"John Doe\",\r\n  \"streetName\": \"streetName\",\r\n  \"civicNumber\": \"11\",\r\n  \"postalCode\": \"00100\",\r\n  \"city\": \"city\",\r\n  \"province\": \"RM\",\r\n  \"region\": \"RM\",\r\n  \"country\": \"IT\",\r\n  \"email\": \"lorem@lorem.com\",\r\n  \"phone\": \"333-123456789\",\r\n  \"companyName\": \"companyName\",\r\n  \"officeName\": \"officeName\",\r\n  \"paymentOption\": [\r\n    {\r\n      \"iuv\": \"{{iuvCU}}\",\r\n      \"amount\": 10000,\r\n      \"description\": \"Canone Unico Patrimoniale - CORPORATE\",\r\n      \"isPartialPayment\": false,\r\n      \"dueDate\": \"{{due_date}}\",\r\n      \"retentionDate\": \"{{retention_date}}\",\r\n      \"fee\": 0,\r\n      \"transfer\": [\r\n        {\r\n          \"idTransfer\": \"1\",\r\n          \"amount\": 8000,\r\n          \"remittanceInformation\": \"remittanceInformation 1\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        },\r\n        {\r\n          \"idTransfer\": \"2\",\r\n          \"amount\": 2000,\r\n          \"remittanceInformation\": \"remittanceInformation 2\",\r\n          \"category\": \"9/0101108TS/\",\r\n          \"iban\": \"IT0000000000000000000000000\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gpdhost}}/organizations/{{creditor_saved_multi}}/debtpositions",
+									"host": [
+										"{{gpdhost}}"
+									],
+									"path": [
+										"organizations",
+										"{{creditor_saved_multi}}",
+										"debtpositions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "publishDebtPosition_sameOrganization",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{gpdhost}}/organizations/{{creditor_saved_multi}}/debtpositions/{{iupd_saved_2}}/publish",
+									"host": [
+										"{{gpdhost}}"
+									],
+									"path": [
+										"organizations",
+										"{{creditor_saved_multi}}",
+										"debtpositions",
+										"{{iupd_saved_2}}",
 										"publish"
 									]
 								}
@@ -2972,6 +3159,80 @@
 							"response": []
 						},
 						{
+							"name": "send receipt_sameOrg",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"outcome OK\", () => {",
+											"    var responseJson = xml2Json(responseBody);",
+											"    var outcome = responseJson['soapenv:Envelope']['soapenv:Body']['ns3:paSendRTRes']['outcome'];",
+											"    pm.expect(outcome).to.eql(\"OK\");",
+											"",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"function makeidMix(length) {",
+											"    var result           = '';",
+											"    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+											"    var charactersLength = characters.length;",
+											"    for ( var i = 0; i < length; i++ ) {",
+											"      result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+											"    }",
+											"    return result;",
+											"}",
+											"",
+											"pm.globals.set(\"receiptId\", makeidMix(33));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "SOAPAction",
+										"value": "paSendRT",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "text/xml",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "  \n<soapenv:Envelope xmlns:pafn=\"http://pagopa-api.pagopa.gov.it/pa/paForNode.xsd\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">\n    <soapenv:Body>\n        <pafn:paSendRTReq>\n            <idPA>{{creditor_saved_multi}}</idPA>\n            <idBrokerPA>{{idBrokerPA}}</idBrokerPA>\n            <idStation>{{idStation}}</idStation>\n            <receipt>\n                <receiptId>{{receiptId}}</receiptId>\n                <noticeNumber>3{{iuv_cu}}</noticeNumber>\n                <fiscalCode>{{creditor_saved_multi}}</fiscalCode>\n                <outcome>OK</outcome>\n                <creditorReferenceId>{{iuv_cu}}</creditorReferenceId>\n                <paymentAmount>30.00</paymentAmount>\n                <description>test</description>\n                <companyName>company EC</companyName>\n                <officeName>office EC</officeName>\n                <debtor>\n                    <uniqueIdentifier>\n                        <entityUniqueIdentifierType>F</entityUniqueIdentifierType>\n                        <entityUniqueIdentifierValue>JHNDOE00A01F205N</entityUniqueIdentifierValue>\n                    </uniqueIdentifier>\n                    <fullName>John Doe</fullName>\n                    <streetName>street</streetName>\n                    <civicNumber>12</civicNumber>\n                    <postalCode>89020</postalCode>\n                    <city>city</city>\n                    <stateProvinceRegion>MI</stateProvinceRegion>\n                    <country>IT</country>\n                    <e-mail>john.doe@test.it</e-mail>\n                </debtor>\n                <transferList>\n                    <transfer>\n                        <idTransfer>1</idTransfer>\n                        <transferAmount>20.00</transferAmount>\n                        <fiscalCodePA>{{creditor_saved_multi}}</fiscalCodePA>\n                        <IBAN>IT0000000000000000000000000</IBAN>\n                        <remittanceInformation>remittanceInformation1</remittanceInformation>\n                        <transferCategory>G</transferCategory>\n                    </transfer>\n                    <transfer>\n                        <idTransfer>2</idTransfer>\n                        <transferAmount>10.00</transferAmount>\n                        <fiscalCodePA>{{creditor_saved_multi}}</fiscalCodePA>\n                        <IBAN>IT0000000000000000000000001</IBAN>\n                        <remittanceInformation>remittanceInformation2</remittanceInformation>\n                        <transferCategory>G</transferCategory>\n                    </transfer>\n                </transferList>\n                <idPSP>88888888888</idPSP>\n                <pspFiscalCode>88888888888</pspFiscalCode>\n                <pspPartitaIVA>88888888888</pspPartitaIVA>\n                <PSPCompanyName>PSP name</PSPCompanyName>\n                <idChannel>88888888888_01</idChannel>\n                <channelDescription>app</channelDescription>\n                <payer>\n                    <uniqueIdentifier>\n                        <entityUniqueIdentifierType>F</entityUniqueIdentifierType>\n                        <entityUniqueIdentifierValue>JHNDOE00A01F205N</entityUniqueIdentifierValue>\n                    </uniqueIdentifier>\n                    <fullName>John Doe</fullName>\n                    <streetName>street</streetName>\n                    <civicNumber>12</civicNumber>\n                    <postalCode>89020</postalCode>\n                    <city>city</city>\n                    <stateProvinceRegion>MI</stateProvinceRegion>\n                    <country>IT</country>\n                    <e-mail>john.doe@test.it</e-mail>\n                </payer>\n                <paymentMethod>creditCard</paymentMethod>\n                <fee>2.00</fee>\n                <paymentDateTime>2021-10-01T17:48:22</paymentDateTime>\n                <applicationDate>2021-10-01</applicationDate>\n                <transferDate>2021-10-02</transferDate>\n                <metadata>\n                    <mapEntry>\n                        <key>keytest</key>\n                        <value>1</value>\n                    </mapEntry>\n                </metadata>\n            </receipt>\n        </pafn:paSendRTReq>\n    </soapenv:Body>\n</soapenv:Envelope>",
+									"options": {
+										"raw": {
+											"language": "xml"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{payment-host}}",
+									"host": [
+										"{{payment-host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "getReceiptByIUV",
 							"event": [
 								{
@@ -3006,7 +3267,7 @@
 							"response": []
 						},
 						{
-							"name": "getReceipts",
+							"name": "getReceiptsWithLimit",
 							"event": [
 								{
 									"listen": "test",
@@ -3020,6 +3281,7 @@
 											"    //parse the response JSON and test three properties\r",
 											"    const responseJson = pm.response.json();\r",
 											"    pm.expect(responseJson.receipts_list).to.have.lengthOf(1);\r",
+											"    pm.expect(responseJson.page_info.more_pages).to.eql(true);\r",
 											"});"
 										],
 										"type": "text/javascript"
@@ -3030,7 +3292,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{payment-host-rest}}/payments/{{creditor_saved_multi}}/receipts?page=0&limit=10",
+									"raw": "{{payment-host-rest}}/payments/{{creditor_saved_multi}}/receipts?page=0&limit=1",
 									"host": [
 										"{{payment-host-rest}}"
 									],
@@ -3046,7 +3308,101 @@
 										},
 										{
 											"key": "limit",
-											"value": "10"
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getReceiptsWithoutLimit",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {\r",
+											"  pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"The receipt list\", () => {\r",
+											"    //parse the response JSON and test three properties\r",
+											"    const responseJson = pm.response.json();\r",
+											"    pm.expect(responseJson.receipts_list).to.have.lengthOf(2);\r",
+											"    pm.expect(responseJson.page_info.more_pages).to.eql(false);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{payment-host-rest}}/payments/{{creditor_saved_multi}}/receipts?page=0",
+									"host": [
+										"{{payment-host-rest}}"
+									],
+									"path": [
+										"payments",
+										"{{creditor_saved_multi}}",
+										"receipts"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "0"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getReceiptsByService",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"check_status\", function () {\r",
+											"  pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"The receipt list\", () => {\r",
+											"    //parse the response JSON and test three properties\r",
+											"    const responseJson = pm.response.json();\r",
+											"    pm.expect(responseJson.receipts_list).to.have.lengthOf(1);\r",
+											"    pm.expect(responseJson.page_info.more_pages).to.eql(false);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{payment-host-rest}}/payments/{{creditor_saved_multi}}/receipts?page=0&service=47",
+									"host": [
+										"{{payment-host-rest}}"
+									],
+									"path": [
+										"payments",
+										"{{creditor_saved_multi}}",
+										"receipts"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "0"
+										},
+										{
+											"key": "service",
+											"value": "47"
 										}
 									]
 								}

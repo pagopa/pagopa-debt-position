@@ -97,19 +97,20 @@ class PaymentsControllerTest {
 		//precondition
 		PaymentsResult<ReceiptEntity> receipts = new PaymentsResult<ReceiptEntity>();
 		receipts.setResults(new ArrayList<ReceiptEntity>());
-		when(paymentsService.getOrganizationReceipts(anyInt(),anyInt(),anyString(), anyString())).thenReturn(receipts);
+		when(paymentsService.getOrganizationReceipts(anyInt(),anyInt(),anyString(), anyString(), anyString())).thenReturn(receipts);
 		
-		ResponseEntity<ReceiptsInfo> res = paymentsController.getOrganizationReceipts(anyString(),anyInt(),anyInt(), anyString());
+		ResponseEntity<ReceiptsInfo> res = paymentsController.getOrganizationReceipts(anyString(),anyInt(),anyInt(), anyString(), anyString());
 		assertEquals(HttpStatus.OK, res.getStatusCode());
 		
 	}
 	
+	
 	@Test
 	void getOrganizationReceipts_404() throws Exception {
 		//precondition
-		doThrow(new AppException(AppError.RECEIPTS_NOT_FOUND, "111", 0)).when(paymentsService).getOrganizationReceipts(anyInt(),anyInt(),anyString(), anyString());
+		doThrow(new AppException(AppError.RECEIPTS_NOT_FOUND, "111", 0)).when(paymentsService).getOrganizationReceipts(anyInt(),anyInt(), anyString(), anyString(), anyString());
 		try {
-			paymentsController.getOrganizationReceipts(anyString(),anyInt(),anyInt(), anyString());
+			paymentsController.getOrganizationReceipts(anyString(),anyInt(),anyInt(), anyString(), anyString());
 		} catch(AppException e) {
 			assertEquals(HttpStatus.NOT_FOUND, e.getHttpStatus());
 		}
