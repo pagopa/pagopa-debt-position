@@ -63,6 +63,11 @@ variables:
     DATASOURCE_PASSWORD: $(PROD_POSTGRES_DATASOURCE_PASSWORD)
     DATASOURCE_URL: $(PROD_POSTGRES_DATASOURCE_URL)
 
+  ${{ if eq(variables['Build.SourceBranchName'], 'merge') }}:
+    SOURCE_BRANCH: "main" # force to main branch
+    ${{ if ne(variables['Build.SourceBranchName'], 'merge') }}:
+      SOURCE_BRANCH: ${{ variables['Build.SourceBranchName'] }}
+
   APD_SCHEMA_NAME: $(SCHEMA_NAME)
 
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
@@ -81,8 +86,8 @@ pool:
 stages:
   # Create a release
   - stage: release_service
-    # bump version on main branch and if SEMVER is not 'skip'
-    condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne('${{ parameters.SEMVER }}', 'skip'))
+    # if SEMVER is not 'skip'
+    condition: ne('${{ parameters.SEMVER }}', 'skip')
     pool:
       vmImage: "ubuntu-latest"
     jobs:
@@ -113,8 +118,8 @@ stages:
               failOnStderr: true
 
           - script: |
-              echo "Checkout on ${{variables['Build.SourceBranchName']}}"
-              git checkout ${{variables['Build.SourceBranchName']}}
+              echo "Checkout on $(SOURCE_BRANCH)"
+              git checkout $(SOURCE_BRANCH)
             displayName: Checkout on source branch
 
           # bump version
@@ -122,7 +127,7 @@ stages:
               git add ${{ parameters.REPOSITORY }}/pom.xml
               git add report/pom.xml
               git commit -m "Bump version [skip ci]"
-              git push origin ${{variables['Build.SourceBranchName']}}
+              git push origin $(SOURCE_BRANCH)
               git push --tags
 
           - script: |
@@ -271,8 +276,8 @@ stages:
             displayName: Set Git global config
 
           - script: |
-              echo "Checkout on ${{variables['Build.SourceBranchName']}}"
-              git checkout ${{variables['Build.SourceBranchName']}}
+              echo "Checkout on $(SOURCE_BRANCH)"
+              git checkout $(SOURCE_BRANCH)
             displayName: Checkout on source branch
 
           - task: Cache@2
@@ -447,7 +452,7 @@ stages:
         dependsOn: waitStartup
         steps:
           - script: |
-              git checkout ${{variables['Build.SourceBranchName']}}
+              git checkout $(SOURCE_BRANCH)
 
           - script: |
               yarn global add newman
@@ -457,9 +462,10 @@ stages:
               newman run "api-test/Debt Position.postman_collection.json" --folder=${{parameters.REPOSITORY}} --environment=api-test/azure.${{ parameters.ENV }}.postman_environment.json --reporters cli,junit --reporter-junit-export Results/debtposition-TEST.xml
             displayName: 'Run api test'
             condition: in('${{ parameters.REPOSITORY }}', 'gpd', 'payments', 'reporting-analysis')
-            continueOnError: true
+            continueOnError: false
 
           - task: PublishTestResults@2
+            condition: always()
             inputs:
               testResultsFormat: 'JUnit'
               testResultsFiles: '**/*-TEST.xml'
@@ -486,3 +492,5 @@ stages:
               k6 run -e BASE_URL=https://api.${{ parameters.ENV }}.platform.pagopa.it/gpd/api/v1 gpd/load-test/src/payments_workflow.js
             displayName: 'Run load test payments workflow'
             continueOnError: true
+
+  # TODO deploy in UAT
