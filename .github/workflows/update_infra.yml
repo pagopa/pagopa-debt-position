@@ -1,13 +1,14 @@
 name: Open a PR in Infra repository
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
     types: [ closed ]
+    paths:
+      - 'gpd/openapi/openapi.json'
+      - 'payments/openapi/openapi.json'
+      - 'reporting-analysis/openapi/openapi.json'
 
 
   workflow_dispatch:
@@ -43,7 +44,7 @@ jobs:
       # prepare openapi template for infra repo
       - run: |
           mkdir -p "${GITHUB_WORKSPACE}/infra"
-          cp "${GITHUB_WORKSPACE}/${{env.REPO}}/openapi/openapi.json"  "${GITHUB_WORKSPACE}/infra/_openapi.json.tpl"
+          jq  '."servers"[0]."url" |= "${host}"' "${GITHUB_WORKSPACE}/${{env.REPO}}/openapi/openapi.json" > "${GITHUB_WORKSPACE}/infra/_openapi.json.tpl"
 
       # open a PR on infra repo
       - name: Create pull request
