@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import feign.FeignException;
 import it.gov.pagopa.payments.endpoints.validation.exceptions.PartnerValidationException;
 import it.gov.pagopa.payments.model.PaaErrorEnum;
+import it.gov.pagopa.payments.service.ApiConfigClient;
 import it.gov.pagopa.payments.service.GpdClient;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,7 +22,8 @@ public class PaymentValidator {
     private String ptIdStazione;
 
     @Autowired
-    private GpdClient gpdClient;
+    //private GpdClient gpdClient;
+    private ApiConfigClient apiConfigClient;
 
     public void isAuthorize(String ptIdDominioReq, String ptIdIntermediarioReq, String ptIdStazioneReq)
             throws PartnerValidationException {
@@ -37,9 +39,9 @@ public class PaymentValidator {
         }
 
         try {
-            gpdClient.getOrganization(ptIdDominioReq);
+        	apiConfigClient.getOrganization(ptIdDominioReq);
         }  catch (Exception e) {
-            log.error("[isAuthorize ERROR] error during GPD call: " + ptIdDominioReq , e);
+            log.error("[isAuthorize ERROR] error during API Config call: " + ptIdDominioReq , e);
             if (e instanceof FeignException.FeignClientException) {
                 throw new PartnerValidationException(PaaErrorEnum.PAA_ID_DOMINIO_ERRATO);
             } else {

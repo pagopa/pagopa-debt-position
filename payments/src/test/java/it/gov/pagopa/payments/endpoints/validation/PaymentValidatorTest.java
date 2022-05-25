@@ -1,25 +1,27 @@
 package it.gov.pagopa.payments.endpoints.validation;
 
-import it.gov.pagopa.payments.PaymentsApplication;
-import it.gov.pagopa.payments.endpoints.validation.exceptions.PartnerValidationException;
-import it.gov.pagopa.payments.model.PaaErrorEnum;
-import it.gov.pagopa.payments.service.GpdClient;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import it.gov.pagopa.payments.PaymentsApplication;
+import it.gov.pagopa.payments.endpoints.validation.exceptions.PartnerValidationException;
+import it.gov.pagopa.payments.model.PaaErrorEnum;
+import it.gov.pagopa.payments.model.creditorinstitution.CreditorInstitutionDetails;
+import it.gov.pagopa.payments.service.ApiConfigClient;
 
 @SpringBootTest(classes = PaymentsApplication.class)
 class PaymentValidatorTest {
 
     @MockBean
-    GpdClient gpdClient;
+    //GpdClient gpdClient;
+    ApiConfigClient apiConfigClient;
 
     @Autowired
     @InjectMocks
@@ -28,7 +30,8 @@ class PaymentValidatorTest {
 
     @Test
     void isAuthorize() {
-        when(gpdClient.getOrganization(anyString())).thenReturn("ok");
+        when(apiConfigClient.getOrganization(anyString())).thenReturn(new CreditorInstitutionDetails());
+        
         try {
             paymentValidator.isAuthorize("", "", "");
         } catch (PartnerValidationException e) {
