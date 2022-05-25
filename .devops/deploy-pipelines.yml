@@ -381,6 +381,9 @@ stages:
               slotName: staging
               resourceGroupName: $(RESOURCE_GROUP)
 
+          - script: |
+              echo "##vso[task.setvariable variable=version;isOutput=true]$(pomversion.next)"
+              name: dockerTag
 
   # Prod deploy
   - stage: deployApprovalPROD
@@ -471,26 +474,106 @@ stages:
               testResultsFiles: '**/*-TEST.xml'
               searchFolder: '$(System.DefaultWorkingDirectory)'
 
-      - job: loadTests
+#      - job: loadTests
+#        dependsOn: integrationTests
+#        condition: eq('${{ parameters.REPOSITORY }}', 'gpd')
+#        steps:
+#
+#          - script: |
+#              sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+#              echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+#              sudo apt-get update
+#              sudo apt-get install k6
+#            displayName: 'k6 installation'
+#
+#          - script: |
+#              k6 run -e BASE_URL=https://api.${{ parameters.ENV }}.platform.pagopa.it/gpd/api/v1 gpd/load-test/src/create_debt_postion.js
+#            displayName: 'Run load test create debt position'
+#            continueOnError: true
+#
+#          - script: |
+#              k6 run -e BASE_URL=https://api.${{ parameters.ENV }}.platform.pagopa.it/gpd/api/v1 gpd/load-test/src/payments_workflow.js
+#            displayName: 'Run load test payments workflow'
+#            continueOnError: true
+
+      - job: deployUAT
         dependsOn: integrationTests
-        condition: eq('${{ parameters.REPOSITORY }}', 'gpd')
+        variables:
+          version: $[ stageDependencies.deploy.deployJava.outputs['dockerTag.version'] ]
         steps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+            submodules: true
 
-          - script: |
-              sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
-              echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
-              sudo apt-get update
-              sudo apt-get install k6
-            displayName: 'k6 installation'
+          - task: Cache@2
+            inputs:
+              key: 'maven | "$(Agent.OS)" | pom.xml'
+              restoreKeys: |
+                maven | "$(Agent.OS)"
+                maven
+              path: $(MAVEN_CACHE_FOLDER)
+            displayName: Set Maven Cache
 
-          - script: |
-              k6 run -e BASE_URL=https://api.${{ parameters.ENV }}.platform.pagopa.it/gpd/api/v1 gpd/load-test/src/create_debt_postion.js
-            displayName: 'Run load test create debt position'
-            continueOnError: true
+          - task: Bash@3
+            name: dbmigrationsflywayValidate
+            inputs:
+              targetType: "inline"
+              script: |
+                docker run -e SPRING_DATASOURCE_URL='$(DATASOURCE_URL)' \
+                -e SPRING_DATASOURCE_USERNAME='$(DATASOURCE_USERNAME)' \
+                -e SPRING_DATASOURCE_PASSWORD='$(DATASOURCE_PASSWORD)' \
+                -e GPD_SCHEMA_NAME='$(APD_SCHEMA_NAME)' \
+                --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:validate -Dflyway.configFiles=apdFlywayConfig.conf
+              failOnStderr: true
+              workingDirectory: ${{ parameters.REPOSITORY }}
 
-          - script: |
-              k6 run -e BASE_URL=https://api.${{ parameters.ENV }}.platform.pagopa.it/gpd/api/v1 gpd/load-test/src/payments_workflow.js
-            displayName: 'Run load test payments workflow'
-            continueOnError: true
+          - task: Maven@3
+            displayName: Build Module
+            inputs:
+              mavenPomFile: "${{ parameters.REPOSITORY }}/pom.xml"
+              mavenOptions: "-Xmx3072m $(MAVEN_OPTS)"
+              mavenVersionOption: 'Default'
+              javaHomeOption: "JDKVersion"
+              jdkVersionOption: "1.11"
+              jdkArchitectureOption: "x64"
+              testResultsFiles: "**/surefire-reports/TEST-*.xml"
+              publishJUnitResults: true
+              effectivePomSkip: false
+              sonarQubeRunAnalysis: false
+              goals: "install"
 
-  # TODO deploy in UAT
+          - task: Docker@2
+            displayName: Build and push image to container registry
+            inputs:
+              command: 'buildAndPush'
+              containerRegistry: '$(UAT_CONTAINER_REGISTRY)'
+              repository: '${{ parameters.REPOSITORY }}'
+              buildContext: './${{ parameters.REPOSITORY }}'
+              Dockerfile: './${{ parameters.REPOSITORY }}/Dockerfile.deploy'
+              tags: |
+                $(Build.BuildId)
+                latest
+                $(version)
+
+          - task: AzureRMWebAppDeployment@4
+            displayName: "Deployment App Service [DEV|UAT]"
+            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), in('${{ parameters.ENV }}', 'dev', 'uat'))
+            inputs:
+              appType: webAppContainer
+              ConnectedServiceName: $(UAT_AZURE_SUBSCRIPTION)
+              WebAppName: "${{variables.UAT_WEB_APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+              DockerNamespace: "${{variables.UAT_CONTAINER_NAMESPACE}}"
+              DockerRepository: "${{ parameters.REPOSITORY }}"
+              DockerImageTag: "$(Build.BuildId)"
+
+          # deploy reporting-fn
+          - task: AzureFunctionAppContainer@1
+            displayName: Deploy Function App [DEV|UAT]
+            condition: and(in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service'), in('${{ parameters.ENV }}', 'dev', 'uat'))
+            inputs:
+              azureSubscription: $(AZURE_SUBSCRIPTION)
+              appName: "${{variables.UAT_WEB_APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
+              imageName: "${{variables.UAT_CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(Build.BuildId)"
+              slotName: production
+
