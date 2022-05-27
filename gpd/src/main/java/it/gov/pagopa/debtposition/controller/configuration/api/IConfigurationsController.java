@@ -36,17 +36,4 @@ public interface IConfigurationsController {
 	ResponseEntity<OrganizationListModelResponse> getOrganizations(
 			@Valid @Parameter(description = "Filter from date (use the format yyyy-MM-dd)") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "since", required = true)
 					LocalDate since);
-
-    @Operation(summary = "Check the existence of the organization.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "checkOrganization")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "The organization is registered.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = String.class))),
-            @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
-            @ApiResponse(responseCode = "404", description = "No organization found.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
-            @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
-    @GetMapping(value = "/organizations/{organizationfiscalcode}",
-            produces = {"application/json"})
-	ResponseEntity<String> checkOrganization(
-			@Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
-			@PathVariable("organizationfiscalcode") String organizationFiscalCode);
-
 }
