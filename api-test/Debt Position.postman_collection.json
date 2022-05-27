@@ -761,37 +761,6 @@
 							"response": []
 						},
 						{
-							"name": "checkOrganization",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"check_status\", function () {",
-											"  pm.response.to.have.status(200);",
-											"});"
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{gpdhost}}/organizations/{{creditor_saved_multi}}",
-									"host": [
-										"{{gpdhost}}"
-									],
-									"path": [
-										"organizations",
-										"{{creditor_saved_multi}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
 							"name": "publishDebtPosition",
 							"event": [
 								{
@@ -2586,37 +2555,6 @@
 										"{{creditor_saved}}",
 										"paymentoptions",
 										"{{iuv_not_existent}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "checkOrganization_404",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"check_status\", function () {",
-											"  pm.response.to.have.status(404);",
-											"});"
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{gpdhost}}/organizations/{{organization_not_existent}}",
-									"host": [
-										"{{gpdhost}}"
-									],
-									"path": [
-										"organizations",
-										"{{organization_not_existent}}"
 									]
 								}
 							},
