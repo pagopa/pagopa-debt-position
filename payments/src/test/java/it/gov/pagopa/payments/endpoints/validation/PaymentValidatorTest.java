@@ -13,7 +13,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import it.gov.pagopa.payments.PaymentsApplication;
 import it.gov.pagopa.payments.endpoints.validation.exceptions.PartnerValidationException;
 import it.gov.pagopa.payments.model.PaaErrorEnum;
-import it.gov.pagopa.payments.model.creditorinstitution.CreditorInstitutionDetails;
+import it.gov.pagopa.payments.model.creditorinstitution.StationCreditorInstitution;
 import it.gov.pagopa.payments.service.ApiConfigClient;
 
 @SpringBootTest(classes = PaymentsApplication.class)
@@ -30,7 +30,7 @@ class PaymentValidatorTest {
 
     @Test
     void isAuthorize() {
-        when(apiConfigClient.getOrganization(anyString())).thenReturn(new CreditorInstitutionDetails());
+        when(apiConfigClient.getOrganization(anyString(),anyString())).thenReturn(new StationCreditorInstitution());
         
         try {
             paymentValidator.isAuthorize("", "", "");

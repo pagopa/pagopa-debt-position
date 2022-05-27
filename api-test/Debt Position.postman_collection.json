@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "265da2b2-ef40-4c4a-8c7e-7351db1902d9",
+		"_postman_id": "d920d825-20c1-42ab-84e2-f2422d68590f",
 		"name": "Debt Position",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17873898"
 	},
 	"item": [
 		{
@@ -2766,6 +2767,170 @@
 							"response": []
 						},
 						{
+							"name": "API Config - createCreditorInstitution",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"createCreditorInstitution\", function () {",
+											"  pm.response.to.have.status(201);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.globals.set(\"id_dominio\", pm.globals.get(\"creditor_institution_code\"));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"creditor_institution_code\": \"{{id_dominio}}\",\n  \"enabled\": true,\n  \"business_name\": \"Comune di Lorem Ipsum\",\n  \"address\": {\n    \"location\": \"Via delle vie 3\",\n    \"city\": \"Rome\",\n    \"zip_code\": \"00187\",\n    \"country_code\": \"RM\",\n    \"tax_domicile\": \"00111\"\n  },\n  \"psp_payment\": true,\n  \"reporting_ftp\": false,\n  \"reporting_zip\": true\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api-config-host}}/{{api-config-base-path}}/creditorinstitutions",
+									"host": [
+										"{{api-config-host}}"
+									],
+									"path": [
+										"{{api-config-base-path}}",
+										"creditorinstitutions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "API Config - createStation",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"createStation\", function () {",
+											"  pm.response.to.have.status(201);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.globals.set(\"station_code\", pm.environment.get('idStation'));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"station_code\": \"{{station_code}}\",\n    \"enabled\": true,\n    \"version\": 1,\n    \"ip\": \"NodoDeiPagamentiDellaPATest.sia.eu\",\n    \"password\": \"password\",\n    \"port\": 80,\n    \"redirect_ip\": \"paygov.collaudo.regione.lazio.it\",\n    \"redirect_path\": \"nodo-regionale-fesp/paaInviaRispostaPagamento.html\",\n    \"redirect_port\": 443,\n    \"service\": \"openspcoop/PD/RT6TPDREGVENETO\",\n    \"redirect_protocol\": \"HTTPS\",\n    \"proxy_enabled\": true,\n    \"proxy_host\": \"10.101.1.95\",\n    \"proxy_port\": 8080,\n    \"protocol\": \"HTTP\",\n    \"thread_number\": 2,\n    \"timeout_a\": 15,\n    \"timeout_b\": 30,\n    \"timeout_c\": 120,\n    \"flag_online\": true,\n    \"broker_code\": \"80007580279\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api-config-host}}/{{api-config-base-path}}/stations",
+									"host": [
+										"{{api-config-host}}"
+									],
+									"path": [
+										"{{api-config-base-path}}",
+										"stations"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "API Config - createCreditorInstitutionStation",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"createCreditorInstitutionStation\", function () {",
+											"  pm.response.to.have.status(201);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"station_code\": \"{{station_code}}\",\n    \"application_code\": 1,\n    \"segregation_code\": 1,\n    \"mod4\": false,\n    \"broadcast\": false,\n    \"aux_digit\": 0\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api-config-host}}/{{api-config-base-path}}/creditorinstitutions/:code/stations",
+									"host": [
+										"{{api-config-host}}"
+									],
+									"path": [
+										"{{api-config-base-path}}",
+										"creditorinstitutions",
+										":code",
+										"stations"
+									],
+									"variable": [
+										{
+											"key": "code",
+											"value": "{{id_dominio}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "createDebtPosition_multiOptions",
 							"event": [
 								{
@@ -2776,7 +2941,7 @@
 											"  pm.response.to.have.status(201);",
 											"});",
 											"",
-											"pm.globals.set(\"creditor_saved_multi\", pm.globals.get(\"creditor_institution_code\"));",
+											"pm.globals.set(\"creditor_saved_multi\", pm.globals.get(\"id_dominio\"));",
 											"pm.globals.set(\"iupd_saved_multi\", pm.globals.get(\"iupd\"));",
 											"pm.globals.set(\"iuv_saved_multi_total\", pm.globals.get(\"iuv1\"));",
 											"pm.globals.set(\"iuv_saved_multi_partial_1\", pm.globals.get(\"iuv2\"));",
@@ -2806,13 +2971,13 @@
 									}
 								},
 								"url": {
-									"raw": "{{gpdhost}}/organizations/{{creditor_institution_code}}/debtpositions",
+									"raw": "{{gpdhost}}/organizations/{{id_dominio}}/debtpositions",
 									"host": [
 										"{{gpdhost}}"
 									],
 									"path": [
 										"organizations",
-										"{{creditor_institution_code}}",
+										"{{id_dominio}}",
 										"debtpositions"
 									]
 								}
@@ -3403,6 +3568,88 @@
 										{
 											"key": "service",
 											"value": "47"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "deleteCreditorInstitutionStation",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"deleteCreditorInstitutionStation\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{api-config-host}}/{{api-config-base-path}}/creditorinstitutions/:code/stations/:stationcode",
+									"host": [
+										"{{api-config-host}}"
+									],
+									"path": [
+										"{{api-config-base-path}}",
+										"creditorinstitutions",
+										":code",
+										"stations",
+										":stationcode"
+									],
+									"variable": [
+										{
+											"key": "code",
+											"value": "{{id_dominio}}"
+										},
+										{
+											"key": "stationcode",
+											"value": "{{station_code}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "deleteStation",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"deleteStation\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{api-config-host}}/{{api-config-base-path}}/stations/:id",
+									"host": [
+										"{{api-config-host}}"
+									],
+									"path": [
+										"{{api-config-base-path}}",
+										"stations",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{station_code}}"
 										}
 									]
 								}
