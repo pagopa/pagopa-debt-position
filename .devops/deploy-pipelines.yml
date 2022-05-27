@@ -63,6 +63,7 @@ variables:
     DATASOURCE_PASSWORD: $(PROD_POSTGRES_DATASOURCE_PASSWORD)
     DATASOURCE_URL: $(PROD_POSTGRES_DATASOURCE_URL)
 
+  # github action on pull request use merge as SourceBranchName but we want to use main branch
   ${{ if eq(variables['Build.SourceBranchName'], 'merge') }}:
     SOURCE_BRANCH: "main" # force to main branch
     ${{ if ne(variables['Build.SourceBranchName'], 'merge') }}:
