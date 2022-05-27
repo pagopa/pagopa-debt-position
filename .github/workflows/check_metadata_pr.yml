@@ -32,11 +32,11 @@ jobs:
         uses: actions/github-script@v3
         with:
           script: |
-            core.setFailed('Missing required labels')
+            core.setFailed('Missing required TYPE-CHANGE labels (bug, enhancement, breaking-change, ignore-for-release)')
 
       - name: Label Check
         if: ${{  !contains(github.event.pull_request.labels.*.name, 'gpd') && !contains(github.event.pull_request.labels.*.name, 'payments') && !contains(github.event.pull_request.labels.*.name, 'reporting-batch') && !contains(github.event.pull_request.labels.*.name, 'reporting-analysis') && !contains(github.event.pull_request.labels.*.name, 'reporting-service') }}
         uses: actions/github-script@v3
         with:
           script: |
-            core.setFailed('Missing required labels')
+            core.setFailed('Missing required PROJECT labels (gpd, payments, reporting-batch, reporting-analysis, reporting-service)')
