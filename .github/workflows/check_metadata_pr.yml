@@ -20,11 +20,18 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
 
-      - name: Verify PR Labels
+      - name: Verify TYPE-CHANGE Labels
         uses: jesusvasquez333/verify-pr-label-action@v1.4.0
         with:
           github-token: '${{ secrets.GITHUB_TOKEN }}'
-          valid-labels: 'bug, enhancement, breaking-change, ignore-for-release, gpd, payments, reporting-batch, reporting-analysis, reporting-service'
+          valid-labels: 'bug, enhancement, breaking-change, ignore-for-release'
+          pull-request-number: '${{ github.event.pull_request.number }}'
+
+      - name: Verify PROJECT Labels
+        uses: jesusvasquez333/verify-pr-label-action@v1.4.0
+        with:
+          github-token: '${{ secrets.GITHUB_TOKEN }}'
+          valid-labels: 'gpd, payments, reporting-batch, reporting-analysis, reporting-service'
           pull-request-number: '${{ github.event.pull_request.number }}'
 
       - name: Label Check
