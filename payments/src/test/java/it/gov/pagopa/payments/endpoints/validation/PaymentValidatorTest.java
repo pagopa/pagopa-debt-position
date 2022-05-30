@@ -41,7 +41,7 @@ class PaymentValidatorTest {
 		ReflectionTestUtils.setField(paymentValidator, "ptIdStazione", "ccc");
 
 		paymentValidator.isAuthorize("aaa", "bbb", "ccc");
-		// se arrivo qui la chiamata è andata a buon fine
+		// if i reach this assert the call was successful
 		assertTrue(true);
 	}
 

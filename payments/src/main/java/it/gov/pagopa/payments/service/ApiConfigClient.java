@@ -15,7 +15,7 @@ import it.gov.pagopa.payments.model.creditorinstitution.StationCreditorInstituti
 @FeignClient(value = "apiconfig", url = "${service.apiconfig.host}", configuration = FeignConfig.class)
 public interface ApiConfigClient {
 
-    @Cacheable(value = "payment-options")
+    @Cacheable(value = "get-organization")
     @Retryable(exclude = FeignException.FeignClientException.class, maxAttemptsExpression = "${retry.maxAttempts}",
             backoff = @Backoff(delayExpression = "${retry.maxDelay}"))
     @GetMapping(value = "/stations/{stationcode}/creditorinstitutions/{creditorinstitutioncode}")
