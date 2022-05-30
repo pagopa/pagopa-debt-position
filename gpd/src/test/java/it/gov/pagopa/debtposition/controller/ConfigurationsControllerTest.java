@@ -59,33 +59,4 @@ class ConfigurationsControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.delete[*]").isEmpty());
 
 	}
-	
-	/**
-	 * CHECK ORGANIZATION
-	 */
-	
-	@Test
-	void checkOrganization_200() throws Exception {
-		
-		// creo una posizione debitoria
-		mvc.perform(post("/organizations/CHECK_ORG_200_12345678901/debtpositions")
-				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
-		.andExpect(status().isCreated());
-
-		// ne verifico l'esistenza 
-		mvc.perform(get("/organizations/CHECK_ORG_200_12345678901")
-				.contentType(MediaType.APPLICATION_JSON))
-		.andExpect(status().isOk());
-	
-	}
-	
-	@Test
-	void checkOrganization_404() throws Exception {
-		
-		// provo a recuperare un'organizzazione che non esiste 
-		mvc.perform(get("/organizations/CHECK_ORG_400_12345678901")
-				.contentType(MediaType.APPLICATION_JSON))
-		.andExpect(status().isNotFound());
-	
-	}
 }

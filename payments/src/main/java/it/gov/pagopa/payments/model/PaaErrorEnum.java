@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum PaaErrorEnum {
-  PAA_ID_DOMINIO_ERRATO("PAA_ID_DOMINIO_ERRATO", "ID dominio errato", "L'idPA ricevuto non e' tra quelli configurati"),
+  PAA_ID_DOMINIO_ERRATO("PAA_ID_DOMINIO_ERRATO", "ID dominio errato", "L'idPA ricevuto non e' tra quelli configurati oppure non è associato alla stazione richiesta"),
   PAA_ID_INTERMEDIARIO_ERRATO("PAA_ID_INTERMEDIARIO_ERRATO", "IdBrokerPA errato",
       "L'IdBrokerPA ricevuto non e' tra quelli configurati"),
   PAA_STAZIONE_INT_ERRATA("PAA_STAZIONE_INT_ERRATA", "IdStazione errato",

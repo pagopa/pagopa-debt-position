@@ -39,13 +39,4 @@ public class ConfigurationsController implements IConfigurationsController {
                 .delete(ppToDeleteResponseList)
                 .build(), HttpStatus.OK);
     }
-
-
-    @Override
-    public ResponseEntity<String> checkOrganization(String organizationFiscalCode) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "checkOrganization", " organizationFiscalCode=" + organizationFiscalCode));
-        configurationsService.checkOrganization(organizationFiscalCode);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
 }
