@@ -384,7 +384,7 @@ stages:
 
           - script: |
               echo "##vso[task.setvariable variable=version;isOutput=true]$(pomversion.next)"
-              name: dockerTag
+            name: dockerTag
 
   # Prod deploy
   - stage: deployApprovalPROD
