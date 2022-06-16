@@ -66,8 +66,8 @@ variables:
   # github action on pull request use merge as SourceBranchName but we want to use main branch
   ${{ if eq(variables['Build.SourceBranchName'], 'merge') }}:
     SOURCE_BRANCH: "main" # force to main branch
-    ${{ if ne(variables['Build.SourceBranchName'], 'merge') }}:
-      SOURCE_BRANCH: ${{ variables['Build.SourceBranchName'] }}
+  ${{ if ne(variables['Build.SourceBranchName'], 'merge') }}:
+    SOURCE_BRANCH: ${{ variables['Build.SourceBranchName'] }}
 
   APD_SCHEMA_NAME: $(SCHEMA_NAME)
 
