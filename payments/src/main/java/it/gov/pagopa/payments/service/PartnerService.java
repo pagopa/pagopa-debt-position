@@ -18,6 +18,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.namespace.QName;
 
 import com.microsoft.azure.storage.table.TableQuery;
+import it.gov.pagopa.payments.model.partner.PaDemandPaymentNoticeRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -220,6 +221,12 @@ public class PartnerService {
         // status is always equals to PO_PAID
         return generatePaSendRTResponse();
     }
+
+    @Transactional
+    public PaSendRTRes paDemandPaymentNotice(PaDemandPaymentNoticeRequest value) {
+        // TODO
+        return null;
+    }
     
 
     /**
@@ -333,7 +340,7 @@ public class PartnerService {
         var cpp = source.getTransfer().stream()
                 .noneMatch(elem -> elem.getPostalIban() == null || elem.getPostalIban().isBlank());
         paymentOption.setAllCCP(cpp); // allCPP fa parte del modello del option
-        paymentList.getPaymentOptionDescription().add(paymentOption);
+        paymentList.setPaymentOptionDescription(paymentOption);
 
         result.setPaymentList(paymentList);
         // general info
@@ -440,7 +447,5 @@ public class PartnerService {
 		}
 		return feeInCent;
 	}
-    
-    
 
 }

@@ -2,6 +2,8 @@ package it.gov.pagopa.payments.endpoints;
 
 import it.gov.pagopa.payments.endpoints.validation.exceptions.PartnerValidationException;
 import it.gov.pagopa.payments.model.partner.ObjectFactory;
+import it.gov.pagopa.payments.model.partner.PaDemandPaymentNoticeRequest;
+import it.gov.pagopa.payments.model.partner.PaDemandPaymentNoticeResponse;
 import it.gov.pagopa.payments.model.partner.PaGetPaymentReq;
 import it.gov.pagopa.payments.model.partner.PaGetPaymentRes;
 import it.gov.pagopa.payments.model.partner.PaSendRTReq;
@@ -58,5 +60,14 @@ public class PartnerEndpoint {
 
         log.info(" paSendRT START ");
         return factory.createPaSendRTRes(partnerService.paSendRT(request.getValue()));
+    }
+
+    @SoapAction("PaDemandPaymentNotice")
+    @PayloadRoot(localPart = "PaDemandPaymentNoticeRequest")
+    @ResponsePayload
+    public JAXBElement<PaDemandPaymentNoticeResponse> paDemandPaymentNotice(@RequestPayload JAXBElement<PaDemandPaymentNoticeRequest> request) {
+
+        log.info(" PaDemandPaymentNotice START ");
+        return factory.createPaSendRTRes(partnerService.paDemandPaymentNotice(request.getValue()));
     }
 }
