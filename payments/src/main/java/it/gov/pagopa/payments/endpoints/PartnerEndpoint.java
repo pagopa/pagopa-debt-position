@@ -18,9 +18,13 @@ import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
 import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapAction;
+import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
+import java.io.IOException;
 
 @Endpoint
 @Slf4j
@@ -62,12 +66,13 @@ public class PartnerEndpoint {
         return factory.createPaSendRTRes(partnerService.paSendRT(request.getValue()));
     }
 
-    @SoapAction("PaDemandPaymentNotice")
-    @PayloadRoot(localPart = "PaDemandPaymentNoticeRequest")
+    @SoapAction("paDemandPaymentNotice")
+    @PayloadRoot(localPart = "paDemandPaymentNotice")
     @ResponsePayload
-    public JAXBElement<PaDemandPaymentNoticeResponse> paDemandPaymentNotice(@RequestPayload JAXBElement<PaDemandPaymentNoticeRequest> request) {
+    public JAXBElement<PaDemandPaymentNoticeResponse> paDemandPaymentNotice(@RequestPayload JAXBElement<PaDemandPaymentNoticeRequest> request)
+            throws DatatypeConfigurationException, ParserConfigurationException, IOException, SAXException, XMLStreamException {
 
-        log.info(" PaDemandPaymentNotice START ");
-        return factory.createPaSendRTRes(partnerService.paDemandPaymentNotice(request.getValue()));
+        log.info(" paDemandPaymentNotice START ");
+        return factory.createPaDemandPaymentNoticeResponse(partnerService.paDemandPaymentNotice(request.getValue()));
     }
 }

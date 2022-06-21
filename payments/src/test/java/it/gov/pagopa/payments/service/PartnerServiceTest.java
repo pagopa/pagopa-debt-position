@@ -1,45 +1,11 @@
 package it.gov.pagopa.payments.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
-
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-
-import org.junit.ClassRule;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
-
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.RetryNoRetry;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
 import com.microsoft.azure.storage.table.CloudTableClient;
 import com.microsoft.azure.storage.table.TableRequestOptions;
-
 import feign.FeignException;
 import feign.RetryableException;
 import it.gov.pagopa.payments.endpoints.validation.PaymentValidator;
@@ -65,6 +31,37 @@ import it.gov.pagopa.payments.model.partner.StAmountOption;
 import it.gov.pagopa.payments.model.partner.StOutcome;
 import it.gov.pagopa.payments.utils.AzuriteStorageUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.ClassRule;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 @Testcontainers
 @ExtendWith(MockitoExtension.class)
@@ -83,25 +80,29 @@ class PartnerServiceTest {
     @Mock
     private GpdClient gpdClient;
 
+    @Mock
+    private GpsClient gpsClient;
+
     private final ObjectFactory factoryUtil = new ObjectFactory();
-    
-    
-    @ClassRule @Container
-	public static GenericContainer<?> azurite =
-	      new GenericContainer<>(
-	              DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:latest"))
-	          .withExposedPorts(10001, 10002, 10000);
+
+
+    @ClassRule
+    @Container
+    public static GenericContainer<?> azurite =
+            new GenericContainer<>(
+                    DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:latest"))
+                    .withExposedPorts(10001, 10002, 10000);
 
 
     String storageConnectionString =
-  	      String.format(
-  	          "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://%s:%s/devstoreaccount1;QueueEndpoint=http://%s:%s/devstoreaccount1;BlobEndpoint=http://%s:%s/devstoreaccount1",
-  	          azurite.getContainerIpAddress(),
-  	          azurite.getMappedPort(10002),
-  	          azurite.getContainerIpAddress(),
-  	          azurite.getMappedPort(10001),
-  	          azurite.getContainerIpAddress(),
-  	          azurite.getMappedPort(10000));
+            String.format(
+                    "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://%s:%s/devstoreaccount1;QueueEndpoint=http://%s:%s/devstoreaccount1;BlobEndpoint=http://%s:%s/devstoreaccount1",
+                    azurite.getContainerIpAddress(),
+                    azurite.getMappedPort(10002),
+                    azurite.getContainerIpAddress(),
+                    azurite.getMappedPort(10001),
+                    azurite.getContainerIpAddress(),
+                    azurite.getMappedPort(10000));
 
     @Test
     void paVerifyPaymentNoticeTest() throws DatatypeConfigurationException, IOException {
@@ -122,10 +123,10 @@ class PartnerServiceTest {
 
         // Test post condition
         assertThat(responseBody.getOutcome()).isEqualTo(StOutcome.OK);
-        assertThat(responseBody.getPaymentList().getPaymentOptionDescription().get(0).isAllCCP()).isFalse();
-        assertThat(responseBody.getPaymentList().getPaymentOptionDescription().get(0).getAmount())
+        assertThat(responseBody.getPaymentList().getPaymentOptionDescription().isAllCCP()).isFalse();
+        assertThat(responseBody.getPaymentList().getPaymentOptionDescription().getAmount())
                 .isEqualTo(new BigDecimal(1055));
-        assertThat(responseBody.getPaymentList().getPaymentOptionDescription().get(0).getOptions())
+        assertThat(responseBody.getPaymentList().getPaymentOptionDescription().getOptions())
                 .isEqualTo(StAmountOption.EQ); // de-scoping
         assertThat(responseBody.getFiscalCodePA()).isEqualTo("77777777777");
         assertThat(responseBody.getPaymentDescription()).isEqualTo("string");
@@ -213,11 +214,9 @@ class PartnerServiceTest {
             // Test post condition
             if (DebtPositionStatus.valueOf(status).equals(DebtPositionStatus.EXPIRED)) {
                 assertEquals(PaaErrorEnum.PAA_PAGAMENTO_SCADUTO, ex.getError());
-            }
-            else if (DebtPositionStatus.valueOf(status).equals(DebtPositionStatus.INVALID)) {
+            } else if (DebtPositionStatus.valueOf(status).equals(DebtPositionStatus.INVALID)) {
                 assertEquals(PaaErrorEnum.PAA_PAGAMENTO_ANNULLATO, ex.getError());
-            }
-            else {
+            } else {
                 fail();
             }
         }
@@ -243,8 +242,7 @@ class PartnerServiceTest {
             // Test post condition
             if (DebtPositionStatus.valueOf(status).equals(DebtPositionStatus.DRAFT) || DebtPositionStatus.valueOf(status).equals(DebtPositionStatus.PUBLISHED)) {
                 assertEquals(PaaErrorEnum.PAA_PAGAMENTO_SCONOSCIUTO, ex.getError());
-            }
-            else {
+            } else {
                 fail();
             }
         }
@@ -270,8 +268,7 @@ class PartnerServiceTest {
             // Test post condition
             if (DebtPositionStatus.valueOf(status).equals(DebtPositionStatus.PARTIALLY_PAID) || DebtPositionStatus.valueOf(status).equals(DebtPositionStatus.PAID) || DebtPositionStatus.valueOf(status).equals(DebtPositionStatus.REPORTED)) {
                 assertEquals(PaaErrorEnum.PAA_PAGAMENTO_DUPLICATO, ex.getError());
-            }
-            else {
+            } else {
                 fail();
             }
         }
@@ -345,32 +342,32 @@ class PartnerServiceTest {
             assertEquals(PaaErrorEnum.PAA_SYSTEM_ERROR, ex.getError());
         }
     }
- 
+
     @Test
     void paSendRTTest() throws DatatypeConfigurationException, IOException {
-    	
-    	var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, paymentValidator));
+
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, gpsClient, paymentValidator));
 
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
-        
+
         doNothing().doThrow(PartnerValidationException.class).when(paymentValidator).isAuthorize(anyString(), anyString(), anyString());
 
         when(factory.createPaSendRTRes()).thenReturn(factoryUtil.createPaSendRTRes());
 
         when(gpdClient.receiptPaymentOption(anyString(), anyString(), any(PaymentOptionModel.class)))
                 .thenReturn(MockUtil.readModelFromFile("gpd/receiptPaymentOption.json", PaymentOptionModelResponse.class));
-        
+
         try {
-        	CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
-        	CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
-        	TableRequestOptions tableRequestOptions = new TableRequestOptions();
-        	tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance());
-        	cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
-        	CloudTable table = cloudTableClient.getTableReference("receiptsTable");
-        	table.createIfNotExists();
+            CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
+            CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
+            TableRequestOptions tableRequestOptions = new TableRequestOptions();
+            tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance());
+            cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
+            CloudTable table = cloudTableClient.getTableReference("receiptsTable");
+            table.createIfNotExists();
         } catch (Exception e) {
-        	log.info("Error during table creation", e);
+            log.info("Error during table creation", e);
         }
 
 
@@ -385,25 +382,25 @@ class PartnerServiceTest {
     @Test
     void paSendRTTestKOConflict() throws DatatypeConfigurationException, IOException {
 
-    	var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, paymentValidator));
-    	
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, gpsClient, paymentValidator));
+
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
 
         var e = Mockito.mock(FeignException.Conflict.class);
         when(gpdClient.receiptPaymentOption(anyString(), anyString(), any(PaymentOptionModel.class)))
                 .thenThrow(e);
-        
+
         try {
-        	CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
-        	CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
-        	TableRequestOptions tableRequestOptions = new TableRequestOptions();
-        	tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance());
-        	cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
-        	CloudTable table = cloudTableClient.getTableReference("receiptsTable");
-        	table.createIfNotExists();
+            CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
+            CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
+            TableRequestOptions tableRequestOptions = new TableRequestOptions();
+            tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance());
+            cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
+            CloudTable table = cloudTableClient.getTableReference("receiptsTable");
+            table.createIfNotExists();
         } catch (Exception ex) {
-        	log.info("Error during table creation", e);
+            log.info("Error during table creation", e);
         }
 
         try {
@@ -417,11 +414,11 @@ class PartnerServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"PO_UNPAID", "PO_PARTIALLY_REPORTED", "PO_REPORTED" })
+    @ValueSource(strings = {"PO_UNPAID", "PO_PARTIALLY_REPORTED", "PO_REPORTED"})
     void paSendRTTestKOStatus(String status) throws DatatypeConfigurationException, IOException {
 
-    	var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, paymentValidator));
-    	
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, gpsClient, paymentValidator));
+
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
 
@@ -429,17 +426,17 @@ class PartnerServiceTest {
         paymentOption.setStatus(PaymentOptionStatus.valueOf(status));
         when(gpdClient.receiptPaymentOption(anyString(), anyString(), any(PaymentOptionModel.class)))
                 .thenReturn(paymentOption);
-        
+
         try {
-        	CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
-        	CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
-        	TableRequestOptions tableRequestOptions = new TableRequestOptions();
-        	tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance());
-        	cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
-        	CloudTable table = cloudTableClient.getTableReference("receiptsTable");
-        	table.createIfNotExists();
+            CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
+            CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
+            TableRequestOptions tableRequestOptions = new TableRequestOptions();
+            tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance());
+            cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
+            CloudTable table = cloudTableClient.getTableReference("receiptsTable");
+            table.createIfNotExists();
         } catch (Exception ex) {
-        	log.info("Error during table creation", ex);
+            log.info("Error during table creation", ex);
         }
 
         try {
@@ -455,25 +452,25 @@ class PartnerServiceTest {
     @Test
     void paSendRTTestKORetryableException() throws DatatypeConfigurationException, IOException {
 
-    	var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, paymentValidator));
-    	
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, gpsClient, paymentValidator));
+
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
 
         var e = Mockito.mock(RetryableException.class);
         when(gpdClient.receiptPaymentOption(anyString(), anyString(), any(PaymentOptionModel.class)))
                 .thenThrow(e);
-        
+
         try {
-        	CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
-        	CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
-        	TableRequestOptions tableRequestOptions = new TableRequestOptions();
-        	tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance());
-        	cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
-        	CloudTable table = cloudTableClient.getTableReference("receiptsTable");
-        	table.createIfNotExists();
+            CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
+            CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
+            TableRequestOptions tableRequestOptions = new TableRequestOptions();
+            tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance());
+            cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
+            CloudTable table = cloudTableClient.getTableReference("receiptsTable");
+            table.createIfNotExists();
         } catch (Exception ex) {
-        	log.info("Error during table creation", e);
+            log.info("Error during table creation", e);
         }
 
         try {
@@ -489,24 +486,24 @@ class PartnerServiceTest {
     @Test
     void paSendRTTestKOFeignException() throws DatatypeConfigurationException, IOException {
 
-    	var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, paymentValidator));
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, gpsClient, paymentValidator));
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
 
         var e = Mockito.mock(FeignException.class);
         when(gpdClient.receiptPaymentOption(anyString(), anyString(), any(PaymentOptionModel.class)))
                 .thenThrow(e);
-        
+
         try {
-        	CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
-        	CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
-        	TableRequestOptions tableRequestOptions = new TableRequestOptions();
-        	tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance());
-        	cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
-        	CloudTable table = cloudTableClient.getTableReference("receiptsTable");
-        	table.createIfNotExists();
+            CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
+            CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
+            TableRequestOptions tableRequestOptions = new TableRequestOptions();
+            tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance());
+            cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
+            CloudTable table = cloudTableClient.getTableReference("receiptsTable");
+            table.createIfNotExists();
         } catch (Exception ex) {
-        	log.info("Error during table creation", e);
+            log.info("Error during table creation", e);
         }
 
         try {
@@ -522,25 +519,25 @@ class PartnerServiceTest {
     @Test
     void paSendRTTestKO() throws DatatypeConfigurationException, IOException {
 
-    	var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, paymentValidator));
-    	
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, gpsClient, paymentValidator));
+
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
 
         var e = Mockito.mock(NullPointerException.class);
         when(gpdClient.receiptPaymentOption(anyString(), anyString(), any(PaymentOptionModel.class)))
                 .thenThrow(e);
-        
+
         try {
-        	CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
-        	CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
-        	TableRequestOptions tableRequestOptions = new TableRequestOptions();
-        	tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance());
-        	cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
-        	CloudTable table = cloudTableClient.getTableReference("receiptsTable");
-        	table.createIfNotExists();
+            CloudStorageAccount cloudStorageAccount = CloudStorageAccount.parse(storageConnectionString);
+            CloudTableClient cloudTableClient = cloudStorageAccount.createCloudTableClient();
+            TableRequestOptions tableRequestOptions = new TableRequestOptions();
+            tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance());
+            cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
+            CloudTable table = cloudTableClient.getTableReference("receiptsTable");
+            table.createIfNotExists();
         } catch (Exception ex) {
-        	log.info("Error during table creation", e);
+            log.info("Error during table creation", e);
         }
 
         try {
@@ -552,14 +549,14 @@ class PartnerServiceTest {
             assertEquals(PaaErrorEnum.PAA_SYSTEM_ERROR, ex.getError());
         }
     }
-    
+
     @Test
     void azureStorageTest() throws InvalidKeyException, URISyntaxException, StorageException {
-    	AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString,true);
-    	azuriteStorageUtil.createTable("testTable");
-    	// se arrivo a questa riga la tabella è stata creata
-    	assertTrue(true);
-    	
+        AzuriteStorageUtil azuriteStorageUtil = new AzuriteStorageUtil(storageConnectionString, true);
+        azuriteStorageUtil.createTable("testTable");
+        // se arrivo a questa riga la tabella è stata creata
+        assertTrue(true);
+
     }
 
 

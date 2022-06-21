@@ -4,6 +4,7 @@ import it.gov.pagopa.payments.endpoints.validation.exceptions.PartnerValidationE
 import it.gov.pagopa.payments.model.partner.CtFaultBean;
 import it.gov.pagopa.payments.model.partner.CtResponse;
 import it.gov.pagopa.payments.model.partner.ObjectFactory;
+import it.gov.pagopa.payments.model.partner.PaDemandPaymentNoticeResponse;
 import it.gov.pagopa.payments.model.partner.PaGetPaymentRes;
 import it.gov.pagopa.payments.model.partner.PaSendRTRes;
 import it.gov.pagopa.payments.model.partner.PaVerifyPaymentNoticeRes;
@@ -56,6 +57,8 @@ public class SoapMessageDispatcher extends MessageDispatcherServlet {
         JAXBElement<PaGetPaymentRes> paGetPaymentResJaxbElement = null;
         PaSendRTRes paSendRTRes = null;
         JAXBElement<PaSendRTRes> paSendRTResJaxbElement = null;
+        PaDemandPaymentNoticeResponse paDemandPaymentNoticeResponse = null;
+        JAXBElement<PaDemandPaymentNoticeResponse> paDemandPaymentNoticeResponseJaxbElement = null;
         CtResponse ctResponse = null;
 
         String soapAction = httpServletRequest.getHeader("SOAPAction") != null
@@ -115,6 +118,14 @@ public class SoapMessageDispatcher extends MessageDispatcherServlet {
                         paSendRTRes.setFault(faultBean);
                         paSendRTResJaxbElement = factory.createPaSendRTRes(paSendRTRes);
                         JAXBContext.newInstance(PaSendRTRes.class).createMarshaller().marshal(paSendRTResJaxbElement,
+                                doc);
+                        break;
+                    case "paDemandPaymentNotice":
+                        paDemandPaymentNoticeResponse = factory.createPaDemandPaymentNoticeResponse();
+                        paDemandPaymentNoticeResponse.setOutcome(StOutcome.KO);
+                        paDemandPaymentNoticeResponse.setFault(faultBean);
+                        paDemandPaymentNoticeResponseJaxbElement = factory.createPaDemandPaymentNoticeResponse(paDemandPaymentNoticeResponse);
+                        JAXBContext.newInstance(PaDemandPaymentNoticeResponse.class).createMarshaller().marshal(paDemandPaymentNoticeResponseJaxbElement,
                                 doc);
                         break;
                     default:
