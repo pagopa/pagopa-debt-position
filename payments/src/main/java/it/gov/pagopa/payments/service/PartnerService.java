@@ -20,6 +20,7 @@ import it.gov.pagopa.payments.model.PaymentOptionModelResponse;
 import it.gov.pagopa.payments.model.PaymentOptionStatus;
 import it.gov.pagopa.payments.model.PaymentsModelResponse;
 import it.gov.pagopa.payments.model.PaymentsTransferModelResponse;
+import it.gov.pagopa.payments.model.Type;
 import it.gov.pagopa.payments.model.partner.CtEntityUniqueIdentifier;
 import it.gov.pagopa.payments.model.partner.CtPaymentOptionDescriptionPA;
 import it.gov.pagopa.payments.model.partner.CtPaymentOptionsDescriptionListPA;
@@ -255,10 +256,10 @@ public class PartnerService {
                         .id(request.getIdServizio())
                         .properties(attributes)
                         .build())
-                .debtor(DebtorModel.builder()
-//                        .type(Type.F) // TODO: arriva dal nodo
-//                        .fiscalCode() TODO:
-//                        .fullName() TODO:
+                .debtor(DebtorModel.builder() // TODO: take the infro from the request
+                        .type(Type.F)
+                        .fiscalCode("ANONIMO")
+                        .fullName("ANONIMO")
                         .build())
                 .build();
 
