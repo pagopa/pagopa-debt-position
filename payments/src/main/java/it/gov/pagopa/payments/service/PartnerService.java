@@ -107,10 +107,11 @@ public class PartnerService {
 
     public PartnerService() {}
 
-    public PartnerService(ObjectFactory factory, String storageConnectionString, String receiptsTable, GpdClient gpdClient, GpsClient gpsClient, PaymentValidator paymentValidator) {
+    public PartnerService(ObjectFactory factory, String storageConnectionString, String receiptsTable,String xsdGenericService, GpdClient gpdClient, GpsClient gpsClient, PaymentValidator paymentValidator) {
         this.factory = factory;
         this.storageConnectionString = storageConnectionString;
         this.receiptsTable = receiptsTable;
+        this.xsdGenericService = xsdGenericService;
         this.gpdClient = gpdClient;
         this.gpsClient = gpsClient;
         this.paymentValidator = paymentValidator;

@@ -1,0 +1,41 @@
+{
+  "iupd": "",
+  "type": "F",
+  "fiscalCode": "77777777777",
+  "fullName": "",
+  "streetName": "",
+  "civicNumber": "",
+  "postalCode": "",
+  "city": "",
+  "province": "",
+  "region": "",
+  "country": "",
+  "email": "",
+  "phone": "",
+  "switchToExpired": false,
+  "companyName": "",
+  "officeName": "",
+  "validityDate": "2022-06-24T10:32:38",
+  "status": "DRAFT",
+  "paymentOption": [
+    {
+      "iuv": "",
+      "amount": 1055,
+      "description": "string",
+      "isPartialPayment": false,
+      "dueDate": "2022-06-24T10:32:38",
+      "retentionDate": "2022-06-24T10:32:38",
+      "fee": 0,
+      "transfer": [
+        {
+          "idTransfer": "",
+          "amount": 0,
+          "remittanceInformation": "",
+          "category": "",
+          "iban": "",
+          "postalIban": ""
+        }
+      ]
+    }
+  ]
+}

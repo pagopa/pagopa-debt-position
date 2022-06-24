@@ -11,6 +11,7 @@ import feign.RetryableException;
 import it.gov.pagopa.payments.endpoints.validation.PaymentValidator;
 import it.gov.pagopa.payments.endpoints.validation.exceptions.PartnerValidationException;
 import it.gov.pagopa.payments.mock.MockUtil;
+import it.gov.pagopa.payments.mock.PaDemandNoticePaymentReqMock;
 import it.gov.pagopa.payments.mock.PaGetPaymentReqMock;
 import it.gov.pagopa.payments.mock.PaSendRTReqMock;
 import it.gov.pagopa.payments.mock.PaVerifyPaymentNoticeReqMock;
@@ -29,6 +30,7 @@ import it.gov.pagopa.payments.model.partner.PaVerifyPaymentNoticeReq;
 import it.gov.pagopa.payments.model.partner.PaVerifyPaymentNoticeRes;
 import it.gov.pagopa.payments.model.partner.StAmountOption;
 import it.gov.pagopa.payments.model.partner.StOutcome;
+import it.gov.pagopa.payments.model.spontaneous.PaymentPositionModel;
 import it.gov.pagopa.payments.utils.AzuriteStorageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.ClassRule;
@@ -44,9 +46,12 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import org.xml.sax.SAXException;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URISyntaxException;
@@ -82,6 +87,8 @@ class PartnerServiceTest {
 
     @Mock
     private GpsClient gpsClient;
+
+    private String genericService = "src/main/resources/xsd/general-service.xsd";
 
     private final ObjectFactory factoryUtil = new ObjectFactory();
 
@@ -346,7 +353,7 @@ class PartnerServiceTest {
     @Test
     void paSendRTTest() throws DatatypeConfigurationException, IOException {
 
-        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, gpsClient, paymentValidator));
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable",  genericService, gpdClient, gpsClient, paymentValidator));
 
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
@@ -382,7 +389,7 @@ class PartnerServiceTest {
     @Test
     void paSendRTTestKOConflict() throws DatatypeConfigurationException, IOException {
 
-        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, gpsClient, paymentValidator));
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", genericService, gpdClient, gpsClient, paymentValidator));
 
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
@@ -417,7 +424,7 @@ class PartnerServiceTest {
     @ValueSource(strings = {"PO_UNPAID", "PO_PARTIALLY_REPORTED", "PO_REPORTED"})
     void paSendRTTestKOStatus(String status) throws DatatypeConfigurationException, IOException {
 
-        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, gpsClient, paymentValidator));
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", genericService, gpdClient, gpsClient, paymentValidator));
 
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
@@ -452,7 +459,7 @@ class PartnerServiceTest {
     @Test
     void paSendRTTestKORetryableException() throws DatatypeConfigurationException, IOException {
 
-        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, gpsClient, paymentValidator));
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", genericService, gpdClient, gpsClient, paymentValidator));
 
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
@@ -486,7 +493,7 @@ class PartnerServiceTest {
     @Test
     void paSendRTTestKOFeignException() throws DatatypeConfigurationException, IOException {
 
-        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, gpsClient, paymentValidator));
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", genericService, gpdClient, gpsClient, paymentValidator));
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
 
@@ -519,7 +526,7 @@ class PartnerServiceTest {
     @Test
     void paSendRTTestKO() throws DatatypeConfigurationException, IOException {
 
-        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", gpdClient, gpsClient, paymentValidator));
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", genericService, gpdClient, gpsClient, paymentValidator));
 
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
@@ -560,4 +567,32 @@ class PartnerServiceTest {
     }
 
 
+    @Test
+    void paDemandPaymentNoticeTest() throws DatatypeConfigurationException, IOException, XMLStreamException, ParserConfigurationException, SAXException {
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", genericService, gpdClient, gpsClient, paymentValidator));
+
+        // Test preconditions
+        var requestBody = PaDemandNoticePaymentReqMock.getMock();
+
+        when(factory.createPaDemandPaymentNoticeResponse()).thenReturn(factoryUtil.createPaDemandPaymentNoticeResponse());
+        when(factory.createCtQrCode()).thenReturn(factoryUtil.createCtQrCode());
+        when(factory.createCtPaymentOptionsDescriptionListPA()).thenReturn(factoryUtil.createCtPaymentOptionsDescriptionListPA());
+        when(factory.createCtPaymentOptionDescriptionPA()).thenReturn(factoryUtil.createCtPaymentOptionDescriptionPA());
+
+        var paymentModel = MockUtil.readModelFromFile("gps/createSpontaneousPayments.json", PaymentPositionModel.class);
+        when(gpsClient.createSpontaneousPayments(anyString(), any())).thenReturn(paymentModel);
+
+        // Test execution
+        var responseBody = pService.paDemandPaymentNotice(requestBody);
+
+        // Test post condition
+        assertThat(responseBody.getOutcome()).isEqualTo(StOutcome.OK);
+        assertThat(responseBody.getPaymentList().getPaymentOptionDescription().isAllCCP()).isFalse();
+        assertThat(responseBody.getPaymentList().getPaymentOptionDescription().getAmount())
+                .isEqualTo(new BigDecimal(1055));
+        assertThat(responseBody.getPaymentList().getPaymentOptionDescription().getOptions())
+                .isEqualTo(StAmountOption.EQ); // de-scoping
+        assertThat(responseBody.getFiscalCodePA()).isEqualTo("77777777777");
+        assertThat(responseBody.getPaymentDescription()).isEqualTo("string");
+    }
 }
