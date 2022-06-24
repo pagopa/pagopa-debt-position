@@ -5,7 +5,13 @@ import static org.mockito.Mockito.when;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
 
+import it.gov.pagopa.payments.mock.PaDemandNoticePaymentReqMock;
+import it.gov.pagopa.payments.mock.PaDemandNoticePaymentResMock;
+import it.gov.pagopa.payments.model.partner.PaDemandPaymentNoticeRequest;
+import it.gov.pagopa.payments.model.partner.PaDemandPaymentNoticeResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,6 +35,9 @@ import it.gov.pagopa.payments.model.partner.PaSendRTRes;
 import it.gov.pagopa.payments.model.partner.PaVerifyPaymentNoticeReq;
 import it.gov.pagopa.payments.model.partner.PaVerifyPaymentNoticeRes;
 import it.gov.pagopa.payments.service.PartnerService;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
 
 @ExtendWith(MockitoExtension.class)
 class PartnerEndpointTest {
@@ -116,6 +125,25 @@ class PartnerEndpointTest {
 
     // Test execution
     JAXBElement<PaSendRTRes> response = partnerEndpoint.paSendRT(request);
+
+    // Test postcondiction
+    assertThat(response.getValue()).isEqualTo(responseBody);
+  }
+
+  @Test
+  void paDemandNoticePaymentTest() throws DatatypeConfigurationException, XMLStreamException, ParserConfigurationException, IOException, SAXException {
+
+    // Test preconditions
+    PaDemandPaymentNoticeRequest requestBody = PaDemandNoticePaymentReqMock.getMock();
+    PaDemandPaymentNoticeResponse responseBody = PaDemandNoticePaymentResMock.getMock();
+    JAXBElement<PaDemandPaymentNoticeRequest> request = factoryUtil.createPaDemandPaymentNoticeRequest(requestBody);
+
+    when(partnerService.paDemandPaymentNotice(requestBody)).thenReturn(responseBody);
+    when(factory.createPaDemandPaymentNoticeResponse(responseBody))
+            .thenReturn(factoryUtil.createPaDemandPaymentNoticeResponse(responseBody));
+
+    // Test execution
+    JAXBElement<PaDemandPaymentNoticeResponse> response = partnerEndpoint.paDemandPaymentNotice(request);
 
     // Test postcondiction
     assertThat(response.getValue()).isEqualTo(responseBody);

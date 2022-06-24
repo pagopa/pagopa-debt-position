@@ -183,5 +183,5 @@ if __name__ == "__main__":
     port = int(default_port)
     app = make_app()
     app.listen(port)
-    print("gpd running...")
+    print(f"gpd running on port {default_port} ...")
     tornado.ioloop.IOLoop.current().start()

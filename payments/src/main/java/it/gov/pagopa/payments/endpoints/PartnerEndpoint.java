@@ -2,6 +2,8 @@ package it.gov.pagopa.payments.endpoints;
 
 import it.gov.pagopa.payments.endpoints.validation.exceptions.PartnerValidationException;
 import it.gov.pagopa.payments.model.partner.ObjectFactory;
+import it.gov.pagopa.payments.model.partner.PaDemandPaymentNoticeRequest;
+import it.gov.pagopa.payments.model.partner.PaDemandPaymentNoticeResponse;
 import it.gov.pagopa.payments.model.partner.PaGetPaymentReq;
 import it.gov.pagopa.payments.model.partner.PaGetPaymentRes;
 import it.gov.pagopa.payments.model.partner.PaSendRTReq;
@@ -16,9 +18,13 @@ import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
 import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapAction;
+import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
+import java.io.IOException;
 
 @Endpoint
 @Slf4j
@@ -58,5 +64,15 @@ public class PartnerEndpoint {
 
         log.info(" paSendRT START ");
         return factory.createPaSendRTRes(partnerService.paSendRT(request.getValue()));
+    }
+
+    @SoapAction("paDemandPaymentNotice")
+    @PayloadRoot(localPart = "paDemandPaymentNotice")
+    @ResponsePayload
+    public JAXBElement<PaDemandPaymentNoticeResponse> paDemandPaymentNotice(@RequestPayload JAXBElement<PaDemandPaymentNoticeRequest> request)
+            throws DatatypeConfigurationException, ParserConfigurationException, IOException, SAXException, XMLStreamException {
+
+        log.info(" paDemandPaymentNotice START ");
+        return factory.createPaDemandPaymentNoticeResponse(partnerService.paDemandPaymentNotice(request.getValue()));
     }
 }
