@@ -257,7 +257,7 @@ public class PartnerService {
                         .id(request.getIdServizio())
                         .properties(attributes)
                         .build())
-                .debtor(DebtorModel.builder() // TODO: take the infro from the request
+                .debtor(DebtorModel.builder() // TODO: take the info from the request
                         .type(Type.F)
                         .fiscalCode("ANONIMO")
                         .fullName("ANONIMO")
