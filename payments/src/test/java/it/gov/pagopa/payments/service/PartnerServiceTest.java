@@ -42,6 +42,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -88,7 +91,9 @@ class PartnerServiceTest {
     @Mock
     private GpsClient gpsClient;
 
-    private String genericService = "src/main/resources/xsd/general-service.xsd";
+    private String genericService = "/xsd/general-service.xsd";
+    ResourceLoader resourceLoader = new DefaultResourceLoader();
+    Resource resource = resourceLoader.getResource(genericService);
 
     private final ObjectFactory factoryUtil = new ObjectFactory();
 
@@ -353,7 +358,8 @@ class PartnerServiceTest {
     @Test
     void paSendRTTest() throws DatatypeConfigurationException, IOException {
 
-        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable",  genericService, gpdClient, gpsClient, paymentValidator));
+
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable",  resource, gpdClient, gpsClient, paymentValidator));
 
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
@@ -389,7 +395,7 @@ class PartnerServiceTest {
     @Test
     void paSendRTTestKOConflict() throws DatatypeConfigurationException, IOException {
 
-        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", genericService, gpdClient, gpsClient, paymentValidator));
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", resource, gpdClient, gpsClient, paymentValidator));
 
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
@@ -424,7 +430,7 @@ class PartnerServiceTest {
     @ValueSource(strings = {"PO_UNPAID", "PO_PARTIALLY_REPORTED", "PO_REPORTED"})
     void paSendRTTestKOStatus(String status) throws DatatypeConfigurationException, IOException {
 
-        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", genericService, gpdClient, gpsClient, paymentValidator));
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", resource, gpdClient, gpsClient, paymentValidator));
 
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
@@ -459,7 +465,7 @@ class PartnerServiceTest {
     @Test
     void paSendRTTestKORetryableException() throws DatatypeConfigurationException, IOException {
 
-        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", genericService, gpdClient, gpsClient, paymentValidator));
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", resource, gpdClient, gpsClient, paymentValidator));
 
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
@@ -493,7 +499,7 @@ class PartnerServiceTest {
     @Test
     void paSendRTTestKOFeignException() throws DatatypeConfigurationException, IOException {
 
-        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", genericService, gpdClient, gpsClient, paymentValidator));
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", resource, gpdClient, gpsClient, paymentValidator));
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
 
@@ -526,7 +532,7 @@ class PartnerServiceTest {
     @Test
     void paSendRTTestKO() throws DatatypeConfigurationException, IOException {
 
-        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", genericService, gpdClient, gpsClient, paymentValidator));
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", resource, gpdClient, gpsClient, paymentValidator));
 
         // Test preconditions
         PaSendRTReq requestBody = PaSendRTReqMock.getMock();
@@ -569,7 +575,7 @@ class PartnerServiceTest {
 
     @Test
     void paDemandPaymentNoticeTest() throws DatatypeConfigurationException, IOException, XMLStreamException, ParserConfigurationException, SAXException {
-        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", genericService, gpdClient, gpsClient, paymentValidator));
+        var pService = spy(new PartnerService(factory, storageConnectionString, "receiptsTable", resource, gpdClient, gpsClient, paymentValidator));
 
         // Test preconditions
         var requestBody = PaDemandNoticePaymentReqMock.getMock();
