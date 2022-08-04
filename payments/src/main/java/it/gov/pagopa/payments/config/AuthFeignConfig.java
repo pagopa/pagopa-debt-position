@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuthFeignConfig {
 
-    @Value("${subscription-key}")
+    @Value("${apiconfig.subscription-key}")
     private String subscriptionKey;
 
     static final String HEADER_REQUEST_ID = "X-Request-Id";
