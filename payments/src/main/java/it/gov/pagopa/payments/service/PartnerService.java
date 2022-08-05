@@ -13,45 +13,15 @@ import it.gov.pagopa.payments.endpoints.validation.PaymentValidator;
 import it.gov.pagopa.payments.endpoints.validation.exceptions.PartnerValidationException;
 import it.gov.pagopa.payments.entity.ReceiptEntity;
 import it.gov.pagopa.payments.entity.Status;
-import it.gov.pagopa.payments.model.DebtPositionStatus;
-import it.gov.pagopa.payments.model.PaaErrorEnum;
-import it.gov.pagopa.payments.model.PaymentOptionModel;
-import it.gov.pagopa.payments.model.PaymentOptionModelResponse;
-import it.gov.pagopa.payments.model.PaymentOptionStatus;
-import it.gov.pagopa.payments.model.PaymentsModelResponse;
-import it.gov.pagopa.payments.model.PaymentsTransferModelResponse;
-import it.gov.pagopa.payments.model.Type;
-import it.gov.pagopa.payments.model.partner.CtEntityUniqueIdentifier;
-import it.gov.pagopa.payments.model.partner.CtPaymentOptionDescriptionPA;
-import it.gov.pagopa.payments.model.partner.CtPaymentOptionsDescriptionListPA;
-import it.gov.pagopa.payments.model.partner.CtPaymentPA;
-import it.gov.pagopa.payments.model.partner.CtQrCode;
-import it.gov.pagopa.payments.model.partner.CtSubject;
-import it.gov.pagopa.payments.model.partner.CtTransferListPA;
-import it.gov.pagopa.payments.model.partner.CtTransferPA;
-import it.gov.pagopa.payments.model.partner.ObjectFactory;
-import it.gov.pagopa.payments.model.partner.PaDemandPaymentNoticeRequest;
-import it.gov.pagopa.payments.model.partner.PaDemandPaymentNoticeResponse;
-import it.gov.pagopa.payments.model.partner.PaGetPaymentReq;
-import it.gov.pagopa.payments.model.partner.PaGetPaymentRes;
-import it.gov.pagopa.payments.model.partner.PaSendRTReq;
-import it.gov.pagopa.payments.model.partner.PaSendRTRes;
-import it.gov.pagopa.payments.model.partner.PaVerifyPaymentNoticeReq;
-import it.gov.pagopa.payments.model.partner.PaVerifyPaymentNoticeRes;
-import it.gov.pagopa.payments.model.partner.StAmountOption;
-import it.gov.pagopa.payments.model.partner.StEntityUniqueIdentifierType;
-import it.gov.pagopa.payments.model.partner.StOutcome;
-import it.gov.pagopa.payments.model.partner.StTransferType;
-import it.gov.pagopa.payments.model.spontaneous.DebtorModel;
-import it.gov.pagopa.payments.model.spontaneous.PaymentPositionModel;
-import it.gov.pagopa.payments.model.spontaneous.ServiceModel;
-import it.gov.pagopa.payments.model.spontaneous.ServicePropertyModel;
-import it.gov.pagopa.payments.model.spontaneous.SpontaneousPaymentModel;
+import it.gov.pagopa.payments.model.*;
+import it.gov.pagopa.payments.model.partner.*;
+import it.gov.pagopa.payments.model.spontaneous.*;
 import it.gov.pagopa.payments.utils.AzuriteStorageUtil;
 import it.gov.pagopa.payments.utils.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.xml.sax.SAXException;
@@ -90,8 +60,9 @@ public class PartnerService {
     private String storageConnectionString;
     @Value("${receipts.table}")
     private String receiptsTable;
-    @Value("${xsd.generic-service}")
-    private String xsdGenericService;
+
+    @Value(value = "${xsd.generic-service}")
+    private Resource xsdGenericService;
 
     @Autowired
     private ObjectFactory factory;
@@ -105,9 +76,10 @@ public class PartnerService {
     @Autowired
     private PaymentValidator paymentValidator;
 
-    public PartnerService() {}
+    public PartnerService() {
+    }
 
-    public PartnerService(ObjectFactory factory, String storageConnectionString, String receiptsTable,String xsdGenericService, GpdClient gpdClient, GpsClient gpsClient, PaymentValidator paymentValidator) {
+    public PartnerService(ObjectFactory factory, String storageConnectionString, String receiptsTable, Resource xsdGenericService, GpdClient gpdClient, GpsClient gpsClient, PaymentValidator paymentValidator) {
         this.factory = factory;
         this.storageConnectionString = storageConnectionString;
         this.receiptsTable = receiptsTable;
@@ -257,7 +229,7 @@ public class PartnerService {
                         .id(request.getIdServizio())
                         .properties(attributes)
                         .build())
-                .debtor(DebtorModel.builder() // TODO: take the infro from the request
+                .debtor(DebtorModel.builder() // TODO: take the info from the request
                         .type(Type.F)
                         .fiscalCode("ANONIMO")
                         .fullName("ANONIMO")
@@ -279,7 +251,7 @@ public class PartnerService {
     }
 
     private List<ServicePropertyModel> mapDatiSpecificiServizio(PaDemandPaymentNoticeRequest request) throws ParserConfigurationException, SAXException, IOException, XMLStreamException {
-        CommonUtil.syntacticValidationXml(request.getDatiSpecificiServizioRequest(), xsdGenericService);
+        CommonUtil.syntacticValidationXml(request.getDatiSpecificiServizioRequest(), xsdGenericService.getFile());
 
         // parse XML into Document
         DocumentBuilderFactory xmlFactory = DocumentBuilderFactory.newInstance();
