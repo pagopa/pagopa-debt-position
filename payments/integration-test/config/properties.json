@@ -1,0 +1,4 @@
+{
+  "payments_host": "http://localhost:8080/partner",
+  "gps_host": "http://localhost:8080"
+}
