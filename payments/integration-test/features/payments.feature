@@ -1,11 +1,11 @@
-Feature: All about Services
+Feature: All about Payments
 
   Background:
     Given Payments running
     And GPS running
     And DonationService running
 
-  Scenario: success services list
+  Scenario: call donation service
     Given the service "12345" for donations
     And the creditor institution "77777777777" enrolled to donation service "12345"
     When the client sends the DemandPaymentNoticeRequest

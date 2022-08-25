@@ -31,5 +31,5 @@ module.exports = {
     createOrganization,
     deleteOrganization,
     createService,
-    deleteOrganization
+    deleteService
 }

@@ -1,10 +1,8 @@
 const axios = require("axios");
 const fs = require('fs');
 
-let properties = JSON.parse(rawdata);
-
-function get(url) {
-    return axios.get(url)
+function get(url, config) {
+    return axios.get(url, config)
          .then(res => {
              return res;
          })

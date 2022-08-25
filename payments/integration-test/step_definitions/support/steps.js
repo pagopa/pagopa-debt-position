@@ -1,6 +1,6 @@
 const {Given, When, Then} = require('@cucumber/cucumber')
 const {healthCheck, demandPaymentNotice} = require("./payments_client");
-const {gpsHealthCheck, createOrganization, deleteOrganization, createService, deleteOrganization} = require("./gps_client");
+const {gpsHealthCheck, createOrganization, deleteOrganization, createService, deleteService} = require("./gps_client");
 const assert = require("assert");
 const fs = require("fs");
 
@@ -60,9 +60,17 @@ Given('the creditor institution {string} enrolled to donation service {string}',
     assert.strictEqual(response.status, 201);
 });
 When('the client sends the DemandPaymentNoticeRequest', async function () {
-    responseToCheck = await demandPaymentNotice({
-        // TODO
-    });
+    responseToCheck = await demandPaymentNotice(<soapenv:Envelope xmlns:pafn="http://pagopa-api.pagopa.gov.it/pa/paForNode.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+        <soapenv:Body>
+            <pafn:paDemandPaymentNoticeRequest>
+                <idPA>77777777777</idPA>
+                <idBrokerPA>15376371009</idBrokerPA>
+                <idStation>15376371009_01</idStation>
+                <idServizio>12345</idServizio>
+                <datiSpecificiServizioRequest>PHNlcnZpY2UgeG1sbnM9Imh0dHA6Ly9QdW50b0FjY2Vzc29QU1Auc3Bjb29wLmdvdi5pdC9HZW5lcmFsU2VydmljZSIgeHNpOnNjaGVtYUxvY2F0aW9uPSJodHRwOi8vUHVudG9BY2Nlc3NvUFNQLnNwY29vcC5nb3YuaXQvR2VuZXJhbFNlcnZpY2Ugc2NoZW1hLnhzZCIgeG1sbnM6eHNpPSJodHRwOi8vd3d3LnczLm9yZy8yMDAxL1hNTFNjaGVtYS1pbnN0YW5jZSI+CiAgPGFtb3VudD4xMDA8L2Ftb3VudD4KICA8ZGVzY3JpcHRpb24+ZG9uYXRpb248L2Rlc2NyaXB0aW9uPgo8L3NlcnZpY2U+</datiSpecificiServizioRequest>
+            </pafn:paDemandPaymentNoticeRequest>
+        </soapenv:Body>
+    </soapenv:Envelope>);
 });
 Then('the client receives status code {int}', function (statusCode) {
     assert.strictEqual(responseToCheck.status, statusCode);
