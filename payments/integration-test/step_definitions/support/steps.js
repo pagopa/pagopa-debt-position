@@ -1,6 +1,10 @@
 const {Given, When, Then, After, AfterAll} = require('@cucumber/cucumber')
 const {healthCheck, demandPaymentNotice} = require("./payments_client");
 const {gpsHealthCheck, createOrganization, deleteOrganization, createService, deleteService} = require("./gps_client");
+const {iuvGenHealthCheck} = require("./iuv_generator_client");
+const {donationHealthCheck} = require("./donation_service_client");
+const {apiConfigHealthCheck} = require("./api_config_client");
+const {gpdHealthCheck} = require("./gpd_client");
 const assert = require("assert");
 const fs = require("fs");
 
@@ -21,17 +25,24 @@ Given('GPS running', async function () {
     assert.strictEqual(response.status, 200);
 });
 Given('GPD running', async function () {
-   // TODO
+    const response = await gpdHealthCheck();
+    assert.strictEqual(response.status, 200);
 });
 Given('IUV Generator running', async function () {
-   // TODO
+	//TODO expose health check on APIM
+    //const response = await iuvGenHealthCheck();
+    //assert.strictEqual(response.status, 200);
 });
 Given('DonationService running', async function () {
-    // TODO call donation health check
+	//TODO expose health check on APIM
+    //const response = await donationHealthCheck();
+    //assert.strictEqual(response.status, 200);
 });
 Given('ApiConfig running', async function () {
-    // TODO
+    const response = await apiConfigHealthCheck();
+    assert.strictEqual(response.status, 200);
 });
+
 Given('the service {string} for donations', async function (serviceId) {
     serviceToDelete = serviceId;
     await deleteService(serviceToDelete)
@@ -55,7 +66,6 @@ Given('the service {string} for donations', async function (serviceId) {
             }
         ]
     })
-    console.log(response);
     assert.strictEqual(response.status, 201);
 });
 Given('the creditor institution {string} enrolled to donation service {string}', async function (orgId, serviceId) {
@@ -73,7 +83,7 @@ Given('the creditor institution {string} enrolled to donation service {string}',
             }
         ]
     })
-    console.log(response)
+    
     assert.strictEqual(response.status, 201);
 });
 When('the client sends the DemandPaymentNoticeRequest', async function () {
@@ -88,7 +98,6 @@ When('the client sends the DemandPaymentNoticeRequest', async function () {
             </pafn:paDemandPaymentNoticeRequest>
         </soapenv:Body>
     </soapenv:Envelope>`);
-    console.log(responseToCheck);
 });
 When(/^the client sends a wrong DemandPaymentNoticeRequest$/, async function () {
     responseToCheck = await demandPaymentNotice(`<soapenv:Envelope xmlns:pafn="http://pagopa-api.pagopa.gov.it/pa/paForNode.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
@@ -107,12 +116,10 @@ Then('the client receives status code {int}', function (statusCode) {
     assert.strictEqual(responseToCheck.status, statusCode);
 });
 Then('the client retrieves the amount in the response', function () {
-    console.log(responseToCheck)
     assert.match(responseToCheck.data, /<outcome>OK<\/outcome>/);
     assert.match(responseToCheck.data, /<amount>1.00<\/amount>/);
 });
 Then(/^the client receives a KO in the response$/, function () {
-    console.log(responseToCheck)
     assert.match(responseToCheck.data, /<outcome>KO<\/outcome>/);
 });
 
