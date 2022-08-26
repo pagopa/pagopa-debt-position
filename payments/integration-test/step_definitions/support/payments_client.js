@@ -16,7 +16,12 @@ function healthCheck() {
 }
 
 function demandPaymentNotice(body) {
-    return post(payments_host, body)
+    return post(payments_host, body, {
+        headers: {
+            'Content-Type': 'text/xml',
+            'SOAPAction': 'paDemandPaymentNotice'
+        }
+    })
 }
 
 module.exports = {

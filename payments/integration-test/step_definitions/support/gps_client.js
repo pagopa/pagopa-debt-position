@@ -17,8 +17,9 @@ function deleteOrganization(idOrg) {
     return del(gps_host + `/organizations/${idOrg}`)
 }
 
-function createService(serviceId, body) {
-    return post(gps_host + `/services/${serviceId}`, body)
+function createService(body) {
+    console.log(gps_host + `/services`, body)
+    return post(gps_host + `/services`, body)
 }
 
 function deleteService(serviceId) {
