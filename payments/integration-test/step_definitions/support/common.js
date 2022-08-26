@@ -11,8 +11,8 @@ function get(url, config) {
          });
 }
 
-function post(url, body) {
-    return axios.post(url, body)
+function post(url, body, config) {
+    return axios.post(url, body, config)
         .then(res => {
             return res;
         })

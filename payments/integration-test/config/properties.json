@@ -1,6 +1,6 @@
 {
   "payments_host": "https://api.dev.platform.pagopa.it/gpd-payments/api/v1",
   "payments_info": "https://api.dev.platform.pagopa.it/payment-receipts/api/v1/info",
-  "gps_host": "https://api.dev.platform.pagopa.it/gps/api/v1",
-  "sub_key": "secret"
+  "gps_host": "https://api.dev.platform.pagopa.it/gps/spontaneous-payments-service/v1",
+  "donation_host" : "https://api.dev.platform.pagopa.it/gps/donation-service/v1"
 }
