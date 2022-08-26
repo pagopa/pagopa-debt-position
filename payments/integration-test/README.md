@@ -11,8 +11,7 @@
 - run tests: `yarn test`
 
 ### Note
+Before run the test, set a variable `SUBCRIPTION_KEY` in your environment. 
 
-Remember to start the Payments before start the tests.
-
-You can configure the host in `./config/properties.json` file.
+You can configure the endpoints with `./config/properties.json` file.
 
