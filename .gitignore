@@ -117,3 +117,4 @@ bin/
 **/application-azure.properties
 .cache_ggshield
 *azure.properties
+**/node_modules
