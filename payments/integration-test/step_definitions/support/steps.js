@@ -13,8 +13,8 @@ let properties = JSON.parse(rawdata);
 const donation_host = properties.donation_host;
 
 let responseToCheck;
-let serviceToDelete;
-let orgToDelete;
+let serviceCode;
+let organizationCode;
 
 Given('Payments running', async function () {
     const response = await healthCheck();
@@ -44,8 +44,8 @@ Given('ApiConfig running', async function () {
 });
 
 Given('the service {string} for donations', async function (serviceId) {
-    serviceToDelete = serviceId;
-    await deleteService(serviceToDelete)
+    serviceCode = serviceId;
+    await deleteService(serviceCode)
     let response = await createService({
         "id": serviceId,
         "name": "DonationpagoPAservice",
@@ -69,8 +69,8 @@ Given('the service {string} for donations', async function (serviceId) {
     assert.strictEqual(response.status, 201);
 });
 Given('the creditor institution {string} enrolled to donation service {string}', async function (orgId, serviceId) {
-    orgToDelete = orgId
-    await deleteOrganization(orgToDelete)
+    organizationCode = orgId
+    await deleteOrganization(organizationCode)
     let response = await createOrganization(orgId, {
         "companyName": "Comune di Milano",
         "enrollments": [
@@ -90,7 +90,7 @@ When('the client sends the DemandPaymentNoticeRequest', async function () {
     responseToCheck = await demandPaymentNotice(`<soapenv:Envelope xmlns:pafn="http://pagopa-api.pagopa.gov.it/pa/paForNode.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
         <soapenv:Body>
             <pafn:paDemandPaymentNoticeRequest>
-                <idPA>77777777777</idPA>
+                <idPA>${organizationCode}</idPA>
                 <idBrokerPA>15376371009</idBrokerPA>
                 <idStation>15376371009_01</idStation>
                 <idServizio>12345</idServizio>
@@ -103,7 +103,7 @@ When(/^the client sends a wrong DemandPaymentNoticeRequest$/, async function () 
     responseToCheck = await demandPaymentNotice(`<soapenv:Envelope xmlns:pafn="http://pagopa-api.pagopa.gov.it/pa/paForNode.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
         <soapenv:Body>
             <pafn:paDemandPaymentNoticeRequest>
-                <idPA>77777777777</idPA>
+                <idPA>${organizationCode}</idPA>
                 <idBrokerPA>15376371009</idBrokerPA>
                 <idStation>15376371009_01</idStation>
                 <idServizio>12345</idServizio>
@@ -126,6 +126,6 @@ Then(/^the client receives a KO in the response$/, function () {
 
 // Asynchronous Promise
 AfterAll(function () {
-    deleteService(serviceToDelete)
-    deleteOrganization(orgToDelete)
+    deleteService(serviceCode)
+    deleteOrganization(organizationCode)
 });
