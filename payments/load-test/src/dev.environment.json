@@ -1,0 +1,10 @@
+{
+  "environment": [
+    {
+      "env": "local",
+      "payments_host": "https://api.dev.platform.pagopa.it/gpd-payments/api/v1",
+      "gps_host": "https://api.dev.platform.pagopa.it/gps/spontaneous-payments-service/v1",
+      "donation_host": "https://api.dev.platform.pagopa.it/gps/donation-service/v1"
+    }
+  ]
+}
