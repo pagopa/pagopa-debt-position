@@ -18,7 +18,6 @@ function deleteOrganization(idOrg) {
 }
 
 function createService(body) {
-    console.log(gps_host + `/services`, body)
     return post(gps_host + `/services`, body)
 }
 

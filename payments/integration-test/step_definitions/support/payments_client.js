@@ -9,7 +9,7 @@ const payments_info = properties.payments_info;
 function healthCheck() {
     return get(payments_info, {
         headers: {
-            "Ocp-Apim-Subscription-Key": process.env.SUBSCRIPTION_KEY
+            "Ocp-Apim-Subscription-Key": process.env.PAYMENTS_SUBSCRIPTION_KEY
         }
     })
 }
