@@ -2,6 +2,7 @@ package it.gov.pagopa.reporting;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.functions.*;
+import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.functions.annotation.BindingName;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.HttpTrigger;
@@ -33,7 +34,8 @@ public class GetFlowList {
     public HttpResponseMessage run (
             @HttpTrigger(name = "GetFlowListTrigger",
                     methods = {HttpMethod.GET},
-                    route = "organizations/{organizationId}/reportings"
+                    route = "organizations/{organizationId}/reportings",
+                    authLevel = AuthorizationLevel.ANONYMOUS
             ) HttpRequestMessage<Optional<String>> request,
             @BindingName("organizationId") String organizationId,
             final ExecutionContext context) {
