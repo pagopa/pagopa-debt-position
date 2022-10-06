@@ -36,6 +36,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -67,19 +68,21 @@ public class PaymentPositionCRUDService {
             LocalDateTime maxDueDate = debtPosition.getPaymentOption().stream().map(PaymentOption::getDueDate).max(LocalDateTime::compareTo).orElse(currentDate);
             debtPosition.setMinDueDate(minDueDate);
             debtPosition.setMaxDueDate(maxDueDate);
-            debtPosition.setInsertedDate(currentDate);
+            debtPosition.setInsertedDate(Objects.requireNonNullElse(debtPosition.getInsertedDate(), currentDate));
             debtPosition.setLastUpdatedDate(currentDate);
+            debtPosition.setPublishDate(null);
             debtPosition.setOrganizationFiscalCode(organizationFiscalCode);
-            debtPosition.setStatus(DebtPositionStatus.DRAFT);
+            debtPosition.setStatus(DebtPositionStatus.DRAFT); 
+            
             for (PaymentOption po : debtPosition.getPaymentOption()) {
                 po.setOrganizationFiscalCode(organizationFiscalCode);
-                po.setInsertedDate(currentDate);
+                po.setInsertedDate(Objects.requireNonNullElse(debtPosition.getInsertedDate(), currentDate));
                 po.setLastUpdatedDate(currentDate);
                 po.setStatus(PaymentOptionStatus.PO_UNPAID);
                 for (Transfer t : po.getTransfer()) {
                     t.setIuv(po.getIuv());
                     t.setOrganizationFiscalCode(organizationFiscalCode);
-                    t.setInsertedDate(currentDate);
+                    t.setInsertedDate(Objects.requireNonNullElse(debtPosition.getInsertedDate(), currentDate));
                     t.setLastUpdatedDate(currentDate);
                     t.setStatus(TransferStatus.T_UNREPORTED);
                 }
@@ -161,7 +164,7 @@ public class PaymentPositionCRUDService {
         }
 
         try {
-
+        	/*
             // flip model to entity
             ppToUpdate.getPaymentOption().clear();
             modelMapper.map(paymentPositionModel, ppToUpdate);
@@ -193,7 +196,21 @@ public class PaymentPositionCRUDService {
             }
 
             return paymentPositionRepository.saveAndFlush(ppToUpdate);
-
+            */
+        	
+        	// flip model to entity
+            ppToUpdate.getPaymentOption().clear();
+            modelMapper.map(paymentPositionModel, ppToUpdate);
+            
+            // verifico la correttezza dei dati in input
+            DebtPositionValidation.checkPaymentPositionInputDataAccurancy(ppToUpdate);
+            
+            paymentPositionRepository.delete(ppToUpdate);
+            paymentPositionRepository.flush();
+            // the version is increased at each change
+            ppToUpdate.setVersion(ppToUpdate.getVersion()+1);
+            return this.create(ppToUpdate, organizationFiscalCode);
+        	
         } catch (ValidationException e) {
             throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
         } catch (Exception e) {
