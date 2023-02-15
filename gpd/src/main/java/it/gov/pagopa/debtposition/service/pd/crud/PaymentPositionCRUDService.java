@@ -164,45 +164,11 @@ public class PaymentPositionCRUDService {
         }
 
         try {
-        	/*
-            // flip model to entity
-            ppToUpdate.getPaymentOption().clear();
-            modelMapper.map(paymentPositionModel, ppToUpdate);
-
-            // verifico la correttezza dei dati in input
-            DebtPositionValidation.checkPaymentPositionInputDataAccurancy(ppToUpdate);
-
-            // predispongo i dati ad uso interno prima dell'aggiornamento
-            LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-            LocalDateTime minDueDate = ppToUpdate.getPaymentOption().stream().map(PaymentOption::getDueDate).min(LocalDateTime::compareTo).orElse(currentDate);
-            LocalDateTime maxDueDate = ppToUpdate.getPaymentOption().stream().map(PaymentOption::getDueDate).max(LocalDateTime::compareTo).orElse(currentDate);
-            ppToUpdate.setMinDueDate(minDueDate);
-            ppToUpdate.setMaxDueDate(maxDueDate);
-            ppToUpdate.setLastUpdatedDate(currentDate);
-            ppToUpdate.setPublishDate(null);
-            ppToUpdate.setStatus(DebtPositionStatus.DRAFT);
-            for (PaymentOption po : ppToUpdate.getPaymentOption()) {
-                po.setOrganizationFiscalCode(organizationFiscalCode);
-                po.setInsertedDate(ppToUpdate.getInsertedDate());
-                po.setLastUpdatedDate(currentDate);
-                po.setStatus(PaymentOptionStatus.PO_UNPAID);
-                for (Transfer t : po.getTransfer()) {
-                    t.setIuv(po.getIuv());
-                    t.setOrganizationFiscalCode(organizationFiscalCode);
-                    t.setInsertedDate(ppToUpdate.getInsertedDate());
-                    t.setLastUpdatedDate(currentDate);
-                    t.setStatus(TransferStatus.T_UNREPORTED);
-                }
-            }
-
-            return paymentPositionRepository.saveAndFlush(ppToUpdate);
-            */
-        	
         	// flip model to entity
             ppToUpdate.getPaymentOption().clear();
             modelMapper.map(paymentPositionModel, ppToUpdate);
             
-            // verifico la correttezza dei dati in input
+            // check the input data
             DebtPositionValidation.checkPaymentPositionInputDataAccurancy(ppToUpdate);
             
             paymentPositionRepository.delete(ppToUpdate);
