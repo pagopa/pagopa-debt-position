@@ -136,7 +136,7 @@ export default function () {
         tag = {
           gpdMethod: "ReportTransfer",
         };
-        url = `${urlBasePath}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/transfers/${transfer_id}/report`;
+        url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/transfers/${transfer_id}/report`;
 
         r = http.post(url, params);
 
@@ -152,7 +152,7 @@ export default function () {
           tag = {
             gpdMethod: "GetOrganizationPaymentOption",
           };
-          url = `${urlBasePath}/organizations/${creditor_institution_code}/paymentoptions/${iuv}`;
+          url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}`;
 
           r = http.get(url, params);
 
