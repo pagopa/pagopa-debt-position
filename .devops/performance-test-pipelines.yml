@@ -1,34 +1,34 @@
-# azure-pipelines.yml
-trigger: none
+  # azure-pipelines.yml
+  trigger: none
 
-parameters:
-  - name: "ENVIRONMENT"
-    displayName: "Environment"
-    type: string
-    values:
-      - "dev"
-      - "uat"
-    default: "uat"
+  parameters:
+    - name: "ENVIRONMENT"
+      displayName: "Environment"
+      type: string
+      values:
+        - "dev"
+        - "uat"
+      default: "uat"
 
-variables:
-  ${{ if eq(parameters['ENVIRONMENT'], 'dev') }}:
-    poolImage: 'pagopa-dev-loadtest-linux'
-    API_SUBSCRIPTION_KEY: $(DEV_API_SUBSCRIPTION_KEY)
-  ${{ if eq(parameters['ENVIRONMENT'], 'uat') }}:
-    poolImage: 'pagopa-uat-loadtest-linux'
-    API_SUBSCRIPTION_KEY: $(UAT_API_SUBSCRIPTION_KEY)
+  variables:
+    ${{ if eq(parameters['ENVIRONMENT'], 'dev') }}:
+      poolImage: 'pagopa-dev-loadtest-linux'
+      API_SUBSCRIPTION_KEY: $(DEV_API_SUBSCRIPTION_KEY)
+    ${{ if eq(parameters['ENVIRONMENT'], 'uat') }}:
+      poolImage: 'pagopa-uat-loadtest-linux'
+      API_SUBSCRIPTION_KEY: $(UAT_API_SUBSCRIPTION_KEY)
 
 
-pool:
-  name: $(poolImage)
+  pool:
+    name: $(poolImage)
 
-steps:
-  - script: |
-      cd ./gpd/load-test/src
-      docker pull grafana/k6
-    displayName: Pull k6 image
+  steps:
+    - script: |
+        cd ./gpd/load-test/src
+        docker pull grafana/k6
+      displayName: Pull k6 image
 
-  - script: |
-      cd ./gpd/load-test
-      sh ./run_performance_test.sh ${{ parameters.ENVIRONMENT }} ${{ parameters.SCRIPT }} gpdk6 $(API_SUBSCRIPTION_KEY)
-    displayName: Run k6 ${{ parameters.SCRIPT }} on ${{ parameters.ENVIRONMENT }}
+    - script: |
+        cd ./gpd/load-test
+        sh ./run_performance_test.sh ${{ parameters.ENVIRONMENT }} ${{ parameters.SCRIPT }} gpdk6 $(API_SUBSCRIPTION_KEY)
+      displayName: Run k6 ${{ parameters.SCRIPT }} on ${{ parameters.ENVIRONMENT }}
