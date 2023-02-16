@@ -8,7 +8,7 @@
       values:
         - "dev"
         - "uat"
-      default: "uat"
+      default: "dev"
     - name: "TEST_TYPE"
       displayName: "Test type"
       type: string
@@ -20,9 +20,9 @@
       displayName: "Script name"
       type: string
       values:
-        - create_debt_position
-        - payments_workflow
-      default: payments_workflow
+        - "create_debt_position"
+        - "payments_workflow"
+      default: "payments_workflow"
 
   variables:
     ${{ if eq(parameters['ENVIRONMENT'], 'dev') }}:
