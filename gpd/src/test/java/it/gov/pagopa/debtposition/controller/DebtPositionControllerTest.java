@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
+import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import it.gov.pagopa.debtposition.mock.DebtPositionMock;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
@@ -422,6 +423,98 @@ class DebtPositionControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[1].transfer[0].amount")
 				.value(500));
 
+	}
+	
+	@Test
+	void updateDebtPosition_change_officeName_200() throws Exception {
+		PaymentPositionDTO pp = DebtPositionMock.getMock1();
+		
+		// creo una posizione debitoria 
+		mvc.perform(post("/organizations/UPD_office_12345678901/debtpositions")
+				.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated());
+
+		// recupero la posizione debitoria e verifico il contenuto
+		mvc.perform(get("/organizations/UPD_office_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.companyName")
+				.value("Comune di Firenze"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.officeName")
+				.value("Ufficio tributario"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[*].iuv")
+				.value(Matchers.hasSize(1)))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].amount")
+				.value(1000));
+		
+		
+
+		// aggiorno il nome dell'ufficio per la posizione debitoria
+		pp.setOfficeName("Agenzia delle entrate");
+		mvc.perform(put("/organizations/UPD_office_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.content(TestUtil.toJson(pp))
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+
+		// verifico che l'aggiornamento dell'ufficio sia avvenuto correttamente 
+		mvc.perform(get("/organizations/UPD_office_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.companyName")
+				.value("Comune di Firenze"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.officeName")
+				.value("Agenzia delle entrate"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[*].iuv")
+				.value(Matchers.hasSize(1)))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].amount")
+				.value(1000));
+	}
+	
+	@Test
+	void updateDebtPosition_change_fee_200() throws Exception {
+		PaymentPositionDTO pp = DebtPositionMock.getMock1();
+		
+		// creo una posizione debitoria 
+		mvc.perform(post("/organizations/UPD_fee_12345678901/debtpositions")
+				.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated());
+
+		// recupero la posizione debitoria e verifico il contenuto
+		mvc.perform(get("/organizations/UPD_fee_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.companyName")
+				.value("Comune di Firenze"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.officeName")
+				.value("Ufficio tributario"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[*].iuv")
+				.value(Matchers.hasSize(1)))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].amount")
+				.value(1000))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].fee")
+				.value(0));
+		
+		
+
+		// aggiorno la fee per la posizione debitoria
+		pp.getPaymentOption().get(0).setFee(500L);
+		mvc.perform(put("/organizations/UPD_fee_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.content(TestUtil.toJson(pp))
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+
+		// verifico che l'aggiornamento della fee sia avvenuto correttamente 
+		mvc.perform(get("/organizations/UPD_fee_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.companyName")
+				.value("Comune di Firenze"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.officeName")
+				.value("Ufficio tributario"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[*].iuv")
+				.value(Matchers.hasSize(1)))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].amount")
+				.value(1000))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].fee")
+				.value(500));
 	}
 	
 	@Test
