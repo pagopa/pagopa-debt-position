@@ -9,6 +9,19 @@
         - "dev"
         - "uat"
       default: "uat"
+    - name: "TEST_TYPE"
+      displayName: "Test type"
+      type: string
+      values:
+        - "load"
+        - "spike"
+        - "stress"
+    - name: "SCRIPT"
+      displayName: "Script name"
+      type: string
+      values:
+        - create_debt_position
+        - payments_workflow
 
   variables:
     ${{ if eq(parameters['ENVIRONMENT'], 'dev') }}:
@@ -30,5 +43,5 @@
 
     - script: |
         cd ./gpd/load-test
-        sh ./run_performance_test.sh ${{ parameters.ENVIRONMENT }} ${{ parameters.SCRIPT }} gpdk6 $(API_SUBSCRIPTION_KEY)
+        sh ./run_performance_test.sh ${{ parameters.ENVIRONMENT }} ${{ parameters.TEST_TYPE }} ${{ parameters.SCRIPT }} gpdk6 $(API_SUBSCRIPTION_KEY)
       displayName: Run k6 ${{ parameters.SCRIPT }} on ${{ parameters.ENVIRONMENT }}
