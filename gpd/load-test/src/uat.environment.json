@@ -1,0 +1,8 @@
+{
+  "environment": [
+    {
+      "env": "uat",
+      "host": "https://api.uat.platform.pagopa.it/gpd/api/v1"
+    }
+  ]
+}

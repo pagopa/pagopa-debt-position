@@ -1,0 +1,52 @@
+{
+  "summaryTrendStats": [
+    "avg",
+    "min",
+    "med",
+    "max",
+    "p(95)",
+    "p(99)",
+    "p(99.99)",
+    "count"
+  ],
+  "stages": [
+    {
+      "duration": "1s",
+      "target": 5
+    },
+    {
+      "duration": "2s",
+      "target": 5
+    },
+    {
+      "duration": "1s",
+      "target": 0
+    }
+  ],
+  "thresholds": {
+    "http_req_failed": [
+      "rate<0.1"
+    ],
+    "http_req_duration": [
+      "p(99)<3000"
+    ],
+    "http_req_duration{gpdMethod:CreateDebtPosition}": [
+      "p(95)<1000"
+    ],
+    "http_req_duration{gpdMethod:PublishDebtPosition}": [
+      "p(95)<1000"
+    ],
+    "http_req_duration{paymentRequest:VerifyPayment}": [
+      "p(95)<1000"
+    ],
+    "http_req_duration{paymentRequest:GetPayment}": [
+      "p(95)<1000"
+    ],
+    "http_req_duration{paymentRequest:SendRT}": [
+      "p(95)<1000"
+    ]
+  },
+  "setupTimeout": "360s",
+  "teardownTimeout": "360s"
+}
+

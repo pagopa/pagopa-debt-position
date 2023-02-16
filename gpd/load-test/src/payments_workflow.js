@@ -1,29 +1,27 @@
 import http from 'k6/http';
 import { check } from 'k6';
+import { SharedArray } from 'k6/data';
 import { makeidMix, randomString } from './modules/helpers.js';
 
-export let options = {
-  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(95)', 'p(99)', 'p(99.99)', 'count'],
-  stages: [
-    { duration: '1m', target: 50 }, // simulate ramp-up of traffic from 1 to 50 users over 1 minutes.
-  ],
-  thresholds: {
-    http_req_failed: ['rate<0.01'], // http errors should be less than 1%
-    http_req_duration: ['p(99)<1500'], // 99% of requests must complete below 1500ms
-    'http_req_duration{gpdMethod:CreateDebtPosition}': ['p(95)<1000'], // threshold on creation API requests only
-    'http_req_duration{gpdMethod:PublishDebtPosition}': ['p(95)<1000'], // threshold on publication API requests only
-    'http_req_duration{gpdMethod:PayPaymentOption}': ['p(95)<1000'], // threshold on payment API requests only
-    'http_req_duration{gpdMethod:ReportTransfer}': ['p(95)<1000'], // threshold on report API requests only
-    'http_req_duration{gpdMethod:GetOrganizationPaymentOption}': ['p(95)<1000'], // threshold on get API requests only
-  },
+//k6 run -o influxdb=http://influxdb:8086/k6 -e BASE_URL=http://localhost:8085 gpd/load-test/src/payments_workflow.js
+export let options = JSON.parse(open(__ENV.TEST_TYPE));
 
+const varsArray = new SharedArray('vars', function () {
+    return JSON.parse(open(`${__ENV.VARS}`)).environment;
+});
+
+// workaround to use shared array (only array should be used)
+const vars = varsArray[0];
+const rootUrl = `${vars.host}`;
+
+const params = {
+    headers: {
+        'Content-Type': 'application/json',
+        'Ocp-Apim-Subscription-Key': __ENV.API_SUBSCRIPTION_KEY
+    },
 };
 
-
-
 export default function () {
-
-  var urlBasePath = `${__ENV.BASE_URL}`
 
   const creditor_institution_code = randomString(11, "0123456789");
   const iupd = makeidMix(35);
@@ -36,9 +34,8 @@ export default function () {
   var tag = {
     gpdMethod: "CreateDebtPosition",
   };
-  
 
-  var url = `${urlBasePath}/organizations/${creditor_institution_code}/debtpositions`;
+  var url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions`;
 
   var payload = JSON.stringify(
     {
@@ -80,13 +77,6 @@ export default function () {
     }
   );
 
-
-  var params = {
-    headers: {
-      'Content-Type': 'application/json'
-    },
-  };
-
   var r = http.post(url, payload, params);
 
   console.log("CreateDebtPosition call - creditor_institution_code = " + creditor_institution_code + ", Status = " + r.status);
@@ -102,7 +92,7 @@ export default function () {
     tag = {
       gpdMethod: "PublishDebtPosition",
     };
-    url = `${urlBasePath}/organizations/${creditor_institution_code}/debtpositions/${iupd}/publish`;
+    url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions/${iupd}/publish`;
 
     r = http.post(url, params);
 
@@ -120,7 +110,7 @@ export default function () {
         gpdMethod: "PayPaymentOption",
       };
 
-      url = `${urlBasePath}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/pay`;
+      url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/pay`;
 
       payload = JSON.stringify(
         {
