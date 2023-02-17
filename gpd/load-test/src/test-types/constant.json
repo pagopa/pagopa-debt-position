@@ -6,8 +6,8 @@
       "duration": "3m",
       "rate": 300,
       "timeUnit": "1s",
-      "preAllocatedVUs": 100,
-      "maxVUs": 2
+      "preAllocatedVUs": 2,
+      "maxVUs": 100
     }
   }
 }
