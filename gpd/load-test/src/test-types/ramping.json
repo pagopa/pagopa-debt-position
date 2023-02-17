@@ -6,7 +6,7 @@
       "startRate": 30,
       "timeUnit": "1m",
       "preAllocatedVUs": 2,
-      "maxVUs": 100,
+      "maxVUs": 50,
       "stages": [
         {
           "duration": "1m",
