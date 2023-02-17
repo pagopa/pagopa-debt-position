@@ -1,0 +1,26 @@
+{
+  "discardResponseBodies": true,
+  "scenarios": {
+    "contacts": {
+      "executor": "ramping-arrival-rate",
+      "startRate": 30,
+      "timeUnit": "1m",
+      "preAllocatedVUs": 2,
+      "maxVUs": 100,
+      "stages": [
+        {
+          "duration": "1m",
+          "target": 100
+        },
+        {
+          "duration": "2m",
+          "target": 200
+        },
+        {
+          "duration": "2m",
+          "target": 300
+        }
+      ]
+    }
+  }
+}
