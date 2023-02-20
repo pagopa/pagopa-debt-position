@@ -27,7 +27,7 @@
     "http_req_duration": [
       "p(99)<3000"
     ],
-    "http_req_duration{gpdMethod:CreateDebtPosition}": [
+    "http_req_duration{gpdMethod: \"CreateDebtPosition\"}": [
       "p(95)<1000"
     ],
     "http_req_duration{gpdMethod:PublishDebtPosition}": [
