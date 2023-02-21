@@ -162,7 +162,7 @@ export default function () {
             'GetOrganizationPaymentOption status is 200': (r) => r.status === 200,
           }, tag);
 
-          console.log((JSON.parse(r.body)).status);
+          console.log(r.body);
 
           check(r, {
             'GetOrganizationPaymentOption payment option status is reported': (r) => (JSON.parse(r.body)).status === 'PO_REPORTED',
