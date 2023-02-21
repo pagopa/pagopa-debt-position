@@ -24,11 +24,11 @@
         },
         {
           "duration": "2m",
-          "target": 300
+          "target": 200
         },
         {
           "duration": "2m",
-          "target": 500
+          "target": 300
         }
       ]
     }
