@@ -7,7 +7,7 @@ services:
       - '${PWD}/src:/scripts'
     environment:
       - API_SUBSCRIPTION_KEY=${sub_key}
-      - VARS=/scripts/${env}.environment.json
+      - VARS=/scripts/environments/${env}.environment.json
       - TEST_TYPE=/scripts/test-types/${type}.json
       - K6_OUT=influxdb=http://nginx:8086/${db_name}
     command: run /scripts/${script}.js
