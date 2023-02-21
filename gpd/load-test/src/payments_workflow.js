@@ -31,9 +31,6 @@ export default function () {
   const transfer_id = '1';
 
   // Create new debt position (no validity date).
-  var tag = {
-    gpdMethod: "CreateDebtPosition",
-  };
 
   var url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions`;
 
@@ -83,15 +80,12 @@ export default function () {
 
   check(r, {
     'CreateDebtPosition status is 201': (r) => r.status === 201,
-  }, tag);
+  });
 
   // if the debt position has been correctly created => publish 
   if (r.status === 201) {
     // sleep(1);
     // Publish the debt position.
-    tag = {
-      gpdMethod: "PublishDebtPosition",
-    };
     url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions/${iupd}/publish`;
 
     r = http.post(url, params);
@@ -100,15 +94,12 @@ export default function () {
 
     check(r, {
       'PublishDebtPosition status is 200': (r) => r.status === 200,
-    }, tag);
+    });
 
     // if the debt position has been correctly published => pay 
     if (r.status === 200) {
       // sleep(1);
       // Pay Payment Option.
-      tag = {
-        gpdMethod: "PayPaymentOption",
-      };
 
       url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/pay`;
 
@@ -127,15 +118,12 @@ export default function () {
 
       check(r, {
         'PayPaymentOption status is 200': (r) => r.status === 200,
-      }, tag);
+      });
 
       // if the payment option has been correctly paid => report
       if (r.status === 200) {
         // sleep(1);
         // Report Transfer.
-        tag = {
-          gpdMethod: "ReportTransfer",
-        };
         url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/transfers/${transfer_id}/report`;
 
         r = http.post(url, params);
@@ -144,14 +132,12 @@ export default function () {
 
         check(r, {
           'ReportTransfer status is 200': (r) => r.status === 200,
-        }, tag);
+        });
 
         // if the transfer has been correctly reported => get
         if (r.status === 200) {
           // Get details of a specific payment option.
-          tag = {
-            gpdMethod: "GetOrganizationPaymentOption",
-          };
+
           url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}`;
 
           r = http.get(url, params);
@@ -160,13 +146,13 @@ export default function () {
 
           check(r, {
             'GetOrganizationPaymentOption status is 200': (r) => r.status === 200,
-          }, tag);
+          });
 
-          console.log(r.body);
+          console.log( "Body: " + r.body);
 
           check(r, {
             'GetOrganizationPaymentOption payment option status is reported': (r) => (JSON.parse(r.body)).status === 'PO_REPORTED',
-          }, tag);
+          });
 
         }
       }

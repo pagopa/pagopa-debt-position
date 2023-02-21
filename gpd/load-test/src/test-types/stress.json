@@ -53,21 +53,6 @@
     ],
     "http_req_duration": [
       "p(99)<100"
-    ],
-    "http_req_duration{gpdMethod:CreateDebtPosition}": [
-      "p(95)<1000"
-    ],
-    "http_req_duration{gpdMethod:PublishDebtPosition}": [
-      "p(95)<1000"
-    ],
-    "http_req_duration{paymentRequest:VerifyPayment}": [
-      "p(95)<1000"
-    ],
-    "http_req_duration{paymentRequest:GetPayment}": [
-      "p(95)<1000"
-    ],
-    "http_req_duration{paymentRequest:SendRT}": [
-      "p(95)<1000"
     ]
   }
 }
