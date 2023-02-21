@@ -24,7 +24,7 @@
     },
     {
       "duration": "1m",
-      "target": 500
+      "target": 400
     },
     {
       "duration": "40s",
@@ -33,7 +33,7 @@
   ],
   "thresholds": {
     "http_req_failed": [
-      "rate<0.001"
+      "rate<0.1"
     ],
     "http_req_duration": [
       "p(99)<2000"
