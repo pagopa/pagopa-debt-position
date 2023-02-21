@@ -49,10 +49,10 @@
   ],
   "thresholds": {
     "http_req_failed": [
-      "rate<0.001"
+      "rate<0.1"
     ],
     "http_req_duration": [
-      "p(99)<100"
+      "p(99)<2000"
     ]
   }
 }

@@ -28,7 +28,7 @@
       "rate<0.1"
     ],
     "http_req_duration": [
-      "p(99)<3000"
+      "p(99)<2000"
     ]
   },
   "setupTimeout": "360s",

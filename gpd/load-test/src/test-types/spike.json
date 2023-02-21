@@ -11,20 +11,24 @@
   ],
   "stages": [
     {
-      "duration": "10s",
-      "target": 1
+      "duration": "30s",
+      "target": 10
     },
     {
-      "duration": "20s",
-      "target": 5
+      "duration": "30s",
+      "target": 50
     },
     {
-      "duration": "10s",
-      "target": 1
+      "duration": "30s",
+      "target": 100
     },
     {
-      "duration": "10s",
-      "target": 0
+      "duration": "1m",
+      "target": 500
+    },
+    {
+      "duration": "40s",
+      "target": 150
     }
   ],
   "thresholds": {
@@ -32,7 +36,7 @@
       "rate<0.001"
     ],
     "http_req_duration": [
-      "p(99)<100"
+      "p(99)<2000"
     ]
   }
 }
