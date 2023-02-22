@@ -189,7 +189,7 @@ stages:
                 -e SPRING_DATASOURCE_USERNAME='$(DATASOURCE_USERNAME)' \
                 -e SPRING_DATASOURCE_PASSWORD='$(DATASOURCE_PASSWORD)' \
                 -e GPD_SCHEMA_NAME='$(APD_SCHEMA_NAME)' \
-                --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.6.3-openjdk-8 mvn clean flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
+                --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
               failOnStderr: false
               workingDirectory: ${{ parameters.REPOSITORY }}
 
@@ -206,14 +206,14 @@ stages:
             persistCredentials: true
             submodules: true
 
-          - task: Cache@2
-            inputs:
-              key: 'maven | "$(Agent.OS)" | pom.xml'
-              restoreKeys: |
-                maven | "$(Agent.OS)"
-                maven
-              path: $(MAVEN_CACHE_FOLDER)
-            displayName: Set Maven Cache
+#          - task: Cache@2
+#            inputs:
+#              key: 'maven | "$(Agent.OS)" | pom.xml'
+#              restoreKeys: |
+#                maven | "$(Agent.OS)"
+#                maven
+#              path: $(MAVEN_CACHE_FOLDER)
+#            displayName: Set Maven Cache
 
           - task: Bash@3
             name: dbmigrationsflywayValidate
@@ -241,14 +241,14 @@ stages:
             persistCredentials: true
             submodules: true
 
-          - task: Cache@2
-            inputs:
-              key: 'maven | "$(Agent.OS)" | pom.xml'
-              restoreKeys: |
-                maven | "$(Agent.OS)"
-                maven
-              path: $(MAVEN_CACHE_FOLDER)
-            displayName: Set Maven Cache
+#          - task: Cache@2
+#            inputs:
+#              key: 'maven | "$(Agent.OS)" | pom.xml'
+#              restoreKeys: |
+#                maven | "$(Agent.OS)"
+#                maven
+#              path: $(MAVEN_CACHE_FOLDER)
+#            displayName: Set Maven Cache
 
           - task: Bash@3
             name: dbmigrationsflywayValidate
