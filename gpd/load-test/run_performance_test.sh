@@ -37,7 +37,7 @@ export script=${SCRIPT}
 export db_name=${DB_NAME}
 export sub_key=${API_SUBSCRIPTION_KEY}
 
-echo "PROD"
+echo "UAT"
 echo ${type}
 
 stack_name=$(cd .. && basename "$PWD")
