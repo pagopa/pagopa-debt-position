@@ -24,7 +24,8 @@
       values:
         - "create_debt_position"
         - "payments_workflow"
-      default: "payments_workflow"
+        - "publish_workflow"
+      default: "publish_workflow"
 
   variables:
     ${{ if eq(parameters['ENVIRONMENT'], 'dev') }}:
