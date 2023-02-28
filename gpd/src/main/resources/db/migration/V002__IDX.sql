@@ -1,2 +1,1 @@
 CREATE INDEX idx_organization_fiscal_code ON payment_position (organization_fiscal_code);
-CREATE INDEX idx_organization_fiscal_code_iupd ON payment_position (organization_fiscal_code, iupd);

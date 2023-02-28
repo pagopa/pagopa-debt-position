@@ -47,7 +47,7 @@ public interface PaymentPositionRepository extends JpaRepository<PaymentPosition
             + "FROM PaymentPosition pp WHERE pp.insertedDate >= :fromDate")
     List<OrganizationModelQueryBean> findDistinctOrganizationsByInsertedDate(LocalDateTime fromDate);
 
-    Optional<PaymentPosition> findPaymentPositionByOrganizationFiscalCodeAndIupd(String organizationFiscalCode, String iupd);
+    Optional<PaymentPosition> findPaymentPositionByOrganizationFiscalCodeAndIupd(String iupd, String organizationFiscalCode);
     
     @EntityGraph(attributePaths = "paymentOption")
     Page<PaymentPosition> findAll(Specification<PaymentPosition> spec, Pageable pageable);
