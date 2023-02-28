@@ -32,7 +32,7 @@ public class PaymentPositionActionsService {
         long t1 = System.currentTimeMillis();
         PaymentPosition ppToPublish = paymentPositionCRUDService.getDebtPositionByIUPD(organizationFiscalCode, iupd);
         long getTime = System.currentTimeMillis() - t1;
-        log.debug("getDebtPositionByIUPD elapsed time: " + getTime);
+        log.info("getDebtPositionByIUPD elapsed time: " + getTime);
 
         if (DebtPositionStatus.getPaymentPosNotPublishableStatus().contains(ppToPublish.getStatus())) {
             throw new AppException(AppError.DEBT_POSITION_NOT_PUBLISHABLE, organizationFiscalCode, iupd);
@@ -71,7 +71,7 @@ public class PaymentPositionActionsService {
         long t2 = System.currentTimeMillis();
         PaymentPosition pp = paymentPositionRepository.saveAndFlush(ppToPublish);
         long saveTime = System.currentTimeMillis() - t2;
-        log.debug("saveAndFlush elapsed time: " + saveTime);
+        log.info("saveAndFlush elapsed time: " + saveTime);
 
         return pp;
     }
