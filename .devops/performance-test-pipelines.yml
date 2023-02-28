@@ -25,6 +25,7 @@
         - "create_debt_position"
         - "payments_workflow"
         - "publish_workflow"
+        - "upd_workflow"
       default: "publish_workflow"
 
   variables:
