@@ -114,7 +114,7 @@ public class PaymentPositionCRUDService {
 //        );
 //
 //        Optional<PaymentPosition> pp = paymentPositionRepository.findOne(spec);
-        Optional<PaymentPosition> pp = paymentPositionRepository.findPaymentPositionByCodeAndIupd(organizationFiscalCode, iupd);
+        Optional<PaymentPosition> pp = paymentPositionRepository.findPaymentPositionByOrganizationFiscalCodeAndIupd(organizationFiscalCode, iupd);
         if (pp.isEmpty()) {
             throw new AppException(AppError.DEBT_POSITION_NOT_FOUND, organizationFiscalCode, iupd);
         }
