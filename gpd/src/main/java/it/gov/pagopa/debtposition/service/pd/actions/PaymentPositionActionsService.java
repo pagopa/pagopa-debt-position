@@ -27,7 +27,6 @@ public class PaymentPositionActionsService {
     private PaymentPositionRepository paymentPositionRepository;
 
 
-    @Transactional
     public PaymentPosition publish(@NotBlank String organizationFiscalCode, @NotBlank String iupd) {
         long t1 = System.currentTimeMillis();
         PaymentPosition ppToPublish = paymentPositionCRUDService.getDebtPositionByIUPD(organizationFiscalCode, iupd);
