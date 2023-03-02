@@ -52,7 +52,6 @@ public class PaymentPositionCRUDService {
     private ModelMapper modelMapper;
 
 
-    @Transactional
     public PaymentPosition create(@NotNull PaymentPosition debtPosition, @NotBlank String organizationFiscalCode) {
 
         final String ERROR_CREATION_LOG_MSG = "Error during debt position creation: %s";
