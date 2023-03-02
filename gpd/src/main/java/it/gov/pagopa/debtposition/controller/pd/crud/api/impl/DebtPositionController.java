@@ -43,13 +43,14 @@ public class DebtPositionController implements IDebtPositionController {
 
     @Override
     public ResponseEntity<PaymentPositionModel> createDebtPosition(String organizationFiscalCode,
-                                                                   @Valid PaymentPositionModel paymentPositionModel) {
+                                                                   @Valid PaymentPositionModel paymentPositionModel,
+                                                                   boolean toPublish) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "createDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, paymentPositionModel.getIupd())));
 
         // flip model to entity
         PaymentPosition debtPosition = modelMapper.map(paymentPositionModel, PaymentPosition.class);
 
-        PaymentPosition createdDebtPos = paymentPositionService.create(debtPosition, organizationFiscalCode);
+        PaymentPosition createdDebtPos = paymentPositionService.create(debtPosition, organizationFiscalCode, toPublish);
 
         if (null != createdDebtPos) {
             return new ResponseEntity<>(modelMapper.map(createdDebtPos, PaymentPositionModel.class), HttpStatus.CREATED);

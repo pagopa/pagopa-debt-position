@@ -136,6 +136,26 @@ class DebtPositionControllerTest {
 		.andExpect(status().isConflict()).andExpect(content().contentType(MediaType.APPLICATION_JSON));
 	}
 
+	@Test
+	void createAndPublishDebtPosition_201() throws Exception {
+		//Creo e pubblico la posizione debitoria
+		mvc.perform(post("/organizations/CRTPUB_12345678901/debtpositions?toPublish=True")
+						.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated()).andExpect(content().contentType(MediaType.APPLICATION_JSON));
+
+		// verifico che lo stato sia stato settato a valid
+		mvc.perform(get("/organizations/CRTPUB_12345678901/debtpositions/12345678901IUPDMOCK1")
+						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+						.value(DebtPositionStatus.VALID.toString()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty());
+
+		// provo a fare una nuova pubblicazione su una posizione debitoria con uno stato non più idoneo
+		mvc.perform(post("/organizations/CRTPUB_12345678901/debtpositions/12345678901IUPDMOCK1/publish")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isConflict());
+	}
+
 	/**
 	 *  GET DEBT POSITION BY IUPD
 	 */
