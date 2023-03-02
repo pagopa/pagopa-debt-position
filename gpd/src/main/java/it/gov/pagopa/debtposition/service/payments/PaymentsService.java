@@ -136,8 +136,9 @@ public class PaymentsService {
             pp.setStatus(DebtPositionStatus.PAID);
         }
 
-
         pp.setLastUpdatedDate(currentDate);
+        pp.setPaymentDate(currentDate);
+
         // salvo l'aggiornamento del pagamento
         paymentPositionRepository.saveAndFlush(pp);
         return poToPay;
