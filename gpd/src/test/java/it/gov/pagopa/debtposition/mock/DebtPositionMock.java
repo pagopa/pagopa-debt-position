@@ -441,7 +441,7 @@ public class DebtPositionMock {
 		pPMock.setEmail("cipriani@roma.it");
 		pPMock.setPostalCode("00100");
 		// payment position properties
-		pPMock.setIupd("12345678901IUPDMOCK3");
+		pPMock.setIupd("12345678901IUPDMOCK4");
 		pPMock.setCompanyName("Comune di Roma");
 		pPMock.setOfficeName("Ufficio condono");
 		pPMock.setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plus(5, ChronoUnit.SECONDS));

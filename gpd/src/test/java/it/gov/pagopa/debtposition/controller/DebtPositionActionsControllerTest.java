@@ -171,12 +171,12 @@ class DebtPositionActionsControllerTest {
 	void publishDebtPosition_min_valid_date_409() throws Exception {
 
 		// creo una posizione debitoria (con 'validity date' impostata) e con due_date di pochissimo più grande della current_date
-		mvc.perform(post("/organizations/PBH409DUEDATE_12345678901/debtpositions")
+		mvc.perform(post("/organizations/PIVA12345678/debtpositions")
 						.content(TestUtil.toJson(DebtPositionMock.get409_Valid_Date_Mock1())).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 
 		// recupero la posizione debitoria e verifico lo stato
-		mvc.perform(get("/organizations/PBH409DUEDATE_12345678901/debtpositions/12345678901IUPDMOCK3")
+		mvc.perform(get("/organizations/PIVA12345678/debtpositions/12345678901IUPDMOCK4")
 						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.status")
@@ -188,7 +188,7 @@ class DebtPositionActionsControllerTest {
 		Awaitility.await().until(() -> LocalDateTime.now(ZoneOffset.UTC).isAfter(currentDatePlusSeconds));
 
 		// porto in pubblicata lo stato della posizione debitoria => devo ottenere 409 per il fatto che currentDate > due_date
-		mvc.perform(post("/organizations/PBH409DUEDATE_12345678901/debtpositions/12345678901IUPDMOCK3/publish")
+		mvc.perform(post("/organizations/PIVA12345678/debtpositions/12345678901IUPDMOCK4/publish")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isConflict());
 
 	}
