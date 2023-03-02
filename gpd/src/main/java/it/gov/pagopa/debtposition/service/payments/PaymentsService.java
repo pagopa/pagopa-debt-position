@@ -137,7 +137,7 @@ public class PaymentsService {
         }
 
         pp.setLastUpdatedDate(currentDate);
-        pp.setPaymentDate(currentDate);
+        pp.setPaymentDate(paymentOptionModel.getPaymentDate());
 
         // salvo l'aggiornamento del pagamento
         paymentPositionRepository.saveAndFlush(pp);
