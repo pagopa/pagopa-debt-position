@@ -105,17 +105,15 @@ public class PaymentPositionCRUDService {
         }
     }
 
-    @Transactional(readOnly = true)
     public PaymentPosition getDebtPositionByIUPD(String organizationFiscalCode,
                                                  String iupd) {
 
-//        Specification<PaymentPosition> spec = Specification.where(
-//                new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
-//                        .and(new PaymentPositionByIUPD(iupd))
-//        );
-//
-//        Optional<PaymentPosition> pp = paymentPositionRepository.findOne(spec);
-        Optional<PaymentPosition> pp = paymentPositionRepository.findPaymentPositionByOrganizationFiscalCodeAndIupd(iupd, organizationFiscalCode);
+        Specification<PaymentPosition> spec = Specification.where(
+                new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
+                        .and(new PaymentPositionByIUPD(iupd))
+        );
+
+        Optional<PaymentPosition> pp = paymentPositionRepository.findOne(spec);
         if (pp.isEmpty()) {
             throw new AppException(AppError.DEBT_POSITION_NOT_FOUND, organizationFiscalCode, iupd);
         }

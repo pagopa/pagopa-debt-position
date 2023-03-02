@@ -46,9 +46,6 @@ public interface PaymentPositionRepository extends JpaRepository<PaymentPosition
     @Query("SELECT DISTINCT new it.gov.pagopa.debtposition.model.payments.OrganizationModelQueryBean(pp.organizationFiscalCode as organizationFiscalCode) "
             + "FROM PaymentPosition pp WHERE pp.insertedDate >= :fromDate")
     List<OrganizationModelQueryBean> findDistinctOrganizationsByInsertedDate(LocalDateTime fromDate);
-
-    @Query("select pp from PaymentPosition pp where pp.iupd = :iupd and pp.organizationFiscalCode = :organizationFiscalCode")
-    Optional<PaymentPosition> findPaymentPositionByOrganizationFiscalCodeAndIupd(@Param("iupd") String iupd, @Param("organizationFiscalCode") String organizationFiscalCode);
     
     @EntityGraph(attributePaths = "paymentOption")
     Page<PaymentPosition> findAll(Specification<PaymentPosition> spec, Pageable pageable);
