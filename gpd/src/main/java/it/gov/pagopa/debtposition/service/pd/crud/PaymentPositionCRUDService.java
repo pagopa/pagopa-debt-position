@@ -12,9 +12,7 @@ import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
-import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByDueDate;
-import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByIUPD;
-import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByOrganizationFiscalCode;
+import it.gov.pagopa.debtposition.repository.specification.*;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.validation.DebtPositionValidation;
 import lombok.extern.slf4j.Slf4j;
@@ -135,10 +133,11 @@ public class PaymentPositionCRUDService {
                 new PaymentPositionByOrganizationFiscalCode(filterAndOrder.getFilter().getOrganizationFiscalCode())
                         .and(new PaymentPositionByDueDate(
                                 filterAndOrder.getFilter().getDueDateFrom(),
-                                filterAndOrder.getFilter().getDueDateTo())));
+                                filterAndOrder.getFilter().getDueDateTo()))
+                        .and(new PaymentPositionByPaymentDate(filterAndOrder.getFilter().getPaymentDate()))
+                        .and(new PaymentPositionByStatus(filterAndOrder.getFilter().getStatus())));
 
         return paymentPositionRepository.findAll(spec, pageable);
-
     }
 
 

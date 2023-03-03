@@ -1,5 +1,6 @@
 package it.gov.pagopa.debtposition.model.filterandorder;
 
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,4 +17,6 @@ public class Filter {
 
     private LocalDateTime dueDateFrom;
     private LocalDateTime dueDateTo;
+    private LocalDateTime paymentDate;
+    private DebtPositionStatus status;
 }

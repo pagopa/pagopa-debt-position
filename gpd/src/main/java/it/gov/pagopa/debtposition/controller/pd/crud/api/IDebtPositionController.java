@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.gov.pagopa.debtposition.model.ProblemJson;
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
@@ -82,6 +83,8 @@ public interface IDebtPositionController {
             @Positive @Parameter(description = "Page number. Page value starts from 0", required = true) @RequestParam Integer page,
             @Valid @Parameter(description = "Filter from due_date (if provided use the format yyyy-MM-dd)") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "due_date_from", required = true) LocalDate dueDateFrom,
             @Valid @Parameter(description = "Filter to due_date (if provided use the format yyyy-MM-dd)") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "due_date_to", required = true) LocalDate dueDateTo,
+            @Valid @Parameter(description = "Filter by payment_date (if provided use the format yyyy-MM-dd)") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "payment_date", required = false)  LocalDate paymentDate,
+            @Valid @Parameter(description = "Filter by debt position status") @RequestParam(value = "status", required = false) DebtPositionStatus status,
             @RequestParam(required = false, name = "orderby", defaultValue = "COMPANY_NAME") @Parameter(description = "Order by INSERTED_DATE, COMPANY_NAME, IUPD or STATUS") Order.PaymentPositionOrder orderBy,
             @RequestParam(required = false, name = "ordering", defaultValue = "DESC") @Parameter(description = "Direction of ordering") Sort.Direction ordering);
 

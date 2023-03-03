@@ -4,6 +4,7 @@ import it.gov.pagopa.debtposition.controller.pd.crud.api.IDebtPositionController
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.filterandorder.Filter;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
@@ -74,7 +75,7 @@ public class DebtPositionController implements IDebtPositionController {
     @Override
     public ResponseEntity<PaymentPositionsInfo> getOrganizationDebtPositions(String organizationFiscalCode,
                                                                              @Positive Integer limit, @Positive Integer page, LocalDate dueDateFrom, LocalDate dueDateTo,
-                                                                             PaymentPositionOrder orderBy, Direction ordering) {
+                                                                             LocalDate paymentDate, DebtPositionStatus status, PaymentPositionOrder orderBy, Direction ordering) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
 
         // Create filter and order object
@@ -83,6 +84,8 @@ public class DebtPositionController implements IDebtPositionController {
                         .organizationFiscalCode(organizationFiscalCode)
                         .dueDateFrom(dueDateFrom != null ? dueDateFrom.atStartOfDay() : null)
                         .dueDateTo(dueDateTo != null ? dueDateTo.atStartOfDay() : null)
+                        .paymentDate(paymentDate != null ? paymentDate.atStartOfDay() : null)
+                        .status(status)
                         .build())
                 .order(Order.builder()
                         .orderBy(orderBy)
@@ -103,8 +106,6 @@ public class DebtPositionController implements IDebtPositionController {
                 .pageInfo(CommonUtil.buildPageInfo(pagePP))
                 .build(),
                 HttpStatus.OK);
-
-
     }
 
     @Override
