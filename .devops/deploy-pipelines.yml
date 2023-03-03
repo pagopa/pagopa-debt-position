@@ -31,6 +31,10 @@ parameters:
       - reporting-batch
       - reporting-service
     default: gpd
+  - name: EXECUTE_MIGRATION
+    displayName: Execute database schema update/migration
+    type: boolean
+    default: false
 
 variables:
   ${{ if eq(parameters['ENV'], 'dev') }}:
@@ -160,7 +164,7 @@ stages:
 
   # DB migrations DEV
   - stage: db_dev_migrations
-    condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'dev'))
+    condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'dev'), eq('${{ parameters.EXECUTE_MIGRATION }}', 'true'))
     pool:
       name: pagopa-dev-linux
     jobs:
@@ -195,24 +199,11 @@ stages:
 
   # DB migrations UAT
   - stage: db_uat_migrations
-    condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'uat'))
+    condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'uat'), eq('${{ parameters.EXECUTE_MIGRATION }}', 'true'))
     pool:
       name: pagopa-uat-linux
     jobs:
-      - job: waitForApprovalDbMigrationsUAT
-        displayName: waiting for approval
-        pool: server
-        timeoutInMinutes: 4320 # 3 days
-        steps:
-          - task: ManualValidation@0
-            displayName: Manual Approval
-            inputs:
-              onTimeout: "reject"
-
       - job: dbMigrationsUAT
-        condition: and(succeeded('waitForApprovalDbMigrationsUAT'), in('${{ parameters.REPOSITORY }}', 'gpd'))
-        displayName: complete DB migration
-        dependsOn: waitForApprovalDbMigrationsUAT
         steps:
           - checkout: self
             clean: true
@@ -243,7 +234,7 @@ stages:
 
   # DB migrations PROD
   - stage: db_prod_migrations
-    condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'prod'))
+    condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'prod'), eq('${{ parameters.EXECUTE_MIGRATION }}', 'true'))
     pool:
       name: pagopa-prod-linux
     jobs:
@@ -285,13 +276,13 @@ stages:
                 -e SPRING_DATASOURCE_USERNAME='$(DATASOURCE_USERNAME)' \
                 -e SPRING_DATASOURCE_PASSWORD='$(DATASOURCE_PASSWORD)' \
                 -e GPD_SCHEMA_NAME='$(APD_SCHEMA_NAME)' \
-                --rm -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:validate -Dflyway.configFiles=apdFlywayConfig.conf
+                --rm -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
               failOnStderr: true
               workingDirectory: ${{ parameters.REPOSITORY }}
 
   # Deploy on Azure
   - stage: deploy
-    condition: and(in(dependencies.db_dev_migrations.result, 'Succeeded', 'Skipped'), in(dependencies.db_uat_migrations.result, 'Succeeded', 'Skipped'), in(dependencies.db_prod_migrations.result, 'Succeeded', 'Skipped'))
+    condition: and(in(dependencies.db_dev_migrations.result, 'Succeeded', 'Skipped'), in(dependencies.db_uat_migrations.result, 'Succeeded', 'Skipped'), in(dependencies.db_prod_migrations.result, 'Succeeded', 'Skipped', 'Rejected'))
     pool:
       vmImage: "ubuntu-latest"
     jobs:
