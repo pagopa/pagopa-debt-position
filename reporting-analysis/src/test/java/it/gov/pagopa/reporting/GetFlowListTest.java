@@ -46,7 +46,7 @@ class GetFlowListTest {
         // precondition
         when(context.getLogger()).thenReturn(logger);
         doReturn(flowsService).when(function).getFlowsServiceInstance(logger);
-        doReturn(flowList).when(flowsService).getByOrganization(organizationId);
+        doReturn(flowList).when(flowsService).getByOrganization(organizationId, "2022-01-01");
 
         final HttpResponseMessage.Builder builder = mock(HttpResponseMessage.Builder.class);
         HttpRequestMessage<Optional<String>> request = mock(HttpRequestMessage.class);
@@ -76,7 +76,7 @@ class GetFlowListTest {
         // precondition
         when(context.getLogger()).thenReturn(logger);
         doReturn(flowsService).when(function).getFlowsServiceInstance(logger);
-        doThrow(InvalidKeyException.class).when(flowsService).getByOrganization(organizationId);
+        doThrow(InvalidKeyException.class).when(flowsService).getByOrganization(organizationId, "2022-01-01");
 
         final HttpResponseMessage.Builder builder = mock(HttpResponseMessage.Builder.class);
         HttpRequestMessage<Optional<String>> request = mock(HttpRequestMessage.class);

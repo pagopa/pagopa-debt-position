@@ -56,7 +56,7 @@ class FlowServiceIntegrationTest {
         List<Flow> flows = null;
         try {
             createTable();
-            flows = flowsService.getByOrganization(organizationId);
+            flows = flowsService.getByOrganization(organizationId, null);
         } catch (Exception e) {
             assertNull(flows);
         }
