@@ -1,0 +1,31 @@
+{
+  "discardResponseBodies": true,
+  "summaryTrendStats": [
+    "avg",
+    "min",
+    "med",
+    "max",
+    "p(95)",
+    "p(99)",
+    "p(99.99)",
+    "count"
+  ],
+  "scenarios": {
+    "contacts": {
+      "executor": "constant-arrival-rate",
+      "duration": "3m",
+      "rate": 300,
+      "timeUnit": "1s",
+      "preAllocatedVUs": 2,
+      "maxVUs": 100
+    }
+  },
+  "thresholds": {
+    "http_req_failed": [
+      "rate<0.1"
+    ],
+    "http_req_duration": [
+      "p(99)<2000"
+    ]
+  }
+}

@@ -25,5 +25,5 @@ do
     CMD_CHECK=`curl -o /dev/null -s -w "%{http_code}\n" $URL_CHECK`
 done
 
-open -na "Google Chrome" --args -incognito http://localhost:8085/swagger-ui/index.html
+# open -na "Google Chrome" --args -incognito http://localhost:8085/swagger-ui/index.html
 # open http://localhost:8085/swagger-ui/index.html

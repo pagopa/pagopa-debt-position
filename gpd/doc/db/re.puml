@@ -30,6 +30,7 @@ entity payment_position {
   * inserted_date 
     publish_date ( ACTION publish )
     validity_date ( cron job )
+    payment_date
   * min_due_date (min due_date value of the n payment_option children) 
   * max_due_date (max due_date value of the n payment_option children) 
   * status 
