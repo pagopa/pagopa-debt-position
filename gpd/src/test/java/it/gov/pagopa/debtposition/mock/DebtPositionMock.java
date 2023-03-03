@@ -87,6 +87,10 @@ public class DebtPositionMock {
 		return createPaymentPosition409_Min_Due_Date_Mock1();
 	}
 
+	public final static PaymentPositionDTO get409_Valid_Date_Mock1() {
+		return createPaymentPosition409_Valid_Date_Mock1();
+	}
+
 
 	public static PaymentPositionDTO createPaymentPositionMock1() {
 
@@ -418,6 +422,30 @@ public class DebtPositionMock {
 		pPMock.setOfficeName("Ufficio tributario");
 		pPMock.addPaymentOptions(createPaymentOptions_Min_Due_Date_Mock1());
 		pPMock.addPaymentOptions(createPaymentOptions_Min_Due_Date_Mock2());
+
+		return pPMock;
+	}
+
+	public static PaymentPositionDTO createPaymentPosition409_Valid_Date_Mock1() {
+
+		PaymentPositionDTO pPMock = new PaymentPositionDTO();
+		// debtor properties
+		pPMock.setFiscalCode("PIVA12345678");
+		pPMock.setType(Type.G);
+		pPMock.setFullName("Cipriani Srl");
+		pPMock.setPhone("3330987654");
+		pPMock.setStreetName("Via di novoli");
+		pPMock.setCivicNumber("50/2");
+		pPMock.setProvince("RM");
+		pPMock.setCountry("IT");
+		pPMock.setEmail("cipriani@roma.it");
+		pPMock.setPostalCode("00100");
+		// payment position properties
+		pPMock.setIupd("12345678901IUPDMOCK4");
+		pPMock.setCompanyName("Comune di Roma");
+		pPMock.setOfficeName("Ufficio condono");
+		pPMock.setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plus(5, ChronoUnit.SECONDS));
+		pPMock.addPaymentOptions(createPaymentOptionsMock1());
 
 		return pPMock;
 	}

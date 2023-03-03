@@ -48,7 +48,8 @@ public interface IDebtPositionController {
     ResponseEntity<PaymentPositionModel> createDebtPosition(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
-            @Valid @RequestBody PaymentPositionModel paymentPositionModel);
+            @Valid @RequestBody PaymentPositionModel paymentPositionModel,
+            @RequestParam(required = false, defaultValue = "false") boolean toPublish);
 
 
     @Operation(summary = "Return the details of a specific debt position.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizationDebtPositionByIUPD")
