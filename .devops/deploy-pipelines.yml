@@ -185,7 +185,7 @@ stages:
             displayName: Set Maven Cache
 
           - task: Bash@3
-            name: dbmigrationsflywayValidate
+            name: dbmigrationsflywayMigrate
             inputs:
               targetType: "inline"
               script: |
@@ -238,20 +238,7 @@ stages:
     pool:
       name: pagopa-prod-linux
     jobs:
-      - job: waitForApprovalDbMigrationsPROD
-        displayName: waiting for approval
-        pool: server
-        timeoutInMinutes: 4320 # 3 days
-        steps:
-          - task: ManualValidation@0
-            displayName: Manual Approval
-            inputs:
-              onTimeout: "reject"
-
       - job: dbMigrationsPROD
-        condition: and(succeeded('waitForApprovalDbMigrationsPROD'), in('${{ parameters.REPOSITORY }}', 'gpd'))
-        displayName: complete DB migration
-        dependsOn: waitForApprovalDbMigrationsPROD
         steps:
           - checkout: self
             clean: true
@@ -268,7 +255,7 @@ stages:
             displayName: Set Maven Cache
 
           - task: Bash@3
-            name: dbmigrationsflywayValidate
+            name: dbmigrationsflywayMigrate
             inputs:
               targetType: "inline"
               script: |
