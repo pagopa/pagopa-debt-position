@@ -1,0 +1,52 @@
+  # azure-pipelines.yml
+  trigger: none
+
+  parameters:
+    - name: "ENVIRONMENT"
+      displayName: "Environment"
+      type: string
+      values:
+        - "dev"
+        - "uat"
+      default: "dev"
+    - name: "TEST_TYPE"
+      displayName: "Test type"
+      type: string
+      values:
+        - "load"
+        - "spike"
+        - "stress"
+        - "ramping"
+        - "constant"
+    - name: "SCRIPT"
+      displayName: "Script name"
+      type: string
+      values:
+        - "create_debt_position"
+        - "payments_workflow"
+        - "publish_workflow"
+        - "upd_workflow"
+      default: "publish_workflow"
+
+  variables:
+    ${{ if eq(parameters['ENVIRONMENT'], 'dev') }}:
+      poolImage: 'pagopa-dev-loadtest-linux'
+      API_SUBSCRIPTION_KEY: $(DEV_API_SUBSCRIPTION_KEY)
+    ${{ if eq(parameters['ENVIRONMENT'], 'uat') }}:
+      poolImage: 'pagopa-uat-loadtest-linux'
+      API_SUBSCRIPTION_KEY: $(UAT_API_SUBSCRIPTION_KEY)
+
+
+  pool:
+    name: $(poolImage)
+
+  steps:
+    - script: |
+        cd ./gpd/load-test/src
+        docker pull grafana/k6
+      displayName: Pull k6 image
+
+    - script: |
+        cd ./gpd/load-test
+        sh ./run_performance_test.sh ${{ parameters.ENVIRONMENT }} ${{ parameters.TEST_TYPE }} ${{ parameters.SCRIPT }} gpdk6 $(API_SUBSCRIPTION_KEY)
+      displayName: Run k6 ${{ parameters.SCRIPT }} on ${{ parameters.ENVIRONMENT }}

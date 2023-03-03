@@ -1,0 +1,44 @@
+{
+  "summaryTrendStats": [
+    "avg",
+    "min",
+    "med",
+    "max",
+    "p(95)",
+    "p(99)",
+    "p(99.99)",
+    "count"
+  ],
+  "discardResponseBodies": true,
+  "scenarios": {
+    "contacts": {
+      "executor": "ramping-arrival-rate",
+      "startRate": 30,
+      "timeUnit": "1m",
+      "preAllocatedVUs": 2,
+      "maxVUs": 100,
+      "stages": [
+        {
+          "duration": "1m",
+          "target": 100
+        },
+        {
+          "duration": "2m",
+          "target": 200
+        },
+        {
+          "duration": "2m",
+          "target": 300
+        }
+      ]
+    }
+  },
+  "thresholds": {
+    "http_req_failed": [
+      "rate<0.1"
+    ],
+    "http_req_duration": [
+      "p(99)<2000"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "environment": [
+    {
+      "env": "dev",
+      "host": "https://api.dev.platform.pagopa.it/gpd/api/v1"
+    }
+  ]
+}
+

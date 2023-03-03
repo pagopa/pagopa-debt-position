@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.logging.Logger;
 
 
 @Service
@@ -26,9 +27,12 @@ public class PaymentPositionActionsService {
     private PaymentPositionRepository paymentPositionRepository;
 
 
-    @Transactional
     public PaymentPosition publish(@NotBlank String organizationFiscalCode, @NotBlank String iupd) {
+        long t1 = System.currentTimeMillis();
         PaymentPosition ppToPublish = paymentPositionCRUDService.getDebtPositionByIUPD(organizationFiscalCode, iupd);
+        long getTime = System.currentTimeMillis() - t1;
+        log.info("getDebtPositionByIUPD elapsed time: " + getTime);
+
         if (DebtPositionStatus.getPaymentPosNotPublishableStatus().contains(ppToPublish.getStatus())) {
             throw new AppException(AppError.DEBT_POSITION_NOT_PUBLISHABLE, organizationFiscalCode, iupd);
         }
@@ -63,8 +67,12 @@ public class PaymentPositionActionsService {
             throw new AppException(AppError.DEBT_POSITION_PUBLISH_VALIDITY_DATE_MISMATCH, organizationFiscalCode, iupd);
         }
 
-        return paymentPositionRepository.saveAndFlush(ppToPublish);
+        long t2 = System.currentTimeMillis();
+        PaymentPosition pp = paymentPositionRepository.saveAndFlush(ppToPublish);
+        long saveTime = System.currentTimeMillis() - t2;
+        log.info("saveAndFlush elapsed time: " + saveTime);
 
+        return pp;
     }
 
 

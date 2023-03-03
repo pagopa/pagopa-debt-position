@@ -28,8 +28,8 @@ k6 run -e BASE_URL=https://api.uat.platform.pagopa.it/gpd/api/v1 gpd/load-test/s
 
 On localhost 
 ```
-k6 run -e BASE_URL=http://localhost:8080 gpd/load-test/src/create_debt_postion.js
-k6 run -e BASE_URL=http://localhost:8080 gpd/load-test/src/payments_workflow.js
+k6 run -e BASE_URL=http://localhost:8085 gpd/load-test/src/create_debt_postion.js
+k6 run -e BASE_URL=http://localhost:8085 gpd/load-test/src/payments_workflow.js
 ```
 
 
