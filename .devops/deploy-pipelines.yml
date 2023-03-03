@@ -199,7 +199,20 @@ stages:
     pool:
       name: pagopa-uat-linux
     jobs:
+      - job: waitForApprovalDbMigrationsUAT
+        displayName: waiting for approval
+        pool: server
+        timeoutInMinutes: 4320 # 3 days
+        steps:
+          - task: ManualValidation@0
+            displayName: Manual Approval
+            inputs:
+              onTimeout: "reject"
+
       - job: dbMigrationsUAT
+        condition: and(succeeded('waitForApprovalDbMigrationsUAT'), in('${{ parameters.REPOSITORY }}', 'gpd'))
+        displayName: complete DB migration
+        dependsOn: waitForApprovalDbMigrationsUAT
         steps:
           - checkout: self
             clean: true
@@ -234,7 +247,20 @@ stages:
     pool:
       name: pagopa-prod-linux
     jobs:
+      - job: waitForApprovalDbMigrationsPROD
+        displayName: waiting for approval
+        pool: server
+        timeoutInMinutes: 4320 # 3 days
+        steps:
+          - task: ManualValidation@0
+            displayName: Manual Approval
+            inputs:
+              onTimeout: "reject"
+
       - job: dbMigrationsPROD
+        condition: and(succeeded('waitForApprovalDbMigrationsPROD'), in('${{ parameters.REPOSITORY }}', 'gpd'))
+        displayName: complete DB migration
+        dependsOn: waitForApprovalDbMigrationsPROD
         steps:
           - checkout: self
             clean: true
