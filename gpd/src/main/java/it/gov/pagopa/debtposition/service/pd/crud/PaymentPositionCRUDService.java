@@ -16,6 +16,7 @@ import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByDueD
 import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByIUPD;
 import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByOrganizationFiscalCode;
 import it.gov.pagopa.debtposition.util.CommonUtil;
+import it.gov.pagopa.debtposition.util.PublishPaymentUtil;
 import it.gov.pagopa.debtposition.validation.DebtPositionValidation;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
@@ -53,7 +54,7 @@ public class PaymentPositionCRUDService {
     private ModelMapper modelMapper;
 
 
-    public PaymentPosition create(@NotNull PaymentPosition debtPosition, @NotBlank String organizationFiscalCode) {
+    public PaymentPosition create(@NotNull PaymentPosition debtPosition, @NotBlank String organizationFiscalCode, boolean toPublish) {
 
         final String ERROR_CREATION_LOG_MSG = "Error during debt position creation: %s";
 
@@ -88,7 +89,12 @@ public class PaymentPositionCRUDService {
                 }
             }
 
-            // Inserisco la posizione debitoria
+            //Se la pubblicazione immediata è richiesta, si procede
+            if(toPublish){
+                PublishPaymentUtil.publishProcess(debtPosition);
+            }
+
+            //Inserisco (ed eventualmente pubblico)la posizione debitoria
             return paymentPositionRepository.saveAndFlush(debtPosition);
 
         } catch (DataIntegrityViolationException e) {
@@ -175,7 +181,7 @@ public class PaymentPositionCRUDService {
             paymentPositionRepository.flush();
             // the version is increased at each change
             ppToUpdate.setVersion(ppToUpdate.getVersion()+1);
-            return this.create(ppToUpdate, organizationFiscalCode);
+            return this.create(ppToUpdate, organizationFiscalCode, false);
         	
         } catch (ValidationException e) {
             throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
