@@ -9,19 +9,21 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
 public class PaymentPositionByPaymentDate implements Specification<PaymentPosition> {
 
-    private LocalDateTime paymentDate;
+    private LocalDate paymentDate;
 
     @Override
     public Predicate toPredicate(Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
         if (paymentDate == null) {
             return cb.isTrue(cb.literal(true)); // always true = no filtering
         }
-        return cb.equal(root.get("paymentDate"), this.paymentDate);
+
+        return cb.between(root.get("paymentDate"), paymentDate.atStartOfDay(), paymentDate.atTime(LocalTime.MAX));
     }
 }

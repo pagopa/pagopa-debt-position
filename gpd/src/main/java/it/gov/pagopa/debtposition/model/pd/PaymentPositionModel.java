@@ -55,6 +55,8 @@ public class PaymentPositionModel implements Serializable {
     private String officeName; // es. Ufficio Tributi
     private LocalDateTime validityDate;
     @JsonProperty(access = Access.READ_ONLY)
+    private LocalDateTime paymentDate;
+    @JsonProperty(access = Access.READ_ONLY)
     private DebtPositionStatus status;
 
     private List<PaymentOptionModel> paymentOption = new ArrayList<>();

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -17,6 +18,6 @@ public class Filter {
 
     private LocalDateTime dueDateFrom;
     private LocalDateTime dueDateTo;
-    private LocalDateTime paymentDate;
+    private LocalDate paymentDate;
     private DebtPositionStatus status;
 }

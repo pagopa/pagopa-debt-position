@@ -84,7 +84,7 @@ public class DebtPositionController implements IDebtPositionController {
                         .organizationFiscalCode(organizationFiscalCode)
                         .dueDateFrom(dueDateFrom != null ? dueDateFrom.atStartOfDay() : null)
                         .dueDateTo(dueDateTo != null ? dueDateTo.atStartOfDay() : null)
-                        .paymentDate(paymentDate != null ? paymentDate.atStartOfDay() : null)
+                        .paymentDate(paymentDate)
                         .status(status)
                         .build())
                 .order(Order.builder()
