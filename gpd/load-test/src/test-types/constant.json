@@ -13,7 +13,7 @@
   "scenarios": {
     "contacts": {
       "executor": "constant-arrival-rate",
-      "duration": "3m",
+      "duration": "30m",
       "rate": 300,
       "timeUnit": "1s",
       "preAllocatedVUs": 2,

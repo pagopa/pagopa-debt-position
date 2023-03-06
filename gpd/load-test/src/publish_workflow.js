@@ -32,7 +32,7 @@ export default function () {
 
   // Create new debt position (no validity date).
 
-  var url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions?toPublish=True`;
+  var url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions`;
 
   var payload = JSON.stringify(
     {
@@ -81,6 +81,20 @@ export default function () {
   check(r, {
     'CreateDebtPosition status is 201': (r) => r.status === 201,
   });
-}
 
+  // if the debt position has been correctly created => publish
+  if (r.status === 201) {
+    // sleep(1);
+    // Publish the debt position.
+    url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions/${iupd}/publish`;
+
+    r = http.post(url, params);
+
+    console.log("PublishDebtPosition call - creditor_institution_code = " + creditor_institution_code + ", iupd = " + iupd + ", Status = " + r.status);
+
+    check(r, {
+      'PublishDebtPosition status is 200': (r) => r.status === 200,
+    });
+  }
+}
 
