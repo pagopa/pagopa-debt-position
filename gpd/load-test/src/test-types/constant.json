@@ -17,7 +17,7 @@
       "rate": 300,
       "timeUnit": "1s",
       "preAllocatedVUs": 100,
-      "maxVUs": 1000
+      "maxVUs": 200
     }
   },
   "thresholds": {
