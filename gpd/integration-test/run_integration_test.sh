@@ -1,12 +1,11 @@
 # example: sh ./run_integration_test.sh <local|dev|uat|prod> <sub-key>
 set -e
 
-# create containers
-cd ../docker || exit
-sh ./run_docker.sh "$1"
+export ENV=$1
+export GPD_SUBSCRIPTION_KEY=$2
 
-# run integration tests
-export subkey=$2
+# run integration tests (application must be running)
+export GPD_SUBSCRIPTION_KEY=$2
 cd ../integration-test/src || exit
 yarn install
-yarn test
+yarn test:$ENV
