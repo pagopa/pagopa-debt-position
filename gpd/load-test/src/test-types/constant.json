@@ -16,8 +16,7 @@
       "duration": "30m",
       "rate": 300,
       "timeUnit": "1s",
-      "preAllocatedVUs": 2,
-      "maxVUs": 100
+      "preAllocatedVUs": 2
     }
   },
   "thresholds": {
