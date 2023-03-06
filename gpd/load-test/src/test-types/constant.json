@@ -15,7 +15,8 @@
       "executor": "constant-arrival-rate",
       "duration": "3m",
       "rate": 300,
-      "timeUnit": "1s"
+      "timeUnit": "1s",
+      "preAllocatedVUs": 2
     }
   },
   "thresholds": {
