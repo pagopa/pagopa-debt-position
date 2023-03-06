@@ -1,20 +1,6 @@
 const {Given, When, Then, AfterAll, Before} = require('@cucumber/cucumber')
 const { executeHealthCheckForGPD } = require('./logic/health_checks_logic');
-const {
-    assertPaymentTokenExistence,
-    executeDebtPositionCreationAndPublishing,
-    executeDebtPositionVerification,
-    executeDebtPositionVerificationAndActivation,
-    readCreditorInstitutionBrokerInfo,
-    readCreditorInstitutionInfo,
-    readInvalidCreditorInstitutionInfo,
-    readStationInfo,
-    readValidCreditorInstitutionInfo,
-    sendActivatePaymentNoticeRequest,
-    sendSendPaymentOutcomeRequest,
-    sendSendRTRequest,
-    sendVerifyPaymentNoticeRequest
-} = require('./logic/gpd_logic');
+const { executeDebtPositionCreation } = require('./logic/gpd_logic');
 const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, executeAfterAllStep } = require('./logic/common_logic');
 const { createOrganizationInfo, createServiceInfo, sendInvalidDemandPaymentNoticeRequest, sendValidDemandPaymentNoticeRequest } = require('./logic/gps_logic');
 const { gpdSessionBundle, gpsSessionBundle } = require('./utility/data');
