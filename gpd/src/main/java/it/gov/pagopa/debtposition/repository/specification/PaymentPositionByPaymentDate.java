@@ -5,25 +5,31 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import javax.persistence.criteria.*;
+import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
 public class PaymentPositionByPaymentDate implements Specification<PaymentPosition> {
 
-    private LocalDate paymentDate;
+    private LocalDateTime dateFrom;
+    private LocalDateTime dateTo;
+
+    private static final String DATE_FIELD = "paymentDate";
 
     @Override
     public Predicate toPredicate(Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-        if (paymentDate == null) {
-            return cb.isTrue(cb.literal(true)); // always true = no filtering
+
+        if (dateFrom != null && dateTo == null) {
+            return cb.greaterThanOrEqualTo(root.get(DATE_FIELD), dateFrom);
+        } else if (dateFrom == null && dateTo != null) {
+            return cb.lessThanOrEqualTo(root.get(DATE_FIELD), dateTo);
+        }
+        // testo solo la dateFrom, la dateTo sarà sicuramente not null arrivati a questa if
+        else if (dateFrom != null) {
+            return cb.between(root.get(DATE_FIELD), dateFrom, dateTo);
         }
 
-        return cb.between(root.get("paymentDate"), paymentDate.atStartOfDay(), paymentDate.atTime(LocalTime.MAX));
+        return cb.isTrue(cb.literal(true));
     }
 }

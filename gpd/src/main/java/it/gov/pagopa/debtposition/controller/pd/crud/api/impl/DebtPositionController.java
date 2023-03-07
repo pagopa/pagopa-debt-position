@@ -1,5 +1,6 @@
 package it.gov.pagopa.debtposition.controller.pd.crud.api.impl;
 
+import it.gov.pagopa.debtposition.config.ExclusiveParam;
 import it.gov.pagopa.debtposition.controller.pd.crud.api.IDebtPositionController;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Controller;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 
@@ -73,9 +75,11 @@ public class DebtPositionController implements IDebtPositionController {
     }
 
     @Override
+    @ExclusiveParam
     public ResponseEntity<PaymentPositionsInfo> getOrganizationDebtPositions(String organizationFiscalCode,
-                                                                             @Positive Integer limit, @Positive Integer page, LocalDate dueDateFrom, LocalDate dueDateTo,
-                                                                             LocalDate paymentDate, DebtPositionStatus status, PaymentPositionOrder orderBy, Direction ordering) {
+                                                                             @Positive Integer limit, @Positive Integer page, LocalDate dueDateFrom,
+                                                                             LocalDate dueDateTo, LocalDate paymentDateFrom, LocalDate paymentDateTo,
+                                                                             DebtPositionStatus status, PaymentPositionOrder orderBy, Direction ordering) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
 
         // Create filter and order object
@@ -83,8 +87,9 @@ public class DebtPositionController implements IDebtPositionController {
                 .filter(Filter.builder()
                         .organizationFiscalCode(organizationFiscalCode)
                         .dueDateFrom(dueDateFrom != null ? dueDateFrom.atStartOfDay() : null)
-                        .dueDateTo(dueDateTo != null ? dueDateTo.atStartOfDay() : null)
-                        .paymentDate(paymentDate)
+                        .dueDateTo(dueDateTo != null ? dueDateTo.atTime(LocalTime.MAX) : null)
+                        .paymentDateFrom(paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : null)
+                        .paymentDateTo(paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : null)
                         .status(status)
                         .build())
                 .order(Order.builder()
@@ -92,7 +97,6 @@ public class DebtPositionController implements IDebtPositionController {
                         .ordering(ordering)
                         .build())
                 .build();
-
 
         Page<PaymentPosition> pagePP = paymentPositionService.getOrganizationDebtPositions(limit, page, filterOrder);
 

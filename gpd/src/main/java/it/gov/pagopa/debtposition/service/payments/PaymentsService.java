@@ -134,10 +134,10 @@ public class PaymentsService {
             pp.setStatus(DebtPositionStatus.PARTIALLY_PAID);
         } else {
             pp.setStatus(DebtPositionStatus.PAID);
+            pp.setPaymentDate(paymentOptionModel.getPaymentDate());
         }
 
         pp.setLastUpdatedDate(currentDate);
-        pp.setPaymentDate(paymentOptionModel.getPaymentDate());
 
         // salvo l'aggiornamento del pagamento
         paymentPositionRepository.saveAndFlush(pp);

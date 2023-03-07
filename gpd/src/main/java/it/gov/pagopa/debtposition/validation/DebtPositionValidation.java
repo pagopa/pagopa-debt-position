@@ -13,9 +13,12 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 public class DebtPositionValidation {
@@ -59,11 +62,19 @@ public class DebtPositionValidation {
         checkTransferAccountable(ppToReport, iuv, transferId);
     }
     
-    public static void checkDatesInterval (LocalDateTime from, LocalDateTime to, int maxDaysInterval) {
-    	if (!(from.isBefore(to) || from.isEqual(to)) || Duration.between(from, to).toDays() > maxDaysInterval) {
+    public static List<LocalDateTime> checkDatesInterval (LocalDateTime from, LocalDateTime to, int maxDaysInterval) {
+        if(from == null && to == null)
+            return null;
+        if(from != null && to == null)
+            to = from.plus(maxDaysInterval, ChronoUnit.DAYS).with(LocalTime.MAX);
+        else if(from == null)
+            from = to.minus(maxDaysInterval, ChronoUnit.DAYS).with(LocalTime.MIN);
+
+        if (!(from.isBefore(to) || from.isEqual(to)) || Duration.between(from, to).toDays() > maxDaysInterval) {
     		throw new AppException(AppError.DEBT_POSITION_NOT_RECOVERABLE, from, to, Duration.between(from, to).toDays(), maxDaysInterval);
     	}
-    	
+
+        return Arrays.asList(from, to);
     }
 
     private static void checkPaymentPositionContentCongruency(final PaymentPosition pp) {
