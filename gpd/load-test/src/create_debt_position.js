@@ -84,7 +84,7 @@ export default function () {
 
   var r = http.post(url, payload, params);
 
-  console.log("creditor_institution_code " + creditor_institution_code + " Status " + r.status);
+  //console.log("creditor_institution_code " + creditor_institution_code + " Status " + r.status);
 
   check(r, {
     'status is 201': (r) => r.status === 201,
