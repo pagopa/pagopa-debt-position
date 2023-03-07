@@ -14,8 +14,8 @@
     "contacts": {
       "executor": "ramping-arrival-rate",
       "startRate": 30,
-      "timeUnit": "1m",
-      "preAllocatedVUs": 2,
+      "timeUnit": "1s",
+      "preAllocatedVUs": 200,
       "maxVUs": 10000,
       "stages": [
         {
