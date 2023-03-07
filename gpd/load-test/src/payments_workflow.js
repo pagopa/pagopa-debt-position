@@ -76,7 +76,7 @@ export default function () {
 
   var r = http.post(url, payload, params);
 
-  console.log("CreateDebtPosition call - creditor_institution_code = " + creditor_institution_code + ", Status = " + r.status);
+  //console.log("CreateDebtPosition call - creditor_institution_code = " + creditor_institution_code + ", Status = " + r.status);
 
   check(r, {
     'CreateDebtPosition status is 201': (r) => r.status === 201,
@@ -90,7 +90,7 @@ export default function () {
 
     r = http.post(url, params);
 
-    console.log("PublishDebtPosition call - creditor_institution_code = " + creditor_institution_code + ", iupd = " + iupd + ", Status = " + r.status);
+    //console.log("PublishDebtPosition call - creditor_institution_code = " + creditor_institution_code + ", iupd = " + iupd + ", Status = " + r.status);
 
     check(r, {
       'PublishDebtPosition status is 200': (r) => r.status === 200,
@@ -114,7 +114,7 @@ export default function () {
 
       r = http.post(url, payload, params);
 
-      console.log("PayPaymentOption call - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv + ", Status = " + r.status);
+      //console.log("PayPaymentOption call - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv + ", Status = " + r.status);
 
       check(r, {
         'PayPaymentOption status is 200': (r) => r.status === 200,
@@ -128,7 +128,7 @@ export default function () {
 
         r = http.post(url, params);
 
-        console.log("ReportTransfer call - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv + ", transfer_id = " + transfer_id + ", Status = " + r.status);
+        //console.log("ReportTransfer call - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv + ", transfer_id = " + transfer_id + ", Status = " + r.status);
 
         check(r, {
           'ReportTransfer status is 200': (r) => r.status === 200,
@@ -142,7 +142,7 @@ export default function () {
 
           r = http.get(url, params);
 
-          console.log("GetOrganizationPaymentOption call - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv + ", Status = " + r.status);
+          //console.log("GetOrganizationPaymentOption call - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv + ", Status = " + r.status);
 
           check(r, {
             'GetOrganizationPaymentOption status is 200': (r) => r.status === 200,
