@@ -12,14 +12,11 @@ function get(url, config) {
 }
 
 function post(url, body, config) {
-    console.log(url);
-    console.log(body);
     return axios.post(url, body, config)
         .then(res => {
             return res;
         })
         .catch(error => {
-            console.log(error.response.data);
             return error.response;
         });
 }

@@ -15,7 +15,7 @@ async function executeDebtPositionCreation(bundle, idOrg, iupd) {
     bundle.organizationCode = idOrg;
     bundle.debtPosition = buildDebtPositionDynamicData(bundle, iupd);
     let response = await createDebtPosition(bundle.organizationCode, buildCreateDebtPositionRequest(bundle.debtPosition, bundle.payer));
-    assert.strictEqual(response.status, 201);
+    bundle.responseToCheck = response;
 }
 
 async function executeDebtPositionDeletion(idOrg, iupd) {

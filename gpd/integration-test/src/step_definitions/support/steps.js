@@ -24,4 +24,4 @@ Given('a random organization id', async function () {
     await executeDebtPositionDeletion(idOrg, iupd);
     });
 When('the debt position is created', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd));
-Then('the debt position gets the status code {int}', (statusCode) => assertStatusCode(getValidBundle(gpdSessionBundle, gpsSessionBundle), statusCode));
+Then('the debt position gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));

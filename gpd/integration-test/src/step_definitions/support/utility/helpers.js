@@ -10,16 +10,6 @@ function buildStringFromDate(rawDate) {
   return [rawDate.getFullYear(), (mm>9 ? '' : '0') + mm, (dd>9 ? '' : '0') + dd].join('-');
 }
 
-function getValidBundle(gpdSessionBundle, gpsSessionBundle) {
-  let bundle = undefined;
-  if (gpsSessionBundle.isExecuting) {
-    bundle = gpsSessionBundle;
-  } else if (gpdSessionBundle.isExecuting) {
-    bundle = gpdSessionBundle;
-  }
-  return bundle;
-}
-
 function makeidMix(length) {
   var result           = '';
   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -43,7 +33,6 @@ function makeidNumber(length) {
 module.exports = {
   addDays,
   buildStringFromDate,
-  getValidBundle,
   makeidMix,
   makeidNumber,
 }
