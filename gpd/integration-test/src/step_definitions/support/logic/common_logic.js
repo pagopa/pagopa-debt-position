@@ -18,9 +18,19 @@ async function assertStatusCode(bundle, statusCode) {
     assert.strictEqual(bundle.responseToCheck.status, statusCode);
 }
 
+function randomOrg() {
+    return "Org_" + Math.floor(Math.random() * 100);
+}
+
+function randomIupd() {
+    return "IUPD_" + Math.floor(Math.random() * 100);
+}
+
 module.exports = {
     assertAmount,
     assertFaultCode,
     assertOutcome,
     assertStatusCode,
+    randomOrg,
+    randomIupd,
 }

@@ -1,8 +1,8 @@
 const { addDays, buildStringFromDate, makeidNumber, makeidMix,  } = require("./helpers");
 
-function buildDebtPositionDynamicData(gpdSessionBundle) {
+function buildDebtPositionDynamicData(gpdSessionBundle, iupdIn) {
     return {
-        iupd: makeidMix(35),
+        iupd: iupdIn,
         iuv1: `${gpdSessionBundle.debtPosition.iuvPrefix}${makeidNumber(15)}`,
         iuv2: makeidNumber(17),
         iuv3: makeidNumber(17),
