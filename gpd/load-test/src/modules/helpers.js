@@ -56,4 +56,50 @@ Date.prototype.subDays = function(days) {
   return date;
 }
 
+export function getRandomItemFromArray(items) {
+	return items[Math.floor(Math.random()*items.length)];
+}
+
+export function getPayload(iupd, iuv, due_date, retention_date, transfer_id) {
+    return JSON.stringify(
+       {
+         "iupd": iupd,
+         "type": "F",
+         "fiscalCode": "JHNDOE00A01F205N",
+         "fullName": "John Doe",
+         "streetName": "streetName",
+         "civicNumber": "11",
+         "postalCode": "00100",
+         "city": "city",
+         "province": "RM",
+         "region": "RM",
+         "country": "IT",
+         "email": "lorem@lorem.com",
+         "phone": "333-123456789",
+         "companyName": "companyName",
+         "officeName": "officeName",
+         "paymentOption": [
+           {
+             "iuv": iuv,
+             "amount": 10000,
+             "description": "Canone Unico Patrimoniale - CORPORATE",
+             "isPartialPayment": false,
+             "dueDate": due_date,
+             "retentionDate": retention_date,
+             "fee": 0,
+             "transfer": [
+               {
+                 "idTransfer": transfer_id,
+                 "amount": 10000,
+                 "remittanceInformation": "remittanceInformation 1",
+                 "category": "9/0101108TS/",
+                 "iban": "IT0000000000000000000000000"
+               }
+             ]
+           }
+         ]
+       }
+     );
+}
+
 
