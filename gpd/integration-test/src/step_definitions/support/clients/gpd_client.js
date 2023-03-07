@@ -31,6 +31,23 @@ function publishDebtPosition(orgId, iupd) {
     })
 }
 
+function getDebtPositionList(orgId) {
+    return get(gpd_host + `/organizations/${orgId}/debtpositions/`, {
+        timeout: 10000,
+        params: {
+            due_date_from: "2023-03-07",
+            due_date_to: "2023-04-06",
+            orderby: "INSERTED_DATE",
+            ordering: "ASC",
+            page: 0
+        },
+        headers: {
+            "Ocp-Apim-Subscription-Key": process.env.GPD_SUBSCRIPTION_KEY,
+            "Content-Type": "application/json"
+        }
+    })
+}
+
 function deleteDebtPosition(orgId, iupd) {
     return del(gpd_host + `/organizations/${orgId}/debtpositions/${iupd}/publish`, "", {
         timeout: 10000,
@@ -45,5 +62,6 @@ module.exports = {
     createDebtPosition,
     gpdHealthCheck,
     publishDebtPosition,
+    getDebtPositionList,
     deleteDebtPosition,
 }

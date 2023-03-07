@@ -1,7 +1,8 @@
 const {
     createDebtPosition,
     publishDebtPosition,
-    deleteDebtPosition
+    deleteDebtPosition,
+    getDebtPositionList,
 } = require("../clients/gpd_client");
 
 const {
@@ -9,12 +10,15 @@ const {
     buildCreateDebtPositionRequest
 } = require("../utility/request_builders");
 
-const assert = require("assert");
-
 async function executeDebtPositionCreation(bundle, idOrg, iupd) {
     bundle.organizationCode = idOrg;
     bundle.debtPosition = buildDebtPositionDynamicData(bundle, iupd);
     let response = await createDebtPosition(bundle.organizationCode, buildCreateDebtPositionRequest(bundle.debtPosition, bundle.payer));
+    bundle.responseToCheck = response;
+}
+
+async function executeDebtPositionGetList(bundle, idOrg) {
+    let response = await getDebtPositionList(idOrg);
     bundle.responseToCheck = response;
 }
 
@@ -25,4 +29,5 @@ async function executeDebtPositionDeletion(idOrg, iupd) {
 module.exports = {
     executeDebtPositionCreation,
     executeDebtPositionDeletion,
+    executeDebtPositionGetList,
 }

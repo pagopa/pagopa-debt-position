@@ -7,6 +7,7 @@ function get(url, config) {
             return res;
          })
          .catch(error => {
+            console.log(error.response.data);
             return error.response;
          });
 }
