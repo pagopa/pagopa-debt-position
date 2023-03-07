@@ -37,7 +37,6 @@ export script=${SCRIPT}
 export db_name=${DB_NAME}
 export sub_key=${API_SUBSCRIPTION_KEY}
 
-echo "PROD"
 echo ${type}
 
 docker rm nginx

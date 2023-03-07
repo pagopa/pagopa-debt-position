@@ -13,6 +13,7 @@ const varsArray = new SharedArray('vars', function () {
 // workaround to use shared array (only array should be used)
 const vars = varsArray[0];
 const rootUrl = `${vars.host}`;
+const numberOfEventsToPreload = `${vars.numberOfEventsToPreload}`;
 
 const params = {
     headers: {
@@ -27,8 +28,6 @@ export function setup() {
 	// 1. setup code (once)
 	// The setup code runs, setting up the test environment (optional) and generating data
 	// used to reuse code for the same VU
-
-	let numberOfEventsToPreload = 100;
 
 	for (let i = 0; i < numberOfEventsToPreload; i++) {
         const creditor_institution_code = randomString(11, "0123456789");
@@ -57,13 +56,14 @@ export function setup() {
 export default function(data) {
       let pair = getRandomItemFromArray(data.pds);
 
-      creditor_institution_code = pair[0];
-      iuv = pair[1];
+      const creditor_institution_code = pair[0];
+      const iuv = pair[1];
 
       // Pay Payment Option
-      url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/pay`;
+      const url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/pay`;
 
-      payload = JSON.stringify(
+
+      const payload = JSON.stringify(
         {
           "paymentDate": new Date(),
           "paymentMethod": "bonifico",
@@ -72,11 +72,9 @@ export default function(data) {
         }
       );
 
-      r = http.post(url, payload, params);
+      const r = http.post(url, payload, params);
 
       console.log("PayPaymentOption call - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv + ", Status = " + r.status);
 
-      check(r, {
-        'PayPaymentOption status is 200': (r) => r.status === 200,
-      });
+      check(r, {'PayPaymentOption status is 200': (r) => r.status === 200, });
 }

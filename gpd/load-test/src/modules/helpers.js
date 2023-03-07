@@ -101,5 +101,3 @@ export function getPayload(iupd, iuv, due_date, retention_date, transfer_id) {
        }
      );
 }
-
-
