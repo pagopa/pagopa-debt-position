@@ -27,5 +27,7 @@
     "http_req_duration": [
       "p(99)<2000"
     ]
-  }
+  },
+  "setupTimeout": "360s",
+  "teardownTimeout": "360s"
 }
