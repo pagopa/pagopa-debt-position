@@ -1,4 +1,5 @@
 import http from 'k6/http';
+import exec from 'k6/execution';
 import { check } from 'k6';
 import { SharedArray } from 'k6/data';
 import { makeidMix, randomString, getPayload, getRandomItemFromArray } from './modules/helpers.js';
@@ -54,14 +55,16 @@ export function setup() {
 }
 
 export default function(data) {
-      let pair = getRandomItemFromArray(data.pds);
+
+      let idx = exec.instance.vusActive * exec.vu.iterationInScenario + exec.vu.idInInstance;
+
+      let pair = data.pds[idx];
 
       const creditor_institution_code = pair[0];
       const iuv = pair[1];
 
       // Pay Payment Option
       const url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/pay`;
-
 
       const payload = JSON.stringify(
         {
@@ -73,8 +76,6 @@ export default function(data) {
       );
 
       const r = http.post(url, payload, params);
-
-      console.log("PayPaymentOption call - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv + ", Status = " + r.status);
 
       check(r, {'PayPaymentOption status is 200': (r) => r.status === 200, });
 }

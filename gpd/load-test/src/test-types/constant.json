@@ -17,7 +17,7 @@
       "rate": 150,
       "timeUnit": "1s",
       "preAllocatedVUs": 100,
-      "maxVUs": 10000
+      "maxVUs": 200
     }
   },
   "thresholds": {
@@ -28,6 +28,5 @@
       "p(99)<2000"
     ]
   },
-  "setupTimeout": "360s",
-  "teardownTimeout": "360s"
+  "setupTimeout": "360s"
 }

@@ -3,7 +3,7 @@
     {
       "env": "uat",
       "host": "https://api.uat.platform.pagopa.it/gpd/api/v1",
-      "numberOfEventsToPreload":"1000"
+      "numberOfEventsToPreload":"30000"
     }
   ]
 }
