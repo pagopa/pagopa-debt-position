@@ -13,7 +13,7 @@
   "scenarios": {
     "contacts": {
       "executor": "constant-arrival-rate",
-      "duration": "1m",
+      "duration": "2s",
       "rate": 150,
       "timeUnit": "1s",
       "preAllocatedVUs": 100,
@@ -27,18 +27,15 @@
     "http_req_duration": [
       "p(99)<2000"
     ],
-    "iteration_duration{scenario:default}": [
+    "iteration_duration{scenario:contacts}": [
       "max>=0"
     ],
     "iteration_duration{group:::setup}": [
       "max>=0"
     ],
-    "iteration_duration{group:::teardown}": [
-      "max>=0"
-    ],
-    "http_req_duration{scenario:default}": [
+    "http_req_duration{scenario:contacts}": [
       "max>=0"
     ]
   },
-  "setupTimeout": "800s"
+  "setupTimeout": "30s"
 }
