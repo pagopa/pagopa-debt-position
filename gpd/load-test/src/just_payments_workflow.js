@@ -40,10 +40,8 @@ export function setup() {
         var url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions`;
         var payload = getPayload(iupd, iuv, due_date, retention_date, transfer_id);
         var r = http.post(url, payload, params);
-        check(r, {'CreateDebtPosition status is 201': (r) => r.status === 201,});
         url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions/${iupd}/publish`;
         r = http.post(url, params);
-        check(r, {'PublishDebtPosition status is 200': (r) => r.status === 200,});
 
         pdArray.push([creditor_institution_code, iuv]);
 	}

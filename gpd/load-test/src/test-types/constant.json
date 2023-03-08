@@ -26,6 +26,18 @@
     ],
     "http_req_duration": [
       "p(99)<2000"
+    ],
+    "iteration_duration{scenario:default}": [
+      "max>=0"
+    ],
+    "iteration_duration{group:::setup}": [
+      "max>=0"
+    ],
+    "iteration_duration{group:::teardown}": [
+      "max>=0"
+    ],
+    "http_req_duration{scenario:default}": [
+      "max>=0"
     ]
   },
   "setupTimeout": "800s"
