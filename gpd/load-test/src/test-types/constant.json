@@ -35,6 +35,12 @@
     ],
     "http_req_duration{scenario:contacts}": [
       "max>=0"
+    ],
+    "iterations{group:::setup}": [
+      "rate>=0"
+    ],
+    "iterations{scenario:contacts}": [
+      "rate>=0"
     ]
   },
   "setupTimeout": "2700s"
