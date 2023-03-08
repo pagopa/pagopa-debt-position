@@ -14,7 +14,7 @@ const varsArray = new SharedArray('vars', function () {
 // workaround to use shared array (only array should be used)
 const vars = varsArray[0];
 const rootUrl = `${vars.host}`;
-const numberOfEventsToPreload = `${vars.numberOfEventsToPreload}`;
+const numberOfPositionsToPreload = `${vars.numberOfPositionsToPreload}`;
 
 const params = {
     headers: {
@@ -30,7 +30,7 @@ export function setup() {
 	// The setup code runs, setting up the test environment (optional) and generating data
 	// used to reuse code for the same VU
 
-	for (let i = 0; i < numberOfEventsToPreload; i++) {
+	for (let i = 0; i < numberOfPositionsToPreload; i++) {
         const creditor_institution_code = randomString(11, "0123456789");
         const iupd = makeidMix(35);
         const iuv = makeidMix(35);

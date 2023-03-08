@@ -3,7 +3,7 @@
     {
       "env": "dev",
       "host": "https://api.dev.platform.pagopa.it/gpd/api/v1",
-      "numberOfEventsToPreload":"100"
+      "numberOfPositionsToPreload":"9000"
     }
   ]
 }

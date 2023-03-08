@@ -28,5 +28,5 @@
       "p(99)<2000"
     ]
   },
-  "setupTimeout": "12m"
+  "setupTimeout": "800s"
 }

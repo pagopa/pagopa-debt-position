@@ -3,7 +3,7 @@
     {
       "env": "local",
       "host": "http://host.docker.internal:8085",
-      "numberOfEventsToPreload":"10"
+      "numberOfPositionsToPreload":"9000"
     }
   ]
 }
