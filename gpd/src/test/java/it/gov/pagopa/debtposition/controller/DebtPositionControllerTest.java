@@ -186,6 +186,29 @@ class DebtPositionControllerTest {
 	}
 
 	@Test
+	void getDebtPositionList_UpdateDateInterval() throws Exception {
+		// creo due posizioni debitorie e recupero tutte le payment_option di entrambe, inserendo nel filtro solo la due_date_from
+		mvc.perform(post("/organizations/LIST_12345678901/debtpositions")
+							.content(TestUtil.toJson(DebtPositionMock.getMock2())).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+
+		mvc.perform(post("/organizations/LIST_12345678901/debtpositions")
+							.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+
+		DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		String url = "/organizations/LIST_12345678901/debtpositions?page=0" + "&due_date_from="
+							 + df.format(LocalDateTime.now(ZoneOffset.UTC));
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(2)))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[*].iuv")
+								   .value(Matchers.hasSize(2)))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[*].iuv")
+								   .value(Matchers.hasSize(3)));
+	}
+
+	@Test
 	void getDebtPositionListByPaymentDate() throws Exception {
 		// creo la posizione debitoria DRAFT
 		mvc.perform(post("/organizations/LIST_12345678901/debtpositions")
@@ -209,11 +232,9 @@ class DebtPositionControllerTest {
 
 		// effettuo la chiamata GET applicando il filtro sulla payment_date
 		DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-		String url = "/organizations/LIST_12345678901/debtpositions?page=0" + "&due_date_from="
-							 + df.format(LocalDateTime.now(ZoneOffset.UTC)) + "&due_date_to="
-							 + df.format(LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS))
-							 + "&payment_date="
-							 + df.format(LocalDateTime.now(ZoneOffset.UTC));
+		String url = "/organizations/LIST_12345678901/debtpositions?page=0" +
+							 "&payment_date_from=" + df.format(LocalDateTime.now(ZoneOffset.UTC)) +
+							 "&payment_date_to=" + df.format(LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list")
@@ -301,7 +322,8 @@ class DebtPositionControllerTest {
 				// manca la payment_option che ha una due_date maggiore di quella inserita nella ricerca
 				.value(Matchers.hasSize(1)))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[*].iuv")
-				.value(Matchers.hasSize(3)));	}
+				.value(Matchers.hasSize(3)));
+	}
 /*
 	@Test
 	void getDebtPositionListDueDateGreaterThanOrEqual() throws Exception {
@@ -388,6 +410,19 @@ class DebtPositionControllerTest {
 				+ df.format(LocalDateTime.now(ZoneOffset.UTC));
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
+	}
+
+	@Test
+	void getDebtPositionList_MutualExclusion_400() throws Exception {
+		// provo a recuperare una posizione debitoria passando sia l'intervallo di date due_date che payment_date
+		DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		String url = "/organizations/LIST404_12345678901/debtpositions?page=0" + "&due_date_from="
+							 + df.format(LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS)) + "&due_date_to="
+							 + df.format(LocalDateTime.now(ZoneOffset.UTC)) + "&payment_date_from="
+							 + df.format(LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS)) + "&payment_date_to="
+							 + df.format(LocalDateTime.now(ZoneOffset.UTC));
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON));
 	}
 
 	/**
