@@ -7,7 +7,6 @@ function get(url, config) {
             return res;
          })
          .catch(error => {
-            console.log(error.response.data);
             return error.response;
          });
 }
@@ -22,8 +21,8 @@ function post(url, body, config) {
         });
 }
 
-function put(url, body) {
-    return axios.put(url, body)
+function put(url, body, config) {
+    return axios.put(url, body, config)
         .then(res => {
             return res;
         })

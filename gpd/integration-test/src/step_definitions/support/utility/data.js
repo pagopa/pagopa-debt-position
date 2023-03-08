@@ -44,6 +44,14 @@ let gpdSessionBundle = {
     },
 }
 
+let gpdUpdateBundle = {
+    type: "F",
+    fiscalCode: "VNTMHL76M09H501D",
+    fullName: "Michele Ventimiglia",
+    companyName: "Testing S.p.A."
+}
+
 module.exports = {
-    gpdSessionBundle
+    gpdSessionBundle,
+    gpdUpdateBundle
 }

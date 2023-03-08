@@ -4,7 +4,7 @@ Feature: All about Organizations
     Given GPD running
 
   Scenario: Debt position creation
-    Given a random organization id
+    Given a random organization id and iupd
     When the debt position is created
     Then the debt position gets the status code 201
 
@@ -13,18 +13,12 @@ Feature: All about Organizations
     Then we get the status code 200
 
   Scenario: Debt position update
-  	Given a IUPD
   	When the debt position is updated
   	Then the organization gets the status code 200
 
   Scenario: Debt position get
-  	Given a IUPD
   	When we get the debt position
-    Then we get the status code 200
+    Then the company name is "Testing S.p.A."
 
-  Scenario: Debt position delete
-    Given a IUPD
-    When we delete the debt position
-    Then we get the status code 200
 
 

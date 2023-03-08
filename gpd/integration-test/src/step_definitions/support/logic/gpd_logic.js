@@ -1,8 +1,10 @@
 const {
     createDebtPosition,
+    updateDebtPosition,
     publishDebtPosition,
     deleteDebtPosition,
     getDebtPositionList,
+    getDebtPosition,
 } = require("../clients/gpd_client");
 
 const {
@@ -17,9 +19,20 @@ async function executeDebtPositionCreation(bundle, idOrg, iupd) {
     bundle.responseToCheck = response;
 }
 
+async function executeDebtPositionUpdate(bundle, idOrg, iupd) {
+    bundle.iupd = iupd;
+    let response = await updateDebtPosition(idOrg, iupd, bundle);
+    bundle.responseToCheck = response;
+}
+
 async function executeDebtPositionGetList(bundle, idOrg) {
     let response = await getDebtPositionList(idOrg);
     bundle.responseToCheck = response;
+}
+
+async function executeDebtPositionGet(bundle, idOrg, iupd) {
+    let response = await getDebtPosition(idOrg, iupd);
+    bundle.payer.companyName = response.data.companyName;
 }
 
 async function executeDebtPositionDeletion(idOrg, iupd) {
@@ -30,4 +43,6 @@ module.exports = {
     executeDebtPositionCreation,
     executeDebtPositionDeletion,
     executeDebtPositionGetList,
+    executeDebtPositionUpdate,
+    executeDebtPositionGet,
 }
