@@ -61,7 +61,10 @@ public class DebtPositionValidation {
         // Verifico se la transazione è rendicontabile
         checkTransferAccountable(ppToReport, iuv, transferId);
     }
-    
+
+    /*
+     * return updated date interval
+     */
     public static List<LocalDateTime> checkDatesInterval (LocalDateTime from, LocalDateTime to, int maxDaysInterval) {
         if(from == null && to == null)
             return null;

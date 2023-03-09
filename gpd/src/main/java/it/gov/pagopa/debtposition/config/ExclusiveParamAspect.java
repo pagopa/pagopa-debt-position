@@ -20,21 +20,21 @@ public class ExclusiveParamAspect {
     @Around(value = "@annotation(it.gov.pagopa.debtposition.config.ExclusiveParam)")
     public Object validateExclusiveParam(ProceedingJoinPoint joinPoint) throws Throwable {
 
-        String[] paramsA = {"due_date_to", "due_date_from"};
-        String[] paramsB = {"payment_date_from", "payment_date_to"};
+        String[] paramsDueDate = {"due_date_to", "due_date_from"};
+        String[] paramsPaymentDate = {"payment_date_from", "payment_date_to"};
 
         Set<String> set = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes()))
                                   .getRequest()
                                   .getParameterMap().keySet();
 
-        boolean mutual = Arrays.stream(paramsA).anyMatch(set::contains) ^ Arrays.stream(paramsB).anyMatch(set::contains);
+        boolean bothPresent = Arrays.stream(paramsPaymentDate).anyMatch(set::contains) && Arrays.stream(paramsDueDate).anyMatch(set::contains);
 
-        if (!mutual) {
+        if (bothPresent) {
             throw new AppException(HttpStatus.BAD_REQUEST,
                     "Exclusive Parameters",
                     "Parameters " +
-                            String.join(", ", paramsA) + " and " +
-                            String.join(", ", paramsB) + " are mutual exclusive");
+                            String.join(", ", paramsDueDate) + " and " +
+                            String.join(", ", paramsPaymentDate) + " are mutual exclusive");
         }
 
         return joinPoint.proceed();
