@@ -43,5 +43,5 @@
       "rate>=0"
     ]
   },
-  "setupTimeout": "2700s"
+  "setupTimeout": "60m"
 }
