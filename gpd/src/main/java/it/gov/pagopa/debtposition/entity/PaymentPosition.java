@@ -29,7 +29,9 @@ import java.util.List;
 @Entity
 @Table(name = "payment_position", uniqueConstraints = {
         @UniqueConstraint(name = "UniquePaymentPos", columnNames = {"iupd", "organization_fiscal_code"})
-})
+        },
+        indexes = @Index(name = "payment_position_status_validity_date_idx", columnList = "status, validity_date")
+)
 public class PaymentPosition implements Serializable {
 
 
