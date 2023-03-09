@@ -2,7 +2,7 @@ import http from 'k6/http';
 import exec from 'k6/execution';
 import { check } from 'k6';
 import { SharedArray } from 'k6/data';
-import { group } from 'k6';
+import { Counter } from 'k6/metrics';
 import { makeidMix, randomString, getPayload, getRandomItemFromArray } from './modules/helpers.js';
 
 //k6 run -o influxdb=http://influxdb:8086/k6 -e BASE_URL=http://localhost:8085 gpd/load-test/src/payments_workflow.js
@@ -16,6 +16,8 @@ const varsArray = new SharedArray('vars', function () {
 const vars = varsArray[0];
 const rootUrl = `${vars.host}`;
 const numberOfPositionsToPreload = __ENV.PRELOAD_PD_NUMBER;
+
+const payCounter = new Counter('pay_counter');
 
 const params = {
     headers: {
@@ -54,29 +56,27 @@ export function setup() {
 }
 
 export default function(data) {
-    exec.vu.tags.containerGroup = 'pay';
+    let idx = exec.instance.vusActive * exec.vu.iterationInScenario + exec.vu.idInInstance;
+    let pair = data.pds[idx];
 
-    group('pay', function () {
-        let idx = exec.instance.vusActive * exec.vu.iterationInScenario + exec.vu.idInInstance;
-        let pair = data.pds[idx];
+    const creditor_institution_code = pair[0];
+    const iuv = pair[1];
 
-        const creditor_institution_code = pair[0];
-        const iuv = pair[1];
+    // Pay Payment Option
+    const url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/pay`;
 
-        // Pay Payment Option
-        const url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/pay`;
+    const payload = JSON.stringify(
+    {
+      "paymentDate": new Date(),
+      "paymentMethod": "bonifico",
+      "pspCompany": "Intesa San Paolo",
+      "idReceipt": "TRN123456789"
+    }
+    );
 
-        const payload = JSON.stringify(
-        {
-          "paymentDate": new Date(),
-          "paymentMethod": "bonifico",
-          "pspCompany": "Intesa San Paolo",
-          "idReceipt": "TRN123456789"
-        }
-        );
+    const r = http.post(url, payload, params);
 
-        const r = http.post(url, payload, params);
+    check(r, {'PayPaymentOption status is 200': (r) => r.status === 200, });
 
-        check(r, {'PayPaymentOption status is 200': (r) => r.status === 200, });
-    })
+    payCounter.add(1);
 }

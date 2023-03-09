@@ -41,9 +41,6 @@
     ],
     "iterations{scenario:contacts}": [
       "rate>=0"
-    ],
-    "iterations{container_group:pay}": [
-      "count>=0"
     ]
   },
   "setupTimeout": "2700s"

@@ -42,9 +42,6 @@
     "iterations{group:::setup}": [
       "rate>=0"
     ],
-    "iterations{container_group:pay}": [
-      "count>=0"
-    ],
     "iterations{scenario:contacts}": [
       "rate>=0"
     ]
