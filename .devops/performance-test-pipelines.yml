@@ -18,6 +18,7 @@
         - "stress"
         - "ramping"
         - "constant"
+        - "smoke"
     - name: "SCRIPT"
       displayName: "Script name"
       type: string
