@@ -15,7 +15,15 @@ const {
 async function executeDebtPositionCreation(bundle, idOrg, iupd) {
     bundle.organizationCode = idOrg;
     bundle.debtPosition = buildDebtPositionDynamicData(bundle, iupd);
+    console.log(idOrg + " " + iupd);
     let response = await createDebtPosition(bundle.organizationCode, buildCreateDebtPositionRequest(bundle.debtPosition, bundle.payer));
+    console.log(response.data.paymentOption);
+    bundle.responseToCheck = response;
+}
+
+async function executeDebtPositionPublish(bundle, idOrg, iupd) {
+    delete bundle.responseToCheck;
+    let response = await publishDebtPosition(idOrg, iupd);
     bundle.responseToCheck = response;
 }
 
@@ -32,6 +40,8 @@ async function executeDebtPositionGetList(bundle, idOrg) {
 
 async function executeDebtPositionGet(bundle, idOrg, iupd) {
     let response = await getDebtPosition(idOrg, iupd);
+    console.log(idOrg + " " + iupd);
+    console.log(response.data.paymentOption);
     bundle.payer.companyName = response.data.companyName;
 }
 
@@ -45,4 +55,5 @@ module.exports = {
     executeDebtPositionGetList,
     executeDebtPositionUpdate,
     executeDebtPositionGet,
+    executeDebtPositionPublish,
 }

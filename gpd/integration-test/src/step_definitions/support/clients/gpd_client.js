@@ -12,6 +12,7 @@ function gpdHealthCheck() {
 }
 
 function createDebtPosition(orgId, body) {
+    console.log(body);
     return post(gpd_host + `/organizations/${orgId}/debtpositions`, body, {
         timeout: 10000,
         headers: {

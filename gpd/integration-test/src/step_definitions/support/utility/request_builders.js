@@ -41,6 +41,8 @@ function buildCreateDebtPositionRequest(debtPosition, payer) {
         phone: payer.phone,
         companyName: payer.companyName,
         officeName: payer.officeName,
+        switchToExpired: false,
+        validityDate: addDays(15),
         paymentOption: [
             {
                 iuv: debtPosition.iuv1,

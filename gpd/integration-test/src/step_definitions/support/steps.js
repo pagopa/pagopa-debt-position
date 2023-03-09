@@ -1,6 +1,12 @@
 const { Given, When, Then, AfterAll, Before } = require('@cucumber/cucumber')
 const { executeHealthCheckForGPD } = require('./logic/health_checks_logic');
-const { executeDebtPositionCreation, executeDebtPositionDeletion, executeDebtPositionGetList, executeDebtPositionUpdate, executeDebtPositionGet } = require('./logic/gpd_logic');
+const { executeDebtPositionCreation,
+        executeDebtPositionDeletion,
+        executeDebtPositionGetList,
+        executeDebtPositionUpdate,
+        executeDebtPositionGet,
+        executeDebtPositionPublish,
+} = require('./logic/gpd_logic');
 const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, executeAfterAllStep, randomOrg, randomIupd } = require('./logic/common_logic');
 const { gpdSessionBundle, gpdUpdateBundle } = require('./utility/data');
 const { getValidBundle } = require('./utility/helpers');
@@ -44,3 +50,8 @@ Then('the organization gets the status code {int}', (statusCode) => assertStatus
  */
 When('we get the debt position', () => executeDebtPositionGet(gpdSessionBundle, idOrg, iupd));
 Then('the company name is {string}', (companyName) => assertCompanyName(gpdSessionBundle, companyName));
+
+/*
+ *  Debt position published
+ */
+When('the debt position is published', () => executeDebtPositionPublish(gpdSessionBundle, idOrg, iupd));
