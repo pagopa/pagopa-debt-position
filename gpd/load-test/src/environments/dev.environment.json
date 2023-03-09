@@ -2,8 +2,7 @@
   "environment": [
     {
       "env": "dev",
-      "host": "https://api.dev.platform.pagopa.it/gpd/api/v1",
-      "numberOfPositionsToPreload":"9000"
+      "host": "https://api.dev.platform.pagopa.it/gpd/api/v1"
     }
   ]
 }

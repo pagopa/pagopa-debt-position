@@ -2,8 +2,7 @@
   "environment": [
     {
       "env": "uat",
-      "host": "https://api.uat.platform.pagopa.it/gpd/api/v1",
-      "numberOfPositionsToPreload":"38000"
+      "host": "https://api.uat.platform.pagopa.it/gpd/api/v1"
     }
   ]
 }

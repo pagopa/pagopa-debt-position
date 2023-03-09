@@ -2,8 +2,7 @@
   "environment": [
     {
       "env": "local",
-      "host": "http://host.docker.internal:8085",
-      "numberOfPositionsToPreload":"9000"
+      "host": "http://host.docker.internal:8085"
     }
   ]
 }

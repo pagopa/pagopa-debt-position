@@ -27,17 +27,23 @@
     "http_req_duration": [
       "p(99)<2000"
     ],
+    "http_req_duration{group:::setup}": [
+      "max>=0"
+    ],
+    "http_req_duration{scenario:contacts}": [
+      "max>=0"
+    ],
     "iteration_duration{scenario:contacts}": [
       "max>=0"
     ],
     "iteration_duration{group:::setup}": [
       "max>=0"
     ],
-    "http_req_duration{scenario:contacts}": [
-      "max>=0"
-    ],
     "iterations{group:::setup}": [
       "rate>=0"
+    ],
+    "iterations{container_group:pay}": [
+      "count>=0"
     ],
     "iterations{scenario:contacts}": [
       "rate>=0"
