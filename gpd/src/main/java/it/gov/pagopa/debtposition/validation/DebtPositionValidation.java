@@ -66,14 +66,12 @@ public class DebtPositionValidation {
      * return updated date interval
      */
     public static List<LocalDateTime> checkDatesInterval (LocalDateTime from, LocalDateTime to, int maxDaysInterval) {
-        if(from == null && to == null)
-            return null;
         if(from != null && to == null)
             to = from.plus(maxDaysInterval, ChronoUnit.DAYS).with(LocalTime.MAX);
-        else if(from == null)
+        else if(from == null && to != null)
             from = to.minus(maxDaysInterval, ChronoUnit.DAYS).with(LocalTime.MIN);
 
-        if (!(from.isBefore(to) || from.isEqual(to)) || Duration.between(from, to).toDays() > maxDaysInterval) {
+        if (from != null && to != null && (!(from.isBefore(to) || from.isEqual(to)) || Duration.between(from, to).toDays() > maxDaysInterval)) {
     		throw new AppException(AppError.DEBT_POSITION_NOT_RECOVERABLE, from, to, Duration.between(from, to).toDays(), maxDaysInterval);
     	}
 

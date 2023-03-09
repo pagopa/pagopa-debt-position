@@ -19,7 +19,7 @@ public class PaymentPositionByStatus implements Specification<PaymentPosition> {
 
     @Override
     public Predicate toPredicate(Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-        System.out.println("to Predicate, status: " + status);
+
         if (status == null) {
             return cb.isTrue(cb.literal(true)); // always true = no filtering
         }
