@@ -7,6 +7,7 @@ import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
+import com.microsoft.azure.storage.table.QueryTableOperation;
 import com.microsoft.azure.storage.table.TableQuery;
 import it.gov.pagopa.reporting.entity.FlowEntity;
 import it.gov.pagopa.reporting.model.Flow;
@@ -39,7 +40,7 @@ public class FlowsService {
         this.logger = logger;
     }
 
-    public List<Flow> getByOrganization(String organizationId) throws URISyntaxException, InvalidKeyException, StorageException, RuntimeException {
+    public List<Flow> getByOrganization(String organizationId, String flowDate) throws URISyntaxException, InvalidKeyException, StorageException, RuntimeException {
         logger.log(Level.INFO, () -> String.format("[FlowsService] START get by organization: %s", organizationId));
 
         // try to create table
@@ -49,9 +50,21 @@ public class FlowsService {
         CloudTable table = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
                 .getTableReference(this.flowsTable);
 
-        TableQuery<FlowEntity> query = TableQuery.from(FlowEntity.class).where(
-                TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, organizationId)
-        );
+        String queryWhereClause = TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, organizationId);
+        /*
+        * The saved flow date field is a string data, so it cannot be filtered as a numeric or temporal data. Also, in Azure Table storage it does not
+        * exists the LIKE clause, so a workaround is made using ASCII character evaluation in 'ge' and 'le' operators. In particular, adding 'T0' string permits
+        * to evaluate all dates that are greater or equals than HH=00 of passed date, and adding T3 string permits to evaluate all dates that are lower or equals than
+        * HH=23 (because character '2' is lower than character '3' and over hour '23' is not a valid date)
+        */
+        if (flowDate != null) {
+            String flowDateLowerLimitClause = TableQuery.generateFilterCondition("FlowDate", TableQuery.QueryComparisons.GREATER_THAN_OR_EQUAL, flowDate + "T0");
+            String flowDateUpperLimitClause = TableQuery.generateFilterCondition("FlowDate", TableQuery.QueryComparisons.LESS_THAN_OR_EQUAL, flowDate + "T3");
+            String flowDateIntervalLimitClause = TableQuery.combineFilters(flowDateLowerLimitClause, "and", flowDateUpperLimitClause);
+            queryWhereClause = TableQuery.combineFilters(queryWhereClause, "and", flowDateIntervalLimitClause);
+        }
+
+        TableQuery<FlowEntity> query = TableQuery.from(FlowEntity.class).where(queryWhereClause);
 
         Iterable<FlowEntity> result = table.execute(query);
 

@@ -47,7 +47,8 @@ public class GetFlowList {
         FlowsService flowsService = getFlowsServiceInstance(logger);
 
         try {
-            List<Flow> flows = flowsService.getByOrganization(organizationId);
+            String flowDate = request.getQueryParameters().getOrDefault("flowDate", null);
+            List<Flow> flows = flowsService.getByOrganization(organizationId, flowDate);
             ObjectMapper objectMapper = new ObjectMapper();
             final String data = objectMapper.writeValueAsString(flows);
 
