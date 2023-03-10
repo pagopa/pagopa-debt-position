@@ -49,6 +49,10 @@ async function executeDebtPositionDeletion(idOrg, iupd) {
     let response = await deleteDebtPosition(idOrg, iupd);
 }
 
+async function executePaymentOptionPay(bundle, idOrg) {
+    let response = await deleteDebtPosition(idOrg, iupd);
+}
+
 module.exports = {
     executeDebtPositionCreation,
     executeDebtPositionDeletion,
@@ -56,4 +60,5 @@ module.exports = {
     executeDebtPositionUpdate,
     executeDebtPositionGet,
     executeDebtPositionPublish,
+    executePaymentOptionPay,
 }

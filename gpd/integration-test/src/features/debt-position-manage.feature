@@ -20,8 +20,8 @@ Feature: Managing a debt position
   	When we get the debt position
     Then the company name is "Testing S.p.A."
 
-  Scenario: Debt position published
-    When the debt position is published
+  Scenario: Debt position deleted
+    When the debt position is deleted
     Then the debt position gets the status code 200
 
 

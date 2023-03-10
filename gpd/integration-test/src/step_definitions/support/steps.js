@@ -6,6 +6,7 @@ const { executeDebtPositionCreation,
         executeDebtPositionUpdate,
         executeDebtPositionGet,
         executeDebtPositionPublish,
+        executePaymentOptionPay,
 } = require('./logic/gpd_logic');
 const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, executeAfterAllStep, randomOrg, randomIupd } = require('./logic/common_logic');
 const { gpdSessionBundle, gpdUpdateBundle } = require('./utility/data');
@@ -52,6 +53,18 @@ When('we get the debt position', () => executeDebtPositionGet(gpdSessionBundle, 
 Then('the company name is {string}', (companyName) => assertCompanyName(gpdSessionBundle, companyName));
 
 /*
- *  Debt position published
+ *  Debt position delete
  */
-When('the debt position is published', () => executeDebtPositionPublish(gpdSessionBundle, idOrg, iupd));
+When('the debt position is deleted', () => executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd));
+
+
+/*
+ *  Debt position publish
+ */
+When ('the debt position is published', () => executeDebtPositionPublish(gpdSessionBundle, idOrg, iupd));
+
+/*
+ *  Paying the payment option
+ */
+When ('the payment option is paid', () => executePaymentOptionPay(gpdSessionBundle, idOrg));
+Then('the payment option gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
