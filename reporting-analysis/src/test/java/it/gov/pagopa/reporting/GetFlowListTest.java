@@ -36,7 +36,7 @@ class GetFlowListTest {
     FlowsService flowsService;
 
     @Test
-    void runOK() throws Exception {
+    void runOK_withFlowDate() throws Exception {
 
         // general var
         Logger logger = Logger.getLogger("testlogging");
@@ -65,6 +65,38 @@ class GetFlowListTest {
         // Asserts
         assertEquals(HttpStatus.OK, response.getStatus());
     }
+
+    @Test
+    void runOK_noFlowDate() throws Exception {
+
+        // general var
+        Logger logger = Logger.getLogger("testlogging");
+        List<Flow> flowList = new ArrayList<>();
+        String organizationId =  "90000000000";
+
+        // precondition
+        when(context.getLogger()).thenReturn(logger);
+        doReturn(flowsService).when(function).getFlowsServiceInstance(logger);
+        doReturn(flowList).when(flowsService).getByOrganization(organizationId, null);
+
+        final HttpResponseMessage.Builder builder = mock(HttpResponseMessage.Builder.class);
+        HttpRequestMessage<Optional<String>> request = mock(HttpRequestMessage.class);
+
+        doReturn(builder).when(request).createResponseBuilder(any(HttpStatus.class));
+        doReturn(builder).when(builder).header(anyString(), anyString());
+        doReturn(builder).when(builder).body(anyString());
+
+        HttpResponseMessage responseMock = mock(HttpResponseMessage.class);
+        doReturn(HttpStatus.OK).when(responseMock).getStatus();
+        doReturn(responseMock).when(builder).build();
+
+        // test
+        HttpResponseMessage response = function.run(request, organizationId, context);
+
+        // Asserts
+        assertEquals(HttpStatus.OK, response.getStatus());
+    }
+
 
     @Test
     void runKO() throws Exception {
