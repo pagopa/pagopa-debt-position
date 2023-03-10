@@ -36,7 +36,8 @@ public class PaymentPositionByDueDate implements Specification<PaymentPosition> 
         } else if (dateFrom == null && dateTo != null) {
             return cb.lessThanOrEqualTo(ppOptionsJoin.get(DUEDATE_FIELD), dateTo);
         }
-        // testo solo la dateFrom, la dateTo sarà sicuramente not null arrivati a questa if
+        // The execution proceeds on this branch in only 2 cases: dateFrom and dateTo equal null or both different from null,
+        // to check the last case just apply the condition on one of the two dates
         else if (dateFrom != null) {
             return cb.between(ppOptionsJoin.get(DUEDATE_FIELD), dateFrom, dateTo);
         }

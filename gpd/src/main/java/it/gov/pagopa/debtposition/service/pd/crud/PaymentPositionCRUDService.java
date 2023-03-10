@@ -12,9 +12,7 @@ import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
-import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByDueDate;
-import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByIUPD;
-import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByOrganizationFiscalCode;
+import it.gov.pagopa.debtposition.repository.specification.*;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.PublishPaymentUtil;
 import it.gov.pagopa.debtposition.validation.DebtPositionValidation;
@@ -37,6 +35,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -131,9 +130,8 @@ public class PaymentPositionCRUDService {
     }
 
     public Page<PaymentPosition> getOrganizationDebtPositions(@Positive Integer limit, @Positive Integer pageNum, FilterAndOrder filterAndOrder) {
-    	
-    	// verifico la correttezza dell'intervallo di date fornito
-        DebtPositionValidation.checkDatesInterval(filterAndOrder.getFilter().getDueDateFrom(), filterAndOrder.getFilter().getDueDateTo(), Integer.parseInt(maxDaysInterval));
+
+        checkAndUpdateDates(filterAndOrder);
 
         Pageable pageable = PageRequest.of(pageNum, limit, CommonUtil.getSort(filterAndOrder));
 
@@ -141,12 +139,14 @@ public class PaymentPositionCRUDService {
                 new PaymentPositionByOrganizationFiscalCode(filterAndOrder.getFilter().getOrganizationFiscalCode())
                         .and(new PaymentPositionByDueDate(
                                 filterAndOrder.getFilter().getDueDateFrom(),
-                                filterAndOrder.getFilter().getDueDateTo())));
+                                filterAndOrder.getFilter().getDueDateTo()))
+                        .and(new PaymentPositionByPaymentDate(
+                                filterAndOrder.getFilter().getPaymentDateFrom(),
+                                filterAndOrder.getFilter().getPaymentDateTo()))
+                        .and(new PaymentPositionByStatus(filterAndOrder.getFilter().getStatus())));
 
         return paymentPositionRepository.findAll(spec, pageable);
-
     }
-
 
     @Transactional
     public void delete(@NotBlank String organizationFiscalCode, @NotBlank String iupd) {
@@ -189,5 +189,21 @@ public class PaymentPositionCRUDService {
             log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
             throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
         }
+    }
+
+    /*
+     * Checks whether the date interval submitted is appropriate. Dates are updated by adding or subtracting the maxDaysInterval
+     * in cases where one and only one of the two bounds of the date interval [from, to] is missing.
+     */
+    public void checkAndUpdateDates(FilterAndOrder filterAndOrder) {
+        List<LocalDateTime> verifiedDueDates = DebtPositionValidation.checkDatesInterval(
+                filterAndOrder.getFilter().getDueDateFrom(), filterAndOrder.getFilter().getDueDateTo(), Integer.parseInt(maxDaysInterval));
+        List<LocalDateTime> verifiedPaymentDates = DebtPositionValidation.checkDatesInterval(
+                filterAndOrder.getFilter().getPaymentDateFrom(), filterAndOrder.getFilter().getPaymentDateTo(), Integer.parseInt(maxDaysInterval));
+
+        filterAndOrder.getFilter().setDueDateFrom(verifiedDueDates.get(0));
+        filterAndOrder.getFilter().setDueDateTo(verifiedDueDates.get(1));
+        filterAndOrder.getFilter().setPaymentDateFrom(verifiedPaymentDates.get(0));
+        filterAndOrder.getFilter().setPaymentDateTo(verifiedPaymentDates.get(1));
     }
 }

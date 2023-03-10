@@ -27,6 +27,7 @@ public class PaymentPositionModelBaseResponse implements Serializable {
     private LocalDateTime insertedDate;
     private LocalDateTime publishDate;
     private LocalDateTime validityDate;
+    private LocalDateTime paymentDate;
     private DebtPositionStatus status;
     private LocalDateTime lastUpdatedDate;
 
