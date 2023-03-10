@@ -469,9 +469,9 @@ stages:
               git pull
             displayName: Checkout and update branch
           - script: |
-              cd ./integration-test
+              cd ./gpd/integration-test
               sh run_integration_test.sh ${{ parameters.ENV }} $(API_SUBSCRIPTION_KEY)
-            displayName: Checkout and update branch
+            displayName: Run integration test
 
 #      - job: loadTests
 #        dependsOn: integrationTests
