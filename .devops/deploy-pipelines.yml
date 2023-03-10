@@ -46,6 +46,7 @@ variables:
     DATASOURCE_USERNAME: $(DEV_POSTGRES_DATASOURCE_USERNAME)
     DATASOURCE_PASSWORD: $(DEV_POSTGRES_DATASOURCE_PASSWORD)
     DATASOURCE_URL: $(DEV_POSTGRES_DATASOURCE_URL)
+    API_SUBSCRIPTION_KEY: $(DEV_API_SUBSCRIPTION_KEY)
 
   ${{ if eq(parameters['ENV'], 'uat') }}:
     AZURE_SUBSCRIPTION: $(UAT_AZURE_SUBSCRIPTION)
@@ -56,6 +57,7 @@ variables:
     DATASOURCE_USERNAME: $(UAT_POSTGRES_DATASOURCE_USERNAME)
     DATASOURCE_PASSWORD: $(UAT_POSTGRES_DATASOURCE_PASSWORD)
     DATASOURCE_URL: $(UAT_POSTGRES_DATASOURCE_URL)
+    API_SUBSCRIPTION_KEY: $(UAT_API_SUBSCRIPTION_KEY)
 
   ${{ if eq(parameters['ENV'], 'prod') }}:
     AZURE_SUBSCRIPTION: $(PROD_AZURE_SUBSCRIPTION)
@@ -441,7 +443,7 @@ stages:
 
 
   # Integration/Load tests
-  - stage: test
+  - stage: Integration tests
     # run stage 'test' only if TEST is equal to true
     condition: and(and(succeeded('deploy'),ne('${{ parameters.ENV }}', 'prod') ), eq('${{ parameters.TEST }}', 'true'))
     dependsOn: deploy
@@ -459,25 +461,17 @@ stages:
       - job: integrationTests
         dependsOn: waitStartup
         steps:
+          - checkout: self
+            persistCredentials: true
+
           - script: |
               git checkout $(SOURCE_BRANCH)
-
+              git pull
+            displayName: Checkout and update branch
           - script: |
-              yarn global add newman
-            displayName: 'newman installation'
-
-          - script: |
-              newman run "api-test/Debt Position.postman_collection.json" --folder=${{parameters.REPOSITORY}} --environment=api-test/azure.${{ parameters.ENV }}.postman_environment.json --reporters cli,junit --reporter-junit-export Results/debtposition-TEST.xml
-            displayName: 'Run api test'
-            condition: in('${{ parameters.REPOSITORY }}', 'gpd', 'payments', 'reporting-analysis')
-            continueOnError: false
-
-          - task: PublishTestResults@2
-            condition: always()
-            inputs:
-              testResultsFormat: 'JUnit'
-              testResultsFiles: '**/*-TEST.xml'
-              searchFolder: '$(System.DefaultWorkingDirectory)'
+              cd ./integration-test
+              sh run_integration_test.sh
+            displayName: Checkout and update branch
 
 #      - job: loadTests
 #        dependsOn: integrationTests
