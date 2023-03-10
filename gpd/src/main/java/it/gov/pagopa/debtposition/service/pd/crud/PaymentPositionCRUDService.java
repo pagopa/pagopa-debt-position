@@ -186,8 +186,8 @@ public class PaymentPositionCRUDService {
     }
 
     /*
-     * verifica la correttezza dell'intervallo di date fornito
-     * le date vengono aggiornate con il maxDaysInterval nei casi in cui una delle date from o to sia mancante
+     * Checks whether the date interval submitted is appropriate. Dates are updated by adding or subtracting the maxDaysInterval
+     * in cases where one and only one of the two bounds of the date interval [from, to] is missing.
      */
     public void checkAndUpdateDates(FilterAndOrder filterAndOrder) {
         List<LocalDateTime> verifiedDueDates = DebtPositionValidation.checkDatesInterval(
@@ -195,13 +195,9 @@ public class PaymentPositionCRUDService {
         List<LocalDateTime> verifiedPaymentDates = DebtPositionValidation.checkDatesInterval(
                 filterAndOrder.getFilter().getPaymentDateFrom(), filterAndOrder.getFilter().getPaymentDateTo(), Integer.parseInt(maxDaysInterval));
 
-        if(verifiedDueDates != null) {
-            filterAndOrder.getFilter().setDueDateFrom(verifiedDueDates.get(0));
-            filterAndOrder.getFilter().setDueDateTo(verifiedDueDates.get(1));
-        }
-        if(verifiedPaymentDates != null) {
-            filterAndOrder.getFilter().setPaymentDateFrom(verifiedPaymentDates.get(0));
-            filterAndOrder.getFilter().setPaymentDateTo(verifiedPaymentDates.get(1));
-        }
+        filterAndOrder.getFilter().setDueDateFrom(verifiedDueDates.get(0));
+        filterAndOrder.getFilter().setDueDateTo(verifiedDueDates.get(1));
+        filterAndOrder.getFilter().setPaymentDateFrom(verifiedPaymentDates.get(0));
+        filterAndOrder.getFilter().setPaymentDateTo(verifiedPaymentDates.get(1));
     }
 }

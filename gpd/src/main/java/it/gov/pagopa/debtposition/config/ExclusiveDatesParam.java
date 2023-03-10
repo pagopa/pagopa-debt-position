@@ -15,8 +15,16 @@ import java.util.Set;
 
 @Aspect
 @Component
-public class ExclusiveParamAspect {
+public class ExclusiveDatesParam {
 
+    /**
+     * This method is triggered when the @ExclusiveParam annotation is used.
+     * If the two sets of parameters bound to the given intervals are mutually exclusive
+     * the execution of the intercepted method proceeds, otherwise an exception is raised.
+     *
+     * @throws AppException BAD_REQUEST status is returned
+     * @see it.gov.pagopa.debtposition.config.ExclusiveDatesParam
+     */
     @Around(value = "@annotation(it.gov.pagopa.debtposition.config.ExclusiveParam)")
     public Object validateExclusiveParam(ProceedingJoinPoint joinPoint) throws Throwable {
 
