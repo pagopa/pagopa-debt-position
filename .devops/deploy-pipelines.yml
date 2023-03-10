@@ -470,7 +470,7 @@ stages:
             displayName: Checkout and update branch
           - script: |
               cd ./integration-test
-              sh run_integration_test.sh
+              sh run_integration_test.sh ${{ parameters.ENV }} $(API_SUBSCRIPTION_KEY)
             displayName: Checkout and update branch
 
 #      - job: loadTests
