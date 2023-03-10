@@ -35,7 +35,6 @@ parameters:
     displayName: Execute database schema update/migration
     type: boolean
     default: false
-
 variables:
   ${{ if eq(parameters['ENV'], 'dev') }}:
     AZURE_SUBSCRIPTION: $(DEV_AZURE_SUBSCRIPTION)
@@ -47,7 +46,6 @@ variables:
     DATASOURCE_PASSWORD: $(DEV_POSTGRES_DATASOURCE_PASSWORD)
     DATASOURCE_URL: $(DEV_POSTGRES_DATASOURCE_URL)
     API_SUBSCRIPTION_KEY: $(DEV_API_SUBSCRIPTION_KEY)
-
   ${{ if eq(parameters['ENV'], 'uat') }}:
     AZURE_SUBSCRIPTION: $(UAT_AZURE_SUBSCRIPTION)
     CONTAINER_REGISTRY: $(UAT_CONTAINER_REGISTRY)
@@ -58,7 +56,6 @@ variables:
     DATASOURCE_PASSWORD: $(UAT_POSTGRES_DATASOURCE_PASSWORD)
     DATASOURCE_URL: $(UAT_POSTGRES_DATASOURCE_URL)
     API_SUBSCRIPTION_KEY: $(UAT_API_SUBSCRIPTION_KEY)
-
   ${{ if eq(parameters['ENV'], 'prod') }}:
     AZURE_SUBSCRIPTION: $(PROD_AZURE_SUBSCRIPTION)
     CONTAINER_REGISTRY: $(PROD_CONTAINER_REGISTRY)
@@ -68,28 +65,22 @@ variables:
     DATASOURCE_USERNAME: $(PROD_POSTGRES_DATASOURCE_USERNAME)
     DATASOURCE_PASSWORD: $(PROD_POSTGRES_DATASOURCE_PASSWORD)
     DATASOURCE_URL: $(PROD_POSTGRES_DATASOURCE_URL)
-
   # github action on pull request use merge as SourceBranchName but we want to use main branch
   ${{ if eq(variables['Build.SourceBranchName'], 'merge') }}:
     SOURCE_BRANCH: "main" # force to main branch
   ${{ if ne(variables['Build.SourceBranchName'], 'merge') }}:
     SOURCE_BRANCH: ${{ variables['Build.SourceBranchName'] }}
-
   APD_SCHEMA_NAME: $(SCHEMA_NAME)
-
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
   MAVEN_OPTS: "-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)"
   title: ""
   sha: ""
   tag: ""
-
 # Only manual triggers
 trigger: none
 pr: none
-
 pool:
   vmImage: ubuntu-latest
-
 stages:
   # Create a release
   - stage: release_service
@@ -103,17 +94,14 @@ stages:
           - checkout: self
             clean: true
             persistCredentials: true
-
           - script: |
               git config --global user.name "$(GIT_USERNAME)"
               git config --global user.email "$(GIT_EMAIL)"
             displayName: Set Git global config
-
           - template: azure-templates/maven-versioning.yml
             parameters:
               subproject: "${{ parameters.REPOSITORY }}"
               semver: "${{ parameters.SEMVER }}"
-
           - task: Bash@3
             name: pomversion
             inputs:
@@ -123,12 +111,10 @@ stages:
                 echo "##vso[task.setvariable variable=next;isOutput=true]$version"
                 sh report/bumper.sh ${{ parameters.REPOSITORY }} $version
               failOnStderr: true
-
           - script: |
               echo "Checkout on $(SOURCE_BRANCH)"
               git checkout $(SOURCE_BRANCH)
             displayName: Checkout on source branch
-
           # bump version
           - script: |
               git add ${{ parameters.REPOSITORY }}/pom.xml
@@ -136,7 +122,6 @@ stages:
               git commit -m "Bump version [skip ci]"
               git push origin $(SOURCE_BRANCH)
               git push --tags
-
           - script: |
               HEAD_SHA=$(git rev-parse HEAD)
               TAG="${{ parameters.REPOSITORY }}/$(pomversion.next)"
@@ -145,13 +130,11 @@ stages:
               echo "##vso[task.setvariable variable=sha]$HEAD_SHA"
               echo "##vso[task.setvariable variable=tag]$TAG"
             displayName: Setting vars
-
           - script: |
               echo $(tag)
               echo $(title)
               echo $(sha)
             displayName: Debug step
-
           # create new release
           - task: GitHubRelease@0
             inputs:
@@ -163,7 +146,6 @@ stages:
               tag: $(tag)
               title: $(title)
               addChangelog: true
-
   # DB migrations DEV
   - stage: db_dev_migrations
     condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'dev'), eq('${{ parameters.EXECUTE_MIGRATION }}', 'true'))
@@ -176,16 +158,14 @@ stages:
             clean: true
             persistCredentials: true
             submodules: true
-
-#          - task: Cache@2
-#            inputs:
-#              key: 'maven | "$(Agent.OS)" | pom.xml'
-#              restoreKeys: |
-#                maven | "$(Agent.OS)"
-#                maven
-#              path: $(MAVEN_CACHE_FOLDER)
-#            displayName: Set Maven Cache
-
+          #          - task: Cache@2
+          #            inputs:
+          #              key: 'maven | "$(Agent.OS)" | pom.xml'
+          #              restoreKeys: |
+          #                maven | "$(Agent.OS)"
+          #                maven
+          #              path: $(MAVEN_CACHE_FOLDER)
+          #            displayName: Set Maven Cache
           - task: Bash@3
             name: dbmigrationsflywayMigrate
             inputs:
@@ -198,7 +178,6 @@ stages:
                 --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
               failOnStderr: true
               workingDirectory: ${{ parameters.REPOSITORY }}
-
   # DB migrations UAT
   - stage: db_uat_migrations
     condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'uat'), eq('${{ parameters.EXECUTE_MIGRATION }}', 'true'))
@@ -211,16 +190,14 @@ stages:
             clean: true
             persistCredentials: true
             submodules: true
-
-#          - task: Cache@2
-#            inputs:
-#              key: 'maven | "$(Agent.OS)" | pom.xml'
-#              restoreKeys: |
-#                maven | "$(Agent.OS)"
-#                maven
-#              path: $(MAVEN_CACHE_FOLDER)
-#            displayName: Set Maven Cache
-
+          #          - task: Cache@2
+          #            inputs:
+          #              key: 'maven | "$(Agent.OS)" | pom.xml'
+          #              restoreKeys: |
+          #                maven | "$(Agent.OS)"
+          #                maven
+          #              path: $(MAVEN_CACHE_FOLDER)
+          #            displayName: Set Maven Cache
           - task: Bash@3
             name: dbmigrationsflywayMigrate
             inputs:
@@ -233,7 +210,6 @@ stages:
                 --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
               failOnStderr: true
               workingDirectory: ${{ parameters.REPOSITORY }}
-
   # DB migrations PROD
   - stage: db_prod_migrations
     condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'prod'), eq('${{ parameters.EXECUTE_MIGRATION }}', 'true'))
@@ -246,16 +222,14 @@ stages:
             clean: true
             persistCredentials: true
             submodules: true
-
-#          - task: Cache@2
-#            inputs:
-#              key: 'maven | "$(Agent.OS)" | pom.xml'
-#              restoreKeys: |
-#                maven | "$(Agent.OS)"
-#                maven
-#              path: $(MAVEN_CACHE_FOLDER)
-#            displayName: Set Maven Cache
-
+          #          - task: Cache@2
+          #            inputs:
+          #              key: 'maven | "$(Agent.OS)" | pom.xml'
+          #              restoreKeys: |
+          #                maven | "$(Agent.OS)"
+          #                maven
+          #              path: $(MAVEN_CACHE_FOLDER)
+          #            displayName: Set Maven Cache
           - task: Bash@3
             name: dbmigrationsflywayMigrate
             inputs:
@@ -268,244 +242,22 @@ stages:
                 --rm -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
               failOnStderr: true
               workingDirectory: ${{ parameters.REPOSITORY }}
-
-#  # Deploy on Azure
-#  - stage: deploy
-#    condition: and(in(dependencies.db_dev_migrations.result, 'Succeeded', 'Skipped'), in(dependencies.db_uat_migrations.result, 'Succeeded', 'Skipped'), in(dependencies.db_prod_migrations.result, 'Succeeded', 'Skipped', 'Rejected'))
-#    pool:
-#      vmImage: "ubuntu-latest"
-#    jobs:
-#      - job: deployJava
-#        steps:
-#          - script: |
-#              git config --global user.name "$(GIT_USERNAME)"
-#              git config --global user.email "$(GIT_EMAIL)"
-#            displayName: Set Git global config
-#
-#          - script: |
-#              echo "Checkout on $(SOURCE_BRANCH)"
-#              git checkout $(SOURCE_BRANCH)
-#            displayName: Checkout on source branch
-#
-#          - task: Cache@2
-#            inputs:
-#              key: 'maven | "$(Agent.OS)" | pom.xml'
-#              restoreKeys: |
-#                maven | "$(Agent.OS)"
-#                maven
-#              path: $(MAVEN_CACHE_FOLDER)
-#            displayName: Set Maven Cache
-#
-#          - task: Bash@3
-#            name: pomversion
-#            inputs:
-#              targetType: "inline"
-#              script: |
-#                version=$(mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)
-#                echo "##vso[task.setvariable variable=next;isOutput=true]$version"
-#              failOnStderr: true
-#
-#          - task: Bash@3
-#            # When the maven task is installed, mvn can be used in a script
-#            name: mvn_get_version
-#            inputs:
-#              targetType: "inline"
-#              script: |
-#                mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout
-#              failOnStderr: true
-#
-#          - task: Maven@3
-#            displayName: Build Module
-#            inputs:
-#              mavenPomFile: "${{ parameters.REPOSITORY }}/pom.xml"
-#              mavenOptions: "-Xmx3072m $(MAVEN_OPTS)"
-#              mavenVersionOption: 'Default'
-#              javaHomeOption: "JDKVersion"
-#              jdkVersionOption: "1.11"
-#              jdkArchitectureOption: "x64"
-#              testResultsFiles: "**/surefire-reports/TEST-*.xml"
-#              publishJUnitResults: true
-#              effectivePomSkip: false
-#              sonarQubeRunAnalysis: false
-#              goals: "install"
-#
-#          - task: Docker@2
-#            displayName: Build and push image to container registry
-#            inputs:
-#              command: 'buildAndPush'
-#              containerRegistry: '$(CONTAINER_REGISTRY)'
-#              repository: '${{ parameters.REPOSITORY }}'
-#              buildContext: './${{ parameters.REPOSITORY }}'
-#              Dockerfile: './${{ parameters.REPOSITORY }}/Dockerfile.deploy'
-#              tags: |
-#                $(Build.BuildId)
-#                latest
-#                $(pomversion.next)
-#
-#          - task: AzureRMWebAppDeployment@4
-#            displayName: "Deployment App Service [DEV|UAT]"
-#            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), in('${{ parameters.ENV }}', 'dev', 'uat'))
-#            inputs:
-#              appType: webAppContainer
-#              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
-#              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
-#              DockerNamespace: "${{variables.CONTAINER_NAMESPACE}}"
-#              DockerRepository: "${{ parameters.REPOSITORY }}"
-#              DockerImageTag: "$(Build.BuildId)"
-#
-#          # deploy staging gpd | payments - stage
-#          - task: AzureRMWebAppDeployment@4
-#            displayName: "Deployment Staging App Service [PROD]"
-#            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'prod'))
-#            inputs:
-#              appType: webAppContainer
-#              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
-#              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
-#              DockerNamespace: "${{variables.CONTAINER_NAMESPACE}}"
-#              DockerRepository: "${{ parameters.REPOSITORY }}"
-#              DockerImageTag: "$(Build.BuildId)"
-#              deployToSlotOrASE: true
-#              slotName: staging
-#              resourceGroupName: $(RESOURCE_GROUP)
-#
-#          # deploy reporting-fn
-#          - task: AzureFunctionAppContainer@1
-#            displayName: Deploy Function App [DEV|UAT]
-#            condition: and(in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service'), in('${{ parameters.ENV }}', 'dev', 'uat'))
-#            inputs:
-#              azureSubscription: $(AZURE_SUBSCRIPTION)
-#              appName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
-#              imageName: "${{variables.CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(Build.BuildId)"
-#              slotName: production
-#          - task: AzureFunctionAppContainer@1
-#            displayName: Deploy Function App [PROD]
-#            condition: and(in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service'), eq('${{ parameters.ENV }}', 'prod'))
-#            inputs:
-#              azureSubscription: $(AZURE_SUBSCRIPTION)
-#              appName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
-#              imageName: "${{variables.CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(Build.BuildId)"
-#              deployToSlotOrASE: true
-#              slotName: staging
-#              resourceGroupName: $(RESOURCE_GROUP)
-#
-#          - script: |
-#              echo "##vso[task.setvariable variable=version;isOutput=true]$(pomversion.next)"
-#            name: dockerTag
-
-  # Prod deploy
-#  - stage: deployApprovalPROD
-#    condition: eq('${{ parameters.ENV }}', 'prod')
-#    dependsOn: deploy
-#    pool:
-#      vmImage: "ubuntu-latest"
-#    jobs:
-#      - job: waitForApprovalPROD
-#        displayName: waiting for approval
-#        pool: server
-#        timeoutInMinutes: 4320 # 3 days
-#        steps:
-#          - task: ManualValidation@0
-#            displayName: Manual Approval
-#            inputs:
-#              onTimeout: "reject"
-#
-#      - job: completeProdDeployJava
-#        condition: and(succeeded('waitForApprovalPROD'), in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'))
-#        displayName: complete prod deploy
-#        dependsOn: waitForApprovalPROD
-#        steps:
-#          # deploy gpd | payments - swap
-#          - task: AzureAppServiceManage@0
-#            displayName: Swapping App Service Deploy
-#            inputs:
-#              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
-#              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
-#              ResourceGroupName: $(RESOURCE_GROUP)
-#              SourceSlot: staging
-#              SwapWithProduction: true
-#              Slot: production
-#
-#      - job: completeProdDeployFn
-#        condition: in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service')
-#        displayName: complete prod function deploy
-#        dependsOn: waitForApprovalPROD
-#        steps:
-#          # deploy functions - swap
-#          - task: AzureAppServiceManage@0
-#            displayName: Swapping App Service Deploy
-#            inputs:
-#              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
-#              WebAppName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
-#              ResourceGroupName: $(RESOURCE_GROUP)
-#              SourceSlot: staging
-#              SwapWithProduction: true
-#              Slot: production
-
-
-  # Integration/Load tests
-  - stage: Integration_Tests
-    # run stage 'test' only if TEST is equal to true
-    condition: eq('${{ parameters.TEST }}', 'true')
-    #and(and(succeeded('deploy'),ne('${{ parameters.ENV }}', 'prod') ), eq('${{ parameters.TEST }}', 'true'))
-    #dependsOn: deploy
+  # Deploy on Azure
+  - stage: deploy
+    condition: and(in(dependencies.db_dev_migrations.result, 'Succeeded', 'Skipped'), in(dependencies.db_uat_migrations.result, 'Succeeded', 'Skipped'), in(dependencies.db_prod_migrations.result, 'Succeeded', 'Skipped', 'Rejected'))
     pool:
       vmImage: "ubuntu-latest"
     jobs:
-      # is needed to wait for startup of application
-#      - job: waitStartup
-#        pool: Server
-#        steps:
-#          - task: Delay@1
-#            inputs:
-#              delayForMinutes: '0.5'
-
-      - job: integrationTests
-        #dependsOn: waitStartup
+      - job: deployJava
         steps:
-          - checkout: self
-            persistCredentials: true
-
           - script: |
+              git config --global user.name "$(GIT_USERNAME)"
+              git config --global user.email "$(GIT_EMAIL)"
+            displayName: Set Git global config
+          - script: |
+              echo "Checkout on $(SOURCE_BRANCH)"
               git checkout $(SOURCE_BRANCH)
-              git pull
-            displayName: Checkout and update branch
-          - script: |
-              cd ./gpd/integration-test
-              sh run_integration_test.sh ${{ parameters.ENV }} $(API_SUBSCRIPTION_KEY)
-            displayName: Run integration test
-
-#      - job: loadTests
-#        dependsOn: integrationTests
-#        condition: eq('${{ parameters.REPOSITORY }}', 'gpd')
-#        steps:
-#
-#          - script: |
-#              sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
-#              echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
-#              sudo apt-get update
-#              sudo apt-get install k6
-#            displayName: 'k6 installation'
-#
-#          - script: |
-#              k6 run -e BASE_URL=https://api.${{ parameters.ENV }}.platform.pagopa.it/gpd/api/v1 gpd/load-test/src/create_debt_postion.js
-#            displayName: 'Run load test create debt position'
-#            continueOnError: true
-#
-#          - script: |
-#              k6 run -e BASE_URL=https://api.${{ parameters.ENV }}.platform.pagopa.it/gpd/api/v1 gpd/load-test/src/payments_workflow.js
-#            displayName: 'Run load test payments workflow'
-#            continueOnError: true
-
-      - job: deployUAT
-        dependsOn: integrationTests
-        variables:
-          version: $[ stageDependencies.deploy.deployJava.outputs['dockerTag.version'] ]
-        steps:
-          - checkout: self
-            clean: true
-            persistCredentials: true
-            submodules: true
-
+            displayName: Checkout on source branch
           - task: Cache@2
             inputs:
               key: 'maven | "$(Agent.OS)" | pom.xml'
@@ -514,20 +266,22 @@ stages:
                 maven
               path: $(MAVEN_CACHE_FOLDER)
             displayName: Set Maven Cache
-
           - task: Bash@3
-            name: dbmigrationsflywayValidate
+            name: pomversion
             inputs:
               targetType: "inline"
               script: |
-                docker run -e SPRING_DATASOURCE_URL='$(DATASOURCE_URL)' \
-                -e SPRING_DATASOURCE_USERNAME='$(DATASOURCE_USERNAME)' \
-                -e SPRING_DATASOURCE_PASSWORD='$(DATASOURCE_PASSWORD)' \
-                -e GPD_SCHEMA_NAME='$(APD_SCHEMA_NAME)' \
-                --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:validate -Dflyway.configFiles=apdFlywayConfig.conf
+                version=$(mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)
+                echo "##vso[task.setvariable variable=next;isOutput=true]$version"
               failOnStderr: true
-              workingDirectory: ${{ parameters.REPOSITORY }}
-
+          - task: Bash@3
+            # When the maven task is installed, mvn can be used in a script
+            name: mvn_get_version
+            inputs:
+              targetType: "inline"
+              script: |
+                mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout
+              failOnStderr: true
           - task: Maven@3
             displayName: Build Module
             inputs:
@@ -542,7 +296,205 @@ stages:
               effectivePomSkip: false
               sonarQubeRunAnalysis: false
               goals: "install"
+          - task: Docker@2
+            displayName: Build and push image to container registry
+            inputs:
+              command: 'buildAndPush'
+              containerRegistry: '$(CONTAINER_REGISTRY)'
+              repository: '${{ parameters.REPOSITORY }}'
+              buildContext: './${{ parameters.REPOSITORY }}'
+              Dockerfile: './${{ parameters.REPOSITORY }}/Dockerfile.deploy'
+              tags: |
+                $(Build.BuildId)
+                latest
+                $(pomversion.next)
+          - task: AzureRMWebAppDeployment@4
+            displayName: "Deployment App Service [DEV|UAT]"
+            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), in('${{ parameters.ENV }}', 'dev', 'uat'))
+            inputs:
+              appType: webAppContainer
+              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
+              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+              DockerNamespace: "${{variables.CONTAINER_NAMESPACE}}"
+              DockerRepository: "${{ parameters.REPOSITORY }}"
+              DockerImageTag: "$(Build.BuildId)"
+          # deploy staging gpd | payments - stage
+          - task: AzureRMWebAppDeployment@4
+            displayName: "Deployment Staging App Service [PROD]"
+            condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), eq('${{ parameters.ENV }}', 'prod'))
+            inputs:
+              appType: webAppContainer
+              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
+              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+              DockerNamespace: "${{variables.CONTAINER_NAMESPACE}}"
+              DockerRepository: "${{ parameters.REPOSITORY }}"
+              DockerImageTag: "$(Build.BuildId)"
+              deployToSlotOrASE: true
+              slotName: staging
+              resourceGroupName: $(RESOURCE_GROUP)
+          # deploy reporting-fn
+          - task: AzureFunctionAppContainer@1
+            displayName: Deploy Function App [DEV|UAT]
+            condition: and(in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service'), in('${{ parameters.ENV }}', 'dev', 'uat'))
+            inputs:
+              azureSubscription: $(AZURE_SUBSCRIPTION)
+              appName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
+              imageName: "${{variables.CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(Build.BuildId)"
+              slotName: production
+          - task: AzureFunctionAppContainer@1
+            displayName: Deploy Function App [PROD]
+            condition: and(in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service'), eq('${{ parameters.ENV }}', 'prod'))
+            inputs:
+              azureSubscription: $(AZURE_SUBSCRIPTION)
+              appName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
+              imageName: "${{variables.CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(Build.BuildId)"
+              deployToSlotOrASE: true
+              slotName: staging
+              resourceGroupName: $(RESOURCE_GROUP)
+          - script: |
+              echo "##vso[task.setvariable variable=version;isOutput=true]$(pomversion.next)"
+            name: dockerTag
+  # Prod deploy
+  - stage: deployApprovalPROD
+    condition: eq('${{ parameters.ENV }}', 'prod')
+    dependsOn: deploy
+    pool:
+      vmImage: "ubuntu-latest"
+    jobs:
+      - job: waitForApprovalPROD
+        displayName: waiting for approval
+        pool: server
+        timeoutInMinutes: 4320 # 3 days
+        steps:
+          - task: ManualValidation@0
+            displayName: Manual Approval
+            inputs:
+              onTimeout: "reject"
 
+      - job: completeProdDeployJava
+        condition: and(succeeded('waitForApprovalPROD'), in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'))
+        displayName: complete prod deploy
+        dependsOn: waitForApprovalPROD
+        steps:
+          # deploy gpd | payments - swap
+          - task: AzureAppServiceManage@0
+            displayName: Swapping App Service Deploy
+            inputs:
+              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
+              WebAppName: "${{variables.APP_NAME}}-app-${{ parameters.REPOSITORY }}"
+              ResourceGroupName: $(RESOURCE_GROUP)
+              SourceSlot: staging
+              SwapWithProduction: true
+              Slot: production
+      - job: completeProdDeployFn
+        condition: in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service')
+        displayName: complete prod function deploy
+        dependsOn: waitForApprovalPROD
+        steps:
+          # deploy functions - swap
+          - task: AzureAppServiceManage@0
+            displayName: Swapping App Service Deploy
+            inputs:
+              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
+              WebAppName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
+              ResourceGroupName: $(RESOURCE_GROUP)
+              SourceSlot: staging
+              SwapWithProduction: true
+              Slot: production
+  # Integration/Load tests
+  - stage: Integration_Tests
+    # run stage 'test' only if TEST is equal to true
+    condition: and(and(succeeded('deploy'),ne('${{ parameters.ENV }}', 'prod') ), eq('${{ parameters.TEST }}', 'true'))
+    dependsOn: deploy
+    pool:
+      vmImage: "ubuntu-latest"
+    jobs:
+      # is needed to wait for startup of application
+      - job: waitStartup
+        pool: Server
+        steps:
+          - task: Delay@1
+            inputs:
+              delayForMinutes: '7'
+      - job: integrationTests
+        dependsOn: waitStartup
+        steps:
+          - checkout: self
+            persistCredentials: true
+          - script: |
+              git checkout $(SOURCE_BRANCH)
+              git pull
+            displayName: Checkout and update branch
+          - script: |
+              cd ./integration-test
+              cd ./gpd/integration-test
+              sh run_integration_test.sh ${{ parameters.ENV }} $(API_SUBSCRIPTION_KEY)
+            displayName: Checkout and update branch
+            displayName: Run integration test
+      #      - job: loadTests
+      #        dependsOn: integrationTests
+      #        condition: eq('${{ parameters.REPOSITORY }}', 'gpd')
+      #        steps:
+      #
+      #          - script: |
+      #              sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+      #              echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+      #              sudo apt-get update
+      #              sudo apt-get install k6
+      #            displayName: 'k6 installation'
+      #
+      #          - script: |
+      #              k6 run -e BASE_URL=https://api.${{ parameters.ENV }}.platform.pagopa.it/gpd/api/v1 gpd/load-test/src/create_debt_postion.js
+      #            displayName: 'Run load test create debt position'
+      #            continueOnError: true
+      #
+      #          - script: |
+      #              k6 run -e BASE_URL=https://api.${{ parameters.ENV }}.platform.pagopa.it/gpd/api/v1 gpd/load-test/src/payments_workflow.js
+      #            displayName: 'Run load test payments workflow'
+      #            continueOnError: true
+      - job: deployUAT
+        dependsOn: integrationTests
+        variables:
+          version: $[ stageDependencies.deploy.deployJava.outputs['dockerTag.version'] ]
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+            submodules: true
+          - task: Cache@2
+            inputs:
+              key: 'maven | "$(Agent.OS)" | pom.xml'
+              restoreKeys: |
+                maven | "$(Agent.OS)"
+                maven
+              path: $(MAVEN_CACHE_FOLDER)
+            displayName: Set Maven Cache
+          - task: Bash@3
+            name: dbmigrationsflywayValidate
+            inputs:
+              targetType: "inline"
+              script: |
+                docker run -e SPRING_DATASOURCE_URL='$(DATASOURCE_URL)' \
+                -e SPRING_DATASOURCE_USERNAME='$(DATASOURCE_USERNAME)' \
+                -e SPRING_DATASOURCE_PASSWORD='$(DATASOURCE_PASSWORD)' \
+                -e GPD_SCHEMA_NAME='$(APD_SCHEMA_NAME)' \
+                --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:validate -Dflyway.configFiles=apdFlywayConfig.conf
+              failOnStderr: true
+              workingDirectory: ${{ parameters.REPOSITORY }}
+          - task: Maven@3
+            displayName: Build Module
+            inputs:
+              mavenPomFile: "${{ parameters.REPOSITORY }}/pom.xml"
+              mavenOptions: "-Xmx3072m $(MAVEN_OPTS)"
+              mavenVersionOption: 'Default'
+              javaHomeOption: "JDKVersion"
+              jdkVersionOption: "1.11"
+              jdkArchitectureOption: "x64"
+              testResultsFiles: "**/surefire-reports/TEST-*.xml"
+              publishJUnitResults: true
+              effectivePomSkip: false
+              sonarQubeRunAnalysis: false
+              goals: "install"
           - task: Docker@2
             displayName: Build and push image to container registry
             inputs:
@@ -555,7 +507,6 @@ stages:
                 $(Build.BuildId)
                 latest
                 $(version)
-
           - task: AzureRMWebAppDeployment@4
             displayName: "Deployment App Service [DEV|UAT]"
             condition: and(in('${{ parameters.REPOSITORY }}', 'gpd', 'payments'), in('${{ parameters.ENV }}', 'dev', 'uat'))
@@ -566,7 +517,6 @@ stages:
               DockerNamespace: "${{variables.UAT_CONTAINER_NAMESPACE}}"
               DockerRepository: "${{ parameters.REPOSITORY }}"
               DockerImageTag: "$(Build.BuildId)"
-
           # deploy reporting-fn
           - task: AzureFunctionAppContainer@1
             displayName: Deploy Function App [DEV|UAT]
@@ -576,4 +526,3 @@ stages:
               appName: "${{variables.UAT_WEB_APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
               imageName: "${{variables.UAT_CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(Build.BuildId)"
               slotName: production
-
