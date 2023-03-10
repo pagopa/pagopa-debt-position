@@ -456,7 +456,7 @@ stages:
         steps:
           - task: Delay@1
             inputs:
-              delayForMinutes: '7'
+              delayForMinutes: '0.5'
 
       - job: integrationTests
         dependsOn: waitStartup
