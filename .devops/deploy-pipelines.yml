@@ -443,7 +443,7 @@ stages:
 
 
   # Integration/Load tests
-  - stage: Integration tests
+  - stage: Integration_Tests
     # run stage 'test' only if TEST is equal to true
     condition: and(and(succeeded('deploy'),ne('${{ parameters.ENV }}', 'prod') ), eq('${{ parameters.TEST }}', 'true'))
     dependsOn: deploy
