@@ -4,18 +4,21 @@ import it.gov.pagopa.debtposition.exception.AppException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.Set;
 
 @Aspect
 @Component
-public class ExclusiveDatesParam {
+public class ExclusiveParamAspect {
+
+    @Autowired
+    private HttpServletRequest request;
+
 
     /**
      * This method is triggered when the @ExclusiveParam annotation is used.
@@ -23,17 +26,15 @@ public class ExclusiveDatesParam {
      * the execution of the intercepted method proceeds, otherwise an exception is raised.
      *
      * @throws AppException BAD_REQUEST status is returned
-     * @see it.gov.pagopa.debtposition.config.ExclusiveDatesParam
+     * @see ExclusiveParamAspect
      */
-    @Around(value = "@annotation(it.gov.pagopa.debtposition.config.ExclusiveParam)")
-    public Object validateExclusiveParam(ProceedingJoinPoint joinPoint) throws Throwable {
+    @Around(value = "@annotation(annotation)")
+    public Object validateExclusiveParam(ProceedingJoinPoint joinPoint, ExclusiveParamGroup annotation) throws Throwable {
 
-        String[] paramsDueDate = {"due_date_to", "due_date_from"};
-        String[] paramsPaymentDate = {"payment_date_from", "payment_date_to"};
+        String[] paramsDueDate = annotation.firstGroup();
+        String[] paramsPaymentDate = annotation.secondGroup();
 
-        Set<String> set = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes()))
-                                  .getRequest()
-                                  .getParameterMap().keySet();
+        Set<String> set = request.getParameterMap().keySet();
 
         boolean bothPresent = Arrays.stream(paramsPaymentDate).anyMatch(set::contains) && Arrays.stream(paramsDueDate).anyMatch(set::contains);
 

@@ -1,6 +1,6 @@
 package it.gov.pagopa.debtposition.controller.pd.crud.api.impl;
 
-import it.gov.pagopa.debtposition.config.ExclusiveParam;
+import it.gov.pagopa.debtposition.config.ExclusiveParamGroup;
 import it.gov.pagopa.debtposition.controller.pd.crud.api.IDebtPositionController;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
@@ -25,6 +25,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
@@ -75,7 +76,7 @@ public class DebtPositionController implements IDebtPositionController {
     }
 
     @Override
-    @ExclusiveParam
+    @ExclusiveParamGroup(firstGroup = {"due_date_to", "due_date_from"}, secondGroup = {"payment_date_from", "payment_date_to"})
     public ResponseEntity<PaymentPositionsInfo> getOrganizationDebtPositions(String organizationFiscalCode,
                                                                              @Positive Integer limit, @Positive Integer page, LocalDate dueDateFrom,
                                                                              LocalDate dueDateTo, LocalDate paymentDateFrom, LocalDate paymentDateTo,
