@@ -76,7 +76,7 @@ export default function () {
 
   var r = http.post(url, payload, params);
 
-  console.log("CreateDebtPosition call - creditor_institution_code = " + creditor_institution_code + ", Status = " + r.status);
+  //console.log("CreateDebtPosition call - creditor_institution_code = " + creditor_institution_code + ", Status = " + r.status);
 
   check(r, {
     'CreateDebtPosition status is 201': (r) => r.status === 201,
@@ -90,12 +90,11 @@ export default function () {
 
     r = http.post(url, params);
 
-    console.log("PublishDebtPosition call - creditor_institution_code = " + creditor_institution_code + ", iupd = " + iupd + ", Status = " + r.status);
+    //console.log("PublishDebtPosition call - creditor_institution_code = " + creditor_institution_code + ", iupd = " + iupd + ", Status = " + r.status);
 
     check(r, {
       'PublishDebtPosition status is 200': (r) => r.status === 200,
     });
   }
 }
-
 

@@ -5,6 +5,7 @@ TYPE=$2
 SCRIPT=$3
 DB_NAME=$4
 API_SUBSCRIPTION_KEY=$5
+PD_TO_PRELOAD=$6
 
 if [ -z "$ENVIRONMENT" ]
 then
@@ -29,6 +30,12 @@ then
   echo "No DB name specified: 'k6' is used."
 fi
 
+if [ -z "$PD_TO_PRELOAD" ]
+then
+  PD_TO_PRELOAD=0
+  echo "No PD_TO_PRELOAD number specified: 0 is default value."
+fi
+
 #k6 run -o influxdb=http://influxdb:8086/k6 -e BASE_URL=http://localhost:8085 gpd/load-test/src/payments_workflow.js
 
 export env=${ENVIRONMENT}
@@ -36,8 +43,8 @@ export type=${TYPE}
 export script=${SCRIPT}
 export db_name=${DB_NAME}
 export sub_key=${API_SUBSCRIPTION_KEY}
+export numberOfPositionsToPreload=${PD_TO_PRELOAD}
 
-echo "PROD"
 echo ${type}
 
 docker rm nginx

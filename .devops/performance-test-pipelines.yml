@@ -18,6 +18,11 @@
         - "stress"
         - "ramping"
         - "constant"
+        - "smoke"
+    - name: "PD_TO_PRELOAD"
+      displayName: "Debt Positions to preload"
+      type: number
+      default: 10
     - name: "SCRIPT"
       displayName: "Script name"
       type: string
@@ -25,6 +30,7 @@
         - "create_debt_position"
         - "payments_workflow"
         - "publish_workflow"
+        - "just_payments_workflow"
         - "upd_workflow"
       default: "publish_workflow"
 
@@ -48,5 +54,5 @@
 
     - script: |
         cd ./gpd/load-test
-        sh ./run_performance_test.sh ${{ parameters.ENVIRONMENT }} ${{ parameters.TEST_TYPE }} ${{ parameters.SCRIPT }} gpdk6 $(API_SUBSCRIPTION_KEY)
+        sh ./run_performance_test.sh ${{ parameters.ENVIRONMENT }} ${{ parameters.TEST_TYPE }} ${{ parameters.SCRIPT }} gpdk6 $(API_SUBSCRIPTION_KEY) ${{ parameters.PD_TO_PRELOAD }}
       displayName: Run k6 ${{ parameters.SCRIPT }} on ${{ parameters.ENVIRONMENT }}
