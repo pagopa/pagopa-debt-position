@@ -13,8 +13,12 @@ Feature: Paying a debt position
     Then the debt position gets the status code 200
 
   Scenario: Payment option publication
-    When the the payment option is paid
+    When the payment option is paid
     Then the payment option gets the status code 200
+
+  Scenario: Reporting the transfer
+    When the transfer is reported
+    Then the transfer gets the status code 200
 
 
 

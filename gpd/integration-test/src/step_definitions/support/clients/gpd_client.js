@@ -11,8 +11,7 @@ function gpdHealthCheck() {
     })
 }
 
-function createDebtPosition(orgId, body) {
-    console.log(body);
+function createDebtPosition(orgId, body){
     return post(gpd_host + `/organizations/${orgId}/debtpositions`, body, {
         timeout: 10000,
         headers: {
@@ -79,6 +78,26 @@ function deleteDebtPosition(orgId, iupd) {
     })
 }
 
+function payPaymentOption(orgId, iuv, body) {
+    return post(gpd_host + `/organizations/${orgId}/paymentoptions/${iuv}/pay`, body, {
+        timeout: 10000,
+        headers: {
+            "Ocp-Apim-Subscription-Key": process.env.GPD_SUBSCRIPTION_KEY,
+            "Content-Type": "application/json"
+        }
+    })
+}
+
+function reportTransfer(orgId, iuv, idTransfer) {
+    return post(gpd_host + `/organizations/${orgId}/paymentoptions/${iuv}/transfers/${idTransfer}/report`, "", {
+        timeout: 10000,
+        headers: {
+            "Ocp-Apim-Subscription-Key": process.env.GPD_SUBSCRIPTION_KEY,
+            "Content-Type": "application/json"
+        }
+    })
+}
+
 module.exports = {
     gpdHealthCheck,
     createDebtPosition,
@@ -87,4 +106,6 @@ module.exports = {
     getDebtPositionList,
     getDebtPosition,
     deleteDebtPosition,
+    payPaymentOption,
+    reportTransfer,
 }

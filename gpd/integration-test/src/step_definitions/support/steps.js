@@ -7,9 +7,10 @@ const { executeDebtPositionCreation,
         executeDebtPositionGet,
         executeDebtPositionPublish,
         executePaymentOptionPay,
+        executeReportTransfer,
 } = require('./logic/gpd_logic');
 const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, executeAfterAllStep, randomOrg, randomIupd } = require('./logic/common_logic');
-const { gpdSessionBundle, gpdUpdateBundle } = require('./utility/data');
+const { gpdSessionBundle, gpdUpdateBundle, gpdPayBundle } = require('./utility/data');
 const { getValidBundle } = require('./utility/helpers');
 
 let idOrg;
@@ -61,10 +62,16 @@ When('the debt position is deleted', () => executeDebtPositionDeletion(gpdSessio
 /*
  *  Debt position publish
  */
-When ('the debt position is published', () => executeDebtPositionPublish(gpdSessionBundle, idOrg, iupd));
+When('the debt position is published', () => executeDebtPositionPublish(gpdSessionBundle, idOrg, iupd));
 
 /*
  *  Paying the payment option
  */
-When ('the payment option is paid', () => executePaymentOptionPay(gpdSessionBundle, idOrg));
+When('the payment option is paid', () => executePaymentOptionPay(gpdPayBundle, idOrg, gpdSessionBundle.debtPosition.iuv1));
 Then('the payment option gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
+
+/*
+ *  Reporting the transfer
+ */
+When('the transfer is reported', () => executeReportTransfer(gpdSessionBundle, idOrg));
+Then('the transfer gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));

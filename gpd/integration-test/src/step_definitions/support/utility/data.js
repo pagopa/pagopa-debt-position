@@ -51,7 +51,16 @@ let gpdUpdateBundle = {
     companyName: "Testing S.p.A."
 }
 
+let gpdPayBundle = {
+    paymentDate: "2023-03-10T08:23:52.127Z",
+    paymentMethod: "string1",
+    pspCompany: "string2",
+    idReceipt: "string3",
+    fee: 0
+                   }
+
 module.exports = {
     gpdSessionBundle,
-    gpdUpdateBundle
+    gpdUpdateBundle,
+    gpdPayBundle,
 }

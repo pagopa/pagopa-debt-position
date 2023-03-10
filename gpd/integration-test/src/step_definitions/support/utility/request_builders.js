@@ -3,7 +3,7 @@ const { addDays, buildStringFromDate, makeidNumber, makeidMix,  } = require("./h
 function buildDebtPositionDynamicData(gpdSessionBundle, iupdIn) {
     return {
         iupd: iupdIn,
-        iuv1: `${gpdSessionBundle.debtPosition.iuvPrefix}${makeidNumber(15)}`,
+        iuv1: makeidNumber(17),
         iuv2: makeidNumber(17),
         iuv3: makeidNumber(17),
         iban: gpdSessionBundle.debtPosition.iban,
@@ -42,7 +42,6 @@ function buildCreateDebtPositionRequest(debtPosition, payer) {
         companyName: payer.companyName,
         officeName: payer.officeName,
         switchToExpired: false,
-        validityDate: addDays(15),
         paymentOption: [
             {
                 iuv: debtPosition.iuv1,
