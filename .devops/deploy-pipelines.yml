@@ -452,12 +452,12 @@ stages:
       vmImage: "ubuntu-latest"
     jobs:
       # is needed to wait for startup of application
-      - job: waitStartup
-        pool: Server
-        steps:
-          - task: Delay@1
-            inputs:
-              delayForMinutes: '0.5'
+#      - job: waitStartup
+#        pool: Server
+#        steps:
+#          - task: Delay@1
+#            inputs:
+#              delayForMinutes: '0.5'
 
       - job: integrationTests
         dependsOn: waitStartup
