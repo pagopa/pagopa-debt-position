@@ -430,7 +430,6 @@ stages:
       #              delayForMinutes: '0.5'
 
       - job: integrationTests
-        dependsOn: waitStartup
         #dependsOn: waitStartup
         steps:
           - checkout: self
