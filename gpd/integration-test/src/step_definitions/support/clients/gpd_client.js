@@ -98,6 +98,19 @@ function reportTransfer(orgId, iuv, idTransfer) {
     })
 }
 
+function createAndPublishDebtPosition(orgId, body) {
+    return post(gpd_host + `/organizations/${orgId}/debtpositions`, body, {
+        timeout: 10000,
+        params: {
+            toPublish: "True",
+        },
+        headers: {
+            "Ocp-Apim-Subscription-Key": process.env.API_SUBSCRIPTION_KEY,
+            "Content-Type": "application/json"
+        }
+    })
+}
+
 module.exports = {
     gpdHealthCheck,
     createDebtPosition,
@@ -108,4 +121,5 @@ module.exports = {
     deleteDebtPosition,
     payPaymentOption,
     reportTransfer,
+    createAndPublishDebtPosition,
 }

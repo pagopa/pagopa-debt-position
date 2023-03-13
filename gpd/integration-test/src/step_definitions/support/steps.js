@@ -1,4 +1,4 @@
-const { Given, When, Then, AfterAll, Before } = require('@cucumber/cucumber')
+const { Given, When, Then, AfterAll, Before} = require('@cucumber/cucumber')
 const { executeHealthCheckForGPD } = require('./logic/health_checks_logic');
 const { executeDebtPositionCreation,
         executeDebtPositionDeletion,
@@ -8,8 +8,9 @@ const { executeDebtPositionCreation,
         executeDebtPositionPublish,
         executePaymentOptionPay,
         executeReportTransfer,
+        executeDebtPositionCreationAndPublication,
 } = require('./logic/gpd_logic');
-const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, executeAfterAllStep, randomOrg, randomIupd } = require('./logic/common_logic');
+const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, assertStatusString, executeAfterAllStep, randomOrg, randomIupd } = require('./logic/common_logic');
 const { gpdSessionBundle, gpdUpdateBundle, gpdPayBundle } = require('./utility/data');
 const { getValidBundle } = require('./utility/helpers');
 
@@ -75,3 +76,9 @@ Then('the payment option gets the status code {int}', (statusCode) => assertStat
  */
 When('the transfer is reported', () => executeReportTransfer(gpdSessionBundle, idOrg));
 Then('the transfer gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
+
+/*
+ *  Create and publish
+ */
+When('the debt position is created and published', () => executeDebtPositionCreationAndPublication(gpdSessionBundle, idOrg, iupd));
+Then('the debt position gets status {string}', (statusString) => assertStatusString(gpdSessionBundle, statusString));

@@ -7,6 +7,7 @@ const {
     getDebtPosition,
     payPaymentOption,
     reportTransfer,
+    createAndPublishDebtPosition,
 } = require("../clients/gpd_client");
 
 const {
@@ -58,6 +59,13 @@ async function executeReportTransfer(bundle, idOrg) {
     let response = await reportTransfer(idOrg, iuv, idTransfer);
 }
 
+async function executeDebtPositionCreationAndPublication(bundle, idOrg, iupd) {
+    bundle.organizationCode = idOrg;
+    bundle.debtPosition = buildDebtPositionDynamicData(bundle, iupd);
+    let response = await createAndPublishDebtPosition(bundle.organizationCode, buildCreateDebtPositionRequest(bundle.debtPosition, bundle.payer));
+    bundle.responseToCheck = response;
+}
+
 module.exports = {
     executeDebtPositionCreation,
     executeDebtPositionDeletion,
@@ -67,4 +75,5 @@ module.exports = {
     executeDebtPositionPublish,
     executePaymentOptionPay,
     executeReportTransfer,
+    executeDebtPositionCreationAndPublication,
 }

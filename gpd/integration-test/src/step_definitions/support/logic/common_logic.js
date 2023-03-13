@@ -22,6 +22,10 @@ async function assertCompanyName(bundle, companyName) {
     assert.strictEqual(bundle.payer.companyName, companyName);
 }
 
+async function assertStatusString(bundle, statusString) {
+    assert.strictEqual(bundle.responseToCheck.data.status, statusString);
+}
+
 function randomOrg() {
     return "Org_" + Math.floor(Math.random() * 100);
 }
@@ -36,6 +40,7 @@ module.exports = {
     assertOutcome,
     assertStatusCode,
     assertCompanyName,
+    assertStatusString,
     randomOrg,
     randomIupd,
 }
