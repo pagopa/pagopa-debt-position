@@ -41,16 +41,20 @@ function publishDebtPosition(orgId, iupd) {
     })
 }
 
-function getDebtPositionList(orgId) {
+function getDebtPositionList(orgId, dueDateFrom, dueDateTo, paymentDateFrom, paymentDateTo, status) {
+    const params = {}
+    if (dueDateFrom != null) params.due_date_from = dueDateFrom;
+    if (dueDateTo != null) params.due_date_to = dueDateTo;
+    if (paymentDateFrom != null) params.payment_date_from = paymentDateFrom;
+    if (paymentDateTo != null) params.payment_date_to = paymentDateTo;
+    if (status != null) params.status = status;
+    params.orderby = "INSERTED_DATE";
+    params.ordering = "ASC";
+    params.page = 0;
+
     return get(gpd_host + `/organizations/${orgId}/debtpositions/`, {
         timeout: 10000,
-        params: {
-            due_date_from: "2023-03-07",
-            due_date_to: "2023-04-06",
-            orderby: "INSERTED_DATE",
-            ordering: "ASC",
-            page: 0
-        },
+        params,
         headers: {
             "Ocp-Apim-Subscription-Key": process.env.API_SUBSCRIPTION_KEY,
             "Content-Type": "application/json"

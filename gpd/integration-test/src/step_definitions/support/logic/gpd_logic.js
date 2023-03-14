@@ -28,8 +28,8 @@ async function executeDebtPositionUpdate(bundle, idOrg, iupd) {
     bundle.responseToCheck = response;
 }
 
-async function executeDebtPositionGetList(bundle, idOrg) {
-    let response = await getDebtPositionList(idOrg);
+async function executeDebtPositionGetList(bundle, idOrg, dueDateFrom, dueDateTo, paymentDateFrom, paymentDateTo, status) {
+    let response = await getDebtPositionList(idOrg, dueDateFrom, dueDateTo, paymentDateFrom, paymentDateTo, status);
     bundle.responseToCheck = response;
 }
 
