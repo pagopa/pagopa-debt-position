@@ -73,7 +73,7 @@ function getDebtPosition(orgId, iupd) {
 }
 
 function deleteDebtPosition(orgId, iupd) {
-    return del(gpd_host + `/organizations/${orgId}/debtpositions/${iupd}/publish`, "", {
+    return del(gpd_host + `/organizations/${orgId}/debtpositions/${iupd}`, {
         timeout: 10000,
         headers: {
             "Ocp-Apim-Subscription-Key": process.env.API_SUBSCRIPTION_KEY,
