@@ -12,11 +12,15 @@ const { executeDebtPositionCreation,
 } = require('./logic/gpd_logic');
 const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, assertStatusString, executeAfterAllStep, randomOrg, randomIupd } = require('./logic/common_logic');
 const { gpdSessionBundle, gpdUpdateBundle, gpdPayBundle } = require('./utility/data');
-const { getValidBundle } = require('./utility/helpers');
+const { getValidBundle, addDays, format } = require('./utility/helpers');
 
 let idOrg;
 let iupd;
 let status;
+let dueDateFrom;
+let dueDateTo;
+let paymentDateFrom;
+let paymentDateTo;
 
 /*
  *  'Given' precondition for health checks on various services.
@@ -39,7 +43,19 @@ Then('the debt position gets the status code {int}', (statusCode) => assertStatu
 /*
  *  Debt position list
  */
-When('we ask the list of organizations debt positions', () => executeDebtPositionGetList(gpdSessionBundle, idOrg));
+Given('the filter made by status {string}', (statusParam) => status = statusParam);
+Given('the filter made by due date from today to {int} days', (daysParam) => {
+    dueDateFrom = format(new Date());
+    dueDateTo = format(addDays(daysParam));
+});
+Given('the filter made by payment date from today to {int} days', (daysParam) => {
+    paymentDateFrom = format(new Date());
+    paymentDateTo = format(addDays(daysParam));
+});
+When('we ask the list of organizations debt positions', async () => {
+    await executeDebtPositionGetList(gpdSessionBundle, idOrg, dueDateFrom, dueDateTo, paymentDateFrom, paymentDateTo, status)
+    resetParams();
+});
 Then('we get the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
 
 /*
@@ -82,3 +98,11 @@ Then('the transfer gets the status code {int}', (statusCode) => assertStatusCode
  */
 When('the debt position is created and published', () => executeDebtPositionCreationAndPublication(gpdSessionBundle, idOrg, iupd));
 Then('the debt position gets status {string}', (statusString) => assertStatusString(gpdSessionBundle, statusString));
+
+function resetParams() {
+    dueDateFrom = null;
+    dueDateTo = null;
+    paymentDateFrom = null;
+    paymentDateTo = null;
+    status = null;
+}

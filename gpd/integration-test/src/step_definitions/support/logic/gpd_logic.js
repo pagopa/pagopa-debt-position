@@ -28,8 +28,8 @@ async function executeDebtPositionUpdate(bundle, idOrg, iupd) {
     bundle.responseToCheck = response;
 }
 
-async function executeDebtPositionGetList(bundle, idOrg) {
-    let response = await getDebtPositionList(idOrg);
+async function executeDebtPositionGetList(bundle, idOrg, dueDateFrom, dueDateTo, paymentDateFrom, paymentDateTo, status) {
+    let response = await getDebtPositionList(idOrg, dueDateFrom, dueDateTo, paymentDateFrom, paymentDateTo, status);
     bundle.responseToCheck = response;
 }
 
@@ -38,8 +38,9 @@ async function executeDebtPositionGet(bundle, idOrg, iupd) {
     bundle.payer.companyName = response.data.companyName;
 }
 
-async function executeDebtPositionDeletion(idOrg, iupd) {
+async function executeDebtPositionDeletion(bundle, idOrg, iupd) {
     let response = await deleteDebtPosition(idOrg, iupd);
+    bundle.responseToCheck = response;
 }
 
 async function executeDebtPositionPublish(bundle, idOrg, iupd) {

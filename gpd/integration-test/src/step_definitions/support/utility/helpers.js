@@ -4,6 +4,15 @@ function addDays(days) {
   return date;
 }
 
+function format(dateToFormat) {
+    let dd, MM, yyyy;
+    dd = dateToFormat.getDate().toString().padStart(2, '0');
+    MM = (dateToFormat.getMonth() + 1).toString().padStart(2, '0');
+    yyyy = dateToFormat.getFullYear();
+
+    return `${yyyy}-${MM}-${dd}`;
+}
+
 function buildStringFromDate(rawDate) {
   var mm = rawDate.getMonth() + 1;
   var dd = rawDate.getDate();
@@ -32,6 +41,7 @@ function makeidNumber(length) {
 
 module.exports = {
   addDays,
+  format,
   buildStringFromDate,
   makeidMix,
   makeidNumber,
