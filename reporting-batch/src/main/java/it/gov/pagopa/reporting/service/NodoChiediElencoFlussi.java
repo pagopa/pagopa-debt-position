@@ -8,6 +8,8 @@ import it.gov.pagopa.reporting.servicewsdl.TipoElencoFlussiRendicontazione;
 
 import javax.xml.ws.Holder;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class NodoChiediElencoFlussi {
 
@@ -23,10 +25,11 @@ public class NodoChiediElencoFlussi {
             .getenv("PAA_STAZIONE_INT");
     private final String nodoChiediElencoFlussiRendicontazionePassword = System.getenv("PAA_PASSWORD");
 
-    public NodoChiediElencoFlussi() {
+    public NodoChiediElencoFlussi(Logger logger) {
 
         ss = new PagamentiTelematiciRPTservice(WSD_URL);
         port = ss.getPagamentiTelematiciRPTPort();
+        logger.log(Level.INFO, "[RetrieveFlows] WSDL SOAP Location: {0}" , PagamentiTelematiciRPTservice.WSDL_LOCATION);
     }
 
     public void setNodoChiediElencoFlussiRendicontazioneFault(

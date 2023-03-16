@@ -43,7 +43,7 @@ public class RetrieveFlows {
         Logger logger = context.getLogger();
         logger.log(Level.INFO, () -> String.format("[RetrieveOrganizationsTrigger START] processed the message: %s at %s", message, LocalDateTime.now()));
 
-        NodoChiediElencoFlussi nodeClient = this.getNodeClientInstance();
+        NodoChiediElencoFlussi nodeClient = this.getNodeClientInstance(logger);
         FlowsService flowsService = this.getFlowsServiceInstance(logger);
 
         try {
@@ -86,6 +86,8 @@ public class RetrieveFlows {
 
     public NodoChiediElencoFlussi getNodeClientInstance() {
         return new NodoChiediElencoFlussi();
+    public NodoChiediElencoFlussi getNodeClientInstance(Logger logger) {
+        return new NodoChiediElencoFlussi(logger);
     }
 
     public FlowsService getFlowsServiceInstance(Logger logger) {
