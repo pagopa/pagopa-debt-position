@@ -81,11 +81,8 @@ public class RetrieveFlows {
         } catch (JsonProcessingException e) {
             logger.log(Level.SEVERE, () -> "[RetrieveOrganizationsTrigger]  Error " + e.getLocalizedMessage());
         }
-
     }
 
-    public NodoChiediElencoFlussi getNodeClientInstance() {
-        return new NodoChiediElencoFlussi();
     public NodoChiediElencoFlussi getNodeClientInstance(Logger logger) {
         return new NodoChiediElencoFlussi(logger);
     }
