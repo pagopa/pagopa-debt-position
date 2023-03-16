@@ -66,7 +66,7 @@ class RetrieveFlowsTest {
         // precondition
         when(context.getLogger()).thenReturn(logger);
 
-        doReturn(nodeClient).when(function).getNodeClientInstance();
+        doReturn(nodeClient).when(function).getNodeClientInstance(logger);
         doReturn(flowsService).when(function).getFlowsServiceInstance(logger);
 
         doNothing().when(nodeClient).nodoChiediElencoFlussiRendicontazione(anyString());
@@ -90,7 +90,7 @@ class RetrieveFlowsTest {
         // precondition
         when(context.getLogger()).thenReturn(logger);
 
-        doReturn(nodeClient).when(function).getNodeClientInstance();
+        doReturn(nodeClient).when(function).getNodeClientInstance(logger);
         doReturn(flowsService).when(function).getFlowsServiceInstance(logger);
 
         // doNothing().when(nodeClient).setSslContext();
