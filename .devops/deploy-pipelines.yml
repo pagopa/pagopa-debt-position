@@ -327,6 +327,8 @@ stages:
               effectivePomSkip: false
               sonarQubeRunAnalysis: false
               goals: "install"
+              script: |
+                export NODO_HOST=${NODO_HOST}
 
           - task: Docker@2
             displayName: Build and push image to container registry
