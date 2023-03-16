@@ -29,7 +29,7 @@ public class NodoChiediElencoFlussi {
 
         ss = new PagamentiTelematiciRPTservice(WSD_URL);
         port = ss.getPagamentiTelematiciRPTPort();
-        logger.log(Level.INFO, "[RetrieveFlows] WSDL SOAP Location: {}", PagamentiTelematiciRPTservice.WSDL_LOCATION);
+        logger.log(Level.INFO, () -> "[RetrieveFlows] WSDL SOAP Location " + PagamentiTelematiciRPTservice.WSDL_LOCATION);
     }
 
     public void setNodoChiediElencoFlussiRendicontazioneFault(
