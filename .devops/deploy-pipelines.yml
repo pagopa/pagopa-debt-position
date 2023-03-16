@@ -74,6 +74,7 @@ variables:
     SOURCE_BRANCH: ${{ variables['Build.SourceBranchName'] }}
 
   APD_SCHEMA_NAME: $(SCHEMA_NAME)
+  NODO_HOST: ${NODO_HOST}
 
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
   MAVEN_OPTS: "-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)"
