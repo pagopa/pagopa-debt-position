@@ -23,7 +23,7 @@
         <dependency>
             <groupId>it.gov.pagopa.reporting</groupId>
             <artifactId>reporting-batch</artifactId>
-	<version>0.0.5-16</version>
+	<version>0.0.5-17</version>
         </dependency>
         <dependency>
             <groupId>it.gov.pagopa.reporting</groupId>
