@@ -5,8 +5,8 @@
   Versione 6.2.0 di RPT/RT.
   Renaming delle primitive.
 -->
-<!-- <wsdl:definitions xmlns:ppt="http://ws.pagamenti.telematici.gov/" xmlns:ppthead="http://ws.pagamenti.telematici.gov/ppthead" xmlns:tns="https://gad.test.pagopa.gov.it/openspcoop2/proxy/PA/RPT6T" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" name="PagamentiTelematiciRPTservice" targetNamespace="https://gad.test.pagopa.gov.it/openspcoop2/proxy/PA/RPT6T"> -->
-<wsdl:definitions xmlns:ppt="http://ws.pagamenti.telematici.gov/" xmlns:ppthead="http://ws.pagamenti.telematici.gov/ppthead" xmlns:tns="http://NodoPagamentiSPC.spcoop.gov.it/servizi/PagamentiTelematiciRPT" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" name="PagamentiTelematiciRPTservice" targetNamespace="http://NodoPagamentiSPC.spcoop.gov.it/servizi/PagamentiTelematiciRPT">
+<wsdl:definitions xmlns:ppt="http://ws.pagamenti.telematici.gov/" xmlns:ppthead="http://ws.pagamenti.telematici.gov/ppthead" xmlns:tns="https://gad.test.pagopa.gov.it/openspcoop2/proxy/PA/RPT6T" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" name="PagamentiTelematiciRPTservice" targetNamespace="https://gad.test.pagopa.gov.it/openspcoop2/proxy/PA/RPT6T">
+<!-- <wsdl:definitions xmlns:ppt="http://ws.pagamenti.telematici.gov/" xmlns:ppthead="http://ws.pagamenti.telematici.gov/ppthead" xmlns:tns="http://NodoPagamentiSPC.spcoop.gov.it/servizi/PagamentiTelematiciRPT" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" name="PagamentiTelematiciRPTservice" targetNamespace="http://NodoPagamentiSPC.spcoop.gov.it/servizi/PagamentiTelematiciRPT"> -->
   <wsdl:types>
     <xsd:schema version="2.1.2" targetNamespace="http://ws.pagamenti.telematici.gov/ppthead">
       <xsd:import schemaLocation="envelope.xsd" namespace="http://schemas.xmlsoap.org/soap/envelope/" />
@@ -19,14 +19,14 @@
       <xsd:simpleType name="stIdentificativoCarrello">
         <xsd:annotation>
           <xsd:documentation>
-						Identificativo univoco della chiamata. 
-						Nel caso di pagamento multi beneficiario (parametro multiBeneficario=true) deve essere necessariamente essere composto 
-						'idDominio(11)numeroAvviso(18)-(1)-Progressivo(5)' 
+						Identificativo univoco della chiamata.
+						Nel caso di pagamento multi beneficiario (parametro multiBeneficario=true) deve essere necessariamente essere composto
+						'idDominio(11)numeroAvviso(18)-(1)-Progressivo(5)'
 
-						
-						Nei casi dove il carrello contiene il pagamento di più posizioni debitorie ( non multi beneficiarie ) è possibile utilizzare la seguente sintassi 
+
+						Nei casi dove il carrello contiene il pagamento di più posizioni debitorie ( non multi beneficiarie ) è possibile utilizzare la seguente sintassi
 						'Anno(4)idDominio(11)codiceSorgente(2)Progressivo(18)'
-							
+
 					</xsd:documentation>
         </xsd:annotation>
         <xsd:restriction base="xsd:string">
@@ -711,8 +711,8 @@
       <wsdl:output name="nodoChiediQuadraturaPAResponse" message="tns:nodoChiediQuadraturaPAResponse" wsam:Action="http://ws.pagamenti.telematici.gov/PPT/nodoChiediQuadraturaPARisposta" wsaw:Action="http://ws.pagamenti.telematici.gov/PPT/nodoChiediQuadraturaPARisposta" />
     </wsdl:operation>
     <wsdl:operation name="nodoChiediElencoFlussiRendicontazione">
-      <wsdl:input name="nodoChiediElencoFlussiRendicontazione" message="tns:nodoChiediElencoFlussiRendicontazione" wsam:Action="http://ws.pagamenti.telematici.gov/PPT/nodoChiediElencoFlussiRendicontazioneRichiesta" wsaw:Action="http://ws.pagamenti.telematici.gov/PPT/nodoChiediElencoFlussiRendicontazioneRichiesta" />
-      <wsdl:output name="nodoChiediElencoFlussiRendicontazioneResponse" message="tns:nodoChiediElencoFlussiRendicontazioneResponse" wsam:Action="http://ws.pagamenti.telematici.gov/PPT/nodoChiediElencoFlussiRendicontazioneRisposta" wsaw:Action="http://ws.pagamenti.telematici.gov/PPT/nodoChiediElencoFlussiRendicontazioneRisposta" />
+      <wsdl:input name="nodoChiediElencoFlussiRendicontazione" message="tns:nodoChiediElencoFlussiRendicontazione" wsam:Action="nodoChiediElencoFlussiRendicontazione" />
+      <wsdl:output name="nodoChiediElencoFlussiRendicontazioneResponse" message="tns:nodoChiediElencoFlussiRendicontazioneResponse" />
     </wsdl:operation>
     <wsdl:operation name="nodoChiediFlussoRendicontazione">
       <wsdl:input name="nodoChiediFlussoRendicontazione" message="tns:nodoChiediFlussoRendicontazione" wsam:Action="http://ws.pagamenti.telematici.gov/PPT/nodoChiediFlussoRendicontazioneRichiesta" wsaw:Action="http://ws.pagamenti.telematici.gov/PPT/nodoChiediFlussoRendicontazioneRichiesta" />
