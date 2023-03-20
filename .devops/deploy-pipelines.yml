@@ -318,7 +318,7 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
-                cd ./reporting-batch
+                cd ./${{ parameters.REPOSITORY }}
                 sh upd_wsdl_location.sh $(NODO_HOST)
 
           - task: Maven@3
