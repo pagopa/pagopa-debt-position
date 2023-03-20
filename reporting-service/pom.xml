@@ -184,26 +184,6 @@
     <build>
         <plugins>
 
-            <!-- START run init scripts -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.6.0</version>
-                <executions>
-                    <execution>
-                        <id>update-wsdl-location</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <executable>${project.basedir}/upd_wsdl_location.sh</executable>
-                </configuration>
-            </plugin>
-            <!-- STOP  run init scripts -->
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -326,6 +306,26 @@
                         <goals>
                             <goal>wsdl2java</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- needed to use previously generated resources  -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>target/generated</source>
+                            </sources>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

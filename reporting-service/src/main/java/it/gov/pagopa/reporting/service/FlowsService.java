@@ -98,7 +98,7 @@ public class FlowsService {
             } catch (IOException e) {
                 logger.log(Level.SEVERE, () -> "[RetrieveDetails/FlowsService] Upload failed in " + this.containerBlob);
             } catch (ClientTransportException e) {
-                logger.log(Level.SEVERE, () -> "[NODO Connection down] idPA: [" + idPA +"], idFlow: [" + flow.getIdentificativoFlusso() + "] \nCaused by: " + e.getCause() + " Message: " + e.getMessage() + " \nStack trace: " + Arrays.toString(e.getStackTrace()));
+                logger.log(Level.SEVERE, () -> "[NODO Connection down] idPA: [" + idPA +"], idFlow: [" + flow.getIdentificativoFlusso() + "] Caused by: " + e.getCause() + " Message: " + e.getMessage() + " Stack trace: " + Arrays.toString(e.getStackTrace()));
 
                 if (retry < maxRetryQueuing) {
                     try {
