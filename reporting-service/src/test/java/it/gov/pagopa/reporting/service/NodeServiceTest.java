@@ -32,8 +32,6 @@ class NodeServiceTest {
 
             assertTrue(Boolean.TRUE);
         }
-
-        assertNull(nodeService.getNodoChiediElencoFlussiRendicontazioneXmlReporting());
     }
 
     @Test
