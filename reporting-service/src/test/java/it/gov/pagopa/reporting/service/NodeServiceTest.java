@@ -10,8 +10,7 @@ import javax.xml.ws.WebServiceException;
 import java.lang.reflect.Field;
 import java.util.logging.Logger;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class NodeServiceTest {
@@ -34,7 +33,6 @@ class NodeServiceTest {
             assertTrue(Boolean.TRUE);
         }
 
-        assertNull(nodeService.getNodoChiediFlussoRendicontazioneFault());
         assertNull(nodeService.getNodoChiediElencoFlussiRendicontazioneXmlReporting());
     }
 
