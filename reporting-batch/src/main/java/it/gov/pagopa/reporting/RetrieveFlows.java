@@ -67,8 +67,7 @@ public class RetrieveFlows {
                                 flowsService.flowsProcessing(elencoFlussi.getIdRendicontazione(), organization);
                             }
                         } catch (ClientTransportException e) {
-                            logger.log(Level.SEVERE, () -> "[NODO Connection down] " + organization);
-                            logger.log(Level.SEVERE, () -> "[NODO Connection down] Caused by: " + e.getCause() + " Message: " + e.getMessage() + " Stack trace: " + Arrays.toString(e.getStackTrace()));
+                            logger.log(Level.SEVERE, () -> "[NODO Connection down] Organization: [" + organization +"] \nCaused by: " + e.getCause() + " Message: " + e.getMessage() + " \nStack trace: " + Arrays.toString(e.getStackTrace()));
                             int retry = organizationsMessage.getRetry();
                             if (retry < Integer.parseInt(maxRetryQueuing)) {
                                 OrganizationsService organizationsService = getOrganizationsServiceInstance(logger);
