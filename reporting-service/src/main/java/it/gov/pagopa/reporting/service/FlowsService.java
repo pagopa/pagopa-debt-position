@@ -24,6 +24,7 @@ import javax.activation.DataHandler;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -97,7 +98,7 @@ public class FlowsService {
             } catch (IOException e) {
                 logger.log(Level.SEVERE, () -> "[RetrieveDetails/FlowsService] Upload failed in " + this.containerBlob);
             } catch (ClientTransportException e) {
-                logger.log(Level.SEVERE, () -> "[NODO Connection down] " + idPA + " - " + flow.getIdentificativoFlusso());
+                logger.log(Level.SEVERE, () -> "[NODO Connection down] idPA: [" + idPA +"], idFlow: [" + flow.getIdentificativoFlusso() + "] \nCaused by: " + e.getCause() + " Message: " + e.getMessage() + " \nStack trace: " + Arrays.toString(e.getStackTrace()));
 
                 if (retry < maxRetryQueuing) {
                     try {
