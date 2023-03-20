@@ -48,10 +48,8 @@ class FlowServiceIntegrationTest {
     FlowsService flowsService;
 
     @Test
-    void getByOrganization() {
-
+    void getByOrganization_noFlowDate() {
         flowsService = spy(new FlowsService(storageConnectionString, flowsTable, containerBlob, logger));
-
         String organizationId =  "90000000000";
         List<Flow> flows = null;
         try {
@@ -60,9 +58,21 @@ class FlowServiceIntegrationTest {
         } catch (Exception e) {
             assertNull(flows);
         }
-
         assertNotNull(flows);
+    }
 
+    @Test
+    void getByOrganization_withFlowDate() {
+        flowsService = spy(new FlowsService(storageConnectionString, flowsTable, containerBlob, logger));
+        String organizationId =  "90000000000";
+        List<Flow> flows = null;
+        try {
+            createTable();
+            flows = flowsService.getByOrganization(organizationId, "2023-01-01");
+        } catch (Exception e) {
+            assertNull(flows);
+        }
+        assertNotNull(flows);
     }
 
     @Test
@@ -127,7 +137,9 @@ class FlowServiceIntegrationTest {
         tableRequestOptions.setRetryPolicyFactory(RetryNoRetry.getInstance()); // disable retry to complete faster
         cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
         CloudTable table = cloudTableClient.getTableReference(flowsTable);
-        table.createIfNotExists();
+        if (!table.exists()) {
+            table.createIfNotExists();
+        }
     }
 
     @SneakyThrows
