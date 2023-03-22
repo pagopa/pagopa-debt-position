@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 
 @Data
@@ -40,6 +41,7 @@ public class DebtorModel implements Serializable {
 
     private String region;
 
+    @Pattern(regexp="[A-Z]{2}", message="The country must be reported with two capital letters (example: IT)")
     private String country;
 
     @Email(message = "Please provide a valid email address")
