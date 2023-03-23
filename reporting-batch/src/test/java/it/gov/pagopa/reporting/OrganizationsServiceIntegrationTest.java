@@ -1,16 +1,15 @@
 package it.gov.pagopa.reporting;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.RetryNoRetry;
 import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.StorageExtendedErrorInformation;
 import com.microsoft.azure.storage.queue.CloudQueueClient;
 import com.microsoft.azure.storage.queue.CloudQueueMessage;
 import com.microsoft.azure.storage.queue.QueueRequestOptions;
 import com.microsoft.azure.storage.table.*;
 import it.gov.pagopa.reporting.entity.OrganizationEntity;
-import it.gov.pagopa.reporting.models.Organization;
-import it.gov.pagopa.reporting.models.Organizations;
 import it.gov.pagopa.reporting.service.OrganizationsService;
 import lombok.SneakyThrows;
 import org.junit.ClassRule;
@@ -18,25 +17,29 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.shaded.com.google.common.base.Predicates;
 import org.testcontainers.utility.DockerImageName;
 
-import javax.persistence.criteria.Predicate;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @Testcontainers
+@ExtendWith(MockitoExtension.class)
 class OrganizationsServiceIntegrationTest {
 
     @ClassRule
@@ -52,6 +55,14 @@ class OrganizationsServiceIntegrationTest {
     String orgsTable = "orgtable";
     String orgsQueue = "orgqueue";
 
+    @Spy
+    RetrieveOrganizations function;
+
+    @Mock
+    ExecutionContext context;
+
+    private static final List<String> ENROLLED_ORGANIZATIONS = List.of("90000000001", "90000000002", "90000000003");
+
     @SneakyThrows
     @BeforeEach
     void beforeEach() {
@@ -63,7 +74,7 @@ class OrganizationsServiceIntegrationTest {
         try {
             cloudTableClient.getTableReference(this.orgsTable).createIfNotExists();
         } catch (Exception e) {
-            logger.info("no table");
+            logger.info("Table creation: no table");
         }
 
         QueueRequestOptions queueRequestOptions = new QueueRequestOptions();
@@ -74,7 +85,8 @@ class OrganizationsServiceIntegrationTest {
         try {
             cloudQueueClient.getQueueReference(this.orgsQueue).createIfNotExists();
         } catch (Exception e) {
-            logger.info("no queue");
+            logger.info("Queue creation: no queue");
+            e.printStackTrace();
         }
     }
 
@@ -87,9 +99,12 @@ class OrganizationsServiceIntegrationTest {
         CloudTableClient cloudTableClient = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient();
         cloudTableClient.setDefaultRequestOptions(tableRequestOptions);
         try {
-            cloudTableClient.getTableReference(this.orgsTable).deleteIfExists();
+            CloudTable table = cloudTableClient.getTableReference(this.orgsTable);
+            TableBatchOperation batchOperation = new TableBatchOperation();
+            ENROLLED_ORGANIZATIONS.forEach(organization -> batchOperation.delete(new OrganizationEntity(organization)));
+            table.execute(batchOperation);
         } catch (Exception e) {
-            logger.info("no table");
+            logger.info("Table deletion: no table");
         }
 
         QueueRequestOptions queueRequestOptions = new QueueRequestOptions();
@@ -100,173 +115,71 @@ class OrganizationsServiceIntegrationTest {
         try {
             cloudQueueClient.getQueueReference(this.orgsQueue).deleteIfExists();
         } catch (Exception e) {
-            logger.info("no queue");
+            logger.info("Queue deletion: no queue");
         }
     }
 
     @Test
-    void addOrganizationListTest() throws InvalidKeyException,
-            URISyntaxException, StorageException {
-//        CloudStorageAccount.parse(storageConnectionString).createCloudTableClient().getTableReference(this.orgsTable)
-//                .createIfNotExists();
+    void getOrganizationsTest() throws InvalidKeyException, URISyntaxException, StorageException {
 
         OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable,
                 this.orgsQueue, 60, 0, logger);
 
-        Organizations orgs = new Organizations();
+        // simulating the organization enrolled with orgs-enrollment service
+        addOrganizationList(ENROLLED_ORGANIZATIONS);
 
-        List<Organization> added = new ArrayList<>();
-        added.add(new Organization("90000000001"));
-        added.add(new Organization("90000000002"));
-        added.add(new Organization("90000000003"));
-        orgs.setAdd(added);
-        List<Organization> deleted = new ArrayList<>();
-        orgs.setDelete(deleted);
-
-        organizationsService.processOrganizationList(orgs);
-
-        TableQuery<OrganizationEntity> query = new TableQuery<OrganizationEntity>();
-
-        Iterable<OrganizationEntity> rows = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
-                .getTableReference(this.orgsTable)
-                .execute(TableQuery.from(OrganizationEntity.class).where((TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, "organization"))));
-
-        List<String> chk = new ArrayList<>();
-        chk.add("90000000001");
-        chk.add("90000000002");
-        chk.add("90000000003");
-        chk.add("90000000004");
-        int index = 0;
-        for (OrganizationEntity r : rows) {
-            Assertions.assertTrue(r.getRowKey().contains(chk.get(index++)));
-        }
+        organizationsService.getOrganizations().forEach(organization -> Assertions.assertTrue(ENROLLED_ORGANIZATIONS.contains(organization)));
     }
 
     @Test
-    void addOrganizationListTest_2() throws InvalidKeyException, URISyntaxException, StorageException {
-//        CloudStorageAccount.parse(storageConnectionString).createCloudTableClient().getTableReference(this.orgsTable)
-//                .createIfNotExists();
+    void getOrganizationsTest_noEnrolledOrganizations() throws InvalidKeyException, URISyntaxException, StorageException {
 
-        OrganizationsService organizationsService = spy(new OrganizationsService(this.storageConnectionString, this.orgsTable,
+        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable,
+                this.orgsQueue, 60, 0, logger);
+
+        // simulating that no organization was enrolled with orgs-enrollment service
+        CloudTable table = CloudStorageAccount.parse(this.storageConnectionString)
+                .createCloudTableClient()
+                .getTableReference(this.orgsTable);
+        Iterable<OrganizationEntity> organizationEntities = table.execute(
+                TableQuery.from(OrganizationEntity.class)
+                        .where(TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, OrganizationEntity.ORGANIZATION_KEY))
+                );
+        Assertions.assertFalse(organizationEntities.iterator().hasNext());
+
+        List<String> retrievedOrganizations = organizationsService.getOrganizations();
+        Assertions.assertEquals(new ArrayList<>(), retrievedOrganizations);
+    }
+
+    @Test
+    void getOrganizationsTest_errorWhileReading() throws InvalidKeyException, URISyntaxException, StorageException {
+
+        // simulating an exception during reading from non-existent storage table
+        String wrongOrgsTable = this.orgsTable + "_fake";
+        OrganizationsService organizationsService = spy(new OrganizationsService(this.storageConnectionString, wrongOrgsTable,
                 this.orgsQueue, 60, 0, logger));
 
-        StorageExtendedErrorInformation err = new StorageExtendedErrorInformation();
-        err.setErrorMessage("test error message");
-        doThrow(new TableServiceException("error", "message", 500, err, null)).when(organizationsService).addOrganizationList(any());
-
-        Organizations orgs = new Organizations();
-
-        List<Organization> added = new ArrayList<>();
-        added.add(new Organization("90000000001"));
-        added.add(new Organization("90000000002"));
-        added.add(new Organization("90000000003"));
-        orgs.setAdd(added);
-        List<Organization> deleted = new ArrayList<>();
-        orgs.setDelete(deleted);
-
-        organizationsService.processOrganizationList(orgs);
-
-        verify(organizationsService, times(3)).addOrganization(anyString());
+        // simulating an exception during reading from storage table
+        List<String> retrievedOrganizations = organizationsService.getOrganizations();
+        Assertions.assertEquals(new ArrayList<>(), retrievedOrganizations);
     }
 
     @Test
-    void addOrganizationListTestSingle() throws InvalidKeyException, URISyntaxException, StorageException {
-
-//        CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient().getQueueReference(this.orgsQueue)
-//                .createIfNotExists();
-//
-//        CloudStorageAccount.parse(storageConnectionString).createCloudTableClient().getTableReference(this.orgsTable)
-//                .createIfNotExists();
-
-        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable,
-                this.orgsQueue, 60, 0, logger);
-
-        Organizations orgs = new Organizations();
-
-        List<Organization> added = new ArrayList<>();
-        added.add(new Organization("90000000001"));
-        added.add(new Organization("90000000002"));
-        added.add(new Organization("90000000003"));
-        added.add(new Organization("90000000004"));
-        orgs.setAdd(added);
-        List<Organization> deleted = new ArrayList<>();
-        orgs.setDelete(deleted);
-
-        organizationsService.processOrganizationList(orgs);
-
-        TableQuery<OrganizationEntity> query = new TableQuery<OrganizationEntity>();
-
-        Iterable<OrganizationEntity> rows = CloudStorageAccount.parse(storageConnectionString).createCloudTableClient()
-                .getTableReference(this.orgsTable)
-                .execute(TableQuery.from(OrganizationEntity.class).where((TableQuery.generateFilterCondition("PartitionKey", TableQuery.QueryComparisons.EQUAL, "organization"))));
-
-        List<String> chk = new ArrayList<>();
-        chk.add("90000000001");
-        chk.add("90000000002");
-        chk.add("90000000003");
-        chk.add("90000000004");
-        int index = 0;
-        for (OrganizationEntity r : rows) {
-            Assertions.assertTrue(r.getRowKey().contains(chk.get(index++)));
-        }
-
-    }
-
-    @Test
-    void delOrganizationListTest() {
+    void addToOrganizationsQueueTest() throws InvalidKeyException, URISyntaxException, StorageException, JsonProcessingException {
 
         OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString,
                 this.orgsTable, this.orgsQueue, 60, 0, logger);
 
-        Organizations orgs = new Organizations();
+        // inserting on queue a set of organization identifier previously get by
+        organizationsService.addToOrganizationsQueue(ENROLLED_ORGANIZATIONS);
 
-        List<Organization> added = new ArrayList<>();
-        orgs.setAdd(added);
+        Iterable<CloudQueueMessage> queueMsgs = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
+                .getQueueReference(this.orgsQueue)
+                .retrieveMessages(32);
 
-        List<Organization> deleted = new ArrayList<>();
-        deleted.add(new Organization("90000000001"));
-        deleted.add(new Organization("90000000002"));
-        orgs.setDelete(deleted);
-
-        List<String> updateOrganizationsList = organizationsService.processOrganizationList(orgs); // delete ------------
-
-        List<String> chk1 = new ArrayList<>();
-        chk1.add("90000000003");
-        chk1.add("90000000004");
-        int index1 = 0;
-        for (String org : updateOrganizationsList) {
-            assertEquals(org, chk1.get(index1++));
+        for (CloudQueueMessage queueMsg : queueMsgs) {
+            Assertions.assertTrue(assertQueueMessages(queueMsg, ENROLLED_ORGANIZATIONS));
         }
-    }
-
-    @Test
-    void delOrganizationLisNotExistTest() {
-
-        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString,
-                this.orgsTable, this.orgsQueue, 60, 0, logger);
-
-        Organizations orgs = new Organizations();
-
-        List<Organization> added = new ArrayList<>();
-        orgs.setAdd(added);
-
-        List<Organization> deleted = new ArrayList<>();
-        deleted.add(new Organization("90000000001"));
-        deleted.add(new Organization("90000000001"));
-
-        orgs.setDelete(deleted);
-
-        List<String> updateOrganizationsList = organizationsService.processOrganizationList(orgs); // delete ------------
-
-        List<String> chk1 = new ArrayList<>();
-        chk1.add("90000000002");
-        chk1.add("90000000003");
-        chk1.add("90000000004");
-        int index1 = 0;
-        for (String org : updateOrganizationsList) {
-            assertEquals(org, chk1.get(index1++));
-        }
-
     }
 
     @Test
@@ -290,34 +203,47 @@ class OrganizationsServiceIntegrationTest {
     }
 
     @Test
-    void addToOrganizationsQueueTest()  throws InvalidKeyException, URISyntaxException, StorageException {
+    void getAndAddOrganizations() throws Exception {
 
-        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString,
-                this.orgsTable, this.orgsQueue, 60, 0, logger);
+        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable,
+                this.orgsQueue, 60, 0, logger);
 
-        List<String> orgs = new ArrayList<>();
-        orgs.add("90000000001");
-        orgs.add("90000000002");
-        orgs.add("90000000003");
+        Logger logger = Logger.getLogger("testlogging");
 
-        /**
-         * Test
-         */
-        organizationsService.addToOrganizationsQueue(orgs);
+        // precondition
+        when(context.getLogger()).thenReturn(logger);
+        doReturn(organizationsService).when(function).getOrganizationsServiceInstance(logger);
 
-        /**
-         * Asserts
-         */
+        // simulating the organization enrolled with orgs-enrollment service
+        addOrganizationList(ENROLLED_ORGANIZATIONS);
 
-        Iterable<CloudQueueMessage> messagges = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
+        // calling Azure function
+        function.run("ReportingBatchTrigger", context);
+
+        // retrieving queue messages and assert them
+        Iterable<CloudQueueMessage> queueMsgs = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
                 .getQueueReference(this.orgsQueue)
                 .retrieveMessages(32);
-
-        for (CloudQueueMessage cloudQueueMessage : messagges) {
-            Assertions.assertTrue(cloudQueueMessage.getMessageContentAsString().contains(orgs.get(0))
-                    || cloudQueueMessage.getMessageContentAsString().contains(orgs.get(1))
-                    || cloudQueueMessage.getMessageContentAsString().contains(orgs.get(2)));
+        for (CloudQueueMessage queueMsg : queueMsgs) {
+            Assertions.assertTrue(assertQueueMessages(queueMsg, ENROLLED_ORGANIZATIONS));
         }
+    }
 
+    private void addOrganizationList(List<String> organizations) throws URISyntaxException, InvalidKeyException, StorageException {
+        CloudTable table = CloudStorageAccount.parse(this.storageConnectionString)
+                .createCloudTableClient()
+                .getTableReference(this.orgsTable);
+        TableBatchOperation batchOperation = new TableBatchOperation();
+        organizations.forEach(organization -> batchOperation.insert(new OrganizationEntity(organization, LocalDateTime.now().toString())));
+        table.execute(batchOperation);
+    }
+
+    private static boolean assertQueueMessages(CloudQueueMessage queueMsg, List<String> enrolledOrganizations) throws StorageException {
+        boolean result = false;
+        Iterator<String> it = enrolledOrganizations.iterator();
+        while (!result && it.hasNext()) {
+            result = queueMsg.getMessageContentAsString().contains(it.next());
+        }
+        return result;
     }
 }
