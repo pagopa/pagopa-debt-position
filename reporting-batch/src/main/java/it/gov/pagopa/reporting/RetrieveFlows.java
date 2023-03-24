@@ -43,7 +43,7 @@ public class RetrieveFlows {
         Logger logger = context.getLogger();
         logger.log(Level.INFO, () -> String.format("[RetrieveOrganizationsTrigger START] processed the message: %s at %s", message, LocalDateTime.now()));
 
-        NodoChiediElencoFlussi nodeClient = this.getNodeClientInstance();
+        NodoChiediElencoFlussi nodeClient = this.getNodeClientInstance(logger);
         FlowsService flowsService = this.getFlowsServiceInstance(logger);
 
         try {
@@ -67,7 +67,7 @@ public class RetrieveFlows {
                                 flowsService.flowsProcessing(elencoFlussi.getIdRendicontazione(), organization);
                             }
                         } catch (ClientTransportException e) {
-                            logger.log(Level.SEVERE, () -> "[NODO Connection down] " + organization);
+                            logger.log(Level.SEVERE, () -> "[NODO Connection down] Organization: [" + organization +"] Caused by: " + e.getCause() + " Message: " + e.getMessage() + " Stack trace: " + Arrays.toString(e.getStackTrace()));
                             int retry = organizationsMessage.getRetry();
                             if (retry < Integer.parseInt(maxRetryQueuing)) {
                                 OrganizationsService organizationsService = getOrganizationsServiceInstance(logger);
@@ -81,11 +81,10 @@ public class RetrieveFlows {
         } catch (JsonProcessingException e) {
             logger.log(Level.SEVERE, () -> "[RetrieveOrganizationsTrigger]  Error " + e.getLocalizedMessage());
         }
-
     }
 
-    public NodoChiediElencoFlussi getNodeClientInstance() {
-        return new NodoChiediElencoFlussi();
+    public NodoChiediElencoFlussi getNodeClientInstance(Logger logger) {
+        return new NodoChiediElencoFlussi(logger);
     }
 
     public FlowsService getFlowsServiceInstance(Logger logger) {

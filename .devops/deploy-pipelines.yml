@@ -44,7 +44,8 @@ variables:
     DATASOURCE_USERNAME: $(DEV_POSTGRES_DATASOURCE_USERNAME)
     DATASOURCE_PASSWORD: $(DEV_POSTGRES_DATASOURCE_PASSWORD)
     DATASOURCE_URL: $(DEV_POSTGRES_DATASOURCE_URL)
-    API_SUBSCRIPTION_KEY: $(DEV_API_SUBSCRIPTION_KEY)
+    API_SUBSCRIPTION_KEY: $(DEV_API_SUBSCRIPTION_KEY)    
+    NODO_HOST: $(DEV_NODO_HOST)
   ${{ if eq(parameters['ENV'], 'uat') }}:
     AZURE_SUBSCRIPTION: $(UAT_AZURE_SUBSCRIPTION)
     CONTAINER_REGISTRY: $(UAT_CONTAINER_REGISTRY)
@@ -281,6 +282,15 @@ stages:
               script: |
                 mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout
               failOnStderr: true
+
+          - task: Bash@3
+            displayName: 'Update WSDL Location'
+            inputs:
+              targetType: 'inline'
+              script: |
+                cd ./${{ parameters.REPOSITORY }}
+                sh upd_wsdl_location.sh $(NODO_HOST)
+
           - task: Maven@3
             displayName: Build Module
             inputs:
