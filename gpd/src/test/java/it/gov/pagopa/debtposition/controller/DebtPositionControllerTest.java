@@ -77,6 +77,14 @@ class DebtPositionControllerTest {
 				.content(TestUtil.toJson(DebtPositionMock.get400Mock2())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON));
 	}
+
+	@Test
+	void createDebtPosition_Country_400() throws Exception {
+		// provo a creare una posizione debitoria dove il country non rispetti la regexp [A-Z]{2}
+		mvc.perform(post("/organizations/400_12345678901/debtpositions")
+						.content(TestUtil.toJson(DebtPositionMock.get400Mock9())).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON));
+	}
 	
 	@Test
 	void createDebtPosition_Amount_400() throws Exception {

@@ -13,7 +13,7 @@
         <dependency>
             <groupId>it.gov.pagopa.debtposition</groupId>
             <artifactId>gpd</artifactId>
-	<version>0.4.3</version>
+	<version>0.4.5</version>
         </dependency>
         <dependency>
             <groupId>it.gov.pagopa.reporting</groupId>
@@ -29,11 +29,6 @@
             <groupId>it.gov.pagopa.reporting</groupId>
             <artifactId>reporting-service</artifactId>
 	<version>0.0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>it.gov.pagopa</groupId>
-            <artifactId>payments</artifactId>
-	<version>0.0.16-4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>

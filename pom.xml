@@ -14,7 +14,6 @@
   </properties>
   <modules>
     <module>gpd</module>
-    <module>payments</module>
     <module>reporting-analysis</module>
     <module>reporting-batch</module>
     <module>reporting-service</module>
