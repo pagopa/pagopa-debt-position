@@ -1,6 +1,7 @@
 package it.gov.pagopa.reporting;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.RetryNoRetry;
@@ -10,6 +11,7 @@ import com.microsoft.azure.storage.queue.CloudQueueMessage;
 import com.microsoft.azure.storage.queue.QueueRequestOptions;
 import com.microsoft.azure.storage.table.*;
 import it.gov.pagopa.reporting.entity.OrganizationEntity;
+import it.gov.pagopa.reporting.models.OrganizationsMessage;
 import it.gov.pagopa.reporting.service.OrganizationsService;
 import lombok.SneakyThrows;
 import org.junit.ClassRule;
@@ -32,6 +34,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -152,7 +155,7 @@ class OrganizationsServiceIntegrationTest {
     }
 
     @Test
-    void getOrganizationsTest_errorWhileReading() throws InvalidKeyException, URISyntaxException, StorageException {
+    void getOrganizationsTest_errorWrongTable() throws InvalidKeyException, URISyntaxException, StorageException {
 
         // simulating an exception during reading from non-existent storage table
         String wrongOrgsTable = this.orgsTable + "_fake";
@@ -180,6 +183,26 @@ class OrganizationsServiceIntegrationTest {
         for (CloudQueueMessage queueMsg : queueMsgs) {
             Assertions.assertTrue(assertQueueMessages(queueMsg, ENROLLED_ORGANIZATIONS));
         }
+    }
+
+    @Test
+    void addToOrganizationsQueueTest_errorWrongQueue() throws InvalidKeyException, URISyntaxException, StorageException, JsonProcessingException {
+
+        Logger mockLogger = mock(Logger.class);
+
+        // simulating an exception during reading from non-existent storage queue
+        String wrongOrgsQueue = this.orgsQueue + "_fake";
+        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString,
+                this.orgsTable, wrongOrgsQueue, 60, 0, mockLogger);
+
+        // inserting on queue a set of organization identifier previously get by
+        organizationsService.addToOrganizationsQueue(ENROLLED_ORGANIZATIONS);
+
+        Iterable<CloudQueueMessage> queueMsgs = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
+                .getQueueReference(this.orgsQueue)
+                .retrieveMessages(32);
+        Assertions.assertFalse(queueMsgs.iterator().hasNext());
+        verify(mockLogger).severe(anyString());
     }
 
     @Test
@@ -227,6 +250,28 @@ class OrganizationsServiceIntegrationTest {
         for (CloudQueueMessage queueMsg : queueMsgs) {
             Assertions.assertTrue(assertQueueMessages(queueMsg, ENROLLED_ORGANIZATIONS));
         }
+    }
+
+    @Test
+    void getAndAddOrganizations_noEnrolledOrganizations() throws Exception {
+
+        OrganizationsService organizationsService = new OrganizationsService(this.storageConnectionString, this.orgsTable,
+                this.orgsQueue, 60, 0, logger);
+
+        Logger logger = Logger.getLogger("testlogging");
+
+        // precondition
+        when(context.getLogger()).thenReturn(logger);
+        doReturn(organizationsService).when(function).getOrganizationsServiceInstance(logger);
+
+        // calling Azure function
+        function.run("ReportingBatchTrigger", context);
+
+        // retrieving queue messages and assert them
+        Iterable<CloudQueueMessage> queueMsgs = CloudStorageAccount.parse(storageConnectionString).createCloudQueueClient()
+                .getQueueReference(this.orgsQueue)
+                .retrieveMessages(32);
+        Assertions.assertTrue(!queueMsgs.iterator().hasNext());
     }
 
     private void addOrganizationList(List<String> organizations) throws URISyntaxException, InvalidKeyException, StorageException {
