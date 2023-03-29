@@ -21,7 +21,7 @@ public class GetFlow {
 
     private String flowsTable = System.getenv("FLOWS_TABLE");
 
-    private String containerBlob = System.getenv("FLOWS_XML_BLOB");
+    private String containerBlob = System.getenv("FLOWS_CONTAINER");
 
     /**
      * This function will be invoked when a new message is detected in the queue
