@@ -31,7 +31,8 @@ public class GetFlow {
     public HttpResponseMessage run (
             @HttpTrigger(name = "GetFlowTrigger",
                     methods = {HttpMethod.GET},
-                    route = "organizations/{organizationId}/reportings/{flowId}/date/{flowDate}"
+                    route = "organizations/{organizationId}/reportings/{flowId}/date/{flowDate}",
+                    authLevel = AuthorizationLevel.ANONYMOUS
             ) HttpRequestMessage<Optional<String>> request,
             @BindingName("organizationId") String organizationId,
             @BindingName("flowId") String flowId,
