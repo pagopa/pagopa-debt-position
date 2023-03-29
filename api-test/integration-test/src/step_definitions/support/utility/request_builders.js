@@ -21,6 +21,16 @@ function buildActivatePaymentNoticeRequest(bundle) {
     </soapenv:Envelope>`;
 }
 
+function buildPayRequest(bundle) {
+    return {
+        paymentDate: `${bundle.debtPositionCalculation.applicationDate}T12:00:00`,
+        paymentMethod: "creditCard",
+        pspCompany: `${bundle.psp.id}`,
+        idReceipt: `${bundle.debtPositionCalculation.idempotencyKey}`,
+        fee: "150"
+    };
+}
+
 function buildReportFlowCreationRequest(bundle, reportFlow) {
     return `<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
                 <Body>
@@ -45,48 +55,46 @@ function buildReportFlowForDebtPositionRequest(bundle) {
         date: `${flowDate}`,
         dateAndTime: `${flowDate}T23:59:59`
     }
-    return `<pay_i:FlussoRiversamento
-                xmlns:pay_i="http://www.digitpa.gov.it/schemas/2011/Pagamenti/"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.digitpa.gov.it/schemas/2011/Pagamenti/ FlussoRendicontazione_v_1_0_1.xsd ">
-                <pay_i:versioneOggetto>1.0</pay_i:versioneOggetto>
-                <pay_i:identificativoFlusso>${bundle.flow.id}</pay_i:identificativoFlusso>
-                <pay_i:dataOraFlusso>${bundle.flow.dateAndTime}</pay_i:dataOraFlusso>
-                <pay_i:identificativoUnivocoRegolamento>${bundle.debtPosition.paymentOption[0].iuv}-${flowDate.replace('-', '').replace('-', '')}235959999</pay_i:identificativoUnivocoRegolamento>
-                <pay_i:dataRegolamento>${bundle.flow.date}</pay_i:dataRegolamento>
-                <pay_i:istitutoMittente>
-                    <pay_i:identificativoUnivocoMittente>
-                        <pay_i:tipoIdentificativoUnivoco>G</pay_i:tipoIdentificativoUnivoco>
-                        <pay_i:codiceIdentificativoUnivoco>${bundle.psp.id}</pay_i:codiceIdentificativoUnivoco>
-                    </pay_i:identificativoUnivocoMittente>
-                    <pay_i:denominazioneMittente>${bundle.psp.businessName}</pay_i:denominazioneMittente>
-                </pay_i:istitutoMittente>
-                <pay_i:codiceBicBancaDiRiversamento>${bundle.psp.bic}</pay_i:codiceBicBancaDiRiversamento>
-                <pay_i:istitutoRicevente>
-                    <pay_i:identificativoUnivocoRicevente>
-                        <pay_i:tipoIdentificativoUnivoco>G</pay_i:tipoIdentificativoUnivoco>
-                        <pay_i:codiceIdentificativoUnivoco>${bundle.creditorInstitution.id}</pay_i:codiceIdentificativoUnivoco>
-                    </pay_i:identificativoUnivocoRicevente>
-                    <pay_i:denominazioneRicevente>${bundle.creditorInstitution.businessName}</pay_i:denominazioneRicevente>
-                </pay_i:istitutoRicevente>
-                <pay_i:numeroTotalePagamenti>2</pay_i:numeroTotalePagamenti>
-                <pay_i:importoTotalePagamenti>${bundle.debtPosition.paymentOption[0].amount / 100}.00</pay_i:importoTotalePagamenti>
-                <pay_i:datiSingoliPagamenti>
-                    <pay_i:identificativoUnivocoVersamento>${bundle.debtPosition.paymentOption[0].iuv}-${bundle.debtPosition.paymentOption[0].transfer[0].idTransfer}-${flowDate}</pay_i:identificativoUnivocoVersamento>
-                    <pay_i:identificativoUnivocoRiscossione>IUR${makeidNumber(17)}</pay_i:identificativoUnivocoRiscossione>
-                    <pay_i:indiceDatiSingoloPagamento>${bundle.debtPosition.paymentOption[0].transfer[0].idTransfer}</pay_i:indiceDatiSingoloPagamento>
-                    <pay_i:singoloImportoPagato>${bundle.debtPosition.paymentOption[0].transfer[0].amount / 100}.00</pay_i:singoloImportoPagato>
-                    <pay_i:codiceEsitoSingoloPagamento>0</pay_i:codiceEsitoSingoloPagamento>
-                    <pay_i:dataEsitoSingoloPagamento>${bundle.debtPositionCalculation.applicationDate}</pay_i:dataEsitoSingoloPagamento>
-                </pay_i:datiSingoliPagamenti>
-                <pay_i:datiSingoliPagamenti>
-                    <pay_i:identificativoUnivocoVersamento>${bundle.debtPosition.paymentOption[0].iuv}-${bundle.debtPosition.paymentOption[0].transfer[1].idTransfer}-${flowDate}</pay_i:identificativoUnivocoVersamento>
-                    <pay_i:identificativoUnivocoRiscossione>IUR${makeidNumber(17)}</pay_i:identificativoUnivocoRiscossione>
-                    <pay_i:indiceDatiSingoloPagamento>${bundle.debtPosition.paymentOption[0].transfer[1].idTransfer}</pay_i:indiceDatiSingoloPagamento>
-                    <pay_i:singoloImportoPagato>${bundle.debtPosition.paymentOption[0].transfer[1].amount / 100}.00</pay_i:singoloImportoPagato>
-                    <pay_i:codiceEsitoSingoloPagamento>0</pay_i:codiceEsitoSingoloPagamento>
-                    <pay_i:dataEsitoSingoloPagamento>${bundle.debtPositionCalculation.applicationDate}</pay_i:dataEsitoSingoloPagamento>
-                </pay_i:datiSingoliPagamenti>
-            </pay_i:FlussoRiversamento>`;
+    return `<FlussoRiversamento xmlns="http://www.digitpa.gov.it/schemas/2011/Pagamenti/">
+                <versioneOggetto>1.0</versioneOggetto>
+                <identificativoFlusso>${bundle.flow.id}</identificativoFlusso>
+                <dataOraFlusso>${bundle.flow.dateAndTime}</dataOraFlusso>
+                <identificativoUnivocoRegolamento>${bundle.debtPosition.paymentOption[0].iuv}-${flowDate.replace('-', '').replace('-', '')}235959999</identificativoUnivocoRegolamento>
+                <dataRegolamento>${bundle.flow.date}</dataRegolamento>
+                <istitutoMittente>
+                    <identificativoUnivocoMittente>
+                        <tipoIdentificativoUnivoco>G</tipoIdentificativoUnivoco>
+                        <codiceIdentificativoUnivoco>${bundle.psp.id}</codiceIdentificativoUnivoco>
+                    </identificativoUnivocoMittente>
+                    <denominazioneMittente>${bundle.psp.businessName}</denominazioneMittente>
+                </istitutoMittente>
+                <codiceBicBancaDiRiversamento>${bundle.psp.bic}</codiceBicBancaDiRiversamento>
+                <istitutoRicevente>
+                    <identificativoUnivocoRicevente>
+                        <tipoIdentificativoUnivoco>G</tipoIdentificativoUnivoco>
+                        <codiceIdentificativoUnivoco>${bundle.creditorInstitution.id}</codiceIdentificativoUnivoco>
+                    </identificativoUnivocoRicevente>
+                    <denominazioneRicevente>${bundle.creditorInstitution.businessName}</denominazioneRicevente>
+                </istitutoRicevente>
+                <numeroTotalePagamenti>2</numeroTotalePagamenti>
+                <importoTotalePagamenti>${bundle.debtPosition.paymentOption[0].amount / 100}.00</importoTotalePagamenti>
+                <datiSingoliPagamenti>
+                    <identificativoUnivocoVersamento>${bundle.debtPosition.paymentOption[0].iuv}</identificativoUnivocoVersamento>
+                    <identificativoUnivocoRiscossione>IUR${makeidNumber(17)}</identificativoUnivocoRiscossione>
+                    <indiceDatiSingoloPagamento>${bundle.debtPosition.paymentOption[0].transfer[0].idTransfer}</indiceDatiSingoloPagamento>
+                    <singoloImportoPagato>${bundle.debtPosition.paymentOption[0].transfer[0].amount / 100}.00</singoloImportoPagato>
+                    <codiceEsitoSingoloPagamento>0</codiceEsitoSingoloPagamento>
+                    <dataEsitoSingoloPagamento>${bundle.debtPositionCalculation.applicationDate}</dataEsitoSingoloPagamento>
+                </datiSingoliPagamenti>
+                <datiSingoliPagamenti>
+                    <identificativoUnivocoVersamento>${bundle.debtPosition.paymentOption[0].iuv}</identificativoUnivocoVersamento>
+                    <identificativoUnivocoRiscossione>IUR${makeidNumber(17)}</identificativoUnivocoRiscossione>
+                    <indiceDatiSingoloPagamento>${bundle.debtPosition.paymentOption[0].transfer[1].idTransfer}</indiceDatiSingoloPagamento>
+                    <singoloImportoPagato>${bundle.debtPosition.paymentOption[0].transfer[1].amount / 100}.00</singoloImportoPagato>
+                    <codiceEsitoSingoloPagamento>0</codiceEsitoSingoloPagamento>
+                    <dataEsitoSingoloPagamento>${bundle.debtPositionCalculation.applicationDate}</dataEsitoSingoloPagamento>
+                </datiSingoliPagamenti>
+            </FlussoRiversamento>`;
 }
 
 
@@ -104,46 +112,43 @@ function buildReportFlowsRetrieveRequest(bundle) {
 }
 
 function buildSendPaymentOutcomeRequest(bundle) {    
-    return `<soapenv:Envelope>
-        <soapenv:Body>
-            <nod:sendPaymentOutcomeReq>
-            <idPSP>${bundle.psp.id}</idPSP>
-            <idBrokerPSP>${bundle.psp.brokerId}</idBrokerPSP>
-            <idChannel>${bundle.psp.channelId}</idChannel>
-            <password>${bundle.psp.channelPassword}</password>
-            <idempotencyKey>${bundle.debtPositionCalculation.idempotencyKey}</idempotencyKey>
-            <paymentTokens>
-                <paymentToken>${bundle.debtPositionCalculation.paymentToken}</paymentToken>
-            </paymentTokens>
-            <outcome>OK</outcome>
-            <details>
-                <paymentMethod>creditCard</paymentMethod>
-                <paymentChannel>app</paymentChannel>
-                <fee>1.50</fee>
-                <primaryCiIncurredFee>0.50</primaryCiIncurredFee>
-                <idBundle>1</idBundle>
-                <idCiBundle>2</idCiBundle>
-                <payer>
-                    <uniqueIdentifier>
-                        <entityUniqueIdentifierType>F</entityUniqueIdentifierType>
-                        <entityUniqueIdentifierValue>${bundle.debtor.fiscalCode}</entityUniqueIdentifierValue>
-                    </uniqueIdentifier>
-                    <fullName>${bundle.debtor.fullName}</fullName>
-                    <streetName>${bundle.debtor.streetName}</streetName>
-                    <civicNumber>${bundle.debtor.civicNumber}</civicNumber>
-                    <postalCode>${bundle.debtor.postalCode}</postalCode>
-                    <city>${bundle.debtor.city}</city>
-                    <stateProvinceRegion>${bundle.debtor.province}</stateProvinceRegion>
-                    <country>${bundle.debtor.country}</country>
-                    <e-mail>${bundle.debtor.email}</e-mail>
-                </payer>
-                <applicationDate>${bundle.debtPositionCalculation.applicationDate}</applicationDate>
-                <transferDate>${bundle.debtPositionCalculation.transferDate}</transferDate>
-            </details>
-            </nod:sendPaymentOutcomeReq>
-        </soapenv:Body>
-    </soapenv:Envelope>`;
+    return `<?xml version="1.0" encoding="utf-8"?><Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+        <Body>
+            <sendPaymentOutcomeReq xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://pagopa-api.pagopa.gov.it/node/nodeForPsp.xsd">
+                <idPSP xmlns="">${bundle.psp.id}</idPSP>
+                <idBrokerPSP xmlns="">${bundle.psp.brokerId}</idBrokerPSP>
+                <idChannel xmlns="">${bundle.psp.channelId}</idChannel>
+                <password xmlns="">${bundle.psp.channelPassword}</password>
+                <idempotencyKey xmlns="">${bundle.debtPositionCalculation.idempotencyKey}</idempotencyKey>
+                <paymentToken xmlns="">${bundle.debtPositionCalculation.paymentToken}</paymentToken>
+                <outcome xmlns="">OK</outcome>
+                <details xmlns="">
+                    <paymentMethod>creditCard</paymentMethod>
+                    <paymentChannel>app</paymentChannel>
+                    <fee>1.50</fee>
+                    <payer>
+                        <uniqueIdentifier>
+                            <entityUniqueIdentifierType>F</entityUniqueIdentifierType>
+                            <entityUniqueIdentifierValue>${bundle.debtor.fiscalCode}</entityUniqueIdentifierValue>
+                        </uniqueIdentifier>
+                        <fullName>${bundle.debtor.fullName}</fullName>
+                        <streetName>${bundle.debtor.streetName}</streetName>
+                        <civicNumber>${bundle.debtor.civicNumber}</civicNumber>
+                        <postalCode>${bundle.debtor.postalCode}</postalCode>
+                        <city>${bundle.debtor.city}</city>
+                        <stateProvinceRegion>${bundle.debtor.province}</stateProvinceRegion>
+                        <country>${bundle.debtor.country}</country>
+                        <e-mail>${bundle.debtor.email}</e-mail>
+                    </payer>
+                    <applicationDate>${bundle.debtPositionCalculation.applicationDate}</applicationDate>
+                    <transferDate>${bundle.debtPositionCalculation.transferDate}</transferDate>
+                </details>
+            </sendPaymentOutcomeReq>
+        </Body>
+    </Envelope>`;
 }
+
+
 
 function buildSendRTRequest(bundle) {
     return `<?xml version="1.0" encoding="utf-8"?>
@@ -242,8 +247,10 @@ function buildVerifyPaymentNoticeRequest(bundle) {
          </Envelope>`;
 }
 
+
 module.exports = {
     buildActivatePaymentNoticeRequest,
+    buildPayRequest,
     buildReportFlowCreationRequest,
     buildReportFlowsRetrieveRequest,
     buildReportFlowForDebtPositionRequest,

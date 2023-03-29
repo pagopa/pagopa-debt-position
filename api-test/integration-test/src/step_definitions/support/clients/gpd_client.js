@@ -26,13 +26,27 @@ function createDebtPosition(organizationFiscalCode, body) {
 }
 
 function getPaymentOptionDetail(organizationFiscalCode, iuv) {
-    const host = `${gpd_host}/organizations/${organizationFiscalCode}/paymentoptions/${iuv}`;
+    const host = `${gpd_host}/organizations/${organizationFiscalCode}/debtpositions/${iuv}`;
     debugLog(`Calling endpoint: [${host}]`);
     return get(host, {
+        timeout: 10000,
         headers: {
-            "Ocp-Apim-Subscription-Key": process.env.GPD_SUBSCRIPTION_KEY
+            "Ocp-Apim-Subscription-Key": process.env.GPD_SUBSCRIPTION_KEY,
+            "Content-Type": "application/json"
         }
     });
+}
+
+function payDebtPosition(organizationFiscalCode, iupd, body) {
+    const host = `${gpd_host}/organizations/${organizationFiscalCode}/paymentoptions/${iupd}/pay`;
+    debugLog(`Calling endpoint: [${host}] with body: [${JSON.stringify(body)}]`);
+    return post(host, body, {
+        timeout: 10000,
+        headers: {
+            "Ocp-Apim-Subscription-Key": process.env.GPD_SUBSCRIPTION_KEY,
+            "Content-Type": "application/json"
+        }
+    })
 }
 
 function publishDebtPosition(organizationFiscalCode, iupd) {
@@ -47,9 +61,11 @@ function publishDebtPosition(organizationFiscalCode, iupd) {
     })
 }
 
+
 module.exports = {
     createDebtPosition,
     getPaymentOptionDetail,
     gpdHealthCheck,
+    payDebtPosition,
     publishDebtPosition
 }

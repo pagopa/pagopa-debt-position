@@ -17,8 +17,8 @@ async function forceReportingBatchStart(bundle) {
 }
 
 async function retrieveReportFlow(bundle) {
-    console.log(` - Then the client asks the detail for one of the report flows with id [${bundle.flow.id}] for date [${bundle.flow.date}]..`);
-    bundle.response = await getFlow(bundle.creditorInstitution.id, bundle.flow.id, bundle.flow.date);
+    console.log(` - Then the client asks the detail for one of the report flows with id [${bundle.flow.id}] for date [${bundle.flow.dateAndTime}]..`);
+    bundle.response = await getFlow(bundle.creditorInstitution.id, bundle.flow.id, bundle.flow.dateAndTime);
     debugLog(`Report flow retrieving API invocation returned HTTP status code: ${bundle.response.status} with body: ${JSON.stringify(bundle.response.data)}`);
 }
 
