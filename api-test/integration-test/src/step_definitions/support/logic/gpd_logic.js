@@ -8,7 +8,7 @@ const {
     readPSP,
     readChannel,
 } = require("../clients/api_config_client");
-const { createDebtPosition, getPaymentOptionDetail, publishDebtPosition } = require("../clients/gpd_client");
+const { createDebtPosition, getPaymentOptionDetail, publishDebtPosition, payDebtPosition } = require("../clients/gpd_client");
 const { activatePaymentNotice, sendPaymentOutcome } = require("../clients/nodo_client");
 const { verifyPaymentNotice, sendRT } = require("../clients/payments_client");
 const { debugLog, makeidNumber, addDays, makeidMix, buildStringFromDate } = require("../utility/helpers");
@@ -25,13 +25,15 @@ const {
     buildActivatePaymentNoticeRequest,
     buildVerifyPaymentNoticeRequest,
     buildSendPaymentOutcomeRequest,
-    buildSendRTRequest, 
+    buildSendRTRequest,
+    buildPayRequest, 
 } = require("../utility/request_builders");
 
 
 async function retrievePaymentOptionDetail(bundle) {
-    console.log(` - the client asks the detail for the analyzed debt positions with IUV [${bundle.debtPosition.paymentOption[0].iuv}]..`);
-    bundle.response = getPaymentOptionDetail(bundle.creditorInstitution.id, bundle.debtPosition.paymentOption[0].iuv);
+    console.log(` - the client asks the detail for the analyzed debt positions with IUPD [${bundle.debtPosition.iupd}]..`);
+    bundle.response = await getPaymentOptionDetail(bundle.creditorInstitution.id, bundle.debtPosition.iupd);
+    debugLog(`Payment option retrieving API invocation returned HTTP status code: ${bundle.response.status} with body: ${JSON. stringify(bundle.response.data)}`);
 }
 
 async function generateDebtPosition(bundle, logStep) {
@@ -58,7 +60,6 @@ async function generateDebtPosition(bundle, logStep) {
 async function generateAndPayDebtPosition(bundle) {
     console.log(" - Given a paid debt position..");
     await generateDebtPosition(bundle, false);
-    /*
     let response = await verifyPaymentNotice(buildVerifyPaymentNoticeRequest(bundle));
     debugLog(`Payment notice verifying API invocation returned HTTP status code: ${response.status} with body: ${JSON. stringify(response.data)}`);
     assert.match(response.data, /<outcome>OK<\/outcome>/);
@@ -70,13 +71,19 @@ async function generateAndPayDebtPosition(bundle) {
     bundle.debtPositionCalculation.paymentToken = paymentTokenRegExp.exec(response.data)?.[1];
     assert.ok(bundle.debtPositionCalculation.paymentToken !== undefined);
 
-    await sendPaymentOutcome(buildSendPaymentOutcomeRequest(bundle));
+    response = await sendPaymentOutcome(buildSendPaymentOutcomeRequest(bundle));
     debugLog(`Payment outcome sending API invocation returned HTTP status code: ${response.status} with body: ${JSON. stringify(response.data)}`);
     assert.match(response.data, /<outcome>OK<\/outcome>/);
     
-    await sendRT(buildSendRTRequest(bundle));
+    response = await payDebtPosition(bundle.creditorInstitution.id, bundle.debtPosition.paymentOption[0].iuv, buildPayRequest(bundle));
+    debugLog(`Debt position payment sending API invocation returned HTTP status code: ${response.status} with body: ${JSON. stringify(response.data)}`);
+    assert.strictEqual(response.status, 200);
+
+    /*
+    response = await sendRT(buildSendRTRequest(bundle));
     debugLog(`Receipt sending API invocation returned HTTP status code: ${response.status} with body: ${JSON. stringify(response.data)}`);
-    assert.match(response.data, /<outcome>OK<\/outcome>/);*/
+    assert.match(response.data, /<outcome>OK<\/outcome>/);
+    */
 }
 
 async function retrieveCreditorInstitution(bundle, organizationFiscalCode) {

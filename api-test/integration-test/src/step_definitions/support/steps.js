@@ -27,7 +27,7 @@ const {
 const { bundle } = require('./utility/data');
 
 /* Setting defaul timeout to 10s. */
-setDefaultTimeout(90 * 1000);
+setDefaultTimeout(120 * 1000);
 
 
 /* 
@@ -68,7 +68,7 @@ Then('the client asks the detail for the analyzed debt positions', () => retriev
 Then('the client receives status code {int}', (statusCode) => assertStatusCode(bundle.response, statusCode));
 Then('the client receives a non-empty list of flows', () => assertNonEmptyList(bundle.response));
 Then('the client receives an empty list of flows', () => assertEmptyList(bundle.response));
-Then('the client receives the flow XML content', () => assertFlowXMLContent(bundle.response));
+Then('the client receives the flow XML content', () => assertFlowXMLContent(bundle.response, bundle.flow.id));
 Then('the client receives the payment options with status {string}', (status) => assertPaymentOptionStatus(bundle.response, status));
 
 

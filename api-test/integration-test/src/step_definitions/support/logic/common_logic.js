@@ -5,10 +5,10 @@ async function assertEmptyList(response) {
     assert.ok(response.data.length === 0);
 }
 
-async function assertFlowXMLContent(response) {
+async function assertFlowXMLContent(response, flowId) {
     console.log(` - -> the client receives the flow XML content with outcome [OK]..`);
-    assert.match(response.data, new RegExp(`<esito>OK</esito>`, "g"));
-    assert.match(response.data, new RegExp(`<xmlRendicontazione>.+</xmlRendicontazione>`, "g"));    
+    assert.match(response.data, new RegExp(`^<FlussoRiversamento.+`, "g"));    
+    assert.match(response.data, new RegExp(`<identificativoFlusso>${flowId}</identificativoFlusso>`, "g"));
 }
 
 async function assertNonEmptyList(response) {
