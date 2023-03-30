@@ -48,7 +48,6 @@ jobs:
       - script: |
           git checkout $(sourceBranch)
           git pull
-          displayName: Checkout and update branch
 
       - task: Bash@3
         displayName: 'Run Integration Tests'
