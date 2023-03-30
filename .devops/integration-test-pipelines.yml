@@ -62,6 +62,5 @@ jobs:
             export PAYMENTS_REST_SUBSCRIPTION_KEY=$(PAYMENTS_REST_SUBSCRIPTION_KEY) \
             export PAYMENTS_SOAP_SUBSCRIPTION_KEY=$(PAYMENTS_SOAP_SUBSCRIPTION_KEY) \
             export REPORTING_SUBSCRIPTION_KEY=$(REPORTING_SUBSCRIPTION_KEY) \
-            export REPORTING_BATCH_CONNECTION_STRING=$(REPORTING_BATCH_CONNECTION_STRING) && \                
-            yarn install && \
+            export REPORTING_BATCH_CONNECTION_STRING=$(REPORTING_BATCH_CONNECTION_STRING) \                
             yarn test:${{ parameters.ENV }}
