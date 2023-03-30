@@ -1,14 +1,14 @@
 locals {
   github = {
     org        = "pagopa"
-    repository = "your-name" # TODO
+    repository = "pagopa-debt-position"
   }
   prefix = "pagopa"
   product = "${local.prefix}-${var.env_short}"
   project = "${local.prefix}-${var.env_short}-${local.location_short}-${local.domain}"
   runner = "${local.prefix}-${var.env_short}-${local.location_short}"
 
-  domain = "your-domain" # TODO
+  domain = "gps"
   location_short  = "weu"
 
   aks_name                = "${local.product}-${local.location_short}-${var.env}-aks"
