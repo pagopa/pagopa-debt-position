@@ -4,7 +4,7 @@
 
     <groupId>it.gov.pagopa.reporting</groupId>
     <artifactId>reporting-service</artifactId>
-    <version>0.0.3-5</version>
+    <version>0.0.3-6</version>
     <packaging>jar</packaging>
 
     <name>Azure Reporting-Service Fn</name>
