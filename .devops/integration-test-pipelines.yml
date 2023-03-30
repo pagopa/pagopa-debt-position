@@ -1,0 +1,78 @@
+# azure-pipelines.yml
+trigger: none
+
+parameters:
+  - name: ENV
+    displayName: "Target Environment"
+    type: string
+    values:
+      - "dev"
+      - "uat"
+    default: "dev"
+
+variables:
+  ${{ if eq(parameters['ENVIRONMENT'], 'dev') }}:
+    CONTAINER_REGISTRY: $(DEV_CONTAINER_REGISTRY)
+    POOL_IMAGE: 'pagopa-dev-loadtest-linux'
+    API_CONFIG_SUBSCRIPTION_KEY: $(DEV_API_CONFIG_SUBSCRIPTION_KEY)
+    GPD_SUBSCRIPTION_KEY: $(DEV_GPD_SUBSCRIPTION_KEY)
+    PAYMENTS_REST_SUBSCRIPTION_KEY: $(DEV_PAYMENTS_REST_SUBSCRIPTION_KEY)
+    PAYMENTS_SOAP_SUBSCRIPTION_KEY: $(DEV_PAYMENTS_SOAP_SUBSCRIPTION_KEY)
+    REPORTING_SUBSCRIPTION_KEY: $(DEV_REPORTING_SUBSCRIPTION_KEY)
+    REPORTING_BATCH_CONNECTION_STRING: $(DEV_REPORTING_BATCH_CONNECTION_STRING)
+  ${{ if eq(parameters['ENVIRONMENT'], 'uat') }}:
+    CONTAINER_REGISTRY: $(UAT_CONTAINER_REGISTRY)
+    poolImage: 'pagopa-uat-loadtest-linux'
+    API_CONFIG_SUBSCRIPTION_KEY: $(UAT_API_CONFIG_SUBSCRIPTION_KEY)
+    GPD_SUBSCRIPTION_KEY: $(UAT_GPD_SUBSCRIPTION_KEY)
+    PAYMENTS_REST_SUBSCRIPTION_KEY: $(UAT_PAYMENTS_REST_SUBSCRIPTION_KEY)
+    PAYMENTS_SOAP_SUBSCRIPTION_KEY: $(UAT_PAYMENTS_SOAP_SUBSCRIPTION_KEY)
+    REPORTING_SUBSCRIPTION_KEY: $(UAT_REPORTING_SUBSCRIPTION_KEY)
+    REPORTING_BATCH_CONNECTION_STRING: $(UAT_REPORTING_BATCH_CONNECTION_STRING)
+
+pool:
+  name: $(POOL_IMAGE)
+
+steps:
+
+  # Run Tests
+  - stage: Integration_Test
+    dependsOn:
+      - Deploy
+    condition: ne('${{ parameters.ENV }}', 'prod')
+    jobs:
+      - job: integration_tests
+        pool:
+          name: $(POOL_IMAGE)
+
+        steps:
+          - checkout: self
+            persistCredentials: true
+
+          - script: |
+              git checkout $(sourceBranch)
+              git pull
+            displayName: Checkout and update branch
+
+          - task: Docker@2
+            displayName: "Docker login"
+            inputs:
+              containerRegistry: "$(CONTAINER_REGISTRY)"
+              command: "login"
+
+          - task: Bash@3
+            displayName: 'Run Integration Tests'
+            inputs:
+              targetType: 'inline'
+              script: |
+                cd ./integration-test/
+    
+                export API_CONFIG_SUBSCRIPTION_KEY=${{ parameters.API_CONFIG_SUBSCRIPTION_KEY }}
+                export GPD_SUBSCRIPTION_KEY=${{ parameters.GPD_SUBSCRIPTION_KEY }}
+                export PAYMENTS_REST_SUBSCRIPTION_KEY=${{ parameters.PAYMENTS_REST_SUBSCRIPTION_KEY }}
+                export PAYMENTS_SOAP_SUBSCRIPTION_KEY=${{ parameters.PAYMENTS_SOAP_SUBSCRIPTION_KEY }}
+                export REPORTING_SUBSCRIPTION_KEY=${{ parameters.REPORTING_SUBSCRIPTION_KEY }}
+                export REPORTING_BATCH_CONNECTION_STRING=${{ parameters.REPORTING_BATCH_CONNECTION_STRING }}
+                
+                yarn install
+                yarn test:${{ parameters.ENV }}
