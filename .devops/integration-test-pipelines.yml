@@ -37,29 +37,34 @@ variables:
 pool:
   name: $(POOL_IMAGE)
 
-jobs:
-  - job: integration_tests
-    displayName: 'Prepare and run integration tests'
-    timeoutInMinutes: 0
-    steps:
-      - checkout: self
-        persistCredentials: true
+stages:
+  # Run Tests
+  - stage: Integration_Test
+    jobs:
+      - job: integration_tests
+        pool:
+          name: $(poolImage)
 
-      - script: |
-          git checkout $(sourceBranch)
-          git pull
+        steps:
+          - checkout: self
+            persistCredentials: true
 
-      - task: Bash@3
-        displayName: 'Run Integration Tests'
-        inputs:
-          targetType: 'inline'
-          script: |
-            cd ./integration-test/ \
-            export API_CONFIG_SUBSCRIPTION_KEY=$(API_CONFIG_SUBSCRIPTION_KEY) \
-            export GPD_SUBSCRIPTION_KEY=$(GPD_SUBSCRIPTION_KEY) \
-            export PAYMENTS_REST_SUBSCRIPTION_KEY=$(PAYMENTS_REST_SUBSCRIPTION_KEY) \
-            export PAYMENTS_SOAP_SUBSCRIPTION_KEY=$(PAYMENTS_SOAP_SUBSCRIPTION_KEY) \
-            export REPORTING_SUBSCRIPTION_KEY=$(REPORTING_SUBSCRIPTION_KEY) \
-            export REPORTING_BATCH_CONNECTION_STRING=$(REPORTING_BATCH_CONNECTION_STRING) \                
-            yarn install && \
-            yarn test:${{ parameters.ENV }}
+          - script: |
+              git checkout $(sourceBranch)
+              git pull
+            displayName: Checkout and update branch
+
+          - task: Bash@3
+            displayName: 'Run Integration Tests'
+            inputs:
+              targetType: 'inline'
+              script: |
+                cd ./integration-test/ \
+                export API_CONFIG_SUBSCRIPTION_KEY=$(API_CONFIG_SUBSCRIPTION_KEY) \
+                export GPD_SUBSCRIPTION_KEY=$(GPD_SUBSCRIPTION_KEY) \
+                export PAYMENTS_REST_SUBSCRIPTION_KEY=$(PAYMENTS_REST_SUBSCRIPTION_KEY) \
+                export PAYMENTS_SOAP_SUBSCRIPTION_KEY=$(PAYMENTS_SOAP_SUBSCRIPTION_KEY) \
+                export REPORTING_SUBSCRIPTION_KEY=$(REPORTING_SUBSCRIPTION_KEY) \
+                export REPORTING_BATCH_CONNECTION_STRING=$(REPORTING_BATCH_CONNECTION_STRING) \                
+                yarn install && \
+                yarn test:${{ parameters.ENV }}
