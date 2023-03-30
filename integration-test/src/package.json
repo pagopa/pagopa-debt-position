@@ -6,7 +6,6 @@
     "test": "dotenv -e ./config/.env.local yarn cucumber",
     "test:dev": "dotenv -e ./config/.env.dev yarn cucumber",
     "test:uat": "dotenv -e ./config/.env.uat yarn cucumber",
-    "test:prod": "dotenv -e ./config/.env.prod yarn cucumber",
     "cucumber": "npx cucumber-js -r step_definitions --format=summary"
   },
   "dependencies": {

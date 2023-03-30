@@ -8,8 +8,8 @@ const { debugLog } = require("../utility/helpers");
 
 async function forceReportingBatchStart(bundle) {
     console.log(` - When the reporting batch analyzes the reporting flows for the organization [${bundle.creditorInstitution.id}]..`);
-    const queueServiceClient = QueueServiceClient.fromConnectionString(process.env.reporting_batch_connection_string);
-    const queueClient = queueServiceClient.getQueueClient(process.env.reporting_batch_queue); 
+    const queueServiceClient = QueueServiceClient.fromConnectionString(process.env.FLOW_SA_CONNECTION_STRING);
+    const queueClient = queueServiceClient.getQueueClient(process.env.REPORTING_BATCH_QUEUE);
     const messageText = `{"idPA":["${bundle.creditorInstitution.id}"],"retry":0}`;
     const base64MessageText = Buffer.from(messageText).toString('base64');
     let response = queueClient.sendMessage(base64MessageText);

@@ -8,7 +8,7 @@ async function getFlow(organizationFiscalCode, flowId, date) {
     debugLog(`Calling endpoint: [${host}]`);
     return get(host, {
         headers: {
-            "x-functions-key": process.env.REPORTING_FUNCTION_KEY
+            "Ocp-Apim-Subscription-Key": process.env.REPORTING_SUBSCRIPTION_KEY
         }
     });
 }
@@ -16,7 +16,11 @@ async function getFlow(organizationFiscalCode, flowId, date) {
 async function getFlowList(organizationFiscalCode) {
     const host = `${reporting_analysis_host}/organizations/${organizationFiscalCode}/reportings`;
     debugLog(`Calling endpoint: [${host}]`);
-    return get(host);
+    return get(host, {
+        headers: {
+            "Ocp-Apim-Subscription-Key": process.env.REPORTING_SUBSCRIPTION_KEY
+        }
+    });
 }
 
 module.exports = {
