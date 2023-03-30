@@ -287,6 +287,7 @@ stages:
 
           - task: Bash@3
             displayName: 'Update WSDL Location'
+            condition: in('${{ parameters.REPOSITORY }}', 'reporting-batch', 'reporting-service')
             inputs:
               targetType: 'inline'
               script: |
