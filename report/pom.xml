@@ -28,7 +28,7 @@
         <dependency>
             <groupId>it.gov.pagopa.reporting</groupId>
             <artifactId>reporting-service</artifactId>
-	        <version>0.0.3-5</version>
+	<version>0.0.3-6</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
