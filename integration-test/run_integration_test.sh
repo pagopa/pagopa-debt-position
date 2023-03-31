@@ -1,9 +1,9 @@
 # example: sh ./run_integration_test.sh <smoke|integration> <local|dev|uat|prod>
 ENV=$1
-containerName="integration-node-container"
+containerName="node-container"
 
-docker stop node-container && docker rm node-container
-docker stop integration-node-container && docker rm integration-node-container
+docker stop node-container || true
+docker rm node-container || true
 
 docker pull ${containerRegistry}/yarn-testing-base:latest
 docker run -dit --name ${containerName} ${containerRegistry}/yarn-testing-base:latest
