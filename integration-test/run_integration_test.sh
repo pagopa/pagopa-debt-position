@@ -5,8 +5,8 @@ containerName="node-container"
 docker stop node-container || true
 docker rm node-container || true
 
-docker pull ${containerRegistry}/yarn-testing-base:latest
-docker run -dit --name ${containerName} ${containerRegistry}/yarn-testing-base:latest
+docker pull ${CONTAINER_REGISTRY}/yarn-testing-base:latest
+docker run -dit --name ${containerName} ${CONTAINER_REGISTRY}/yarn-testing-base:latest
 
 # run integration tests with yarn
 docker cp -a ./src/. ${containerName}:/test
