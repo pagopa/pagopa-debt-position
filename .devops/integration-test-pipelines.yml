@@ -65,7 +65,7 @@ jobs:
           targetType: 'inline'
           script: |
             cd ./integration-test/ && \
-            sh run_integration_test.sh {{ parameters.ENV }}
+            sh run_integration_test.sh ${{ parameters.ENV }}
         env:
           API_CONFIG_SUBSCRIPTION_KEY: $(API_CONFIG_SUBSCRIPTION_KEY)
           GPD_SUBSCRIPTION_KEY: $(GPD_SUBSCRIPTION_KEY)

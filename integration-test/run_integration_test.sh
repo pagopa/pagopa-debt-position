@@ -1,9 +1,9 @@
 # example: sh ./run_integration_test.sh <smoke|integration> <local|dev|uat|prod>
-ENV=$1
+environment=$1
 containerName="node-container"
 
-# docker stop node-container || true
-#docker rm node-container || true
+docker stop node-container || true
+docker rm node-container || true
 
 docker pull ${CONTAINER_REGISTRY}/yarn-testing-base:latest
 docker run -dit --name ${containerName} ${CONTAINER_REGISTRY}/yarn-testing-base:latest
@@ -18,7 +18,7 @@ export PAYMENTS_REST_SUBSCRIPTION_KEY=${PAYMENTS_REST_SUBSCRIPTION_KEY} \
 export PAYMENTS_SOAP_SUBSCRIPTION_KEY=${PAYMENTS_SOAP_SUBSCRIPTION_KEY} \
 export REPORTING_SUBSCRIPTION_KEY=${REPORTING_SUBSCRIPTION_KEY} \
 export REPORTING_BATCH_CONNECTION_STRING=${REPORTING_BATCH_CONNECTION_STRING} && \
-yarn test:${ENV}"
+yarn test:${environment}"
 
 # clean up container
 docker stop ${containerName} && docker rm ${containerName}
