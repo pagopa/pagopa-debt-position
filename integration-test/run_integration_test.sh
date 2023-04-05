@@ -1,12 +1,24 @@
-# example: sh ./run_integration_test.sh <local|dev|uat|prod> <sub-key>
-set -e
+# example: sh ./run_integration_test.sh <smoke|integration> <local|dev|uat|prod>
+ENV=$1
+containerName="node-container"
 
-# create containers
-cd ../docker || exit
-sh ./run_docker.sh "$1"
+docker stop node-container || true
+docker rm node-container || true
 
-# run integration tests
-export subkey=$2
-cd ../integration-test/src || exit
-yarn install
-yarn test
+docker pull ${CONTAINER_REGISTRY}/yarn-testing-base:latest
+docker run -dit --name ${containerName} ${CONTAINER_REGISTRY}/yarn-testing-base:latest
+
+# run integration tests with yarn
+docker cp -a ./src/. ${containerName}:/test
+docker exec -i ${containerName} /bin/bash -c " \
+cd ./test
+export API_CONFIG_SUBSCRIPTION_KEY=${API_CONFIG_SUBSCRIPTION_KEY} \
+export GPD_SUBSCRIPTION_KEY=${GPD_SUBSCRIPTION_KEY} \
+export PAYMENTS_REST_SUBSCRIPTION_KEY=${PAYMENTS_REST_SUBSCRIPTION_KEY} \
+export PAYMENTS_SOAP_SUBSCRIPTION_KEY=${PAYMENTS_SOAP_SUBSCRIPTION_KEY} \
+export REPORTING_SUBSCRIPTION_KEY=${REPORTING_SUBSCRIPTION_KEY} \
+export REPORTING_BATCH_CONNECTION_STRING=${REPORTING_BATCH_CONNECTION_STRING} && \
+yarn test:$1"
+
+# clean up container
+docker stop ${containerName} && docker rm ${containerName}
