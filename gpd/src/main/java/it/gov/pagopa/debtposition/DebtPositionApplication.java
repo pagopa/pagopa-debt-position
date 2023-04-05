@@ -1,7 +1,7 @@
 package it.gov.pagopa.debtposition;
 
-import it.gov.pagopa.debtposition.controller.pd.mapper.ConvertPOEntityToPOWithDebtor;
-import it.gov.pagopa.debtposition.controller.pd.mapper.ConvertPPModelToPPEntityForUpdate;
+import it.gov.pagopa.debtposition.mapper.ConvertPOEntityToPOWithDebtor;
+import it.gov.pagopa.debtposition.mapper.ConvertPPModelToPPEntityForUpdate;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;

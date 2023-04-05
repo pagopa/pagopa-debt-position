@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.controller.pd.scheduler;
+package it.gov.pagopa.debtposition.scheduler;
 
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;

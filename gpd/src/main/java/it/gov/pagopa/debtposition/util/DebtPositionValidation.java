@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.validation;
+package it.gov.pagopa.debtposition.util;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;

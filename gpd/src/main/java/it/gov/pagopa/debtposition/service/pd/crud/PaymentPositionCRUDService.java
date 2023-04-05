@@ -15,7 +15,7 @@ import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.repository.specification.*;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.PublishPaymentUtil;
-import it.gov.pagopa.debtposition.validation.DebtPositionValidation;
+import it.gov.pagopa.debtposition.util.DebtPositionValidation;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
 import org.modelmapper.ModelMapper;

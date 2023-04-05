@@ -1,6 +1,7 @@
 package it.gov.pagopa.debtposition.model.pd.response;
 
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
+import it.gov.pagopa.debtposition.model.pd.Stamp;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -23,6 +24,7 @@ public class TransferModelResponse implements Serializable {
     private String category; // taxonomy
     private String iban;
     private String postalIban;
+    private Stamp stamp;
     private LocalDateTime insertedDate;
     private TransferStatus status;
     private LocalDateTime lastUpdatedDate;

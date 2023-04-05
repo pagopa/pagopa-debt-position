@@ -28,4 +28,6 @@ public class TransferModel implements Serializable {
     @NotBlank(message = "iban is required")
     private String iban;
     private String postalIban;
+    private Stamp stamp;
+
 }
