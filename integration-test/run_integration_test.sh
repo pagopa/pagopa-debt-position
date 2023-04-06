@@ -5,6 +5,7 @@ containerName="node-container"
 docker stop node-container || true
 docker rm node-container || true
 
+# please see https://github.com/andrea-deri/prebuilt-img-yarn-base for yarn-testing-base image content
 docker pull ${CONTAINER_REGISTRY}/yarn-testing-base:latest
 docker run -dit --name ${containerName} ${CONTAINER_REGISTRY}/yarn-testing-base:latest
 
