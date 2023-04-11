@@ -13,7 +13,7 @@ function paymentsHealthCheck() {
         headers: {
             "Host": process.env.host_header,
             "X-Forwarded-For": ipAddress,
-            "Ocp-Apim-Subscription-Key": process.env.REST_PAYMENTS_SUBSCRIPTION_KEY
+            "Ocp-Apim-Subscription-Key": process.env.PAYMENTS_REST_SUBSCRIPTION_KEY
         }
     })
 }
@@ -26,7 +26,7 @@ function demandPaymentNotice(body) {
         headers: {
             'Content-Type': 'text/xml',
             'SOAPAction': 'paDemandPaymentNotice',
-            "Ocp-Apim-Subscription-Key": process.env.SOAP_PAYMENTS_SUBSCRIPTION_KEY
+            "Ocp-Apim-Subscription-Key": process.env.PAYMENTS_SOAP_SUBSCRIPTION_KEY
         }
     })
 }
@@ -39,7 +39,7 @@ function verifyPaymentNotice(body) {
         headers: {
             'Content-Type': 'text/xml',
             'SOAPAction': 'paVerifyPaymentNotice',
-            "Ocp-Apim-Subscription-Key": process.env.SOAP_PAYMENTS_SUBSCRIPTION_KEY
+            "Ocp-Apim-Subscription-Key": process.env.PAYMENTS_SOAP_SUBSCRIPTION_KEY
         }
     })
 }
@@ -52,7 +52,7 @@ function getPayment(body) {
         headers: {
             'Content-Type': 'text/xml',
             'SOAPAction': 'paGetPayment',
-            "Ocp-Apim-Subscription-Key": process.env.SOAP_PAYMENTS_SUBSCRIPTION_KEY
+            "Ocp-Apim-Subscription-Key": process.env.PAYMENTS_SOAP_SUBSCRIPTION_KEY
         }
     })
 }
@@ -65,7 +65,7 @@ function sendRT(body) {
         headers: {
             'Content-Type': 'text/xml',
             'SOAPAction': 'paSendRT',
-            "Ocp-Apim-Subscription-Key": process.env.SOAP_PAYMENTS_SUBSCRIPTION_KEY
+            "Ocp-Apim-Subscription-Key": process.env.PAYMENTS_SOAP_SUBSCRIPTION_KEY
         }
     })
 }
