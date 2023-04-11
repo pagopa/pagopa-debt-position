@@ -11,6 +11,7 @@ function paymentsHealthCheck() {
     debugLog(`Calling endpoint: [${host}]`);
     return get(host, {
         headers: {
+            "Host": process.env.host_header,
             "X-Forwarded-For": ipAddress,
             "Ocp-Apim-Subscription-Key": process.env.REST_PAYMENTS_SUBSCRIPTION_KEY
         }

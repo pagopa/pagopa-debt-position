@@ -8,6 +8,7 @@ function gpdHealthCheck() {
     debugLog(`Calling endpoint: [${host}]`);
     return get(host, {
         headers: {
+            "Host": process.env.host_header,
             "Ocp-Apim-Subscription-Key": process.env.GPD_SUBSCRIPTION_KEY
         }
     })
