@@ -843,7 +843,6 @@ public class DebtPositionMock {
 		tMock.setAmount(1000);
 		tMock.setRemittanceInformation("causale mock 1");
 		tMock.setCategory("10/22252/20");
-		tMock.setPostalIban("IT82E0760113600000000118547");
 
 		return tMock;
 	}
@@ -868,7 +867,6 @@ public class DebtPositionMock {
 		tMock.setAmount(1000);
 		tMock.setRemittanceInformation("causale mock multiple 1");
 		tMock.setCategory("10/22252/20");
-		tMock.setPostalIban("IT82E0760113600000000118547");
 
 		return tMock;
 	}
@@ -876,7 +874,6 @@ public class DebtPositionMock {
 	public static TransferDTO createTransfersMultipleMock2() {
 		TransferDTO tMock = new TransferDTO();
 		tMock.setIdTransfer("2");
-		tMock.setIban("IT75I0306902887100000300006");
 		tMock.setAmount(500);
 		tMock.setRemittanceInformation("causale mock multiple 2");
 		tMock.setCategory("10/22252/20");
@@ -892,7 +889,6 @@ public class DebtPositionMock {
 		tMock.setAmount(10000);
 		tMock.setRemittanceInformation("causale mock multiple 3");
 		tMock.setCategory("10/22252/20");
-		tMock.setPostalIban("IT82E0760113600000000118547");
 
 		return tMock;
 	}
@@ -904,7 +900,6 @@ public class DebtPositionMock {
 		tMock.setAmount(2500);
 		tMock.setRemittanceInformation("causale mock multiple 4");
 		tMock.setCategory("10/22252/20");
-		tMock.setPostalIban("IT82E0760113600000000118547");
 
 		return tMock;
 	}
@@ -916,7 +911,6 @@ public class DebtPositionMock {
 		tMock.setAmount(2500);
 		tMock.setRemittanceInformation("causale mock multiple 5");
 		tMock.setCategory("10/22252/20");
-		tMock.setPostalIban("IT82E0760113600000000118547");
 
 		return tMock;
 	}
@@ -928,7 +922,6 @@ public class DebtPositionMock {
 		tMock.setAmount(2500);
 		tMock.setRemittanceInformation("causale mock multiple 5");
 		tMock.setCategory("10/22252/20");
-		tMock.setPostalIban("IT82E0760113600000000118547");
 
 		return tMock;
 	}

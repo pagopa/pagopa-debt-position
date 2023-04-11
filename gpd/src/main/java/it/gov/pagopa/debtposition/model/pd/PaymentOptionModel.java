@@ -3,7 +3,9 @@ package it.gov.pagopa.debtposition.model.pd;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -20,16 +22,17 @@ public class PaymentOptionModel implements Serializable {
 
     @NotBlank(message = "iuv is required")
     private String iuv;
-    @NotBlank(message = "amount is required")
-    private long amount;
+    @NotNull(message = "amount is required")
+    private Long amount;
     private String description;
-    @NotBlank(message = "is partial payment is required")
+    @NotNull(message = "is partial payment is required")
     private Boolean isPartialPayment;
-    @NotBlank(message = "due date is required")
+    @NotNull(message = "due date is required")
     private LocalDateTime dueDate;
     private LocalDateTime retentionDate;
     private long fee;
 
+    @Valid
     private List<TransferModel> transfer = new ArrayList<>();
 
     public void addTransfers(TransferModel trans) {

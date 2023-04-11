@@ -30,6 +30,7 @@ public class DebtPositionValidation {
     private static final String AMOUNTS_VALIDATION_ERROR = "Amounts congruence error: payment option amount must coincide with the total of the transfers amount [payment_option_amount(in cent)=%s; total_tranfers_amount(in cent)=%s]";
     private static final String NUM_TRANSFERS_VALIDATION_ERROR = "Number of transfers congruence error: Each payment option must have a maximum of %s transactions [transactions found=%s]";
     private static final String TRANSFER_ID_VALIDATION_ERROR = "Transfer ID congruence error: The transaction id not have a value between those expected [transaction id=%s; expected values=%s]";
+    private static final String IBAN_STAMP_MUTUAL = "Iban, postalIban and Stamp are mutually exclusive. One of them is required.";
 
     private DebtPositionValidation() {
         super();
@@ -65,15 +66,15 @@ public class DebtPositionValidation {
     /*
      * return updated date interval
      */
-    public static List<LocalDateTime> checkDatesInterval (LocalDateTime from, LocalDateTime to, int maxDaysInterval) {
-        if(from != null && to == null)
+    public static List<LocalDateTime> checkDatesInterval(LocalDateTime from, LocalDateTime to, int maxDaysInterval) {
+        if (from != null && to == null)
             to = from.plus(maxDaysInterval, ChronoUnit.DAYS).with(LocalTime.MAX);
-        else if(from == null && to != null)
+        else if (from == null && to != null)
             from = to.minus(maxDaysInterval, ChronoUnit.DAYS).with(LocalTime.MIN);
 
         if (from != null && to != null && (!(from.isBefore(to) || from.isEqual(to)) || Duration.between(from, to).toDays() > maxDaysInterval)) {
-    		throw new AppException(AppError.DEBT_POSITION_NOT_RECOVERABLE, from, to, Duration.between(from, to).toDays(), maxDaysInterval);
-    	}
+            throw new AppException(AppError.DEBT_POSITION_NOT_RECOVERABLE, from, to, Duration.between(from, to).toDays(), maxDaysInterval);
+        }
 
         return Arrays.asList(from, to);
     }
@@ -154,6 +155,7 @@ public class DebtPositionValidation {
         for (Transfer t : po.getTransfer()) {
             checkTransferCategory(t);
             checkTransferIban(t);
+            checkMutualExclusive(t);
             totalTranfersAmout += t.getAmount();
         }
 
@@ -166,6 +168,22 @@ public class DebtPositionValidation {
             );
         }
 
+    }
+
+    private static void checkMutualExclusive(Transfer t) {
+        int i = 0;
+        if (t.getIban() != null) {
+            i++;
+        }
+        if (t.getPostalIban() != null) {
+            i++;
+        }
+        if (t.getStampType() != null && t.getHashDocument() != null && t.getProvincialResidence() != null) {
+            i++;
+        }
+        if (i != 1) {
+            throw new ValidationException(IBAN_STAMP_MUTUAL);
+        }
     }
 
     private static void checkTransferCategory(final Transfer t) {
