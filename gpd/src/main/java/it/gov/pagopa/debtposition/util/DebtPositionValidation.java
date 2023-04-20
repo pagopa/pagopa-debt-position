@@ -10,6 +10,7 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -172,13 +173,13 @@ public class DebtPositionValidation {
 
     private static void checkMutualExclusive(Transfer t) {
         int i = 0;
-        if (t.getIban() != null) {
+        if (Strings.isNotEmpty(t.getIban())) {
             i++;
         }
-        if (t.getPostalIban() != null) {
+        if (Strings.isNotEmpty(t.getPostalIban())) {
             i++;
         }
-        if (t.getStampType() != null && t.getHashDocument() != null && t.getProvincialResidence() != null) {
+        if (Strings.isNotEmpty(t.getStampType()) && Strings.isNotEmpty(t.getHashDocument()) && Strings.isNotEmpty(t.getProvincialResidence())) {
             i++;
         }
         if (i != 1) {
