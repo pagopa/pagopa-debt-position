@@ -2,6 +2,7 @@ package it.gov.pagopa.debtposition.util;
 
 import it.gov.pagopa.debtposition.model.PageInfo;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
+import it.gov.pagopa.debtposition.model.filterandorder.Order;
 import it.gov.pagopa.debtposition.model.filterandorder.OrderType;
 import lombok.experimental.UtilityClass;
 import org.springframework.data.domain.Example;

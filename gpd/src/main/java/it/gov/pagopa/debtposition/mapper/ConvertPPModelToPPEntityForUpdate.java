@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.controller.pd.mapper;
+package it.gov.pagopa.debtposition.mapper;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
@@ -78,6 +78,11 @@ public class ConvertPPModelToPPEntityForUpdate implements Converter<PaymentPosit
         t.setIban(tm.getIban());
         t.setIdTransfer(tm.getIdTransfer());
         t.setPostalIban(tm.getPostalIban());
+        if (tm.getStamp() != null) {
+            t.setHashDocument(tm.getStamp().getHashDocument());
+            t.setStampType(tm.getStamp().getStampType());
+            t.setProvincialResidence(tm.getStamp().getProvincialResidence());
+        }
         t.setRemittanceInformation(tm.getRemittanceInformation());
 
         return t;

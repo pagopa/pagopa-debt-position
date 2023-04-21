@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 @Data
@@ -19,13 +20,17 @@ public class TransferModel implements Serializable {
     @NotBlank(message = "id transfer is required")
     @Schema(type = "string", allowableValues = {"1", "2", "3", "4", "5"})
     private String idTransfer;
-    @NotBlank(message = "amount is required")
-    private long amount;
+    @NotNull(message = "amount is required")
+    private Long amount;
     @NotBlank(message = "remittance information is required")
     private String remittanceInformation; // causale
     @NotBlank(message = "category is required")
     private String category; // taxonomy
-    @NotBlank(message = "iban is required")
+    @Schema(description = "mutual exclusive with postalIban and stamp", example = "IT0000000000000000000000000")
     private String iban;
+    @Schema(description = "mutual exclusive with iban and stamp", example = "IT0000000000000000000000000")
     private String postalIban;
+    @Schema(description = "mutual exclusive with iban and postalIban")
+    private Stamp stamp;
+
 }

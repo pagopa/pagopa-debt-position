@@ -58,10 +58,21 @@ public class Transfer implements Serializable {
     private String remittanceInformation; // causale
     @NotNull
     private String category; // taxonomy
-    @NotNull
+
     private String iban;
+
     @Column(name = "postal_iban")
     private String postalIban;
+
+    @Column(name = "hash_document")
+    private String hashDocument;
+
+    @Column(name = "stamp_type")
+    private String stampType;
+
+    @Column(name = "provincial_residence")
+    private String provincialResidence;
+
     @NotNull
     @Column(name = "inserted_date")
     private LocalDateTime insertedDate;

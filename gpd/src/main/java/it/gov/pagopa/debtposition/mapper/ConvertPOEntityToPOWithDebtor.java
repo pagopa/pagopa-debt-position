@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.controller.pd.mapper;
+package it.gov.pagopa.debtposition.mapper;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;

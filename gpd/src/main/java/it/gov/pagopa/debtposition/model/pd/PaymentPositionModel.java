@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -61,6 +62,7 @@ public class PaymentPositionModel implements Serializable {
     @JsonProperty(access = Access.READ_ONLY)
     private DebtPositionStatus status;
 
+    @Valid
     private List<PaymentOptionModel> paymentOption = new ArrayList<>();
 
     public void addPaymentOptions(PaymentOptionModel paymentOpt) {

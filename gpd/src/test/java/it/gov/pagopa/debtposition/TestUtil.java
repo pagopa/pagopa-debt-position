@@ -1,17 +1,16 @@
 package it.gov.pagopa.debtposition;
 
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Objects;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
 import lombok.experimental.UtilityClass;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Objects;
 
 @UtilityClass
 public class TestUtil {
@@ -25,6 +24,12 @@ public class TestUtil {
         ClassLoader classLoader = TestUtil.class.getClassLoader();
         File file = new File(Objects.requireNonNull(classLoader.getResource(relativePath)).getPath());
         return Files.readString(file.toPath());
+    }
+
+    public <T> T readObjectFromFile(String relativePath, Class<T> clazz) throws IOException {
+        ClassLoader classLoader = TestUtil.class.getClassLoader();
+        File file = new File(Objects.requireNonNull(classLoader.getResource(relativePath)).getPath());
+        return new ObjectMapper().readValue(file, clazz);
     }
 
     /**
