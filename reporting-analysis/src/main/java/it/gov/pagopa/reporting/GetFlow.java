@@ -1,6 +1,7 @@
 package it.gov.pagopa.reporting;
 
 import com.microsoft.azure.functions.*;
+import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.functions.annotation.BindingName;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.HttpTrigger;
@@ -21,7 +22,7 @@ public class GetFlow {
 
     private String flowsTable = System.getenv("FLOWS_TABLE");
 
-    private String containerBlob = System.getenv("FLOWS_XML_BLOB");
+    private String containerBlob = System.getenv("FLOWS_CONTAINER");
 
     /**
      * This function will be invoked when a new message is detected in the queue
@@ -31,7 +32,8 @@ public class GetFlow {
     public HttpResponseMessage run (
             @HttpTrigger(name = "GetFlowTrigger",
                     methods = {HttpMethod.GET},
-                    route = "organizations/{organizationId}/reportings/{flowId}/date/{flowDate}"
+                    route = "organizations/{organizationId}/reportings/{flowId}/date/{flowDate}",
+                    authLevel = AuthorizationLevel.ANONYMOUS
             ) HttpRequestMessage<Optional<String>> request,
             @BindingName("organizationId") String organizationId,
             @BindingName("flowId") String flowId,

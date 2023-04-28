@@ -44,7 +44,8 @@ variables:
     DATASOURCE_USERNAME: $(DEV_POSTGRES_DATASOURCE_USERNAME)
     DATASOURCE_PASSWORD: $(DEV_POSTGRES_DATASOURCE_PASSWORD)
     DATASOURCE_URL: $(DEV_POSTGRES_DATASOURCE_URL)
-    API_SUBSCRIPTION_KEY: $(DEV_API_SUBSCRIPTION_KEY)
+    API_SUBSCRIPTION_KEY: $(DEV_API_SUBSCRIPTION_KEY)    
+    NODO_HOST: $(DEV_NODO_HOST)
   ${{ if eq(parameters['ENV'], 'uat') }}:
     AZURE_SUBSCRIPTION: $(UAT_AZURE_SUBSCRIPTION)
     CONTAINER_REGISTRY: $(UAT_CONTAINER_REGISTRY)
@@ -55,6 +56,7 @@ variables:
     DATASOURCE_PASSWORD: $(UAT_POSTGRES_DATASOURCE_PASSWORD)
     DATASOURCE_URL: $(UAT_POSTGRES_DATASOURCE_URL)
     API_SUBSCRIPTION_KEY: $(UAT_API_SUBSCRIPTION_KEY)
+    NODO_HOST: $(UAT_NODO_HOST)
   ${{ if eq(parameters['ENV'], 'prod') }}:
     AZURE_SUBSCRIPTION: $(PROD_AZURE_SUBSCRIPTION)
     CONTAINER_REGISTRY: $(PROD_CONTAINER_REGISTRY)
@@ -64,6 +66,7 @@ variables:
     DATASOURCE_USERNAME: $(PROD_POSTGRES_DATASOURCE_USERNAME)
     DATASOURCE_PASSWORD: $(PROD_POSTGRES_DATASOURCE_PASSWORD)
     DATASOURCE_URL: $(PROD_POSTGRES_DATASOURCE_URL)
+    NODO_HOST: $(PROD_NODO_HOST)
   # github action on pull request use merge as SourceBranchName but we want to use main branch
   ${{ if eq(variables['Build.SourceBranchName'], 'merge') }}:
     SOURCE_BRANCH: "main" # force to main branch
@@ -281,6 +284,16 @@ stages:
               script: |
                 mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout
               failOnStderr: true
+
+          - task: Bash@3
+            displayName: 'Update WSDL Location'
+            condition: in('${{ parameters.REPOSITORY }}', 'reporting-batch', 'reporting-service')
+            inputs:
+              targetType: 'inline'
+              script: |
+                cd ./${{ parameters.REPOSITORY }}
+                sh upd_wsdl_location.sh $(NODO_HOST)
+
           - task: Maven@3
             displayName: Build Module
             inputs:

@@ -4,7 +4,7 @@
 
     <groupId>it.gov.pagopa.reporting</groupId>
     <artifactId>reporting-service</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3-6</version>
     <packaging>jar</packaging>
 
     <name>Azure Reporting-Service Fn</name>
@@ -183,26 +183,6 @@
 
     <build>
         <plugins>
-
-            <!-- START run init scripts -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.6.0</version>
-                <executions>
-                    <execution>
-                        <id>update-wsdl-location</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <executable>${project.basedir}/upd_wsdl_location.sh</executable>
-                </configuration>
-            </plugin>
-            <!-- STOP  run init scripts -->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

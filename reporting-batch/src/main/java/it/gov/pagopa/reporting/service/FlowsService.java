@@ -143,6 +143,7 @@ public class FlowsService {
         FlowsMessage flows = new FlowsMessage();
         flows.setFlows(new TipoIdRendicontazione[] { flow });
         flows.setIdPA(idPA);
+        flows.setRetry(Integer.valueOf(0));
         String message = new ObjectMapper().writeValueAsString(flows);
 
         this.logger.log(Level.INFO, () -> "[FlowsService] Sending messages:  " + message);

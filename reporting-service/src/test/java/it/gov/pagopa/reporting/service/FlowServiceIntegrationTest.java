@@ -10,6 +10,8 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
 import com.microsoft.azure.storage.table.TableOperation;
 import com.microsoft.azure.storage.table.TableResult;
+import com.sun.istack.localization.Localizable;
+import com.sun.istack.localization.LocalizableMessage;
 import com.sun.xml.ws.client.ClientTransportException;
 import it.gov.pagopa.reporting.entities.FlowEntity;
 import it.gov.pagopa.reporting.servicewsdl.FaultBean;
@@ -164,7 +166,7 @@ class FlowServiceIntegrationTest {
 
         NodeService nodeService = mock(NodeService.class);
 
-        doThrow(ClientTransportException.class).when(nodeService).callNodoChiediFlussoRendicontazione(anyString(), anyString());
+        doThrow(new ClientTransportException(new LocalizableMessage("", null, "",null))).when(nodeService).callNodoChiediFlussoRendicontazione(anyString(), anyString());
 
         doReturn(nodeService).when(flowsService).getNodeServiceInstance();
 
@@ -239,7 +241,7 @@ class FlowServiceIntegrationTest {
 
         NodeService nodeService = mock(NodeService.class);
 
-        doThrow(ClientTransportException.class).when(nodeService).callNodoChiediFlussoRendicontazione(anyString(), anyString());
+        doThrow(new ClientTransportException(new LocalizableMessage("", null, "",null))).when(nodeService).callNodoChiediFlussoRendicontazione(anyString(), anyString());
 
         doReturn(nodeService).when(flowsService).getNodeServiceInstance();
 
