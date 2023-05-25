@@ -81,6 +81,9 @@ public class PaymentOption implements Serializable {
 
     private long fee;
 
+    @Column(name = "notification_fee")
+    private long notificationFee;
+
     @Column(name = "psp_company")
     private String pspCompany;
 

@@ -34,6 +34,7 @@ public class PaymentOptionWithDebtorInfoModelResponse implements Serializable {
     private LocalDateTime insertedDate;
     private String paymentMethod;
     private long fee;
+    private long notificationFee;
     private String pspCompany;
     private String idReceipt;
     private String idFlowReporting;
