@@ -30,6 +30,7 @@ public class PaymentOptionDTO implements Serializable {
     private LocalDateTime reportingDate;
     private String paymentMethod;
     private long fee;
+    private long notificationFee; // needed for testing if ignored in unmarshalling
     private String pspCompany;
     private String idReceipt;
     private String idFlowReporting;
