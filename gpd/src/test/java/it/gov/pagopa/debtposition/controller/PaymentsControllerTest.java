@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import it.gov.pagopa.debtposition.dto.PaymentOptionDTO;
+import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -116,6 +117,26 @@ class PaymentsControllerTest {
 				.value(PaymentOptionStatus.PO_PAID.toString()))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.transfer[*]")
 				.value(Matchers.hasSize(1)));
+	}
+
+	@Test
+	void getPaymentOptionByIUV_transferToDifferentCI_200() throws Exception {
+
+		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock1();
+		paymentPositionDTO.getPaymentOption().get(0).getTransfer().get(0).setOrganizationFiscalCode("ANOTHERCI123");
+
+		// creo una posizione debitoria e recupero la payment option associata
+		mvc.perform(post("/organizations/PO200_transferToDifferentCI_12345678901/debtpositions")
+						.content(TestUtil.toJson(paymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+
+		String url = "/organizations/PO200_transferToDifferentCI_12345678901/paymentoptions/123456IUVMOCK1";
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.organizationFiscalCode")
+						.value("PO200_transferToDifferentCI_12345678901"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.transfer[0].organizationFiscalCode")
+						.value("ANOTHERCI123"));
 	}
 
 	@Test
