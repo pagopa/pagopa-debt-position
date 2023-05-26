@@ -85,7 +85,7 @@ public interface IPaymentsController {
             @ApiResponse(responseCode = "404", description = "No payment option found.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
             @ApiResponse(responseCode = "422", description = "Unprocessable payment option.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
             @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
-    @PutMapping(value = "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}/notificationFee",
+    @PutMapping(value = "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}/notificationfee",
             produces = {"application/json"})
     ResponseEntity<PaymentOptionModelResponse> updateNotificationFee(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
