@@ -81,10 +81,11 @@ public class PaymentPositionCRUDService {
                 po.setStatus(PaymentOptionStatus.PO_UNPAID);
                 for (Transfer t : po.getTransfer()) {
                     t.setIuv(po.getIuv());
-                    t.setOrganizationFiscalCode(organizationFiscalCode);
+                    t.setOrganizationFiscalCode(Objects.requireNonNullElse(t.getOrganizationFiscalCode(), organizationFiscalCode));
                     t.setInsertedDate(Objects.requireNonNullElse(debtPosition.getInsertedDate(), currentDate));
                     t.setLastUpdatedDate(currentDate);
                     t.setStatus(TransferStatus.T_UNREPORTED);
+
                 }
             }
 
