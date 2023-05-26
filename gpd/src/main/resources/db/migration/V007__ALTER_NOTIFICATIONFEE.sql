@@ -1,0 +1,1 @@
+ALTER TABLE payment_option ADD COLUMN notification_fee int8 NOT NULL DEFAULT 0;
