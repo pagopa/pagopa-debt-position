@@ -24,9 +24,7 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 
 @Service
@@ -85,6 +83,45 @@ public class PaymentsService {
         DebtPositionValidation.checkPaymentPositionAccountability(ppToReport.get(), iuv, transferId);
 
         return this.updateTransferStatus(ppToReport.get(), iuv, transferId);
+    }
+
+    @Transactional
+    public PaymentOption updateNotificationFee(@NotBlank String organizationFiscalCode, @NotBlank String iuv, Long notificationFeeAmount) {
+
+        // Check if exists a payment option with the passed IUV related to the organization
+        Optional<PaymentOption> paymentOptionOpt = paymentOptionRepository.findByOrganizationFiscalCodeAndIuv(organizationFiscalCode, iuv);
+        if (paymentOptionOpt.isEmpty()) {
+            throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, iuv);
+        }
+        // Check if the retrieved payment option was not already paid and/or reported
+        PaymentOption paymentOption = paymentOptionOpt.get();
+        if (!PaymentOptionStatus.PO_UNPAID.equals(paymentOption.getStatus())) {
+            throw new AppException(AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_NOT_UPDATABLE, organizationFiscalCode, iuv);
+        }
+        //
+        Collection<Transfer> transfers = paymentOption.getTransfer();
+        Transfer validTransfer = transfers.stream()
+                .filter(transfer -> organizationFiscalCode.equals(transfer.getOrganizationFiscalCode()))
+                .findFirst()
+                .orElseThrow(() -> new AppException(AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_TRANSFER_NOT_FOUND, paymentOption.getIuv(), organizationFiscalCode));
+
+        /*
+        Retrieving the old notification fee. It MUST BE SUBTRACTED from the various amount in order due to the fact that
+        these values were updated in a previous step with another value and adding the new value directly can cause miscalculations.
+         */
+        long oldNotificationFee = Optional.of(paymentOption.getNotificationFee()).orElse(0L);
+
+        // Setting the new value of the notification fee and updating the amount of the payment option
+        paymentOption.setNotificationFee(notificationFeeAmount);
+        paymentOption.setAmount(paymentOption.getAmount() - oldNotificationFee);
+        paymentOption.setAmount(paymentOption.getAmount() + notificationFeeAmount);
+
+        // Subtracting the old value and adding the new one
+        validTransfer.setAmount(validTransfer.getAmount() - oldNotificationFee);
+        validTransfer.setAmount(validTransfer.getAmount() + notificationFeeAmount);
+
+        paymentOptionRepository.saveAndFlush(paymentOption);
+        return paymentOption;
     }
 
     public List<OrganizationModelQueryBean> getOrganizationsToAdd(@NotNull LocalDate since) {
