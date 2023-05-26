@@ -888,7 +888,7 @@ class PaymentsControllerTest {
 						.value(0L));
 
 		// aggiorno il valore della notification fee
-		mvc.perform(MockMvcRequestBuilders.put("/organizations/PO200_notificationfee_12345678901/paymentoptions/123456IUVMOCK1/notificationFee")
+		mvc.perform(MockMvcRequestBuilders.put("/organizations/PO200_notificationfee_12345678901/paymentoptions/123456IUVMOCK1/notificationfee")
 				.content(TestUtil.toJson(notificationFeeUpdateModel))
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
@@ -909,7 +909,7 @@ class PaymentsControllerTest {
 						.value(paymentOptionDTO.getAmount() + notificationFeeUpdateModel.getNotificationFee()));
 
 		// aggiorno il valore della notification fee, reimpostandolo a zero ed aspettandomi di ritornare al valore di partenza
-		mvc.perform(MockMvcRequestBuilders.put("/organizations/PO200_notificationfee_12345678901/paymentoptions/123456IUVMOCK1/notificationFee")
+		mvc.perform(MockMvcRequestBuilders.put("/organizations/PO200_notificationfee_12345678901/paymentoptions/123456IUVMOCK1/notificationfee")
 						.content(TestUtil.toJson(DebtPositionMock.createNotificationFeeMock(0L)))
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
@@ -938,7 +938,7 @@ class PaymentsControllerTest {
 				.andExpect(status().isCreated());
 
 		// passo una richiesta errata, con notification fee negativo
-		String url = "/organizations/PO400_notificationfee_negative_12345678901/paymentoptions/123456IUVMOCK1/notificationFee";
+		String url = "/organizations/PO400_notificationfee_negative_12345678901/paymentoptions/123456IUVMOCK1/notificationfee";
 		mvc.perform(MockMvcRequestBuilders.put(url)
 				.content(TestUtil.toJson(DebtPositionMock.createNotificationFeeMock(-150L)))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
@@ -952,7 +952,7 @@ class PaymentsControllerTest {
 				.andExpect(status().isCreated());
 
 		// passo una richiesta errata, con notification fee nullo
-		String url = "/organizations/PO400_notificationfee_null_12345678901/paymentoptions/123456IUVMOCK1/notificationFee";
+		String url = "/organizations/PO400_notificationfee_null_12345678901/paymentoptions/123456IUVMOCK1/notificationfee";
 		mvc.perform(MockMvcRequestBuilders.put(url)
 				.content(TestUtil.toJson(new NotificationFeeUpdateModel()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
@@ -960,7 +960,7 @@ class PaymentsControllerTest {
 
 	@Test
 	void updateNotificationFee_404() throws Exception {
-		String url = "/organizations/PO404_notificationfee_12345678901/paymentoptions/123456IUVNOTEXIST/notificationFee";
+		String url = "/organizations/PO404_notificationfee_12345678901/paymentoptions/123456IUVNOTEXIST/notificationfee";
 		mvc.perform(MockMvcRequestBuilders.put(url)
 				.content(TestUtil.toJson(DebtPositionMock.createNotificationFeeMock(150L)))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound());
@@ -994,7 +994,7 @@ class PaymentsControllerTest {
 						.value(DebtPositionStatus.PAID.toString()));
 
 		// effettuo la chiamata ma non posso continuare perche la PD è stata gia pagata
-		String url = "/organizations/PO422_notificationfee_paid_12345678901/paymentoptions/123456IUVMOCK1/notificationFee";
+		String url = "/organizations/PO422_notificationfee_paid_12345678901/paymentoptions/123456IUVMOCK1/notificationfee";
 		mvc.perform(MockMvcRequestBuilders.put(url)
 				.content(TestUtil.toJson(DebtPositionMock.createNotificationFeeMock(150L)))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isUnprocessableEntity());
@@ -1018,7 +1018,7 @@ class PaymentsControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
 		// effettuo la chiamata ma non posso continuare perche non esiste un transfer correlata all'EC in input
-		mvc.perform(MockMvcRequestBuilders.put("/organizations/PO422_notificationfee_invalidtransfer_12345678901/paymentoptions/123456IUVMOCK1/notificationFee")
+		mvc.perform(MockMvcRequestBuilders.put("/organizations/PO422_notificationfee_invalidtransfer_12345678901/paymentoptions/123456IUVMOCK1/notificationfee")
 				.content(TestUtil.toJson(DebtPositionMock.createNotificationFeeMock(150L)))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isUnprocessableEntity());
 	}
