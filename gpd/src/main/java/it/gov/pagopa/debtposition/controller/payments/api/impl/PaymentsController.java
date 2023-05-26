@@ -9,6 +9,8 @@ import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.TransferModelResponse;
+import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
+import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.service.payments.PaymentsService;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -69,6 +71,18 @@ public class PaymentsController implements IPaymentsController {
             return new ResponseEntity<>(ObjectMapperUtils.map(reportedTransfer, TransferModelResponse.class), HttpStatus.OK);
         }
         throw new AppException(AppError.TRANSFER_REPORTING_FAILED, organizationFiscalCode, iuv, transferId);
+    }
+
+    @Override
+    public ResponseEntity<PaymentOptionModelResponse> updateNotificationFee(String organizationFiscalCode, String iuv,
+                                                                      NotificationFeeUpdateModel notificationFeeUpdateModel) {
+        Long notificationFee = notificationFeeUpdateModel.getNotificationFee();
+        log.info(String.format(LOG_BASE_HEADER_INFO, "PUT", "updateNotificationFee", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv) + "; notificationFee=" + notificationFee));
+        PaymentOption updatedPaymentOption = paymentsService.updateNotificationFee(organizationFiscalCode, iuv, notificationFee);
+        if (updatedPaymentOption != null) {
+            return new ResponseEntity<>(ObjectMapperUtils.map(updatedPaymentOption, PaymentOptionModelResponse.class), HttpStatus.OK);
+        }
+        throw new AppException(AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_FAILED, organizationFiscalCode, iuv);
     }
 
 }

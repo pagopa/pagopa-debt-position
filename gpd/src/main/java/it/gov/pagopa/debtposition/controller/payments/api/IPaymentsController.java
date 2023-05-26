@@ -13,13 +13,11 @@ import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.TransferModelResponse;
+import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
+import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -78,5 +76,22 @@ public interface IPaymentsController {
             @PathVariable("iuv") String iuv,
             @Parameter(description = "Transaction identifier. Alphanumeric code that identifies the specific transaction", required = true)
             @PathVariable("transferid") String transferId);
+
+    @Operation(summary = "The organization updates the notification fee of a payment option.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "updateNotificationFee")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Request updated."),
+            @ApiResponse(responseCode = "400", description = "Malformed request.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
+            @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
+            @ApiResponse(responseCode = "404", description = "No payment option found.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
+            @ApiResponse(responseCode = "422", description = "Unprocessable payment option.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
+            @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
+    @PutMapping(value = "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}/notificationFee",
+            produces = {"application/json"})
+    ResponseEntity<PaymentOptionModelResponse> updateNotificationFee(
+            @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
+            @PathVariable("organizationfiscalcode") String organizationFiscalCode,
+            @Parameter(description = "IUV (Unique Payment Identification). Alphanumeric code that uniquely associates and identifies three key elements of a payment: reason, payer, amount", required = true)
+            @PathVariable("iuv") String iuv,
+            @Valid @RequestBody NotificationFeeUpdateModel notificationFeeUpdateModel);
 
 }
