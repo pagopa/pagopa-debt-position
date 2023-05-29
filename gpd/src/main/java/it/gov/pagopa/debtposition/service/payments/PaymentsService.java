@@ -98,9 +98,10 @@ public class PaymentsService {
         if (!PaymentOptionStatus.PO_UNPAID.equals(paymentOption.getStatus())) {
             throw new AppException(AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_NOT_UPDATABLE, organizationFiscalCode, iuv);
         }
-        //
-        Collection<Transfer> transfers = paymentOption.getTransfer();
+        // Get the first valid transfer to add the fee
+        List<Transfer> transfers = paymentOption.getTransfer();
         Transfer validTransfer = transfers.stream()
+                .sorted(Comparator.comparing(Transfer::getIdTransfer))
                 .filter(transfer -> organizationFiscalCode.equals(transfer.getOrganizationFiscalCode()))
                 .findFirst()
                 .orElseThrow(() -> new AppException(AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_TRANSFER_NOT_FOUND, paymentOption.getIuv(), organizationFiscalCode));
