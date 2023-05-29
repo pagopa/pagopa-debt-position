@@ -68,6 +68,28 @@ class DebtPositionControllerTest {
 	}
 
 	@Test
+	void createDebtPosition_transferToDifferentCI_200() throws Exception {
+
+		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock1();
+		paymentPositionDTO.getPaymentOption().get(0).getTransfer().get(0).setOrganizationFiscalCode("ANOTHERCI123");
+
+		mvc.perform(post("/organizations/12345678901200_transferToDifferentCI/debtpositions")
+						.content(TestUtil.toJson(paymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+
+		// recupero la posizione debitoria e controllo i valori dei fiscal code degli EC
+		String url = "/organizations/12345678901200_transferToDifferentCI/debtpositions/12345678901IUPDMOCK1";
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.organizationFiscalCode")
+						.value("12345678901200_transferToDifferentCI"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].organizationFiscalCode")
+						.value("12345678901200_transferToDifferentCI"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].organizationFiscalCode")
+						.value("ANOTHERCI123"));
+	}
+
+	@Test
 	void createDebtPosition_400() throws Exception {
 		mvc.perform(post("/organizations/400_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.get400Mock1())).contentType(MediaType.APPLICATION_JSON))

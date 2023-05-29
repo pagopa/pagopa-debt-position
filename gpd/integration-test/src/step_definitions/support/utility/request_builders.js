@@ -21,6 +21,7 @@ function buildDebtPositionDynamicData(gpdSessionBundle, iupdIn) {
         idempotency: `60000000001_${makeidNumber(6)}${makeidMix(4)}`,
         applicationDate: buildStringFromDate(addDays(0)),
         transferDate: buildStringFromDate(addDays(1)),
+        transferOtherCIFiscalCode: "01020304059"
     };
 }
 
@@ -61,6 +62,7 @@ function buildCreateDebtPositionRequest(debtPosition, payer) {
                     },
                     {
                         idTransfer: debtPosition.transferId2,
+                        organizationFiscalCode: transferOtherCIFiscalCode,
                         amount: (debtPosition.amount * 100 / 3) * 2,
                         remittanceInformation: "Rata 2",
                         category: "9/0101108TS/",
