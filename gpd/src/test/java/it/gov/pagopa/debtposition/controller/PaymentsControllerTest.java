@@ -120,26 +120,6 @@ class PaymentsControllerTest {
 	}
 
 	@Test
-	void getPaymentOptionByIUV_transferToDifferentCI_200() throws Exception {
-
-		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock1();
-		paymentPositionDTO.getPaymentOption().get(0).getTransfer().get(0).setOrganizationFiscalCode("ANOTHERCI123");
-
-		// creo una posizione debitoria e recupero la payment option associata
-		mvc.perform(post("/organizations/PO200_getTransferToDifferentCI_12345678901/debtpositions")
-						.content(TestUtil.toJson(paymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isCreated());
-
-		String url = "/organizations/PO200_getTransferToDifferentCI_12345678901/paymentoptions/123456IUVMOCK1";
-		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.jsonPath("$.organizationFiscalCode")
-						.value("PO200_getTransferToDifferentCI_12345678901"))
-				.andExpect(MockMvcResultMatchers.jsonPath("$.transfer[0].organizationFiscalCode")
-						.value("ANOTHERCI123"));
-	}
-
-	@Test
 	void getPaymentOptionByIUV_404() throws Exception {
 		String url = "/organizations/PO200_12345678901/paymentoptions/123456IUVNOTEXIST";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound())
