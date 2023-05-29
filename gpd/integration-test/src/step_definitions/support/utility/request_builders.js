@@ -62,7 +62,7 @@ function buildCreateDebtPositionRequest(debtPosition, payer) {
                     },
                     {
                         idTransfer: debtPosition.transferId2,
-                        organizationFiscalCode: transferOtherCIFiscalCode,
+                        organizationFiscalCode: debtPosition.transferOtherCIFiscalCode,
                         amount: (debtPosition.amount * 100 / 3) * 2,
                         remittanceInformation: "Rata 2",
                         category: "9/0101108TS/",

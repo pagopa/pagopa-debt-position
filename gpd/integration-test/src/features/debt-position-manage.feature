@@ -8,6 +8,11 @@ Feature: Managing a debt position
     When the debt position is created
     Then the debt position gets the status code 201
 
+  Scenario: Debt position notification fee update
+    When the notification fee of the debt position is updated
+    Then the organization gets the status code 200
+    And the organization gets the updated amounts
+
   Scenario: Debt position filter list by status and due date
     Given the filter made by status "DRAFT"
     And the filter made by due date from today to 10 days

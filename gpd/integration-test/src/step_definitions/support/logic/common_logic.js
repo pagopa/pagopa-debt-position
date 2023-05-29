@@ -26,6 +26,13 @@ async function assertStatusString(bundle, statusString) {
     assert.strictEqual(bundle.responseToCheck.data.status, statusString);
 }
 
+async function assertNotificationFeeUpdatedAmounts(createdDebtPosition, response) {
+    let notificationFee = response.notificationFee;
+    assert.strictEqual(response.amount, createdDebtPosition.paymentOption[0].amount + notificationFee);
+    assert.strictEqual(response.transfer[0].amount, createdDebtPosition.paymentOption[0].transfer[0].amount + notificationFee);
+    assert.strictEqual(response.transfer[1].amount, createdDebtPosition.paymentOption[0].transfer[1].amount);
+}
+
 function randomOrg() {
     return "Org_" + Math.floor(Math.random() * 100);
 }
@@ -40,6 +47,7 @@ module.exports = {
     assertOutcome,
     assertStatusCode,
     assertCompanyName,
+    assertNotificationFeeUpdatedAmounts,
     assertStatusString,
     randomOrg,
     randomIupd,
