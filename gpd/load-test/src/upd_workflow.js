@@ -90,6 +90,7 @@ export default function () {
 
     const payload2 = JSON.parse(payload)
     payload2.civicNumber=999
+    payload2.paymentOption[0].transfer[0].organizationFiscalCode="00011122201"
 
     r = http.put(url,JSON.stringify(payload2), params);
 
