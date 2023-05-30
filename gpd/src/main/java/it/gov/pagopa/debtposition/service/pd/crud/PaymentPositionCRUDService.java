@@ -160,7 +160,7 @@ public class PaymentPositionCRUDService {
 
 
     @Transactional
-    public PaymentPosition update(@NotNull @Valid PaymentPositionModel paymentPositionModel, @NotBlank String organizationFiscalCode) {
+    public PaymentPosition update(@NotNull @Valid PaymentPositionModel paymentPositionModel, @NotBlank String organizationFiscalCode, boolean toPublish) {
 
         final String ERROR_UPDATE_LOG_MSG = "Error during debt position update: %s";
 
@@ -182,7 +182,7 @@ public class PaymentPositionCRUDService {
             paymentPositionRepository.flush();
             // the version is increased at each change
             ppToUpdate.setVersion(ppToUpdate.getVersion()+1);
-            return this.create(ppToUpdate, organizationFiscalCode, false);
+            return this.create(ppToUpdate, organizationFiscalCode, toPublish);
         	
         } catch (ValidationException e) {
             throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
