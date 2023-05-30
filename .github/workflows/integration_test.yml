@@ -1,0 +1,52 @@
+name: Integration Tests
+
+on:
+  schedule:
+    - cron: '00 08 * * *'
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        type: choice
+        description: Select the Environment
+        options:
+          - dev
+          - uat
+      canary:
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  id-token: write
+  contents: read
+
+
+jobs:
+  integration_test:
+    name: Test
+    runs-on: ubuntu-latest
+    environment: ${{(github.event.inputs == null && 'dev') || inputs.environment }}
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@1f9a0c22da41e6ebfa534300ef656657ea2c6707
+
+      - name: Login
+        id: login
+        # from https://github.com/Azure/login/commits/master
+        uses: azure/login@92a5484dfaf04ca78a94597f4f19fea633851fa2
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          tenant-id: ${{ secrets.TENANT_ID }}
+          subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+
+      - name: Run Integration Tests
+        shell: bash
+        run: |
+          export CANARY=${{ inputs.canary }}
+          
+          cd ./gpd/integration-test
+          chmod +x ./run_integration_test.sh
+          ./run_integration_test.sh ${{( github.event.inputs == null && 'dev') || inputs.environment }} ${{ secrets.API_SUBSCRIPTION_KEY }}
