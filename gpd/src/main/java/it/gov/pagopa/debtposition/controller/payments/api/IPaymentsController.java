@@ -14,7 +14,6 @@ import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResp
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.TransferModelResponse;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
-import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
