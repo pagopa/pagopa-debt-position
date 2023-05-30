@@ -740,6 +740,39 @@ class DebtPositionControllerTest {
 				.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isEmpty());
 
 	}
+	
+	@Test
+	void updateAndPublishDebtPosition_200() throws Exception {
+	  // creo una posizione debitoria (senza 'validity date' impostata)
+	  mvc.perform(post("/organizations/UPDANDPBH_12345678901/debtpositions")
+	      .content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(status().isCreated());
+
+	  // recupero la posizione debitoria e verifico lo stato in draft
+	  mvc.perform(get("/organizations/UPDANDPBH_12345678901/debtpositions/12345678901IUPDMOCK1")
+	      .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+	  .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.status")
+	      .value(DebtPositionStatus.DRAFT.toString()))
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isEmpty());
+
+	  // aggiorno e porto direttamente in pubblicata la posizione debitoria
+	  mvc.perform(put("/organizations/UPDANDPBH_12345678901/debtpositions/12345678901IUPDMOCK1?toPublish=true")
+	      .content(TestUtil.toJson(DebtPositionMock.getMock4())).contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON));
+
+	  // verifico che lo stato sia stato settato a valid
+	  mvc.perform(get("/organizations/UPDANDPBH_12345678901/debtpositions/12345678901IUPDMOCK1")
+	      .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+	  .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.status")
+	      .value(DebtPositionStatus.VALID.toString()))
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty());
+
+	  // provo a fare una nuova pubblicazione su una posizione debitoria con uno stato non più idoneo
+	  mvc.perform(post("/organizations/UPDANDPBH_12345678901/debtpositions/12345678901IUPDMOCK1/publish")
+	      .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isConflict());
+	}
 
 	@Test
 	void updateDebtPosition_400() throws Exception {

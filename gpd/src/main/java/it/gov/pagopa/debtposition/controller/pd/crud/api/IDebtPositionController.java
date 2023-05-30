@@ -124,5 +124,6 @@ public interface IDebtPositionController {
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
             @Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.", required = true)
             @PathVariable("iupd") String iupd,
-            @Valid @RequestBody PaymentPositionModel paymentPositionModel);
+            @Valid @RequestBody PaymentPositionModel paymentPositionModel,
+            @RequestParam(required = false, defaultValue = "false") boolean toPublish);
 }

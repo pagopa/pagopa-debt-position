@@ -8,6 +8,7 @@ const {
     payPaymentOption,
     reportTransfer,
     createAndPublishDebtPosition,
+    getPaymentOptionByIuv,
 } = require("../clients/gpd_client");
 
 const {
@@ -36,6 +37,11 @@ async function executeDebtPositionGetList(bundle, idOrg, dueDateFrom, dueDateTo,
 async function executeDebtPositionGet(bundle, idOrg, iupd) {
     let response = await getDebtPosition(idOrg, iupd);
     bundle.payer.companyName = response.data.companyName;
+}
+
+async function executePaymentOptionGetByIuv(bundle, idOrg, iuv) {
+    let response = await getPaymentOptionByIuv(idOrg, iuv);
+    bundle.responseToCheck = response;
 }
 
 async function executeDebtPositionDeletion(bundle, idOrg, iupd) {
@@ -77,4 +83,5 @@ module.exports = {
     executePaymentOptionPay,
     executeReportTransfer,
     executeDebtPositionCreationAndPublication,
+    executePaymentOptionGetByIuv
 }
