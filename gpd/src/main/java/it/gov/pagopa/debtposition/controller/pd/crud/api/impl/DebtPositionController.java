@@ -123,7 +123,8 @@ public class DebtPositionController implements IDebtPositionController {
 
     @Override
     public ResponseEntity<PaymentPositionModel> updateDebtPosition(String organizationFiscalCode, String iupd,
-                                                                   @Valid PaymentPositionModel paymentPositionModel) {
+                                                                   @Valid PaymentPositionModel paymentPositionModel,
+                                                                   boolean toPublish) {
         final String IUPD_VALIDATION_ERROR = "IUPD mistmatch error: path variable IUPD [%s] and request body IUPD [%s] must be the same";
 
         log.info(String.format(LOG_BASE_HEADER_INFO, "PUT", "updateDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
@@ -135,7 +136,7 @@ public class DebtPositionController implements IDebtPositionController {
             throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, String.format(IUPD_VALIDATION_ERROR, iupd, paymentPositionModel.getIupd()));
         }
 
-        PaymentPosition updatedDebtPos = paymentPositionService.update(paymentPositionModel, organizationFiscalCode);
+        PaymentPosition updatedDebtPos = paymentPositionService.update(paymentPositionModel, organizationFiscalCode, toPublish);
 
         if (null != updatedDebtPos) {
             return new ResponseEntity<>(modelMapper.map(updatedDebtPos, PaymentPositionModel.class), HttpStatus.OK);
