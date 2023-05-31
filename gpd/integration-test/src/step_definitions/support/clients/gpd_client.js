@@ -52,7 +52,7 @@ function getDebtPositionList(orgId, dueDateFrom, dueDateTo, paymentDateFrom, pay
     params.ordering = "ASC";
     params.page = 0;
 
-    return get(gpd_host + `/organizations/${orgId}/debtpositions/`, {
+    return get(gpd_host + `/organizations/77777777777/debtpositions/`, {
         timeout: 10000,
         params,
         headers: {
