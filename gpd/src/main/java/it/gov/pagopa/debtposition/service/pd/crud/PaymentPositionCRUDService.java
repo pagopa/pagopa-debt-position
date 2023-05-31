@@ -10,6 +10,7 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
+import it.gov.pagopa.debtposition.model.pd.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.repository.specification.*;
@@ -35,9 +36,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -172,8 +172,12 @@ public class PaymentPositionCRUDService {
 
         try {
         	// flip model to entity
+            List<PaymentOption> oldPaymentOptions = new ArrayList<>(ppToUpdate.getPaymentOption());
             ppToUpdate.getPaymentOption().clear();
             modelMapper.map(paymentPositionModel, ppToUpdate);
+
+            // migrate the notification fee value if defined
+            ppToUpdate = setOldNotificationFee(oldPaymentOptions, ppToUpdate);
             
             // check the input data
             DebtPositionValidation.checkPaymentPositionInputDataAccurancy(ppToUpdate);
@@ -190,6 +194,14 @@ public class PaymentPositionCRUDService {
             log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
             throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
         }
+    }
+
+    private PaymentPosition setOldNotificationFee(List<PaymentOption> oldPaymentOptions, PaymentPosition paymentPosition) {
+        Map<String, Long> oldPONotificationFeeMapping = oldPaymentOptions.stream().collect(Collectors.toMap(PaymentOption::getIuv, PaymentOption::getNotificationFee));
+        for (PaymentOption paymentOptionModel : paymentPosition.getPaymentOption()) {
+            paymentOptionModel.setNotificationFee(Objects.requireNonNullElse(oldPONotificationFeeMapping.get(paymentOptionModel.getIuv()), 0L));
+        }
+        return paymentPosition;
     }
 
     /*

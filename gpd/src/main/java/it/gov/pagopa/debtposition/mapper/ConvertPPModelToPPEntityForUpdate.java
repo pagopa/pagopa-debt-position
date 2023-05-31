@@ -58,6 +58,7 @@ public class ConvertPPModelToPPEntityForUpdate implements Converter<PaymentPosit
         po.setIsPartialPayment(pom.getIsPartialPayment());
         po.setIuv(pom.getIuv());
         po.setRetentionDate(pom.getRetentionDate());
+        po.setNotificationFee(pom.getNotificationFee());
 
         List<TransferModel> transfers = pom.getTransfer();
         if (null != transfers && !transfers.isEmpty()) {

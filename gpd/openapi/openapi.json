@@ -35,8 +35,8 @@
                 "summary": "Return OK if application is started",
                 "operationId": "healthCheck",
                 "responses": {
-                    "403": {
-                        "description": "Forbidden.",
+                    "401": {
+                        "description": "Wrong or missing function key.",
                         "headers": {
                             "X-Request-Id": {
                                 "description": "This header identifies the call",
@@ -46,8 +46,26 @@
                             }
                         }
                     },
-                    "401": {
-                        "description": "Wrong or missing function key.",
+                    "200": {
+                        "description": "OK.",
+                        "headers": {
+                            "X-Request-Id": {
+                                "description": "This header identifies the call",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AppInfo"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden.",
                         "headers": {
                             "X-Request-Id": {
                                 "description": "This header identifies the call",
@@ -71,24 +89,6 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ProblemJson"
-                                }
-                            }
-                        }
-                    },
-                    "200": {
-                        "description": "OK.",
-                        "headers": {
-                            "X-Request-Id": {
-                                "description": "This header identifies the call",
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AppInfo"
                                 }
                             }
                         }
@@ -145,24 +145,6 @@
                             }
                         }
                     },
-                    "200": {
-                        "description": "Obtained organizations to add and delete.",
-                        "headers": {
-                            "X-Request-Id": {
-                                "description": "This header identifies the call",
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/OrganizationListModelResponse"
-                                }
-                            }
-                        }
-                    },
                     "500": {
                         "description": "Service unavailable.",
                         "headers": {
@@ -177,6 +159,24 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ProblemJson"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Obtained organizations to add and delete.",
+                        "headers": {
+                            "X-Request-Id": {
+                                "description": "This header identifies the call",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OrganizationListModelResponse"
                                 }
                             }
                         }
@@ -331,8 +331,37 @@
                     }
                 ],
                 "responses": {
+                    "400": {
+                        "description": "Malformed request.",
+                        "headers": {
+                            "X-Request-Id": {
+                                "description": "This header identifies the call",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemJson"
+                                }
+                            }
+                        }
+                    },
                     "429": {
                         "description": "Too many requests.",
+                        "headers": {
+                            "X-Request-Id": {
+                                "description": "This header identifies the call",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Wrong or missing function key.",
                         "headers": {
                             "X-Request-Id": {
                                 "description": "This header identifies the call",
@@ -360,37 +389,8 @@
                             }
                         }
                     },
-                    "401": {
-                        "description": "Wrong or missing function key.",
-                        "headers": {
-                            "X-Request-Id": {
-                                "description": "This header identifies the call",
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
                     "500": {
                         "description": "Service unavailable.",
-                        "headers": {
-                            "X-Request-Id": {
-                                "description": "This header identifies the call",
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ProblemJson"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Malformed request.",
                         "headers": {
                             "X-Request-Id": {
                                 "description": "This header identifies the call",
@@ -454,6 +454,24 @@
                     "required": true
                 },
                 "responses": {
+                    "400": {
+                        "description": "Malformed request.",
+                        "headers": {
+                            "X-Request-Id": {
+                                "description": "This header identifies the call",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemJson"
+                                }
+                            }
+                        }
+                    },
                     "409": {
                         "description": "Conflict: duplicate debt position found.",
                         "headers": {
@@ -483,24 +501,6 @@
                             }
                         }
                     },
-                    "201": {
-                        "description": "Request created.",
-                        "headers": {
-                            "X-Request-Id": {
-                                "description": "This header identifies the call",
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PaymentPositionModel"
-                                }
-                            }
-                        }
-                    },
                     "500": {
                         "description": "Service unavailable.",
                         "headers": {
@@ -519,8 +519,8 @@
                             }
                         }
                     },
-                    "400": {
-                        "description": "Malformed request.",
+                    "201": {
+                        "description": "Request created.",
                         "headers": {
                             "X-Request-Id": {
                                 "description": "This header identifies the call",
@@ -532,7 +532,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ProblemJson"
+                                    "$ref": "#/components/schemas/PaymentPositionModel"
                                 }
                             }
                         }
@@ -586,24 +586,6 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "Obtained debt position details.",
-                        "headers": {
-                            "X-Request-Id": {
-                                "description": "This header identifies the call",
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PaymentPositionModelBaseResponse"
-                                }
-                            }
-                        }
-                    },
                     "401": {
                         "description": "Wrong or missing function key.",
                         "headers": {
@@ -647,6 +629,24 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ProblemJson"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Obtained debt position details.",
+                        "headers": {
+                            "X-Request-Id": {
+                                "description": "This header identifies the call",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaymentPositionModelBaseResponse"
                                 }
                             }
                         }
@@ -707,6 +707,24 @@
                     "required": true
                 },
                 "responses": {
+                    "400": {
+                        "description": "Malformed request.",
+                        "headers": {
+                            "X-Request-Id": {
+                                "description": "This header identifies the call",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemJson"
+                                }
+                            }
+                        }
+                    },
                     "401": {
                         "description": "Wrong or missing function key.",
                         "headers": {
@@ -754,42 +772,6 @@
                             }
                         }
                     },
-                    "200": {
-                        "description": "Request updated.",
-                        "headers": {
-                            "X-Request-Id": {
-                                "description": "This header identifies the call",
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PaymentPositionModel"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Malformed request.",
-                        "headers": {
-                            "X-Request-Id": {
-                                "description": "This header identifies the call",
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ProblemJson"
-                                }
-                            }
-                        }
-                    },
                     "404": {
                         "description": "No debt position found.",
                         "headers": {
@@ -804,6 +786,24 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ProblemJson"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Request updated.",
+                        "headers": {
+                            "X-Request-Id": {
+                                "description": "This header identifies the call",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaymentPositionModel"
                                 }
                             }
                         }
@@ -892,8 +892,8 @@
                             }
                         }
                     },
-                    "404": {
-                        "description": "No debt position position found.",
+                    "500": {
+                        "description": "Service unavailable.",
                         "headers": {
                             "X-Request-Id": {
                                 "description": "This header identifies the call",
@@ -910,8 +910,8 @@
                             }
                         }
                     },
-                    "500": {
-                        "description": "Service unavailable.",
+                    "404": {
+                        "description": "No debt position position found.",
                         "headers": {
                             "X-Request-Id": {
                                 "description": "This header identifies the call",
@@ -1006,6 +1006,24 @@
                             }
                         }
                     },
+                    "404": {
+                        "description": "No debt position found.",
+                        "headers": {
+                            "X-Request-Id": {
+                                "description": "This header identifies the call",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemJson"
+                                }
+                            }
+                        }
+                    },
                     "200": {
                         "description": "Request published.",
                         "headers": {
@@ -1026,24 +1044,6 @@
                     },
                     "409": {
                         "description": "Conflict: debt position is not in invalidable state.",
-                        "headers": {
-                            "X-Request-Id": {
-                                "description": "This header identifies the call",
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ProblemJson"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "No debt position found.",
                         "headers": {
                             "X-Request-Id": {
                                 "description": "This header identifies the call",
@@ -1109,8 +1109,19 @@
                     }
                 ],
                 "responses": {
-                    "409": {
-                        "description": "Conflict: debt position is not in publishable state.",
+                    "401": {
+                        "description": "Wrong or missing function key.",
+                        "headers": {
+                            "X-Request-Id": {
+                                "description": "This header identifies the call",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Service unavailable.",
                         "headers": {
                             "X-Request-Id": {
                                 "description": "This header identifies the call",
@@ -1127,19 +1138,8 @@
                             }
                         }
                     },
-                    "401": {
-                        "description": "Wrong or missing function key.",
-                        "headers": {
-                            "X-Request-Id": {
-                                "description": "This header identifies the call",
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Service unavailable.",
+                    "404": {
+                        "description": "No debt position found.",
                         "headers": {
                             "X-Request-Id": {
                                 "description": "This header identifies the call",
@@ -1174,8 +1174,8 @@
                             }
                         }
                     },
-                    "404": {
-                        "description": "No debt position found.",
+                    "409": {
+                        "description": "Conflict: debt position is not in publishable state.",
                         "headers": {
                             "X-Request-Id": {
                                 "description": "This header identifies the call",
@@ -1365,6 +1365,24 @@
                     "required": true
                 },
                 "responses": {
+                    "400": {
+                        "description": "Malformed request.",
+                        "headers": {
+                            "X-Request-Id": {
+                                "description": "This header identifies the call",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemJson"
+                                }
+                            }
+                        }
+                    },
                     "401": {
                         "description": "Wrong or missing function key.",
                         "headers": {
@@ -1372,6 +1390,24 @@
                                 "description": "This header identifies the call",
                                 "schema": {
                                     "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable payment option.",
+                        "headers": {
+                            "X-Request-Id": {
+                                "description": "This header identifies the call",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemJson"
                                 }
                             }
                         }
@@ -1408,42 +1444,6 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/PaymentsModelResponse"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable payment option.",
-                        "headers": {
-                            "X-Request-Id": {
-                                "description": "This header identifies the call",
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ProblemJson"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Malformed request.",
-                        "headers": {
-                            "X-Request-Id": {
-                                "description": "This header identifies the call",
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ProblemJson"
                                 }
                             }
                         }
@@ -1525,8 +1525,8 @@
                     "required": true
                 },
                 "responses": {
-                    "422": {
-                        "description": "Unprocessable: not in payable state.",
+                    "400": {
+                        "description": "Malformed request.",
                         "headers": {
                             "X-Request-Id": {
                                 "description": "This header identifies the call",
@@ -1608,8 +1608,8 @@
                             }
                         }
                     },
-                    "400": {
-                        "description": "Malformed request.",
+                    "404": {
+                        "description": "No payment option found.",
                         "headers": {
                             "X-Request-Id": {
                                 "description": "This header identifies the call",
@@ -1626,8 +1626,8 @@
                             }
                         }
                     },
-                    "404": {
-                        "description": "No payment option found.",
+                    "422": {
+                        "description": "Unprocessable: not in payable state.",
                         "headers": {
                             "X-Request-Id": {
                                 "description": "This header identifies the call",
@@ -1702,6 +1702,24 @@
                     }
                 ],
                 "responses": {
+                    "400": {
+                        "description": "Malformed request.",
+                        "headers": {
+                            "X-Request-Id": {
+                                "description": "This header identifies the call",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemJson"
+                                }
+                            }
+                        }
+                    },
                     "200": {
                         "description": "Request reported.",
                         "headers": {
@@ -1769,24 +1787,6 @@
                     },
                     "500": {
                         "description": "Service unavailable.",
-                        "headers": {
-                            "X-Request-Id": {
-                                "description": "This header identifies the call",
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ProblemJson"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Malformed request.",
                         "headers": {
                             "X-Request-Id": {
                                 "description": "This header identifies the call",
@@ -2045,6 +2045,11 @@
                     "fee": {
                         "type": "integer",
                         "format": "int64"
+                    },
+                    "notificationFee": {
+                        "type": "integer",
+                        "format": "int64",
+                        "readOnly": true
                     },
                     "transfer": {
                         "type": "array",
