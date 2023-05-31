@@ -12,8 +12,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
-
 @Data
 @NoArgsConstructor
 @Schema(name = "PaymentsWithDebtorInfoModelResponse")

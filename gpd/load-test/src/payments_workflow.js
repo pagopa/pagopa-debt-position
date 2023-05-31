@@ -148,10 +148,14 @@ export default function () {
             'GetOrganizationPaymentOption status is 200': (r) => r.status === 200,
           });
 
-          console.log( "Body: " + r.body);
+          //console.log( "Body: " + r.body);
 
           check(r, {
             'GetOrganizationPaymentOption payment option status is reported': (r) => (JSON.parse(r.body)).status === 'PO_REPORTED',
+          });
+          
+          check(r, {
+            'GetOrganizationPaymentOption payment option iupd is present and valued': (r) => (JSON.parse(r.body)).iupd === iupd,
           });
 
         }
