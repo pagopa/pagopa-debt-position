@@ -1,11 +1,16 @@
 package it.gov.pagopa.debtposition.model.pd;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,6 +36,10 @@ public class PaymentOptionModel implements Serializable {
     private LocalDateTime dueDate;
     private LocalDateTime retentionDate;
     private long fee;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY)
+    private long notificationFee;
 
     @Valid
     private List<TransferModel> transfer = new ArrayList<>();

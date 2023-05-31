@@ -10,7 +10,7 @@ import it.gov.pagopa.debtposition.dto.TransferDTO;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
-
+import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
 
 
 public class DebtPositionMock {
@@ -926,4 +926,15 @@ public class DebtPositionMock {
 		return tMock;
 	}
 
+	public static PaymentPositionDTO paymentPositionForNotificationUpdateMock1() {
+		PaymentPositionDTO mock = createPaymentPositionMock1();
+		mock.getPaymentOption().get(0).setNotificationFee(300L);
+		return mock;
+	}
+
+	public static NotificationFeeUpdateModel createNotificationFeeMock(long notificationFee) {
+		NotificationFeeUpdateModel mock = new NotificationFeeUpdateModel();
+		mock.setNotificationFee(notificationFee);
+		return mock;
+	}
 }

@@ -102,6 +102,16 @@ function reportTransfer(orgId, iuv, idTransfer) {
     })
 }
 
+function updateNotificationFee(orgId, iuv, body) {
+    return put(gpd_host + `/organizations/${orgId}/paymentoptions/${iuv}/notificationfee`, body, {
+        timeout: 10000,
+        headers: {
+            "Ocp-Apim-Subscription-Key": process.env.API_SUBSCRIPTION_KEY,
+            "Content-Type": "application/json"
+        }
+    })
+}
+
 function createAndPublishDebtPosition(orgId, body) {
     return post(gpd_host + `/organizations/${orgId}/debtpositions`, body, {
         timeout: 10000,
@@ -120,6 +130,7 @@ module.exports = {
     createDebtPosition,
     publishDebtPosition,
     updateDebtPosition,
+    updateNotificationFee,
     getDebtPositionList,
     getDebtPosition,
     deleteDebtPosition,

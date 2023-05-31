@@ -1,6 +1,7 @@
 const {
     createDebtPosition,
     updateDebtPosition,
+    updateNotificationFee,
     publishDebtPosition,
     deleteDebtPosition,
     getDebtPositionList,
@@ -20,12 +21,19 @@ async function executeDebtPositionCreation(bundle, idOrg, iupd) {
     bundle.debtPosition = buildDebtPositionDynamicData(bundle, iupd);
     let response = await createDebtPosition(bundle.organizationCode, buildCreateDebtPositionRequest(bundle.debtPosition, bundle.payer));
     bundle.responseToCheck = response;
+    bundle.createdDebtPosition = bundle.responseToCheck.data;
 }
 
 async function executeDebtPositionUpdate(bundle, idOrg, iupd) {
     bundle.iupd = iupd;
     let response = await updateDebtPosition(idOrg, iupd, bundle);
     bundle.responseToCheck = response;
+}
+
+async function executeDebtPositionNotificationFeeUpdate(bundle, idOrg, fee) {
+    let iuv = bundle.debtPosition.iuv1;
+    let response = await updateNotificationFee(idOrg, iuv, {notificationFee: fee});
+    bundle.responseToCheck = response;    
 }
 
 async function executeDebtPositionGetList(bundle, idOrg, dueDateFrom, dueDateTo, paymentDateFrom, paymentDateTo, status) {
@@ -72,6 +80,7 @@ module.exports = {
     executeDebtPositionDeletion,
     executeDebtPositionGetList,
     executeDebtPositionUpdate,
+    executeDebtPositionNotificationFeeUpdate,
     executeDebtPositionGet,
     executeDebtPositionPublish,
     executePaymentOptionPay,

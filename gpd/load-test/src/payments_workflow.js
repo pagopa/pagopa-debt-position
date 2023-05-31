@@ -31,7 +31,6 @@ export default function () {
   const transfer_id = '1';
 
   // Create new debt position (no validity date).
-
   var url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions`;
 
   var payload = JSON.stringify(
@@ -77,89 +76,91 @@ export default function () {
   var r = http.post(url, payload, params);
 
   //console.log("CreateDebtPosition call - creditor_institution_code = " + creditor_institution_code + ", Status = " + r.status);
-
   check(r, {
     'CreateDebtPosition status is 201': (r) => r.status === 201,
   });
 
+
+  // ----- NEXT STEP -----
+  // if the debt position has been correctly created => update notification fee
+  if (r.status !== 201) return; // exit flow if failed
+  url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/notificationfee`;
+  payload = JSON.stringify({
+    "notificationFee": 150
+  });
+  r = http.put(url, payload, params);
+
+  //console.log("UpdateNotificationFee call - creditor_institution_code = " + creditor_institution_code + ", iupd = " + iupd + ", Status = " + r.status);
+  check(r, {
+    'UpdateNotificationFee status is 200': (r) => r.status === 200,
+  });
+
+
+  // ----- NEXT STEP -----
   // if the debt position has been correctly created => publish 
-  if (r.status === 201) {
-    // sleep(1);
-    // Publish the debt position.
-    url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions/${iupd}/publish`;
+  if (r.status !== 200) return; // exit flow if failed
+  url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions/${iupd}/publish`;
+  r = http.post(url, params);
 
-    r = http.post(url, params);
-
-    //console.log("PublishDebtPosition call - creditor_institution_code = " + creditor_institution_code + ", iupd = " + iupd + ", Status = " + r.status);
-
-    check(r, {
-      'PublishDebtPosition status is 200': (r) => r.status === 200,
-    });
-
-    // if the debt position has been correctly published => pay 
-    if (r.status === 200) {
-      // sleep(1);
-      // Pay Payment Option.
-
-      url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/pay`;
-
-      payload = JSON.stringify(
-        {
-          "paymentDate": new Date(),
-          "paymentMethod": "bonifico",
-          "pspCompany": "Intesa San Paolo",
-          "idReceipt": "TRN123456789"
-        }
-      );
-
-      r = http.post(url, payload, params);
-
-      //console.log("PayPaymentOption call - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv + ", Status = " + r.status);
-
-      check(r, {
-        'PayPaymentOption status is 200': (r) => r.status === 200,
-      });
-
-      // if the payment option has been correctly paid => report
-      if (r.status === 200) {
-        // sleep(1);
-        // Report Transfer.
-        url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/transfers/${transfer_id}/report`;
-
-        r = http.post(url, params);
-
-        //console.log("ReportTransfer call - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv + ", transfer_id = " + transfer_id + ", Status = " + r.status);
-
-        check(r, {
-          'ReportTransfer status is 200': (r) => r.status === 200,
-        });
-
-        // if the transfer has been correctly reported => get
-        if (r.status === 200) {
-          // Get details of a specific payment option.
-
-          url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}`;
-
-          r = http.get(url, params);
-
-          //console.log("GetOrganizationPaymentOption call - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv + ", Status = " + r.status);
-
-          check(r, {
-            'GetOrganizationPaymentOption status is 200': (r) => r.status === 200,
-          });
-
-          console.log( "Body: " + r.body);
-
-          check(r, {
-            'GetOrganizationPaymentOption payment option status is reported': (r) => (JSON.parse(r.body)).status === 'PO_REPORTED',
-          });
-
-        }
-      }
-    }
- 
-    // sleep(2);
-  }
+  //console.log("PublishDebtPosition call - creditor_institution_code = " + creditor_institution_code + ", iupd = " + iupd + ", Status = " + r.status);
+  check(r, {
+    'PublishDebtPosition status is 200': (r) => r.status === 200,
+  });
 
 
+  // ----- NEXT STEP -----
+  // if the debt position has been correctly published => pay 
+  if (r.status !== 200) return; // exit flow if failed  
+  
+  // sleep(1);
+  // Pay Payment Option.
+  url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/pay`;
+  payload = JSON.stringify({
+    "paymentDate": new Date(),
+    "paymentMethod": "bonifico",
+    "pspCompany": "Intesa San Paolo",
+    "idReceipt": "TRN123456789"
+  });
+  r = http.post(url, payload, params);
+
+  //console.log("PayPaymentOption call - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv + ", Status = " + r.status);
+  check(r, {
+    'PayPaymentOption status is 200': (r) => r.status === 200,
+  });
+
+
+  // ----- NEXT STEP -----
+  // if the payment option has been correctly paid => report
+  if (r.status !== 200) return; // exit flow if failed  
+
+  // sleep(1);
+  // Report Transfer.
+  url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/transfers/${transfer_id}/report`;
+  r = http.post(url, params);
+
+  //console.log("ReportTransfer call - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv + ", transfer_id = " + transfer_id + ", Status = " + r.status);
+  check(r, {
+    'ReportTransfer status is 200': (r) => r.status === 200,
+  });
+
+
+  // ----- NEXT STEP -----
+  // if the transfer has been correctly reported => get
+  if (r.status !== 200) return; // exit flow if failed  
+
+  // Get details of a specific payment option.
+  url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}`;
+  r = http.get(url, params);
+
+  //console.log("GetOrganizationPaymentOption call - creditor_institution_code = " + creditor_institution_code + ", iuv = " + iuv + ", Status = " + r.status);
+  check(r, {
+    'GetOrganizationPaymentOption status is 200': (r) => r.status === 200,
+  });
+  console.log( "Body: " + r.body);
+  
+  check(r, {
+    'GetOrganizationPaymentOption payment option status is reported': (r) => (JSON.parse(r.body)).status === 'PO_REPORTED',
+  });
+
+  // sleep(2);
 }

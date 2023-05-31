@@ -28,6 +28,7 @@ public class ConvertPOEntityToPOWithDebtor implements Converter<PaymentOption, P
         destination.setReportingDate(source.getReportingDate());
         destination.setPaymentMethod(source.getPaymentMethod());
         destination.setFee(source.getFee());
+        destination.setNotificationFee(source.getNotificationFee());
         destination.setPspCompany(source.getPspCompany());
         destination.setIdReceipt(source.getIdReceipt());
         destination.setIdFlowReporting(source.getIdFlowReporting());

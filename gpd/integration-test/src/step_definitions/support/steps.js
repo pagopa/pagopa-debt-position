@@ -3,6 +3,7 @@ const { executeHealthCheckForGPD } = require('./logic/health_checks_logic');
 const { executeDebtPositionCreation,
         executeDebtPositionDeletion,
         executeDebtPositionGetList,
+        executeDebtPositionNotificationFeeUpdate,
         executeDebtPositionUpdate,
         executeDebtPositionGet,
         executeDebtPositionPublish,
@@ -10,7 +11,7 @@ const { executeDebtPositionCreation,
         executeReportTransfer,
         executeDebtPositionCreationAndPublication,
 } = require('./logic/gpd_logic');
-const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, assertStatusString, executeAfterAllStep, randomOrg, randomIupd } = require('./logic/common_logic');
+const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, assertNotificationFeeUpdatedAmounts, assertStatusString, executeAfterAllStep, randomOrg, randomIupd } = require('./logic/common_logic');
 const { gpdSessionBundle, gpdUpdateBundle, gpdPayBundle } = require('./utility/data');
 const { getValidBundle, addDays, format } = require('./utility/helpers');
 
@@ -59,10 +60,17 @@ When('we ask the list of organizations debt positions', async () => {
 Then('we get the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
 
 /*
+ *  Debt position notification fee update
+ */
+When('the notification fee of the debt position is updated', () => executeDebtPositionNotificationFeeUpdate(gpdSessionBundle, idOrg, 150));
+Then('the organization gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
+Then('the organization gets the updated amounts', () => assertNotificationFeeUpdatedAmounts(gpdSessionBundle.createdDebtPosition, gpdSessionBundle.responseToCheck.data));
+
+/*
  *  Debt position update
  */
 When('the debt position is updated', () => executeDebtPositionUpdate(gpdUpdateBundle, idOrg, iupd));
-Then('the organization gets the status code {int}', (statusCode) => assertStatusCode(gpdUpdateBundle, statusCode));
+
 
 /*
  *  Debt position get
