@@ -15,6 +15,11 @@ Feature: Paying a debt position
   Scenario: Payment option publication
     When the payment option is paid
     Then the payment option gets the status code 200
+    
+  Scenario: Get Payment option by IUV
+    When we get the payment option by iuv
+    Then the get payment options returns the status code 200
+    Then the iupd is present and valued with the same value as the debt position
 
   Scenario: Reporting the transfer
     When the transfer is reported

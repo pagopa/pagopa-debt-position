@@ -6,8 +6,8 @@ import { makeidMix, randomString } from './modules/helpers.js';
 //k6 run -o influxdb=http://influxdb:8086/k6 -e BASE_URL=http://localhost:8085 gpd/load-test/src/payments_workflow.js
 export let options = JSON.parse(open(__ENV.TEST_TYPE));
 
-const varsArray = new SharedArray('vars', function () {
-    return JSON.parse(open(`${__ENV.VARS}`)).environment;
+const varsArray = new SharedArray('vars', function() {
+  return JSON.parse(open(`${__ENV.VARS}`)).environment;
 });
 
 // workaround to use shared array (only array should be used)
@@ -15,13 +15,13 @@ const vars = varsArray[0];
 const rootUrl = `${vars.host}`;
 
 const params = {
-    headers: {
-        'Content-Type': 'application/json',
-        'Ocp-Apim-Subscription-Key': __ENV.API_SUBSCRIPTION_KEY
-    },
+  headers: {
+    'Content-Type': 'application/json',
+    'Ocp-Apim-Subscription-Key': __ENV.API_SUBSCRIPTION_KEY
+  },
 };
 
-export default function () {
+export default function() {
 
   const creditor_institution_code = randomString(11, "0123456789");
   const iupd = makeidMix(35);
@@ -111,7 +111,7 @@ export default function () {
   // ----- NEXT STEP -----
   // if the debt position has been correctly published => pay 
   if (r.status !== 200) return; // exit flow if failed  
-  
+
   // sleep(1);
   // Pay Payment Option.
   url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/pay`;
@@ -156,10 +156,15 @@ export default function () {
   check(r, {
     'GetOrganizationPaymentOption status is 200': (r) => r.status === 200,
   });
-  console.log( "Body: " + r.body);
-  
+
+  //console.log( "Body: " + r.body);
+
   check(r, {
     'GetOrganizationPaymentOption payment option status is reported': (r) => (JSON.parse(r.body)).status === 'PO_REPORTED',
+  });
+
+  check(r, {
+    'GetOrganizationPaymentOption payment option iupd is present and valued': (r) => (JSON.parse(r.body)).iupd === iupd,
   });
 
   // sleep(2);
