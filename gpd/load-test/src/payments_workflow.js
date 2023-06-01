@@ -111,7 +111,7 @@ export default function () {
   // ----- NEXT STEP -----
   // if the debt position has been correctly published => pay 
   if (r.status !== 200) return; // exit flow if failed  
-  
+
   // sleep(1);
   // Pay Payment Option.
   url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/pay`;
@@ -156,10 +156,15 @@ export default function () {
   check(r, {
     'GetOrganizationPaymentOption status is 200': (r) => r.status === 200,
   });
-  console.log( "Body: " + r.body);
-  
+
+  //console.log( "Body: " + r.body);
+
   check(r, {
     'GetOrganizationPaymentOption payment option status is reported': (r) => (JSON.parse(r.body)).status === 'PO_REPORTED',
+  });
+
+  check(r, {
+    'GetOrganizationPaymentOption payment option iupd is present and valued': (r) => (JSON.parse(r.body)).iupd === iupd,
   });
 
   // sleep(2);

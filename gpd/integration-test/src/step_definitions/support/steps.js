@@ -10,8 +10,9 @@ const { executeDebtPositionCreation,
         executePaymentOptionPay,
         executeReportTransfer,
         executeDebtPositionCreationAndPublication,
+        executePaymentOptionGetByIuv
 } = require('./logic/gpd_logic');
-const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, assertNotificationFeeUpdatedAmounts, assertStatusString, executeAfterAllStep, randomOrg, randomIupd } = require('./logic/common_logic');
+const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, assertNotificationFeeUpdatedAmounts, assertStatusString, executeAfterAllStep, randomOrg, randomIupd, assertIupd } = require('./logic/common_logic');
 const { gpdSessionBundle, gpdUpdateBundle, gpdPayBundle } = require('./utility/data');
 const { getValidBundle, addDays, format } = require('./utility/helpers');
 
@@ -70,6 +71,7 @@ Then('the organization gets the updated amounts', () => assertNotificationFeeUpd
  *  Debt position update
  */
 When('the debt position is updated', () => executeDebtPositionUpdate(gpdUpdateBundle, idOrg, iupd));
+Then('the organization gets the update status code {int}', (statusCode) => assertStatusCode(gpdUpdateBundle, statusCode));
 
 
 /*
@@ -94,6 +96,13 @@ When('the debt position is published', () => executeDebtPositionPublish(gpdSessi
  */
 When('the payment option is paid', () => executePaymentOptionPay(gpdPayBundle, idOrg, gpdSessionBundle.debtPosition.iuv1));
 Then('the payment option gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
+
+/*
+ *  Payment Option get by IUV
+ */
+When('we get the payment option by iuv', () => executePaymentOptionGetByIuv(gpdSessionBundle, idOrg, gpdSessionBundle.debtPosition.iuv1));
+Then('the get payment options returns the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
+Then('the iupd is present and valued with the same value as the debt position', () => assertIupd(gpdSessionBundle));
 
 /*
  *  Reporting the transfer
