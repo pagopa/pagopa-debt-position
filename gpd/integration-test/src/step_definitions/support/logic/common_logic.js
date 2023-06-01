@@ -22,6 +22,10 @@ async function assertCompanyName(bundle, companyName) {
     assert.strictEqual(bundle.payer.companyName, companyName);
 }
 
+async function assertIupd(bundle) {
+  assert.strictEqual(bundle.debtPosition.iupd, bundle.responseToCheck.data.iupd)
+}
+
 async function assertStatusString(bundle, statusString) {
     assert.strictEqual(bundle.responseToCheck.data.status, statusString);
 }
@@ -51,4 +55,5 @@ module.exports = {
     assertStatusString,
     randomOrg,
     randomIupd,
+    assertIupd
 }

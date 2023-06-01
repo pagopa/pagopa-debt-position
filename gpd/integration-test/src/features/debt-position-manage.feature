@@ -26,7 +26,7 @@ Feature: Managing a debt position
 
   Scenario: Debt position update
   	When the debt position is updated
-  	Then the organization gets the status code 200
+  	Then the organization gets the update status code 200
 
   Scenario: Debt position get
   	When we get the debt position
