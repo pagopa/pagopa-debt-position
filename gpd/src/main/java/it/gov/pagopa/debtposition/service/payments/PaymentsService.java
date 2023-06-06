@@ -98,11 +98,20 @@ public class PaymentsService {
         if (!PaymentOptionStatus.PO_UNPAID.equals(paymentOption.getStatus())) {
             throw new AppException(AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_NOT_UPDATABLE, organizationFiscalCode, iuv);
         }
+
+        // Executing the amount updating with the inserted notification fee
+        updateAmountsWithNotificationFee(paymentOption, organizationFiscalCode, notificationFeeAmount);
+
+        paymentOptionRepository.saveAndFlush(paymentOption);
+        return paymentOption;
+    }
+
+    public static PaymentOption updateAmountsWithNotificationFee(PaymentOption paymentOption, String organizationFiscalCode, long notificationFeeAmount) {
         // Get the first valid transfer to add the fee
         List<Transfer> transfers = paymentOption.getTransfer();
         Transfer validTransfer = transfers.stream()
                 .sorted(Comparator.comparing(Transfer::getIdTransfer))
-                .filter(transfer -> organizationFiscalCode.equals(transfer.getOrganizationFiscalCode()))
+                .filter(transfer -> transfer.getOrganizationFiscalCode() == null || organizationFiscalCode.equals(transfer.getOrganizationFiscalCode()))
                 .findFirst()
                 .orElseThrow(() -> new AppException(AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_TRANSFER_NOT_FOUND, paymentOption.getIuv(), organizationFiscalCode));
 
@@ -121,7 +130,6 @@ public class PaymentsService {
         validTransfer.setAmount(validTransfer.getAmount() - oldNotificationFee);
         validTransfer.setAmount(validTransfer.getAmount() + notificationFeeAmount);
 
-        paymentOptionRepository.saveAndFlush(paymentOption);
         return paymentOption;
     }
 
