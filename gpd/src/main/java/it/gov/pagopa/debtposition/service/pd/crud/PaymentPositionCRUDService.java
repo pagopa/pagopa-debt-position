@@ -14,6 +14,7 @@ import it.gov.pagopa.debtposition.model.pd.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.repository.specification.*;
+import it.gov.pagopa.debtposition.service.payments.PaymentsService;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.PublishPaymentUtil;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
@@ -176,8 +177,8 @@ public class PaymentPositionCRUDService {
             ppToUpdate.getPaymentOption().clear();
             modelMapper.map(paymentPositionModel, ppToUpdate);
 
-            // migrate the notification fee value if defined
-            ppToUpdate = setOldNotificationFee(oldPaymentOptions, ppToUpdate);
+            // migrate the notification fee value (if defined) and update the amounts
+            ppToUpdate = setOldNotificationFee(oldPaymentOptions, organizationFiscalCode, ppToUpdate);
             
             // check the input data
             DebtPositionValidation.checkPaymentPositionInputDataAccurancy(ppToUpdate);
@@ -190,16 +191,24 @@ public class PaymentPositionCRUDService {
         	
         } catch (ValidationException e) {
             throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
+        } catch (AppException e) {
+            if (AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_TRANSFER_NOT_FOUND.title.equals(e.getTitle())) {
+                throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED_NO_TRANSFER_FOR_NOTIFICATION_FEE, organizationFiscalCode, ppToUpdate.getIupd());
+            }
+            throw e;
         } catch (Exception e) {
             log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
             throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
         }
     }
 
-    private PaymentPosition setOldNotificationFee(List<PaymentOption> oldPaymentOptions, PaymentPosition paymentPosition) {
+    private PaymentPosition setOldNotificationFee(List<PaymentOption> oldPaymentOptions, String organizationFiscalCode, PaymentPosition paymentPosition) {
         Map<String, Long> oldPONotificationFeeMapping = oldPaymentOptions.stream().collect(Collectors.toMap(PaymentOption::getIuv, PaymentOption::getNotificationFee));
         for (PaymentOption paymentOptionModel : paymentPosition.getPaymentOption()) {
-            paymentOptionModel.setNotificationFee(Objects.requireNonNullElse(oldPONotificationFeeMapping.get(paymentOptionModel.getIuv()), 0L));
+            long oldNotificationFee = Objects.requireNonNullElse(oldPONotificationFeeMapping.get(paymentOptionModel.getIuv()), 0L);
+            if (oldNotificationFee != 0) {
+                PaymentsService.updateAmountsWithNotificationFee(paymentOptionModel, organizationFiscalCode, oldNotificationFee);
+            }
         }
         return paymentPosition;
     }
