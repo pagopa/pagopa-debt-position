@@ -22,6 +22,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import it.gov.pagopa.debtposition.DebtPositionApplication;
@@ -882,5 +883,28 @@ class DebtPositionControllerTest {
 		mvc.perform(put("/organizations/UPD409_PAID_12345678901/debtpositions/12345678901IUPDMOCK1")
 				.content(TestUtil.toJson(DebtPositionMock.getMock4()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isConflict());
+	}
+
+	@Test
+	void updateDebtPosition_noValidTransfer_422() throws Exception {
+
+		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.paymentPositionForNotificationUpdateMock1();
+
+		// creo una posizione debitoria e recupero la payment option associata
+		mvc.perform(post("/organizations/UPD422_novalidtransfer_12345678901/debtpositions")
+						.content(TestUtil.toJson(paymentPositionDTO))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+
+		// effettuo un aggiornamento della notification fee
+		mvc.perform(MockMvcRequestBuilders.put("/organizations/UPD422_novalidtransfer_12345678901/paymentoptions/123456IUVMOCK1/notificationfee")
+				.content(TestUtil.toJson(DebtPositionMock.createNotificationFeeMock(150L)))
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+
+		// effettuo la chiamata di modifica del codice fiscale dell'EC del transfer ma non posso procedere perche eliminerei tutti i transfer associabili per la fee
+		paymentPositionDTO.getPaymentOption().get(0).getTransfer().get(0).setOrganizationFiscalCode("acreditorinstitution");
+		mvc.perform(MockMvcRequestBuilders.put("/organizations/UPD422_novalidtransfer_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.content(TestUtil.toJson(paymentPositionDTO))
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isUnprocessableEntity());
 	}
 }

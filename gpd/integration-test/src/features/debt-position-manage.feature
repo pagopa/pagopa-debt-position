@@ -24,12 +24,13 @@ Feature: Managing a debt position
    When we ask the list of organizations debt positions
    Then we get the status code 200
 
- Scenario: Debt position update
- 	When the debt position is updated
- 	Then the organization gets the status code 200
 
+ Scenario: Debt position update
+   When the debt position is updated
+   Then the organization gets the update status code 200
+    
  Scenario: Debt position get
- 	When we get the debt position
+ 	 When we get the debt position
    Then the company name is "Testing S.p.A."
 
  Scenario: Debt position deleted
