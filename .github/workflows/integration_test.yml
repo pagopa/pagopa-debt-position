@@ -27,7 +27,7 @@ jobs:
   integration_test:
     name: Test
     runs-on: ubuntu-latest
-    environment: ${{(github.event.inputs == null && 'dev') || inputs.environment }}
+    environment: ${{(github.event.inputs == null && 'uat') || inputs.environment }}
     steps:
       - name: Checkout
         id: checkout
@@ -49,4 +49,23 @@ jobs:
           
           cd ./gpd/integration-test
           chmod +x ./run_integration_test.sh
-          ./run_integration_test.sh ${{( github.event.inputs == null && 'dev') || inputs.environment }} ${{ secrets.API_SUBSCRIPTION_KEY }}
+          ./run_integration_test.sh ${{( github.event.inputs == null && 'uat') || inputs.environment }} ${{ secrets.API_SUBSCRIPTION_KEY }}
+
+  notify:
+    needs: [ integration_test ]
+    runs-on: ubuntu-latest
+    name: Notify
+    if: always()
+    steps:
+      - name: Report Status
+        if: always()
+        uses: ravsamhq/notify-slack-action@v2
+        with:
+          status: ${{ needs.integration_test.result }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          notify_when: 'failure,skipped'
+          notification_title: '{workflow} has {status_message}'
+          message_format: '{emoji} <{workflow_url}|{workflow}> {status_message} in <{repo_url}|{repo}>'
+          footer: 'Linked to Repo <{repo_url}|{repo}>'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
