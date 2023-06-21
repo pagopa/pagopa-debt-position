@@ -126,3 +126,8 @@ function resetParams() {
     paymentDateTo = null;
     status = null;
 }
+
+AfterAll(async function() {
+    // postcondition -> deletion possible duplication
+    await executeDebtPositionDeletion(idOrg, iupd);
+});

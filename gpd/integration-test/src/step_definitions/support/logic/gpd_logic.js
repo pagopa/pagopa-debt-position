@@ -25,7 +25,6 @@ async function executeDebtPositionCreation(bundle, idOrg, iupd) {
     let response = await createDebtPosition(bundle.organizationCode, buildCreateDebtPositionRequest(bundle.debtPosition, bundle.payer));
     bundle.responseToCheck = response;
     bundle.createdDebtPosition = bundle.responseToCheck.data;
-    console.log(JSON.stringify(bundle.createdDebtPosition))
 }
 
 async function executeDebtPositionUpdate(bundle, idOrg, iupd) {
