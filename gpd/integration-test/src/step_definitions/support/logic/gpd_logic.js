@@ -82,7 +82,6 @@ async function executeDebtPositionCreationAndPublication(bundle, idOrg, iupd) {
     bundle.debtPosition = buildDebtPositionDynamicData(bundle, iupd);
     let response = await createAndPublishDebtPosition(bundle.organizationCode, buildUpdateDebtPositionRequest(bundle.debtPosition, bundle.payer));
     bundle.responseToCheck = response;
-    console.log(JSON.stringify(bundle.responseToCheck.data));
 }
 
 async function executeDebtPositionUpdateAndPublication(bundle, idOrg, iupd) {
