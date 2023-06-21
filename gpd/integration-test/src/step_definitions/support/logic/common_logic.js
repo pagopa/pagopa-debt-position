@@ -42,7 +42,7 @@ function randomOrg() {
 }
 
 function randomIupd() {
-    return "IUPD_" + Math.floor(Math.random() * 100);
+    return "IUPD_" + Math.floor(Math.random() * 1000000);
 }
 
 module.exports = {

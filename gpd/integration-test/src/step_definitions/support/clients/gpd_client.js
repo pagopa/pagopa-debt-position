@@ -135,6 +135,19 @@ function createAndPublishDebtPosition(orgId, body) {
     })
 }
 
+function updateAndPublishDebtPosition(orgId, iupd, body) {
+    return put(gpd_host + `/organizations/${orgId}/debtpositions/${iupd}`, body, {
+        timeout: 10000,
+        params: {
+            toPublish: "True",
+        },
+        headers: {
+            "Ocp-Apim-Subscription-Key": process.env.API_SUBSCRIPTION_KEY,
+            "Content-Type": "application/json"
+        }
+    })
+}
+
 module.exports = {
     gpdHealthCheck,
     createDebtPosition,
@@ -147,5 +160,6 @@ module.exports = {
     payPaymentOption,
     reportTransfer,
     createAndPublishDebtPosition,
+    updateAndPublishDebtPosition,
     getPaymentOptionByIuv
 }

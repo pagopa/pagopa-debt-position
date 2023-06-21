@@ -74,7 +74,57 @@ function buildCreateDebtPositionRequest(debtPosition, payer) {
     };
 }
 
+function buildUpdateDebtPositionRequest(debtPosition, payer) {
+    return {
+        iupd: debtPosition.iupd,
+        type: "F",
+        fiscalCode: payer.fiscalCode,
+        fullName: payer.name,
+        streetName: payer.streetName,
+        civicNumber: payer.civicNumber,
+        postalCode: payer.postalCode,
+        city: payer.city,
+        province: payer.province,
+        region: payer.region,
+        country: payer.country,
+        email: payer.email,
+        phone: payer.phone,
+        companyName: payer.companyName + " - Edit",
+        officeName: payer.officeName + " - Edit",
+        switchToExpired: false,
+        paymentOption: [
+            {
+                iuv: debtPosition.iuv1,
+                amount: debtPosition.amount * 100,
+                description: "Canone Unico Patrimoniale - SkyLab Inc. - Edit",
+                isPartialPayment: false,
+                dueDate: debtPosition.dueDate,
+                retentionDate: debtPosition.retentionDate,
+                fee: 0,
+                transfer: [
+                    {
+                        idTransfer: debtPosition.transferId1,
+                        amount: (debtPosition.amount * 100 / 3),
+                        remittanceInformation: "Rata 1 Edit",
+                        category: "9/0101108TS/",
+                        iban: debtPosition.iban,
+                    },
+                    {
+                        idTransfer: debtPosition.transferId2,
+                        organizationFiscalCode: debtPosition.transferOtherCIFiscalCode,
+                        amount: (debtPosition.amount * 100 / 3) * 2,
+                        remittanceInformation: "Rata 2 Edit",
+                        category: "9/0101108TS/",
+                        iban: debtPosition.iban,
+                    }
+                ]
+            }
+        ]
+    };
+}
+
 module.exports = {
     buildCreateDebtPositionRequest,
+    buildUpdateDebtPositionRequest,
     buildDebtPositionDynamicData
 }

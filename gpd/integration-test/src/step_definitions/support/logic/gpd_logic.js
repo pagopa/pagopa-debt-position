@@ -9,12 +9,14 @@ const {
     payPaymentOption,
     reportTransfer,
     createAndPublishDebtPosition,
+    updateAndPublishDebtPosition,
     getPaymentOptionByIuv,
 } = require("../clients/gpd_client");
 
 const {
     buildDebtPositionDynamicData,
-    buildCreateDebtPositionRequest
+    buildCreateDebtPositionRequest,
+    buildUpdateDebtPositionRequest
 } = require("../utility/request_builders");
 
 async function executeDebtPositionCreation(bundle, idOrg, iupd) {
@@ -23,6 +25,7 @@ async function executeDebtPositionCreation(bundle, idOrg, iupd) {
     let response = await createDebtPosition(bundle.organizationCode, buildCreateDebtPositionRequest(bundle.debtPosition, bundle.payer));
     bundle.responseToCheck = response;
     bundle.createdDebtPosition = bundle.responseToCheck.data;
+    console.log(JSON.stringify(bundle.createdDebtPosition))
 }
 
 async function executeDebtPositionUpdate(bundle, idOrg, iupd) {
@@ -77,7 +80,14 @@ async function executeReportTransfer(bundle, idOrg) {
 async function executeDebtPositionCreationAndPublication(bundle, idOrg, iupd) {
     bundle.organizationCode = idOrg;
     bundle.debtPosition = buildDebtPositionDynamicData(bundle, iupd);
-    let response = await createAndPublishDebtPosition(bundle.organizationCode, buildCreateDebtPositionRequest(bundle.debtPosition, bundle.payer));
+    let response = await createAndPublishDebtPosition(bundle.organizationCode, buildUpdateDebtPositionRequest(bundle.debtPosition, bundle.payer));
+    bundle.responseToCheck = response;
+    console.log(JSON.stringify(bundle.responseToCheck.data));
+}
+
+async function executeDebtPositionUpdateAndPublication(bundle, idOrg, iupd) {
+    bundle.organizationCode = idOrg;
+    let response = await updateAndPublishDebtPosition(bundle.organizationCode, iupd, buildCreateDebtPositionRequest(bundle.debtPosition, bundle.payer));
     bundle.responseToCheck = response;
 }
 
@@ -92,5 +102,6 @@ module.exports = {
     executePaymentOptionPay,
     executeReportTransfer,
     executeDebtPositionCreationAndPublication,
+    executeDebtPositionUpdateAndPublication,
     executePaymentOptionGetByIuv
 }
