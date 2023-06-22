@@ -107,7 +107,7 @@ microservice-chart:
       create: true
       image:
         repository: pagopaucommonacr.azurecr.io/gpd
-        tag: "0.4.8-1"
+        tag: "0.5.0-1"
         pullPolicy: Always
       envConfig: {}
       envSecret: {}
