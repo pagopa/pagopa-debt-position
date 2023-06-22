@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: pagopadcommonacr.azurecr.io/gpd
-    tag: "0.4.9"
+    tag: "0.5.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -93,7 +93,7 @@ microservice-chart:
                 values:
                   - user
   canaryDelivery:
-    create: false
+    create: true
     ingress:
       create: true
       canary:
@@ -107,7 +107,7 @@ microservice-chart:
       create: true
       image:
         repository: pagopadcommonacr.azurecr.io/gpd
-        tag: "0.4.9"
+        tag: "0.5.0"
         pullPolicy: Always
       envConfig: {}
       envSecret: {}

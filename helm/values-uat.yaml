@@ -3,8 +3,8 @@ microservice-chart:
   nameOverride: ""
   fullnameOverride: ""
   image:
-    repository: # todo
-    tag: "0.3.4"
+    repository: pagopaucommonacr.azurecr.io/gpd
+    tag: "0.5.0-1"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -29,7 +29,7 @@ microservice-chart:
   ingress:
     create: true
     host: "weuuat.gps.internal.uat.platform.pagopa.it"
-    path: /pagopa-gpd-core/(.*) # todo
+    path: /pagopa-gpd-core/(.*)
   serviceAccount:
     create: false
     annotations: {}
@@ -60,11 +60,24 @@ microservice-chart:
           type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
           value: "50"
   envConfig:
-  # todo
+    WEBSITE_SITE_NAME: 'pagopa-u-gpd-core-service'
+    ENV: 'Azure Kubernetes'
+    SPRING_DATASOURCE_URL: "jdbc:postgresql://pagopa-u-gpd-pgflex.postgres.database.azure.com:6432/apd?sslmode=require&prepareThreshold=0"
+    SPRING_DATASOURCE_TYPE: "org.springframework.jdbc.datasource.SimpleDriverDataSource"
+    SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
+    SPRING_JPA_HIBERNATE_SHOW_SQL: "false"
+    SCHEMA_NAME: "apd"
+    CRON_JOB_SCHEDULE_ENABLED: "true"
+    CRON_JOB_SCHEDULE_EXPRESSION_TO_VALID: "0 */10 * * * *"
+    CRON_JOB_SCHEDULE_EXPRESSION_TO_EXPIRED: "0 */20 * * * *"
+    LOG_LEVEL: "INFO"
+    SQL_LOG_LEVEL: "DEBUG"
+    SQL_BINDER_LOG_LEVEL: "TRACE"
   envSecret:
     # required
     APPLICATIONINSIGHTS_CONNECTION_STRING: 'ai-u-connection-string'
-    # todo
+    SPRING_DATASOURCE_PASSWORD: "db-apd-user-password"
+    SPRING_DATASOURCE_USERNAME: "db-apd-user-name"
   keyvault:
     name: "pagopa-u-gps-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
@@ -93,8 +106,8 @@ microservice-chart:
     deployment:
       create: true
       image:
-        repository: ghcr.io/pagopa/ # todo
-        tag: "0.3.4"
+        repository: pagopaucommonacr.azurecr.io/gpd
+        tag: "0.4.8-1"
         pullPolicy: Always
       envConfig: {}
       envSecret: {}
