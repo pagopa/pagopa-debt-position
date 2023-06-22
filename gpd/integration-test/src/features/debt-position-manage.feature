@@ -4,7 +4,7 @@ Feature: Managing a debt position
    Given GPD running
 
  Scenario: Debt position creation
-   Given a random organization id and iupd
+   Given a random iupd
    When the debt position is created
    Then the debt position gets the status code 201
 
@@ -28,7 +28,7 @@ Feature: Managing a debt position
  Scenario: Debt position update
    When the debt position is updated
    Then the organization gets the update status code 200
-    
+
  Scenario: Debt position get
  	 When we get the debt position
    Then the company name is "Testing S.p.A."

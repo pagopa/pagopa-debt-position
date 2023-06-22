@@ -10,13 +10,14 @@ const { executeDebtPositionCreation,
         executePaymentOptionPay,
         executeReportTransfer,
         executeDebtPositionCreationAndPublication,
+        executeDebtPositionUpdateAndPublication,
         executePaymentOptionGetByIuv
 } = require('./logic/gpd_logic');
 const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, assertNotificationFeeUpdatedAmounts, assertStatusString, executeAfterAllStep, randomOrg, randomIupd, assertIupd } = require('./logic/common_logic');
 const { gpdSessionBundle, gpdUpdateBundle, gpdPayBundle } = require('./utility/data');
 const { getValidBundle, addDays, format } = require('./utility/helpers');
 
-let idOrg;
+let idOrg = process.env.organization_fiscal_code;
 let iupd;
 let status;
 let dueDateFrom;
@@ -33,8 +34,7 @@ Given('GPD running', () => executeHealthCheckForGPD());
 /*
  *  Debt position creation
  */
-Given('a random organization id and iupd', async function () {
-    idOrg = randomOrg();
+Given('a random iupd', async function () {
     iupd = randomIupd();
     // precondition -> deletion possible dirty data
     await executeDebtPositionDeletion(idOrg, iupd);
@@ -116,6 +116,9 @@ Then('the transfer gets the status code {int}', (statusCode) => assertStatusCode
 When('the debt position is created and published', () => executeDebtPositionCreationAndPublication(gpdSessionBundle, idOrg, iupd));
 Then('the debt position gets status {string}', (statusString) => assertStatusString(gpdSessionBundle, statusString));
 
+Given('a new debt position', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, status));
+When('the debt position is updated and published', () => executeDebtPositionUpdateAndPublication(gpdSessionBundle, idOrg, iupd));
+
 function resetParams() {
     dueDateFrom = null;
     dueDateTo = null;
@@ -123,3 +126,8 @@ function resetParams() {
     paymentDateTo = null;
     status = null;
 }
+
+AfterAll(async function() {
+    // postcondition -> deletion possible duplication
+    await executeDebtPositionDeletion(idOrg, iupd);
+});

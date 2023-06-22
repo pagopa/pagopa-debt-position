@@ -4,7 +4,7 @@ Feature: Paying a debt position
    Given GPD running
 
  Scenario: Debt position creation
-   Given a random organization id and iupd
+   Given a random iupd
    When the debt position is created
    Then the debt position gets the status code 201
 
