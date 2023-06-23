@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: pagopapcommonacr.azurecr.io/gpd
-    tag: "0.5.0"
+    tag: "0.5.0-1"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -43,7 +43,7 @@ microservice-chart:
   resources:
     requests:
       memory: "512Mi"
-      cpu: "0.25"
+      cpu: "0.5"
     limits:
       memory: "768Mi"
       cpu: "0.5"
@@ -60,7 +60,7 @@ microservice-chart:
           type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
           value: "75"
   envConfig:
-    WEBSITE_SITE_NAME: 'pagopa-d-gpd-core-service'
+    WEBSITE_SITE_NAME: 'pagopa-p-gpd-core-service'
     ENV: 'Azure Kubernetes'
     SPRING_DATASOURCE_URL: "jdbc:postgresql://pagopa-p-gpd-pgflex.postgres.database.azure.com:6432/apd?sslmode=require&prepareThreshold=0"
     SPRING_DATASOURCE_TYPE: "org.springframework.jdbc.datasource.SimpleDriverDataSource"
@@ -107,7 +107,7 @@ microservice-chart:
       create: true
       image:
         repository: pagopapcommonacr.azurecr.io/gpd
-        tag: "0.5.0"
+        tag: "0.5.0-1"
         pullPolicy: Always
       envConfig: {}
       envSecret: {}
