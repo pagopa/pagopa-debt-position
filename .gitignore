@@ -118,3 +118,15 @@ bin/
 .cache_ggshield
 *azure.properties
 **/node_modules
+
+# VS Code
+.vscode
+
+# Project files
+/target/
+
+# Helm
+/gpd/helm/charts/*
+**/.terraform/
+/helm/charts/microservice-chart-*.tgz
+/helm/requirements.lock
