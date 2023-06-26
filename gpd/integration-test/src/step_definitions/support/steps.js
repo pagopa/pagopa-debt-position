@@ -37,7 +37,7 @@ Given('GPD running', () => executeHealthCheckForGPD());
 Given('a random iupd', async function () {
     iupd = randomIupd();
     // precondition -> deletion possible dirty data
-    await executeDebtPositionDeletion(idOrg, iupd);
+    await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd);
     });
 When('the debt position is created', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, status));
 Then('the debt position gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
@@ -129,5 +129,5 @@ function resetParams() {
 
 AfterAll(async function() {
     // postcondition -> deletion possible duplication
-    await executeDebtPositionDeletion(idOrg, iupd);
+    await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd);
 });
