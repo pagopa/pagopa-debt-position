@@ -59,6 +59,11 @@ microservice-chart:
           # Required
           type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
           value: "75"
+      - type: metrics-api
+        metadata:
+          targetValue: "0.010" # seconds
+          url: "https://weudev.gps.internal.dev.platform.pagopa.it/pagopa-gpd-core/actuator/metrics/http.server.requests.percentile?tag=phi:0.5"
+          valueLocation: "measurements.0.value"
   envConfig:
     WEBSITE_SITE_NAME: 'pagopa-d-gpd-core-service'
     ENV: 'Azure Kubernetes'
