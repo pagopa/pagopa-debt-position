@@ -37,6 +37,10 @@ permissions:
   actions: read
 
 
+defaults:
+  run:
+    working-directory: gpd
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   setup:
