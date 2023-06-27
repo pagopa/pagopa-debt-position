@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.5.0-9-PAGOPA-1039-gpd-gdp-debt-position-migration-on-aks-pipeline-di-deploy-su-aks-gha"
+    tag: "0.5.0-10-PAGOPA-1039-gpd-gdp-debt-position-migration-on-aks-pipeline-di-deploy-su-aks-gha"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -107,7 +107,7 @@ microservice-chart:
       create: true
       image:
         repository: pagopaucommonacr.azurecr.io/gpd
-        tag: "0.5.0-9-PAGOPA-1039-gpd-gdp-debt-position-migration-on-aks-pipeline-di-deploy-su-aks-gha"
+        tag: "0.5.0-10-PAGOPA-1039-gpd-gdp-debt-position-migration-on-aks-pipeline-di-deploy-su-aks-gha"
         pullPolicy: Always
       envConfig: {}
       envSecret: {}
