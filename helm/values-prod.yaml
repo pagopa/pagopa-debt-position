@@ -51,7 +51,7 @@ microservice-chart:
     enable: true
     minReplica: 3
     maxReplica: 10
-    pollingInterval: 10 # seconds
+    pollingInterval: 1 # seconds
     cooldownPeriod: 50 # seconds
     triggers:
       - type: cpu

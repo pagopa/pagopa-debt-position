@@ -51,7 +51,7 @@ microservice-chart:
     enable: true
     minReplica: 1
     maxReplica: 3
-    pollingInterval: 10 # seconds
+    pollingInterval: 5 # seconds
     cooldownPeriod: 50 # seconds
     triggers:
       - type: cpu
@@ -59,6 +59,11 @@ microservice-chart:
           # Required
           type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
           value: "75"
+      - type: metrics-api
+        metadata:
+          targetValue: "50" # milliseconds
+          url: "https://weudev.gps.internal.dev.platform.pagopa.it/pagopa-gpd-core/actuator/metrics/http.server.requests.percentile?tag=phi:0.99"
+          valueLocation: "measurements.0.value"
   envConfig:
     WEBSITE_SITE_NAME: 'pagopa-d-gpd-core-service'
     ENV: 'Azure Kubernetes'
