@@ -152,3 +152,4 @@ build/
 migration*sh
 
 *.lock
+/.identity/.terraform.lock.hcl
