@@ -315,7 +315,7 @@ stages:
               containerRegistry: '$(CONTAINER_REGISTRY)'
               repository: '${{ parameters.REPOSITORY }}'
               buildContext: './${{ parameters.REPOSITORY }}'
-              Dockerfile: './${{ parameters.REPOSITORY }}/Dockerfile.deploy'
+              Dockerfile: './${{ parameters.REPOSITORY }}/Dockerfile'
               tags: |
                 $(Build.BuildId)
                 latest
@@ -513,7 +513,7 @@ stages:
               containerRegistry: '$(UAT_CONTAINER_REGISTRY)'
               repository: '${{ parameters.REPOSITORY }}'
               buildContext: './${{ parameters.REPOSITORY }}'
-              Dockerfile: './${{ parameters.REPOSITORY }}/Dockerfile.deploy'
+              Dockerfile: './${{ parameters.REPOSITORY }}/Dockerfile'
               tags: |
                 $(Build.BuildId)
                 latest
