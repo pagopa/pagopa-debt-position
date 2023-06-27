@@ -2,8 +2,8 @@ apiVersion: v1
 name: pagopa-gpd-core
 description: micro-service to manage Creditor Institution debtor positions
 type: application
-version: 0.11.0
-appVersion: 0.5.0-11-PAGOPA-1039-gpd-gdp-debt-position-migration-on-aks-pipeline-di-deploy-su-aks-gha
+version: 0.12.0
+appVersion: 0.5.0-12-PAGOPA-1039-gpd-gdp-debt-position-migration-on-aks-pipeline-di-deploy-su-aks-gha
 dependencies:
   - name: microservice-chart
     version: 1.21.0
