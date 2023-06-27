@@ -88,6 +88,9 @@ jobs:
   release:
     name: Create a New Release
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gpd
     needs: [setup]
     outputs:
       version: ${{ steps.release.outputs.version }}
@@ -105,6 +108,9 @@ jobs:
     needs: [ setup, release ]
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gpd
     if: ${{ inputs.semver != 'skip' }}
     steps:
       - name: Build and Push
