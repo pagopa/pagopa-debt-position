@@ -5,7 +5,7 @@
     <parent>
         <groupId>it.gov.pagopa.debtposition</groupId>
         <artifactId>pagopa-debt-position</artifactId>
-        <version>0.0.1</version>
+        <version>0.0.1-1-PAGOPA-1039-gpd-gdp-debt-position-migration-on-aks-pipeline-di-deploy-su-aks-gha</version>
     </parent>
     <artifactId>report</artifactId>
     <name>Coverage Report</name>
