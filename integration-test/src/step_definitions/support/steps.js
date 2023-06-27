@@ -1,81 +1,133 @@
-const { Before, BeforeStep, Given, setDefaultTimeout, Then, When } = require('@cucumber/cucumber');
-const { 
-    assertEmptyList,
-    assertFlowXMLContent,
-    assertNonEmptyList,
-    assertPaymentOptionStatus,
-    assertStatusCode
-} = require('./logic/common_logic');
-const { 
-    generateAndPayDebtPosition, 
-    generateDebtPosition,
-    retrievePaymentOptionDetail
+const { Given, When, Then, AfterAll, Before} = require('@cucumber/cucumber')
+const { executeHealthCheckForGPD } = require('./logic/health_checks_logic');
+const { executeDebtPositionCreation,
+        executeDebtPositionDeletion,
+        executeDebtPositionGetList,
+        executeDebtPositionNotificationFeeUpdate,
+        executeDebtPositionUpdate,
+        executeDebtPositionGet,
+        executeDebtPositionPublish,
+        executePaymentOptionPay,
+        executeReportTransfer,
+        executeDebtPositionCreationAndPublication,
+        executeDebtPositionUpdateAndPublication,
+        executePaymentOptionGetByIuv
 } = require('./logic/gpd_logic');
-const { 
-    executeHealthCheckForAPIConfig, 
-    executeHealthCheckForGPD, 
-    executeHealthCheckForGPDPayments,
-    executeHealthCheckForReportingAnalysis, 
-} = require('./logic/health_checks_logic');
-const { 
-    forceReportingBatchStart,
-    retrieveReportFlowList,
-    retrieveReportFlow,
-    sendReportFlowToNode, 
-    waitWholeReportingProcessExecution,
-} = require('./logic/reporting_logic');
-const { bundle } = require('./utility/data');
+const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, assertNotificationFeeUpdatedAmounts, assertStatusString, executeAfterAllStep, randomOrg, randomIupd, assertIupd } = require('./logic/common_logic');
+const { gpdSessionBundle, gpdUpdateBundle, gpdPayBundle } = require('./utility/data');
+const { getValidBundle, addDays, format } = require('./utility/helpers');
 
-/* Setting defaul timeout to 10s. */
-setDefaultTimeout(120 * 1000);
+let idOrg = process.env.organization_fiscal_code;
+let iupd;
+let status;
+let dueDateFrom;
+let dueDateTo;
+let paymentDateFrom;
+let paymentDateTo;
 
-
-/* 
- *  'Given' precondition for health checks on various services. 
+/*
+ *  'Given' precondition for health checks on various services.
  */
-Given('GPD service running', () => executeHealthCheckForGPD());
-Given('APIConfig service running', () => executeHealthCheckForAPIConfig());
-Given('GPD Payments service running', () => executeHealthCheckForGPDPayments());
-Given('reporting analysis service running', () => executeHealthCheckForReportingAnalysis());
+Given('GPD running', () => executeHealthCheckForGPD());
 
 
-/* 
- *  'Given' precondition for validating the entities to be used. 
+/*
+ *  Debt position creation
  */
-Given('a not paid debt position', () => generateDebtPosition(bundle, true));
-Given('a paid debt position', () => generateAndPayDebtPosition(bundle));
-Given('a report flow sent to Node', () => sendReportFlowToNode(bundle));
+Given('a random iupd', async function () {
+    iupd = randomIupd();
+    // precondition -> deletion possible dirty data
+    await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd);
+    });
+When('the debt position is created', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, status));
+Then('the debt position gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
 
-
-/* 
- *  'When' clauses for executing actions.
+/*
+ *  Debt position list
  */
-When('the reporting batch analyzes the reporting flows for the organization', () => forceReportingBatchStart(bundle));
-When('the client waits its execution', () => waitWholeReportingProcessExecution());
+Given('the filter made by status {string}', (statusParam) => status = statusParam);
+Given('the filter made by due date from today to {int} days', (daysParam) => {
+    dueDateFrom = format(new Date());
+    dueDateTo = format(addDays(daysParam));
+});
+Given('the filter made by payment date from today to {int} days', (daysParam) => {
+    paymentDateFrom = format(new Date());
+    paymentDateTo = format(addDays(daysParam));
+});
+When('we ask the list of organizations debt positions', async () => {
+    await executeDebtPositionGetList(gpdSessionBundle, idOrg, dueDateFrom, dueDateTo, paymentDateFrom, paymentDateTo, status)
+    resetParams();
+});
+Then('we get the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
 
-
-/* 
- *  'Then' clauses for executing subsequential actions
+/*
+ *  Debt position notification fee update
  */
-Then('the client asks the flow list for the organization', () => retrieveReportFlowList(bundle));
-Then('the client asks the detail for one of the report flows', () => retrieveReportFlow(bundle));
-Then('the client asks the detail for the analyzed debt positions', () => retrievePaymentOptionDetail(bundle));
+When('the notification fee of the debt position is updated', () => executeDebtPositionNotificationFeeUpdate(gpdSessionBundle, idOrg, 150));
+Then('the organization gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
+Then('the organization gets the updated amounts', () => assertNotificationFeeUpdatedAmounts(gpdSessionBundle.createdDebtPosition, gpdSessionBundle.responseToCheck.data));
 
-
-/* 
- *  'Then' clauses for assering retrieved data 
+/*
+ *  Debt position update
  */
-Then('the client receives status code {int}', (statusCode) => assertStatusCode(bundle.response, statusCode));
-Then('the client receives a non-empty list of flows', () => assertNonEmptyList(bundle.response));
-Then('the client receives an empty list of flows', () => assertEmptyList(bundle.response));
-Then('the client receives the flow XML content', () => assertFlowXMLContent(bundle.response, bundle.flow.id));
-Then('the client receives the payment options with status {string}', (status) => assertPaymentOptionStatus(bundle.response, status));
+When('the debt position is updated', () => executeDebtPositionUpdate(gpdUpdateBundle, idOrg, iupd));
+Then('the organization gets the update status code {int}', (statusCode) => assertStatusCode(gpdUpdateBundle, statusCode));
 
 
-Before(function(scenario) {
-    const header = `| Starting scenario "${scenario.pickle.name}" |`;
-    let h = "-".repeat(header.length);
-    console.log(`\n${h}`);
-    console.log(`${header}`);
-    console.log(`${h}`);
+/*
+ *  Debt position get
+ */
+When('we get the debt position', () => executeDebtPositionGet(gpdSessionBundle, idOrg, iupd));
+Then('the company name is {string}', (companyName) => assertCompanyName(gpdSessionBundle, companyName));
+
+/*
+ *  Debt position delete
+ */
+When('the debt position is deleted', () => executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd));
+
+
+/*
+ *  Debt position publish
+ */
+When('the debt position is published', () => executeDebtPositionPublish(gpdSessionBundle, idOrg, iupd));
+
+/*
+ *  Paying the payment option
+ */
+When('the payment option is paid', () => executePaymentOptionPay(gpdPayBundle, idOrg, gpdSessionBundle.debtPosition.iuv1));
+Then('the payment option gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
+
+/*
+ *  Payment Option get by IUV
+ */
+When('we get the payment option by iuv', () => executePaymentOptionGetByIuv(gpdSessionBundle, idOrg, gpdSessionBundle.debtPosition.iuv1));
+Then('the get payment options returns the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
+Then('the iupd is present and valued with the same value as the debt position', () => assertIupd(gpdSessionBundle));
+
+/*
+ *  Reporting the transfer
+ */
+When('the transfer is reported', () => executeReportTransfer(gpdSessionBundle, idOrg));
+Then('the transfer gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
+
+/*
+ *  Create and publish
+ */
+When('the debt position is created and published', () => executeDebtPositionCreationAndPublication(gpdSessionBundle, idOrg, iupd));
+Then('the debt position gets status {string}', (statusString) => assertStatusString(gpdSessionBundle, statusString));
+
+Given('a new debt position', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, status));
+When('the debt position is updated and published', () => executeDebtPositionUpdateAndPublication(gpdSessionBundle, idOrg, iupd));
+
+function resetParams() {
+    dueDateFrom = null;
+    dueDateTo = null;
+    paymentDateFrom = null;
+    paymentDateTo = null;
+    status = null;
+}
+
+AfterAll(async function() {
+    // postcondition -> deletion possible duplication
+    await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd);
 });

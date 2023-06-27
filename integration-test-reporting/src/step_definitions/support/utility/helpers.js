@@ -4,19 +4,16 @@ function addDays(days) {
   return date;
 }
 
-function format(dateToFormat) {
-    let dd, MM, yyyy;
-    dd = dateToFormat.getDate().toString().padStart(2, '0');
-    MM = (dateToFormat.getMonth() + 1).toString().padStart(2, '0');
-    yyyy = dateToFormat.getFullYear();
-
-    return `${yyyy}-${MM}-${dd}`;
-}
-
 function buildStringFromDate(rawDate) {
   var mm = rawDate.getMonth() + 1;
   var dd = rawDate.getDate();
   return [rawDate.getFullYear(), (mm>9 ? '' : '0') + mm, (dd>9 ? '' : '0') + dd].join('-');
+}
+
+function debugLog(message) {
+  if (process.env.include_debug_logs) {
+    console.log(`\t[DEBUG] | ${new Date().toISOString()} | ${message}`);
+  }
 }
 
 function makeidMix(length) {
@@ -41,8 +38,8 @@ function makeidNumber(length) {
 
 module.exports = {
   addDays,
-  format,
   buildStringFromDate,
+  debugLog,
   makeidMix,
   makeidNumber,
 }

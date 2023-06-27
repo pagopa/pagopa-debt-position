@@ -3,10 +3,10 @@ version: '3.8'
 services:
   
   gpd:
-    env_file: "./gpd/.env"
+    env_file: "../.env"
     image: 'gpd:latest'
     build:
-      context: ./gpd
+      context: ../
     ports:
       - "8085:8085"
     container_name: gpd
@@ -19,7 +19,7 @@ services:
     image: postgres
     container_name: postgres
     build:
-      context: ./postgres
+      context: ../postgres
     ports:
       - "5432:5432"
     # volumes:

@@ -1,13 +1,12 @@
 const axios = require("axios");
-const fs = require('fs');
 
 function get(url, config) {
     return axios.get(url, config)
          .then(res => {
-            return res;
+             return res;
          })
          .catch(error => {
-            return error.response;
+             return error.response;
          });
 }
 
@@ -21,8 +20,8 @@ function post(url, body, config) {
         });
 }
 
-function put(url, body, config) {
-    return axios.put(url, body, config)
+function put(url, body) {
+    return axios.put(url, body)
         .then(res => {
             return res;
         })
