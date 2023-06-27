@@ -3,7 +3,7 @@ microservice-chart:
   nameOverride: ""
   fullnameOverride: ""
   image:
-    repository: pagopaucommonacr.azurecr.io/gpd
+    repository: ghcr.io/pagopa/pagopa-debt-position
     tag: "0.5.0-9-PAGOPA-1039-gpd-gdp-debt-position-migration-on-aks-pipeline-di-deploy-su-aks-gha"
     pullPolicy: Always
   livenessProbe:
