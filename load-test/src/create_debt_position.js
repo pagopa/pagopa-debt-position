@@ -64,7 +64,7 @@ export default function () {
           "transfer": [
             {
               "idTransfer": "1",
-              "organizationFiscalCode": "00011122201"
+              "organizationFiscalCode": "00011122201",
               "amount": 8000,
               "remittanceInformation": "remittanceInformation 1",
               "category": "9/0101108TS/",
