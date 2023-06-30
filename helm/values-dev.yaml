@@ -54,11 +54,6 @@ microservice-chart:
     pollingInterval: 5 # seconds
     cooldownPeriod: 50 # seconds
     triggers:
-      - type: cpu
-        metadata:
-          # Required
-          type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
-          value: "75"
       - type: metrics-api
         metadata:
           targetValue: "50" # milliseconds
