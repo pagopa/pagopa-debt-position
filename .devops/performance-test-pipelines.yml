@@ -48,11 +48,11 @@
 
   steps:
     - script: |
-        cd ./gpd/load-test/src
+        cd ./load-test/src
         docker pull grafana/k6
       displayName: Pull k6 image
 
     - script: |
-        cd ./gpd/load-test
+        cd ./load-test
         sh ./run_performance_test.sh ${{ parameters.ENVIRONMENT }} ${{ parameters.TEST_TYPE }} ${{ parameters.SCRIPT }} gpdk6 $(API_SUBSCRIPTION_KEY) ${{ parameters.PD_TO_PRELOAD }}
       displayName: Run k6 ${{ parameters.SCRIPT }} on ${{ parameters.ENVIRONMENT }}

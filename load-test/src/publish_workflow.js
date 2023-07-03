@@ -88,7 +88,7 @@ export default function () {
     // Publish the debt position.
     url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions/${iupd}/publish`;
 
-    r = http.post(url, params);
+    r = http.post(url, '{}', params);
 
     //console.log("PublishDebtPosition call - creditor_institution_code = " + creditor_institution_code + ", iupd = " + iupd + ", Status = " + r.status);
 
