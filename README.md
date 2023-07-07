@@ -47,7 +47,7 @@ gpd       | 2022-01-27 13:49:00.792  INFO 1 --- [           main] i.g.p.d.DebtPo
 Under `gpd` folder typing :
 
 ```sh 
-bash run_local.sh
+bash ./docker/run_local.sh
 ```
 > **NOTE**: above command run spring boot application via `mvn` command. You can comment this line and runs it with your favourite ide, to debug. 
 
@@ -158,7 +158,7 @@ under `gpd` folder typing
 ```sh
  bash api-test/run_test.sh l int
 ```
-> **NOTE**: suppose `Started DebtPositionApplication` on port `8085`
+> **NOTE**: suppose `Started DebtPositionApplication` on port `8080`
 
 if all  right you'll see something like that :
 

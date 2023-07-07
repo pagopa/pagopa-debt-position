@@ -1,49 +1,15 @@
 version: '3.8'
 
 services:
-  
-  gpd:
-    env_file: "../.env"
-    image: 'gpd:latest'
-    build:
-      context: ../
-    ports:
-      - "8085:8085"
-    container_name: gpd
-    depends_on:
-      - postgres
-    networks:
-      - gpd-net
-    
-  postgres:
-    image: postgres
-    container_name: postgres
-    build:
-      context: ../postgres
-    ports:
-      - "5432:5432"
-    # volumes:
-    #   - "./postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:Z"
-    environment:
-      - POSTGRES_USER=postgres_user_test
-      - POSTGRES_PASSWORD=postgres_pwd_test
-    networks:
-      - gpd-net
 
-
-  pgbouncer:
-    environment:
-      - 'DATABASE_URL=postgres://postgres_user_test:postgres_pwd_test@postgres/apd'
-    ports:
-      - '6432:5432'
-    image: edoburu/pgbouncer
-    networks:
-      - gpd-net
-
-
-networks:
-  gpd-net:
-    driver: bridge
-
-    driver_opts:
-      com.docker.network.driver.mtu: 1450
+  app:
+      container_name: 'gpd-core'
+      image: ${image}
+      platform: linux/amd64
+      build:
+        dockerfile: Dockerfile
+        context: ../
+      env_file:
+        - ./.env
+      ports:
+        - "8080:8080"

@@ -36,7 +36,7 @@ then
   echo "No PD_TO_PRELOAD number specified: 0 is default value."
 fi
 
-#k6 run -o influxdb=http://influxdb:8086/k6 -e BASE_URL=http://localhost:8085 gpd/load-test/src/payments_workflow.js
+#k6 run -o influxdb=http://influxdb:8086/k6 -e BASE_URL=http://localhost:8080 gpd/load-test/src/payments_workflow.js
 
 export env=${ENVIRONMENT}
 export type=${TYPE}

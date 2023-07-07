@@ -7,7 +7,7 @@
     "FLOWS_QUEUE": "flowsid",
     "OPTIONS_QUEUE": "optionsid",
     "FLOWS_XML_BLOB": "xmlflowblob",
-    "GPD_HOST": "http://localhost:8085",
+    "GPD_HOST": "http://localhost:8080",
     "NODO_HOST": "http://localhost:8081/nodo-per-pa/v1",
     "PAA_ID_INTERMEDIARIO": "1234",
     "PAA_STAZIONE_INT": "1234_03",

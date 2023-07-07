@@ -3,7 +3,7 @@ import { check } from 'k6';
 import { SharedArray } from 'k6/data';
 import { makeidMix, randomString } from './modules/helpers.js';
 
-//k6 run -o influxdb=http://influxdb:8086/k6 -e BASE_URL=http://localhost:8085 gpd/load-test/src/payments_workflow.js
+//k6 run -o influxdb=http://influxdb:8086/k6 -e BASE_URL=http://localhost:8080 gpd/load-test/src/payments_workflow.js
 export let options = JSON.parse(open(__ENV.TEST_TYPE));
 
 const varsArray = new SharedArray('vars', function () {

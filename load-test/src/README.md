@@ -42,7 +42,7 @@ k6 run -e TEST_TYPE=./test-types/load.json -e BASE_URL=https://api.uat.platform.
 
 #### Local host
 ```
-k6 run --e TEST_TYPE=./test-types/load.json -e BASE_URL=http://localhost:8085 gpd/load-test/src/create_debt_postion.js
+k6 run --e TEST_TYPE=./test-types/load.json -e BASE_URL=http://localhost:8080 gpd/load-test/src/create_debt_postion.js
 ```
 
 
@@ -67,5 +67,5 @@ k6 run --e TEST_TYPE=./test-types/load.json -e BASE_URL=https://api.uat.platform
 
 #### Local host
 ```
-k6 run --e TEST_TYPE=./test-types/load.json -e BASE_URL=http://localhost:8085 gpd/load-test/src/payments_workflow.js
+k6 run --e TEST_TYPE=./test-types/load.json -e BASE_URL=http://localhost:8080 gpd/load-test/src/payments_workflow.js
 ```
