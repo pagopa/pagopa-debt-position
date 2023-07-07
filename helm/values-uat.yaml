@@ -63,6 +63,7 @@ microservice-chart:
       horizontalPodAutoscalerConfig:
         behavior:
           scaleDown:
+            # https://github.com/kubernetes/enhancements/blob/master/keps/sig-autoscaling/853-configurable-hpa-scale-velocity/README.md#stabilization-window
             stabilizationWindowSeconds: 300
             policies:
               - type: Pods
@@ -71,8 +72,8 @@ microservice-chart:
           scaleUp:
             stabilizationWindowSeconds: 0
             policies:
-              - type: Percent
-                value: 100
+              - type: Pods
+                value: 2
                 periodSeconds: 20
   envConfig:
     WEBSITE_SITE_NAME: 'pagopa-u-gpd-core-service'
