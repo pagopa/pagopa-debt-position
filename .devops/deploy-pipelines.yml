@@ -296,6 +296,7 @@ stages:
             inputs:
               command: 'buildAndPush'
               containerRegistry: '$(CONTAINER_REGISTRY)'
+              repository: './'
               buildContext: './'
               Dockerfile: './Dockerfile'
               tags: |
