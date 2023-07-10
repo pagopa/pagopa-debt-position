@@ -458,6 +458,7 @@ stages:
             inputs:
               command: 'buildAndPush'
               containerRegistry: '$(UAT_CONTAINER_REGISTRY)'
+              repository: 'gpd'
               buildContext: './'
               Dockerfile: './Dockerfile'
               tags: |
