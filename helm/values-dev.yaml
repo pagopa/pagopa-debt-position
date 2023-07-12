@@ -58,16 +58,17 @@ microservice-chart:
         metadata:
           # Required
           type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
-          value: "75"
+          value: "50"
       - type: metrics-api
         metadata:
-          targetValue: "10" # milliseconds
-          url: "https://weudev.gps.internal.dev.platform.pagopa.it/pagopa-gpd-core/actuator/metrics/http.server.requests.percentile?tag=phi:0.99"
+          targetValue: "50" # milliseconds
+          url: "https://weuuat.gps.internal.uat.platform.pagopa.it/pagopa-gpd-core/actuator/metrics/http.server.requests.percentile?tag=phi:0.99"
           valueLocation: "measurements.0.value"
     advanced:
       horizontalPodAutoscalerConfig:
         behavior:
           scaleDown:
+            # https://github.com/kubernetes/enhancements/blob/master/keps/sig-autoscaling/853-configurable-hpa-scale-velocity/README.md#stabilization-window
             stabilizationWindowSeconds: 300
             policies:
               - type: Pods
@@ -76,8 +77,8 @@ microservice-chart:
           scaleUp:
             stabilizationWindowSeconds: 0
             policies:
-              - type: Percent
-                value: 100
+              - type: Pods
+                value: 2
                 periodSeconds: 20
   envConfig:
     WEBSITE_SITE_NAME: 'pagopa-d-gpd-core-service'
