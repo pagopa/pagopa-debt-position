@@ -18,7 +18,7 @@ on:
   workflow_dispatch:
 
 env:
-  PROJECT_KEY: pagopa_pagopa-gpd-core
+  PROJECT_KEY: pagopa_pagopa-debt-position
 
 
 permissions:
