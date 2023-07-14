@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - 'gpd/openapi/openapi.json'
+      - './openapi/openapi.json'
       - '.github/workflows/create_dashboard.yaml'
       - '.opex/**'
 
