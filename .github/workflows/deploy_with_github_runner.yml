@@ -13,8 +13,7 @@ on:
         type: string
 
 env:
-  NAMESPACE: gps
-  APP_NAME: pagopagpdcore
+  APP_NAME: gpd-core
 
 
 permissions:
@@ -59,7 +58,7 @@ jobs:
           subscription_id: ${{ secrets.SUBSCRIPTION_ID }}
           tenant_id: ${{ secrets.TENANT_ID }}
           env: ${{ inputs.environment }}
-          namespace: ${{ env.NAMESPACE }}
+          namespace: ${{ vars.NAMESPACE }}
           cluster_name: ${{ vars.CLUSTER_NAME }}
           resource_group: ${{ vars.CLUSTER_RESOURCE_GROUP }}
           app_name: ${{ env.APP_NAME }}

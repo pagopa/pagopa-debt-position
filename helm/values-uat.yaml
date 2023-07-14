@@ -3,8 +3,8 @@ microservice-chart:
   nameOverride: ""
   fullnameOverride: ""
   image:
-    repository: pagopaucommonacr.azurecr.io/gpd
-    tag: "0.5.0-3"
+    repository: ghcr.io/pagopa/pagopa-debt-position
+    tag: "0.6.0-1-PAGOPA-1039-gpd-gdp-debt-position-migration-on-aks-pipeline-di-deploy-su-aks-gha"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -42,11 +42,11 @@ microservice-chart:
     allowPrivilegeEscalation: false
   resources:
     requests:
-      memory: "2048Mi"
-      cpu: "1"
+      memory: "1024Mi"
+      cpu: "0.75"
     limits:
-      memory: "2048Mi"
-      cpu: "1"
+      memory: "1024Mi"
+      cpu: "0.75"
   autoscaling:
     enable: true
     minReplica: 3
@@ -54,6 +54,11 @@ microservice-chart:
     pollingInterval: 1 # seconds
     cooldownPeriod: 50 # seconds
     triggers:
+      - type: cpu
+        metadata:
+          # Required
+          type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
+          value: "50"
       - type: metrics-api
         metadata:
           targetValue: "50" # milliseconds
@@ -122,8 +127,8 @@ microservice-chart:
     deployment:
       create: true
       image:
-        repository: pagopaucommonacr.azurecr.io/gpd
-        tag: "0.5.0-3"
+        repository: ghcr.io/pagopa/pagopa-debt-position
+        tag: "0.6.0-1-PAGOPA-1039-gpd-gdp-debt-position-migration-on-aks-pipeline-di-deploy-su-aks-gha"
         pullPolicy: Always
       envConfig: {}
       envSecret: {}

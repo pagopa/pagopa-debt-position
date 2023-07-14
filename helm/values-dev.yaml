@@ -3,8 +3,8 @@ microservice-chart:
   nameOverride: ""
   fullnameOverride: ""
   image:
-    repository: pagopadcommonacr.azurecr.io/gpd
-    tag: "0.5.0-3"
+    repository: ghcr.io/pagopa/pagopa-debt-position
+    tag: "0.6.0-1-PAGOPA-1039-gpd-gdp-debt-position-migration-on-aks-pipeline-di-deploy-su-aks-gha"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -54,11 +54,32 @@ microservice-chart:
     pollingInterval: 5 # seconds
     cooldownPeriod: 50 # seconds
     triggers:
+      - type: cpu
+        metadata:
+          # Required
+          type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
+          value: "50"
       - type: metrics-api
         metadata:
           targetValue: "50" # milliseconds
-          url: "https://weudev.gps.internal.dev.platform.pagopa.it/pagopa-gpd-core/actuator/metrics/http.server.requests.percentile?tag=phi:0.99"
+          url: "https://weuuat.gps.internal.uat.platform.pagopa.it/pagopa-gpd-core/actuator/metrics/http.server.requests.percentile?tag=phi:0.99"
           valueLocation: "measurements.0.value"
+    advanced:
+      horizontalPodAutoscalerConfig:
+        behavior:
+          scaleDown:
+            # https://github.com/kubernetes/enhancements/blob/master/keps/sig-autoscaling/853-configurable-hpa-scale-velocity/README.md#stabilization-window
+            stabilizationWindowSeconds: 300
+            policies:
+              - type: Pods
+                value: 1
+                periodSeconds: 20
+          scaleUp:
+            stabilizationWindowSeconds: 0
+            policies:
+              - type: Pods
+                value: 2
+                periodSeconds: 20
   envConfig:
     WEBSITE_SITE_NAME: 'pagopa-d-gpd-core-service'
     ENV: 'Azure Kubernetes'
@@ -106,8 +127,8 @@ microservice-chart:
     deployment:
       create: true
       image:
-        repository: pagopadcommonacr.azurecr.io/gpd
-        tag: "0.5.0-3"
+        repository: ghcr.io/pagopa/pagopa-debt-position
+        tag: "0.6.0-1-PAGOPA-1039-gpd-gdp-debt-position-migration-on-aks-pipeline-di-deploy-su-aks-gha"
         pullPolicy: Always
       envConfig: {}
       envSecret: {}

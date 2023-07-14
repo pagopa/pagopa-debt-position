@@ -30,7 +30,7 @@ or that for `yaml` version
 
 ### Run docker container
 
-Under main project folder typing :
+Under docker project folder typing :
 `docker-compose up --build`
 >**NOTE** : before that compile `gpd` service with `mvn clean package` command
 
@@ -44,10 +44,14 @@ gpd       | 2022-01-27 13:49:00.792  INFO 1 --- [           main] i.g.p.d.DebtPo
 
 ## Develop Locally 💻
 
-Under `gpd` folder typing :
+Under `gpd` main project folder typing :
 
 ```sh 
-bash run_local.sh
+bash ./docker/run_local.sh
+```
+or
+```sh 
+bash ./docker/run_docker.sh local
 ```
 > **NOTE**: above command run spring boot application via `mvn` command. You can comment this line and runs it with your favourite ide, to debug. 
 
@@ -78,63 +82,11 @@ Example of the naming convention is: V001__INIT.sql
 
 > **NOTE**: In the application.properties the ddl-auto configuration must be validate. This causes Hibernate to validate the schema to see if it matches with what is defined in Java.
 
-## Start the dev environment for Reporting subsystems
-
-### Docker
-
-From `reporting-batch` folder:
-
-```
-mv .env.example .env
-```
-
-From `reporting-service` folder:
-
-```
-mv .env.example .env
-```
-
-From the project root:
-```
-docker-compose -f docker-compose-reporting.yml up --build
-```
-
-### Local
-#### Prerequisites
-- [Azurite](https://github.com/Azure/Azurite)
-
-
-By default, Azurite will listen for the :
-- [Blob service on port 10000](
-https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio#blob-listening-port-configuration)
-- [Queue service on port 10001](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio#queue-listening-port-configuration)
-- [Table service on port 10002](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio#table-listening-port-configuration)
-
-```
-docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite
-```
-
-From `reporting-batch` folder:
-
-```
-cp local.settings.json.example local.settings.json
-```
-
-From `reporting-service` folder:
-
-```
-mv local.settings.json.example local.settings.json
-mvn clean package
-mvn azure-functions:run
-```
-
-Tool to explore azurite: https://azure.microsoft.com/it-it/features/storage-explorer/ 
-
 ### Testing 🧪
 
 #### Unit testing
 
-Under `gpd` folder typing `mvn clean verify`, if all right you'll see following stuffs
+Under `gpd` main project folder typing `mvn clean verify`, if all right you'll see following stuffs
 
 ```sh
 [INFO] Results:
@@ -153,12 +105,12 @@ Under `gpd` folder typing `mvn clean verify`, if all right you'll see following 
 
 #### Integration testing
 
-under `gpd` folder typing
+under `gpd` main project folder typing
 
 ```sh
  bash api-test/run_test.sh l int
 ```
-> **NOTE**: suppose `Started DebtPositionApplication` on port `8085`
+> **NOTE**: suppose `Started DebtPositionApplication` on port `8080`
 
 if all  right you'll see something like that :
 

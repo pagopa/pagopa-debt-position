@@ -26,9 +26,6 @@ parameters:
     type: string
     values:
       - gpd
-      - reporting-analysis
-      - reporting-batch
-      - reporting-service
     default: gpd
   - name: EXECUTE_MIGRATION
     displayName: Execute database schema update/migration
@@ -102,16 +99,14 @@ stages:
             displayName: Set Git global config
           - template: azure-templates/maven-versioning.yml
             parameters:
-              subproject: "${{ parameters.REPOSITORY }}"
               semver: "${{ parameters.SEMVER }}"
           - task: Bash@3
             name: pomversion
             inputs:
               targetType: "inline"
               script: |
-                version=$(mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)
+                version=$(mvn -f pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)
                 echo "##vso[task.setvariable variable=next;isOutput=true]$version"
-                sh report/bumper.sh ${{ parameters.REPOSITORY }} $version
               failOnStderr: true
           - script: |
               echo "Checkout on $(SOURCE_BRANCH)"
@@ -119,15 +114,15 @@ stages:
             displayName: Checkout on source branch
           # bump version
           - script: |
-              git add ${{ parameters.REPOSITORY }}/pom.xml
+              git add pom.xml
               git add report/pom.xml
               git commit -m "Bump version [skip ci]"
               git push origin $(SOURCE_BRANCH)
               git push --tags
           - script: |
               HEAD_SHA=$(git rev-parse HEAD)
-              TAG="${{ parameters.REPOSITORY }}/$(pomversion.next)"
-              TITLE="Release ${{ parameters.REPOSITORY }}/$(pomversion.next)"
+              TAG="$(pomversion.next)"
+              TITLE="Release $(pomversion.next)"
               echo "##vso[task.setvariable variable=title]$TITLE"
               echo "##vso[task.setvariable variable=sha]$HEAD_SHA"
               echo "##vso[task.setvariable variable=tag]$TAG"
@@ -179,7 +174,6 @@ stages:
                 -e GPD_SCHEMA_NAME='$(APD_SCHEMA_NAME)' \
                 --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
               failOnStderr: true
-              workingDirectory: ${{ parameters.REPOSITORY }}
   # DB migrations UAT
   - stage: db_uat_migrations
     condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'uat'), eq('${{ parameters.EXECUTE_MIGRATION }}', 'true'))
@@ -211,7 +205,6 @@ stages:
                 -e GPD_SCHEMA_NAME='$(APD_SCHEMA_NAME)' \
                 --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
               failOnStderr: true
-              workingDirectory: ${{ parameters.REPOSITORY }}
   # DB migrations PROD
   - stage: db_prod_migrations
     condition: and(not(failed('releaseService')), eq('${{ parameters.REPOSITORY }}', 'gpd'), eq('${{ parameters.ENV }}', 'prod'), eq('${{ parameters.EXECUTE_MIGRATION }}', 'true'))
@@ -243,7 +236,6 @@ stages:
                 -e GPD_SCHEMA_NAME='$(APD_SCHEMA_NAME)' \
                 --rm -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
               failOnStderr: true
-              workingDirectory: ${{ parameters.REPOSITORY }}
   # Deploy on Azure
   - stage: deploy
     condition: and(in(dependencies.db_dev_migrations.result, 'Succeeded', 'Skipped'), in(dependencies.db_uat_migrations.result, 'Succeeded', 'Skipped'), in(dependencies.db_prod_migrations.result, 'Succeeded', 'Skipped', 'Rejected'))
@@ -273,7 +265,7 @@ stages:
             inputs:
               targetType: "inline"
               script: |
-                version=$(mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)
+                version=$(mvn -f pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)
                 echo "##vso[task.setvariable variable=next;isOutput=true]$version"
               failOnStderr: true
           - task: Bash@3
@@ -282,22 +274,13 @@ stages:
             inputs:
               targetType: "inline"
               script: |
-                mvn -f ${{ parameters.REPOSITORY }}/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout
+                mvn -f pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout
               failOnStderr: true
-
-          - task: Bash@3
-            displayName: 'Update WSDL Location'
-            condition: in('${{ parameters.REPOSITORY }}', 'reporting-batch', 'reporting-service')
-            inputs:
-              targetType: 'inline'
-              script: |
-                cd ./${{ parameters.REPOSITORY }}
-                sh upd_wsdl_location.sh $(NODO_HOST)
 
           - task: Maven@3
             displayName: Build Module
             inputs:
-              mavenPomFile: "${{ parameters.REPOSITORY }}/pom.xml"
+              mavenPomFile: "pom.xml"
               mavenOptions: "-Xmx3072m $(MAVEN_OPTS)"
               mavenVersionOption: 'Default'
               javaHomeOption: "JDKVersion"
@@ -313,9 +296,9 @@ stages:
             inputs:
               command: 'buildAndPush'
               containerRegistry: '$(CONTAINER_REGISTRY)'
-              repository: '${{ parameters.REPOSITORY }}'
-              buildContext: './${{ parameters.REPOSITORY }}'
-              Dockerfile: './${{ parameters.REPOSITORY }}/Dockerfile.deploy'
+              repository: 'gpd'
+              buildContext: './'
+              Dockerfile: './Dockerfile'
               tags: |
                 $(Build.BuildId)
                 latest
@@ -341,25 +324,6 @@ stages:
               DockerNamespace: "${{variables.CONTAINER_NAMESPACE}}"
               DockerRepository: "${{ parameters.REPOSITORY }}"
               DockerImageTag: "$(Build.BuildId)"
-              deployToSlotOrASE: true
-              slotName: staging
-              resourceGroupName: $(RESOURCE_GROUP)
-          # deploy reporting-fn
-          - task: AzureFunctionAppContainer@1
-            displayName: Deploy Function App [DEV|UAT]
-            condition: and(in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service'), in('${{ parameters.ENV }}', 'dev', 'uat'))
-            inputs:
-              azureSubscription: $(AZURE_SUBSCRIPTION)
-              appName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
-              imageName: "${{variables.CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(Build.BuildId)"
-              slotName: production
-          - task: AzureFunctionAppContainer@1
-            displayName: Deploy Function App [PROD]
-            condition: and(in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service'), eq('${{ parameters.ENV }}', 'prod'))
-            inputs:
-              azureSubscription: $(AZURE_SUBSCRIPTION)
-              appName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
-              imageName: "${{variables.CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(Build.BuildId)"
               deployToSlotOrASE: true
               slotName: staging
               resourceGroupName: $(RESOURCE_GROUP)
@@ -398,21 +362,6 @@ stages:
               SourceSlot: staging
               SwapWithProduction: true
               Slot: production
-      - job: completeProdDeployFn
-        condition: in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service')
-        displayName: complete prod function deploy
-        dependsOn: waitForApprovalPROD
-        steps:
-          # deploy functions - swap
-          - task: AzureAppServiceManage@0
-            displayName: Swapping App Service Deploy
-            inputs:
-              ConnectedServiceName: $(AZURE_SUBSCRIPTION)
-              WebAppName: "${{variables.APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
-              ResourceGroupName: $(RESOURCE_GROUP)
-              SourceSlot: staging
-              SwapWithProduction: true
-              Slot: production
   # Integration/Load tests
   - stage: Integration_Tests
     # run stage 'test' only if TEST is equal to true
@@ -439,7 +388,6 @@ stages:
             displayName: Checkout and update branch
           - script: |
               cd ./integration-test
-              cd ./gpd/integration-test
               sh run_integration_test.sh ${{ parameters.ENV }} $(API_SUBSCRIPTION_KEY)
             displayName: Run integration test
       #      - job: loadTests
@@ -491,11 +439,10 @@ stages:
                 -e GPD_SCHEMA_NAME='$(APD_SCHEMA_NAME)' \
                 --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:validate -Dflyway.configFiles=apdFlywayConfig.conf
               failOnStderr: true
-              workingDirectory: ${{ parameters.REPOSITORY }}
           - task: Maven@3
             displayName: Build Module
             inputs:
-              mavenPomFile: "${{ parameters.REPOSITORY }}/pom.xml"
+              mavenPomFile: "pom.xml"
               mavenOptions: "-Xmx3072m $(MAVEN_OPTS)"
               mavenVersionOption: 'Default'
               javaHomeOption: "JDKVersion"
@@ -511,9 +458,9 @@ stages:
             inputs:
               command: 'buildAndPush'
               containerRegistry: '$(UAT_CONTAINER_REGISTRY)'
-              repository: '${{ parameters.REPOSITORY }}'
-              buildContext: './${{ parameters.REPOSITORY }}'
-              Dockerfile: './${{ parameters.REPOSITORY }}/Dockerfile.deploy'
+              repository: 'gpd'
+              buildContext: './'
+              Dockerfile: './Dockerfile'
               tags: |
                 $(Build.BuildId)
                 latest
@@ -528,12 +475,3 @@ stages:
               DockerNamespace: "${{variables.UAT_CONTAINER_NAMESPACE}}"
               DockerRepository: "${{ parameters.REPOSITORY }}"
               DockerImageTag: "$(Build.BuildId)"
-          # deploy reporting-fn
-          - task: AzureFunctionAppContainer@1
-            displayName: Deploy Function App [DEV|UAT]
-            condition: and(in('${{ parameters.REPOSITORY }}', 'reporting-analysis', 'reporting-batch', 'reporting-service'), in('${{ parameters.ENV }}', 'dev', 'uat'))
-            inputs:
-              azureSubscription: $(AZURE_SUBSCRIPTION)
-              appName: "${{variables.UAT_WEB_APP_NAME}}-fn-${{replace(parameters.REPOSITORY, 'reporting', 'gpd')}}"
-              imageName: "${{variables.UAT_CONTAINER_NAMESPACE}}/${{ parameters.REPOSITORY }}:$(Build.BuildId)"
-              slotName: production

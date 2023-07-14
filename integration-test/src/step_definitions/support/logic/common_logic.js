@@ -1,35 +1,59 @@
 const assert = require("assert");
 
-async function assertEmptyList(response) {
-    console.log(` - -> the client receives an empty list of flows..`);
-    assert.ok(response.data.length === 0);
+async function assertAmount(bundle, amount) {
+    assertOutcome(bundle, "OK");
+    assert.match(bundle.responseToCheck.data, new RegExp(`<amount>${amount}</amount>`, "g"));
 }
 
-async function assertFlowXMLContent(response, flowId) {
-    console.log(` - -> the client receives the flow XML content with outcome [OK]..`);
-    assert.match(response.data, new RegExp(`^<FlussoRiversamento.+`, "g"));    
-    assert.match(response.data, new RegExp(`<identificativoFlusso>${flowId}</identificativoFlusso>`, "g"));
+async function assertFaultCode(bundle, fault) {
+    assertOutcome(bundle, "KO");
+    assert.match(bundle.responseToCheck.data, new RegExp(`<faultCode>${fault}</faultCode>`, "g"));
 }
 
-async function assertNonEmptyList(response) {
-    console.log(` - -> the client receives a non-empty list of flows..`);
-    assert.ok(response.data.length > 0);
+async function assertOutcome(bundle, outcome) {
+    assert.match(bundle.responseToCheck.data, new RegExp(`<outcome>${outcome}</outcome>`, "g"));
 }
 
-async function assertPaymentOptionStatus(response, status) {
-    console.log(` - -> the client receives the payment options with status [${status}]..`);
-    assert.strictEqual(response.data.status, status);
+async function assertStatusCode(bundle, statusCode) {
+    assert.strictEqual(bundle.responseToCheck.status, statusCode);
 }
 
-async function assertStatusCode(response, statusCode) {
-    console.log(` - -> the client receives status code [${statusCode}]..`);
-    assert.strictEqual(response.status, statusCode);
+async function assertCompanyName(bundle, companyName) {
+    assert.strictEqual(bundle.payer.companyName, companyName);
+}
+
+async function assertIupd(bundle) {
+  assert.strictEqual(bundle.debtPosition.iupd, bundle.responseToCheck.data.iupd)
+}
+
+async function assertStatusString(bundle, statusString) {
+    assert.strictEqual(bundle.responseToCheck.data.status, statusString);
+}
+
+async function assertNotificationFeeUpdatedAmounts(createdDebtPosition, response) {
+    let notificationFee = response.notificationFee;
+    assert.strictEqual(response.amount, createdDebtPosition.paymentOption[0].amount + notificationFee);
+    assert.strictEqual(response.transfer[0].amount, createdDebtPosition.paymentOption[0].transfer[0].amount + notificationFee);
+    assert.strictEqual(response.transfer[1].amount, createdDebtPosition.paymentOption[0].transfer[1].amount);
+}
+
+function randomOrg() {
+    return "Org_" + Math.floor(Math.random() * 100);
+}
+
+function randomIupd() {
+    return "IUPD_" + Math.floor(Math.random() * 1000000);
 }
 
 module.exports = {
-    assertEmptyList,
-    assertFlowXMLContent,
-    assertNonEmptyList,
-    assertPaymentOptionStatus,
+    assertAmount,
+    assertFaultCode,
+    assertOutcome,
     assertStatusCode,
+    assertCompanyName,
+    assertNotificationFeeUpdatedAmounts,
+    assertStatusString,
+    randomOrg,
+    randomIupd,
+    assertIupd
 }

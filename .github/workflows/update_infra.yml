@@ -6,9 +6,7 @@ on:
       - main
     types: [ closed ]
     paths:
-      - 'gpd/openapi/openapi.json'
-      - 'payments/openapi/openapi.json'
-      - 'reporting-analysis/openapi/openapi.json'
+      - 'openapi/*'
 
 
   workflow_dispatch:

@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+
+  app:
+      container_name: 'gpd-core'
+      image: ${image}
+      platform: linux/amd64
+      build:
+        dockerfile: Dockerfile
+        context: ../
+      env_file:
+        - ./.env
+      ports:
+        - "8080:8080"

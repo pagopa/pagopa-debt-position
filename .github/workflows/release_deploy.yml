@@ -17,6 +17,11 @@ on:
           - uat
           - prod
           - all
+      db_migration:
+        required: false
+        type: boolean
+        description: run DB migration
+        default: false
       beta:
         required: false
         type: boolean
@@ -101,6 +106,20 @@ jobs:
           beta: ${{ inputs.beta }}
           skip_ci: false
 
+  db_migration:
+    name: DB migration
+    needs: [ setup, release ]
+    if: ${{ always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }} && ${{ inputs.db_migration }}
+    strategy:
+      matrix:
+        environment: [ dev, uat, prod ]
+    uses: ./.github/workflows/db_migration_with_github_runner.yml
+    with:
+      environment: ${{ inputs.environment}}
+      target: ${{ needs.setup.outputs.environment }}
+    secrets: inherit
+
+
   image:
     needs: [ setup, release ]
     name: Build and Push Docker Image
@@ -117,7 +136,7 @@ jobs:
 
   deploy_aks:
     name: Deploy on AKS
-    needs: [ setup, release, image ]
+    needs: [ setup, release, image, db_migration ]
     if: ${{ always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
     strategy:
       matrix:
