@@ -69,14 +69,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: 3.8.2
+
       - name: Run flyway::migrate
         shell: bash
         run: |
-          docker run -e SPRING_DATASOURCE_URL=${{ secrets.DATASOURCE_URL }} \
-          -e SPRING_DATASOURCE_USERNAME=${{ secrets.DATASOURCE_USERNAME }} \
-          -e SPRING_DATASOURCE_PASSWORD=${{ secrets.DATASOURCE_PASSWORD }} \
-          -e GPD_SCHEMA_NAME=${{ secrets.APD_SCHEMA_NAME }} \
-          --rm --name my-maven-project -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
+          SPRING_DATASOURCE_URL=${{ secrets.DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME=${{ secrets.DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD=${{ secrets.DATASOURCE_PASSWORD }}
+          GPD_SCHEMA_NAME=${{ secrets.APD_SCHEMA_NAME }}
+          mvn clean flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
 
   cleanup_runner:
     name: Cleanup Runner
