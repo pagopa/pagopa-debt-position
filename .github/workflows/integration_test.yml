@@ -49,7 +49,7 @@ jobs:
         run: |
           export CANARY=${{ inputs.canary }}
           
-          cd ./gpd/integration-test
+          cd ./integration-test
           chmod +x ./run_integration_test.sh
           ./run_integration_test.sh ${{( github.event.inputs == null && 'uat') || inputs.environment }} ${{ secrets.API_SUBSCRIPTION_KEY }}
 

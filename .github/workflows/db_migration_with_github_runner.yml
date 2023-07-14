@@ -15,8 +15,22 @@ on:
     inputs:
       environment:
         required: true
-        description: The name of the environment where to deploy
-        type: string
+        type: choice
+        description: Select the Environment
+        options:
+          - dev
+          - uat
+          - prod
+          - all
+      target:
+        required: true
+        type: choice
+        description: Select the Environment
+        options:
+          - dev
+          - uat
+          - prod
+          - all
 
 permissions:
   id-token: write
