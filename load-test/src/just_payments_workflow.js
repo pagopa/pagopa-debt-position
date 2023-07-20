@@ -3,7 +3,7 @@ import exec from 'k6/execution';
 import { check } from 'k6';
 import { SharedArray } from 'k6/data';
 import { Counter } from 'k6/metrics';
-import { makeidMix, randomString, getPayload, getRandomItemFromArray } from './modules/helpers.js';
+import { makeidNumber, makeidMix, randomString, getPayload, getRandomItemFromArray } from './modules/helpers.js';
 
 //k6 run -o influxdb=http://influxdb:8086/k6 -e BASE_URL=http://localhost:8080 gpd/load-test/src/payments_workflow.js
 export let options = JSON.parse(open(__ENV.TEST_TYPE));
