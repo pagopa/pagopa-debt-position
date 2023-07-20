@@ -53,7 +53,7 @@ export function setup() {
 
             pdArray.push([creditorInstitutionCode, iuv_1]);
 
-            let url = `${urlGPDBasePath}/organizations/${creditorInstitutionCode}/debtpositions?toPublish=true`;
+            let url = `${rootUrl}/organizations/${creditorInstitutionCode}/debtpositions?toPublish=true`;
             let payload = getDebtPosition(iupd, iuv_1, iuv_2, iuv_3, due_date, retention_date, transfer_id_1, transfer_id_2);
             batchArrayDebtPosition.push(["POST", url, payload, gpdParams]);
         }
