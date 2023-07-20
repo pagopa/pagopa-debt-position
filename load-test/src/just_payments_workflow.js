@@ -16,10 +16,11 @@ const varsArray = new SharedArray('vars', function () {
 const vars = varsArray[0];
 const rootUrl = `${vars.host}`;
 const numberOfPositionsToPreload = __ENV.PRELOAD_PD_NUMBER;
+const batchSize = 150;
 
 const payCounter = new Counter('pay_counter');
 
-const params = {
+const gpdParams = {
     headers: {
         'Content-Type': 'application/json',
         'Ocp-Apim-Subscription-Key': __ENV.API_SUBSCRIPTION_KEY
@@ -32,27 +33,38 @@ export function setup() {
 	// 1. setup code (once)
 	// The setup code runs, setting up the test environment (optional) and generating data
 	// used to reuse code for the same VU
+    let tag;
+    const numberOfBatch = Math.ceil(numberOfPositionsToPreload / batchSize);
 
-	for (let i = 0; i < numberOfPositionsToPreload; i++) {
-        const creditor_institution_code = randomString(11, "0123456789");
-        const iupd = makeidMix(35);
-        const iuv = makeidMix(35);
-        const due_date = new Date().addDays(30);
-        const retention_date = new Date().addDays(90);
-        const transfer_id = '1';
-        var url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions`;
-        var payload = getPayload(iupd, iuv, due_date, retention_date, transfer_id);
-        var r = http.post(url, payload, params);
-        url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions/${iupd}/publish`;
-        r = http.post(url, params);
+    for (let i = 0; i < numberOfBatch; i++) {
+        let batchArrayDebtPosition = new Array();
 
-        pdArray.push([creditor_institution_code, iuv]);
-	}
+        for (let j = 0; j < batchSize; j++) {
+            const iupd = makeidMix(35);
+            const iuv_1 = makeidNumber(17);
+            const iuv_2 = makeidNumber(17);
+            const iuv_3 = makeidNumber(17);
+            const due_date = new Date().addDays(30);
+            const retention_date = new Date().addDays(90);
+            const transfer_id_1 = "1";
+            const transfer_id_2 = "2";
 
-	 return { pds: pdArray }
+            pdArray.push([creditor_institution_code, iuv]);
 
-	 // precondition is moved to default fn because in this stage
-	 // __VU is always 0 and cannot be used to create env properly
+            let url = `${urlGPDBasePath}/organizations/${creditorInstitutionCode}/debtpositions?toPublish=true`;
+            let payload = getDebtPosition(iupd, iuv_1, iuv_2, iuv_3, due_date, retention_date, transfer_id_1, transfer_id_2);
+            batchArrayDebtPosition.push(["POST", url, payload, gpdParams]);
+
+            let responses = http.batch(batchArrayDebtPosition);
+            for (let j = 0; j < batchSize; j++) {
+              check(responses[j], { "Create and Publish DebtPosition status is 201": (response) => response.status === 201 }, { paymentRequest: "CreateDebtPosition" });
+            }
+        }
+    }
+
+    return { pds: pdArray };
+    // precondition is moved to default fn because in this stage
+    // __VU is always 0 and cannot be used to create env properly
 }
 
 export default function(data) {
