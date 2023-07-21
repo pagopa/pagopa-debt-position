@@ -43,7 +43,7 @@ export function setup() {
         for (let j = 0; j < batchSize; j++) {
             const creditorInstitutionCode = randomString(11, "0123456789");
             const iupd = makeidMix(35);
-            const iuv_1 = makeidNumber(17);
+            const iuv_1 = makeidMix(35);
             const iuv_2 = makeidNumber(17);
             const iuv_3 = makeidNumber(17);
             const due_date = new Date().addDays(30);
@@ -64,13 +64,14 @@ export function setup() {
         }
     }
 
+    console.log(pdArray);
     return { pds: pdArray };
     // precondition is moved to default fn because in this stage
     // __VU is always 0 and cannot be used to create env properly
 }
 
 export default function(data) {
-    let idx = exec.instance.vusActive * exec.vu.iterationInScenario + exec.vu.idInInstance;
+    let idx = exec.scenario.iterationInInstance;
     let pair = data.pds[idx];
 
     const creditorInstitutionCode = pair[0];
@@ -89,6 +90,9 @@ export default function(data) {
     );
 
     const r = http.post(url, payload, gpdParams);
+
+    if(r.status != 200)
+        console.log('Error ' + r.status_text + ' when call ' + r.url);
 
     check(r, {'PayPaymentOption status is 200': (r) => r.status === 200, });
 
