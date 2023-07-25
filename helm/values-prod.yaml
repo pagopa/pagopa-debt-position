@@ -62,7 +62,7 @@ microservice-chart:
       - type: metrics-api
         metadata:
           targetValue: "50" # milliseconds
-          url: "https://weuuat.gps.internal.uat.platform.pagopa.it/pagopa-gpd-core/actuator/metrics/http.server.requests.percentile?tag=phi:0.99"
+          url: "https://weuprod.gps.internal.platform.pagopa.it/pagopa-gpd-core/actuator/metrics/http.server.requests.percentile?tag=phi:0.99"
           valueLocation: "measurements.0.value"
     advanced:
       horizontalPodAutoscalerConfig:
