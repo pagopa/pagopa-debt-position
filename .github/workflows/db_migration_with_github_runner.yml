@@ -81,10 +81,10 @@ jobs:
       - name: Run flyway::migrate
         shell: bash
         run: |
-          export SPRING_DATASOURCE_URL="${{ secrets.DATASOURCE_URL }}"
-          export SPRING_DATASOURCE_USERNAME=${{ secrets.DATASOURCE_USERNAME }}
-          export SPRING_DATASOURCE_PASSWORD=${{ secrets.DATASOURCE_PASSWORD }}
-          export GPD_SCHEMA_NAME=${{ secrets.APD_SCHEMA_NAME }}
+          export SPRING_DATASOURCE_URL='${{ secrets.DATASOURCE_URL }}'
+          export SPRING_DATASOURCE_USERNAME='${{ secrets.DATASOURCE_USERNAME }}'
+          export SPRING_DATASOURCE_PASSWORD='${{ secrets.DATASOURCE_PASSWORD }}'
+          export GPD_SCHEMA_NAME='${{ secrets.APD_SCHEMA_NAME }}'
           mvn clean flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
 
   cleanup_runner:
