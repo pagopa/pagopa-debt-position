@@ -105,7 +105,7 @@ Under `gpd` main project folder typing `mvn clean verify`, if all right you'll s
 
 #### Integration testing
 
-under `gpd` main project folder typing
+under main `gpd` project folder typing
 
 ```sh
  bash api-test/run_test.sh l int
@@ -139,7 +139,7 @@ if all  right you'll see something like that :
 
 #### Load testing
 
-under `gpd` folder typing
+under main `gpd` folder typing
 
 ```sh
  bash api-test/run_test.sh l load
