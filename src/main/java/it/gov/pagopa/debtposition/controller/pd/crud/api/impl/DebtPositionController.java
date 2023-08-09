@@ -20,6 +20,7 @@ import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
@@ -43,6 +44,10 @@ public class DebtPositionController implements IDebtPositionController {
     private ModelMapper modelMapper;
     @Autowired
     private PaymentPositionCRUDService paymentPositionService;
+    
+    @Value("${nav.aux.digit}")
+    private String auxDigit;
+   
 
     @Override
     public ResponseEntity<PaymentPositionModel> createDebtPosition(String organizationFiscalCode,
@@ -56,7 +61,10 @@ public class DebtPositionController implements IDebtPositionController {
         PaymentPosition createdDebtPos = paymentPositionService.create(debtPosition, organizationFiscalCode, toPublish);
 
         if (null != createdDebtPos) {
-            return new ResponseEntity<>(modelMapper.map(createdDebtPos, PaymentPositionModel.class), HttpStatus.CREATED);
+        	PaymentPositionModel paymentPosition = modelMapper.map(createdDebtPos, PaymentPositionModel.class);
+        	//PAGOPA-1155: add nav info to PO
+        	paymentPosition.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv()));
+            return new ResponseEntity<>(paymentPosition, HttpStatus.CREATED);
         }
 
         throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
@@ -71,6 +79,8 @@ public class DebtPositionController implements IDebtPositionController {
         PaymentPositionModelBaseResponse paymentPositionResponse = ObjectMapperUtils.map(
                 paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd),
                 PaymentPositionModelBaseResponse.class);
+        //PAGOPA-1155: add nav info to PO
+        paymentPositionResponse.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv()));
 
         return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
     }
@@ -105,6 +115,9 @@ public class DebtPositionController implements IDebtPositionController {
         List<PaymentPositionModelBaseResponse> ppResponseList = ObjectMapperUtils.mapAll(
                 pagePP.toList(),
                 PaymentPositionModelBaseResponse.class);
+        
+        //PAGOPA-1155: add nav info to PO
+        ppResponseList.forEach(pp -> pp.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv())));
 
         return new ResponseEntity<>(PaymentPositionsInfo.builder()
                 .ppBaseResponseList(ppResponseList)
@@ -139,7 +152,10 @@ public class DebtPositionController implements IDebtPositionController {
         PaymentPosition updatedDebtPos = paymentPositionService.update(paymentPositionModel, organizationFiscalCode, toPublish);
 
         if (null != updatedDebtPos) {
-            return new ResponseEntity<>(modelMapper.map(updatedDebtPos, PaymentPositionModel.class), HttpStatus.OK);
+        	PaymentPositionModel paymentPosition = modelMapper.map(updatedDebtPos, PaymentPositionModel.class);
+        	//PAGOPA-1155: add nav info to PO
+        	paymentPosition.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv()));
+            return new ResponseEntity<>(paymentPosition, HttpStatus.OK);
         }
 
         throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
