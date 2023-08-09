@@ -16,7 +16,8 @@ const {
 const {
     buildDebtPositionDynamicData,
     buildCreateDebtPositionRequest,
-    buildUpdateDebtPositionRequest
+    buildUpdateDebtPositionRequest,
+    buildUpdateDebtPositionInfoRequest
 } = require("../utility/request_builders");
 
 async function executeDebtPositionCreation(bundle, idOrg, iupd) {
@@ -27,10 +28,12 @@ async function executeDebtPositionCreation(bundle, idOrg, iupd) {
     bundle.createdDebtPosition = bundle.responseToCheck.data;
 }
 
-async function executeDebtPositionUpdate(bundle, idOrg, iupd) {
-    bundle.iupd = iupd;
-    let response = await updateDebtPosition(idOrg, iupd, bundle);
+async function executeDebtPositionUpdate(bundle, payer, idOrg, iupd) {
+	let updatedDebtPosition=buildUpdateDebtPositionInfoRequest(bundle.createdDebtPosition, payer)
+    updateDebtPosition.iupd = iupd;
+    let response = await updateDebtPosition(idOrg, iupd, updatedDebtPosition);
     bundle.responseToCheck = response;
+    bundle.updatedDebtPosition = bundle.responseToCheck.data;
 }
 
 async function executeDebtPositionNotificationFeeUpdate(bundle, idOrg, fee) {
@@ -47,6 +50,7 @@ async function executeDebtPositionGetList(bundle, idOrg, dueDateFrom, dueDateTo,
 async function executeDebtPositionGet(bundle, idOrg, iupd) {
     let response = await getDebtPosition(idOrg, iupd);
     bundle.payer.companyName = response.data.companyName;
+    bundle.responseToCheck = response;
 }
 
 async function executePaymentOptionGetByIuv(bundle, idOrg, iuv) {
