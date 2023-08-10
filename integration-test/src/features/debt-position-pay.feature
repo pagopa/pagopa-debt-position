@@ -11,6 +11,7 @@ Feature: Paying a debt position
  Scenario: Debt position publication
    When the debt position is published
    Then the debt position gets the status code 200
+   And the organization gets the nav value after publication
 
  Scenario: Payment option publication
    When the payment option is paid
