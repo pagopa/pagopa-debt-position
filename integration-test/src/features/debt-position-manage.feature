@@ -7,6 +7,7 @@ Feature: Managing a debt position
    Given a random iupd
    When the debt position is created
    Then the debt position gets the status code 201
+   And the organization gets the nav value after creation
 
   Scenario: Debt position notification fee update
     When the notification fee of the debt position is updated
@@ -24,14 +25,15 @@ Feature: Managing a debt position
    When we ask the list of organizations debt positions
    Then we get the status code 200
 
-
  Scenario: Debt position update
    When the debt position is updated
    Then the organization gets the update status code 200
+   And the organization gets the nav value after update
 
  Scenario: Debt position get
  	 When we get the debt position
    Then the company name is "Testing S.p.A."
+   And the organization get the nav value
 
  Scenario: Debt position deleted
    When the debt position is deleted

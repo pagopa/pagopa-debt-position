@@ -53,7 +53,10 @@ class DebtPositionControllerTest {
 	void createDebtPosition_201() throws Exception {
 		mvc.perform(post("/organizations/12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
-		.andExpect(status().isCreated());
+		.andExpect(status().isCreated())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value("3123456IUVMOCK1"));
 	}
 
 	@Test
@@ -61,11 +64,23 @@ class DebtPositionControllerTest {
 		// creazione di due posizione debitorie per la stessa organizzazione
 		mvc.perform(post("/organizations/12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock2())).contentType(MediaType.APPLICATION_JSON))
-		.andExpect(status().isCreated());
+		.andExpect(status().isCreated())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value("3123456IUVMULTIPLEMOCK1"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[1].nav")
+				.value("3123456IUVMULTIPLEMOCK2"));
 
 		mvc.perform(post("/organizations/12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
-		.andExpect(status().isCreated());
+		.andExpect(status().isCreated())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value("3123456IUVMULTIPLEMOCK3"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[1].nav")
+				.value("3123456IUVMULTIPLEMOCK4"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[2].nav")
+				.value("3123456IUVMULTIPLEMOCK5"));
 	}
 
 	@Test
@@ -199,7 +214,9 @@ class DebtPositionControllerTest {
 
 		String url = "/organizations/200_12345678901/debtpositions/12345678901IUPDMOCK1";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value("3123456IUVMOCK1"));
 	}
 
 	@Test
@@ -233,7 +250,18 @@ class DebtPositionControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[*].iuv")
 				.value(Matchers.hasSize(2)))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[*].iuv")
-				.value(Matchers.hasSize(3)));
+				.value(Matchers.hasSize(3)))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[0].nav")
+				.value("3123456IUVMULTIPLEMOCK1"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[1].nav")
+				.value("3123456IUVMULTIPLEMOCK2"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[0].nav")
+				.value("3123456IUVMULTIPLEMOCK3"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[1].nav")
+				.value("3123456IUVMULTIPLEMOCK4"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[2].nav")
+				.value("3123456IUVMULTIPLEMOCK5"));
+		
 	}
 
 	@Test
@@ -540,7 +568,10 @@ class DebtPositionControllerTest {
 		// creo una posizione debitoria 
 		mvc.perform(post("/organizations/UPD_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
-		.andExpect(status().isCreated());
+		.andExpect(status().isCreated())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value("3123456IUVMOCK1"));
 
 		// recupero la posizione debitoria e verifico il contenuto
 		mvc.perform(get("/organizations/UPD_12345678901/debtpositions/12345678901IUPDMOCK1")
@@ -553,7 +584,9 @@ class DebtPositionControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].amount")
 				.value(1000))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].amount")
-				.value(1000));
+				.value(1000))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value("3123456IUVMOCK1"));
 
 		// aggiorno la posizione debitoria
 		mvc.perform(put("/organizations/UPD_12345678901/debtpositions/12345678901IUPDMOCK1")
@@ -575,7 +608,11 @@ class DebtPositionControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[1].amount")
 				.value(500))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[1].transfer[0].amount")
-				.value(500));
+				.value(500))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value("3123456IUVMULTIPLEMOCK1"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[1].nav")
+				.value("3123456IUVMULTIPLEMOCK2"));
 
 	}
 	

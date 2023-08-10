@@ -1,5 +1,7 @@
 const assert = require("assert");
 
+const auxDigit = process.env.aux_digit
+
 async function assertAmount(bundle, amount) {
     assertOutcome(bundle, "OK");
     assert.match(bundle.responseToCheck.data, new RegExp(`<amount>${amount}</amount>`, "g"));
@@ -37,6 +39,11 @@ async function assertNotificationFeeUpdatedAmounts(createdDebtPosition, response
     assert.strictEqual(response.transfer[1].amount, createdDebtPosition.paymentOption[0].transfer[1].amount);
 }
 
+async function assertNav(debtPosition, response) {
+    // nav = auxDigit + iuv
+    assert.strictEqual(response.paymentOption[0].nav, auxDigit + debtPosition.paymentOption[0].iuv);
+}
+
 function randomOrg() {
     return "Org_" + Math.floor(Math.random() * 100);
 }
@@ -55,5 +62,6 @@ module.exports = {
     assertStatusString,
     randomOrg,
     randomIupd,
-    assertIupd
+    assertIupd,
+    assertNav
 }
