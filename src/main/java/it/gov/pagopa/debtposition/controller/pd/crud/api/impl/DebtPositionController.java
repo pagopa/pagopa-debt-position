@@ -27,7 +27,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -78,7 +77,7 @@ public class DebtPositionController implements IDebtPositionController {
     @Override
     @ExclusiveParamGroup(firstGroup = {"due_date_to", "due_date_from"}, secondGroup = {"payment_date_from", "payment_date_to"})
     public ResponseEntity<PaymentPositionsInfo> getOrganizationDebtPositions(String organizationFiscalCode,
-                                                                             @Positive Integer limit, @Positive Integer page, LocalDate dueDateFrom,
+                                                                             Integer limit, Integer page, LocalDate dueDateFrom,
                                                                              LocalDate dueDateTo, LocalDate paymentDateFrom, LocalDate paymentDateTo,
                                                                              DebtPositionStatus status, PaymentPositionOrder orderBy, Direction ordering) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
@@ -145,5 +144,4 @@ public class DebtPositionController implements IDebtPositionController {
         throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
 
     }
-
 }

@@ -49,6 +49,5 @@ public interface PaymentPositionRepository extends JpaRepository<PaymentPosition
     
     @EntityGraph(attributePaths = "paymentOption")
     Page<PaymentPosition> findAll(Specification<PaymentPosition> spec, Pageable pageable);
-
 }
 
