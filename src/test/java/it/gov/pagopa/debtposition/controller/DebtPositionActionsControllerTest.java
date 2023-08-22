@@ -90,7 +90,10 @@ class DebtPositionActionsControllerTest {
 
 		// porto in pubblicata lo stato della posizione debitoria
 		mvc.perform(post("/organizations/PBHPUBLISH_12345678901/debtpositions/12345678901IUPDMOCK3/publish")
-				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value("3123456IUVMOCK1"));
 
 		// verifico che lo stato sia stato aggiornato a publish (singolo passaggio di stato) 
 		mvc.perform(get("/organizations/PBHPUBLISH_12345678901/debtpositions/12345678901IUPDMOCK3")
@@ -229,7 +232,9 @@ class DebtPositionActionsControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
-				.value(DebtPositionStatus.INVALID.toString()));
+				.value(DebtPositionStatus.INVALID.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value("3123456IUVMOCK1"));
 	}
 	
 	@Test

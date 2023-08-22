@@ -1,17 +1,19 @@
 package it.gov.pagopa.debtposition.model.pd;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -22,6 +24,8 @@ public class PaymentOptionModel implements Serializable {
      */
     private static final long serialVersionUID = -8328320637402363721L;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String nav;
     @NotBlank(message = "iuv is required")
     private String iuv;
     @NotNull(message = "amount is required")

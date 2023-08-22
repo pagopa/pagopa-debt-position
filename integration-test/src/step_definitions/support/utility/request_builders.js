@@ -123,8 +123,58 @@ function buildUpdateDebtPositionRequest(debtPosition, payer) {
     };
 }
 
+function buildUpdateDebtPositionInfoRequest(debtPosition, payer) {
+    return {
+        iupd: debtPosition.iupd,
+        type: "F",
+        fiscalCode: payer.fiscalCode,
+        fullName: payer.fullName,
+        streetName: payer.streetName,
+        civicNumber: payer.civicNumber,
+        postalCode: payer.postalCode,
+        city: payer.city,
+        province: payer.province,
+        region: payer.region,
+        country: payer.country,
+        email: payer.email,
+        phone: payer.phone,
+        companyName: payer.companyName,
+        officeName: payer.officeName,
+        switchToExpired: false,
+        paymentOption: [
+            {
+                iuv: debtPosition.paymentOption[0].iuv,
+                amount: debtPosition.paymentOption[0].amount * 100,
+                description: "Canone Unico Patrimoniale - SkyLab Inc. - Edit",
+                isPartialPayment: false,
+                dueDate: debtPosition.paymentOption[0].dueDate,
+                retentionDate: debtPosition.paymentOption[0].retentionDate,
+                fee: 0,
+                transfer: [
+                    {
+                        idTransfer: debtPosition.paymentOption[0].transfer[0].idTransfer,
+                        amount: (debtPosition.paymentOption[0].amount * 100 / 3),
+                        remittanceInformation: "Rata 1 Edit",
+                        category: "9/0101108TS/",
+                        iban: debtPosition.paymentOption[0].transfer[0].iban,
+                    },
+                    {
+                        idTransfer: debtPosition.paymentOption[0].transfer[1].idTransfer,
+                        organizationFiscalCode: debtPosition.transferOtherCIFiscalCode,
+                        amount: (debtPosition.paymentOption[0].amount * 100 / 3) * 2,
+                        remittanceInformation: "Rata 2 Edit",
+                        category: "9/0101108TS/",
+                        iban: debtPosition.paymentOption[0].transfer[1].iban,
+                    }
+                ]
+            }
+        ]
+    };
+}
+
 module.exports = {
     buildCreateDebtPositionRequest,
     buildUpdateDebtPositionRequest,
-    buildDebtPositionDynamicData
+    buildDebtPositionDynamicData,
+    buildUpdateDebtPositionInfoRequest
 }

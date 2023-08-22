@@ -13,7 +13,8 @@ const { executeDebtPositionCreation,
         executeDebtPositionUpdateAndPublication,
         executePaymentOptionGetByIuv
 } = require('./logic/gpd_logic');
-const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, assertNotificationFeeUpdatedAmounts, assertStatusString, executeAfterAllStep, randomOrg, randomIupd, assertIupd } = require('./logic/common_logic');
+const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, assertNotificationFeeUpdatedAmounts, 
+assertStatusString, executeAfterAllStep, randomOrg, randomIupd, assertIupd, assertNav } = require('./logic/common_logic');
 const { gpdSessionBundle, gpdUpdateBundle, gpdPayBundle } = require('./utility/data');
 const { getValidBundle, addDays, format } = require('./utility/helpers');
 
@@ -41,6 +42,7 @@ Given('a random iupd', async function () {
     });
 When('the debt position is created', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, status));
 Then('the debt position gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
+Then('the organization gets the nav value after creation', () => assertNav(gpdSessionBundle.createdDebtPosition, gpdSessionBundle.responseToCheck.data));
 
 /*
  *  Debt position list
@@ -70,8 +72,9 @@ Then('the organization gets the updated amounts', () => assertNotificationFeeUpd
 /*
  *  Debt position update
  */
-When('the debt position is updated', () => executeDebtPositionUpdate(gpdUpdateBundle, idOrg, iupd));
-Then('the organization gets the update status code {int}', (statusCode) => assertStatusCode(gpdUpdateBundle, statusCode));
+When('the debt position is updated', () => executeDebtPositionUpdate(gpdSessionBundle, gpdUpdateBundle, idOrg, iupd));
+Then('the organization gets the update status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
+Then('the organization gets the nav value after update', () => assertNav(gpdSessionBundle.updatedDebtPosition, gpdSessionBundle.responseToCheck.data));
 
 
 /*
@@ -79,6 +82,7 @@ Then('the organization gets the update status code {int}', (statusCode) => asser
  */
 When('we get the debt position', () => executeDebtPositionGet(gpdSessionBundle, idOrg, iupd));
 Then('the company name is {string}', (companyName) => assertCompanyName(gpdSessionBundle, companyName));
+Then('the organization get the nav value', () => assertNav(gpdSessionBundle.responseToCheck.data, gpdSessionBundle.responseToCheck.data))
 
 /*
  *  Debt position delete
@@ -90,6 +94,7 @@ When('the debt position is deleted', () => executeDebtPositionDeletion(gpdSessio
  *  Debt position publish
  */
 When('the debt position is published', () => executeDebtPositionPublish(gpdSessionBundle, idOrg, iupd));
+Then('the organization gets the nav value after publication', () => assertNav(gpdSessionBundle.createdDebtPosition, gpdSessionBundle.responseToCheck.data))
 
 /*
  *  Paying the payment option
