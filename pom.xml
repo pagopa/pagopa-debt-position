@@ -107,6 +107,13 @@
     </dependencies>
 
     <build>
+        <!-- to resolve test/resources/application.properties values -->
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
