@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.6.17"
+    tag: "0.6.17-1-fix-deploy"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -91,7 +91,7 @@ microservice-chart:
     CRON_JOB_SCHEDULE_ENABLED: "true"
     CRON_JOB_SCHEDULE_EXPRESSION_TO_VALID: "0 */10 * * * *"
     CRON_JOB_SCHEDULE_EXPRESSION_TO_EXPIRED: "0 */20 * * * *"
-    AUX_DIGIT: 3
+    AUX_DIGIT: "3"
     LOG_LEVEL: "INFO"
     SQL_LOG_LEVEL: "DEBUG"
     SQL_BINDER_LOG_LEVEL: "TRACE"
@@ -129,7 +129,7 @@ microservice-chart:
       create: true
       image:
         repository: ghcr.io/pagopa/pagopa-debt-position
-        tag: "0.6.17"
+        tag: "0.6.17-1-fix-deploy"
         pullPolicy: Always
       envConfig: {}
       envSecret: {}

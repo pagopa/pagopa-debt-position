@@ -4,7 +4,7 @@
     "title": "PagoPA API Debt Position",
     "description": "Progetto Gestione Posizioni Debitorie",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "0.6.17"
+    "version": "0.6.17-1-fix-deploy"
   },
   "servers": [
     {
