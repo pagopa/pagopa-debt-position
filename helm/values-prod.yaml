@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.6.17-1-fix-deploy"
+    tag: "0.6.18"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -129,7 +129,7 @@ microservice-chart:
       create: true
       image:
         repository: ghcr.io/pagopa/pagopa-debt-position
-        tag: "0.6.17-1-fix-deploy"
+        tag: "0.6.18"
         pullPolicy: Always
       envConfig: {}
       envSecret: {}
