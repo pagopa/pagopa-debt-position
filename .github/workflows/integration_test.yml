@@ -29,7 +29,7 @@ jobs:
   integration_test:
     name: Test
     runs-on: ubuntu-latest
-    environment: ${{(github.event.inputs == null && 'uat') || inputs.environment }}
+    environment: ${{(github.event.inputs == null && 'dev') || inputs.environment }}
     steps:
       - name: Checkout
         id: checkout
