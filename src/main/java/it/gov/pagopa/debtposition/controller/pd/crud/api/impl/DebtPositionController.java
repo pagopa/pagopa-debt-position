@@ -30,6 +30,8 @@ import org.springframework.stereotype.Controller;
 import javax.validation.Valid;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -51,7 +53,7 @@ public class DebtPositionController implements IDebtPositionController {
     @Override
     public ResponseEntity<PaymentPositionModel> createDebtPosition(String organizationFiscalCode,
                                                                    @Valid PaymentPositionModel paymentPositionModel,
-                                                                   boolean toPublish) {
+                                                                   boolean toPublish, String segregationCodes) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "createDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, paymentPositionModel.getIupd())));
 
         // flip model to entity
@@ -70,27 +72,15 @@ public class DebtPositionController implements IDebtPositionController {
     }
 
     @Override
-    public ResponseEntity<PaymentPositionModelBaseResponse> getOrganizationDebtPositionByIUPD(String organizationFiscalCode,
-                                                                                              String iupd) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationDebtPositionByIUPD", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
-
-        // flip entity to model
-        PaymentPositionModelBaseResponse paymentPositionResponse = ObjectMapperUtils.map(
-                paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd),
-                PaymentPositionModelBaseResponse.class);
-        //PAGOPA-1155: add nav info to PO
-        paymentPositionResponse.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv()));
-
-        return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
-    }
-
-    @Override
     @ExclusiveParamGroup(firstGroup = {"due_date_to", "due_date_from"}, secondGroup = {"payment_date_from", "payment_date_to"})
     public ResponseEntity<PaymentPositionsInfo> getOrganizationDebtPositions(String organizationFiscalCode,
                                                                              Integer limit, Integer page, LocalDate dueDateFrom,
                                                                              LocalDate dueDateTo, LocalDate paymentDateFrom, LocalDate paymentDateTo,
-                                                                             DebtPositionStatus status, PaymentPositionOrder orderBy, Direction ordering) {
+                                                                             DebtPositionStatus status, PaymentPositionOrder orderBy, Direction ordering,
+                                                                             String segregationCodes) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
+
+        ArrayList<String> segCodesList = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
 
         // Create filter and order object
         FilterAndOrder filterOrder = FilterAndOrder.builder()
@@ -101,6 +91,7 @@ public class DebtPositionController implements IDebtPositionController {
                         .paymentDateFrom(paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : null)
                         .paymentDateTo(paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : null)
                         .status(status)
+                        .segregationCodes(segCodesList)
                         .build())
                 .order(Order.builder()
                         .orderBy(orderBy)
@@ -123,6 +114,21 @@ public class DebtPositionController implements IDebtPositionController {
                 .pageInfo(CommonUtil.buildPageInfo(pagePP))
                 .build(),
                 HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<PaymentPositionModelBaseResponse> getOrganizationDebtPositionByIUPD(String organizationFiscalCode,
+                                                                                              String iupd) {
+        log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationDebtPositionByIUPD", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
+
+        // flip entity to model
+        PaymentPositionModelBaseResponse paymentPositionResponse = ObjectMapperUtils.map(
+                paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd),
+                PaymentPositionModelBaseResponse.class);
+        //PAGOPA-1155: add nav info to PO
+        paymentPositionResponse.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv()));
+
+        return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
     }
 
     @Override

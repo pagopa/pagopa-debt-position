@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 @Getter
 @Setter
@@ -22,4 +23,5 @@ public class Filter {
     private LocalDateTime paymentDateFrom;
     private LocalDateTime paymentDateTo;
     private DebtPositionStatus status;
+    private ArrayList<String> segregationCodes;
 }

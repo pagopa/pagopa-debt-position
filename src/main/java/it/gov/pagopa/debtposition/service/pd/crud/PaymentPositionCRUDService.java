@@ -137,15 +137,21 @@ public class PaymentPositionCRUDService {
 
         Pageable pageable = PageRequest.of(pageNum, limit, CommonUtil.getSort(filterAndOrder));
 
-        Specification<PaymentPosition> spec = Specification.where(
+        Specification<PaymentPosition> paymentPositionSpecification =
                 new PaymentPositionByOrganizationFiscalCode(filterAndOrder.getFilter().getOrganizationFiscalCode())
-                        .and(new PaymentPositionByDueDate(
-                                filterAndOrder.getFilter().getDueDateFrom(),
-                                filterAndOrder.getFilter().getDueDateTo()))
-                        .and(new PaymentPositionByPaymentDate(
-                                filterAndOrder.getFilter().getPaymentDateFrom(),
-                                filterAndOrder.getFilter().getPaymentDateTo()))
-                        .and(new PaymentPositionByStatus(filterAndOrder.getFilter().getStatus())));
+                .and(new PaymentPositionByDueDate(
+                        filterAndOrder.getFilter().getDueDateFrom(),
+                        filterAndOrder.getFilter().getDueDateTo()))
+                .and(new PaymentPositionByPaymentDate(
+                        filterAndOrder.getFilter().getPaymentDateFrom(),
+                        filterAndOrder.getFilter().getPaymentDateTo()))
+                .and(new PaymentPositionByStatus(filterAndOrder.getFilter().getStatus()));
+
+        for(String segCode: filterAndOrder.getFilter().getSegregationCodes()) {
+            paymentPositionSpecification = paymentPositionSpecification.and(new PaymentPositionBySegregationCode(segCode));
+        }
+
+        Specification<PaymentPosition> spec = Specification.where(paymentPositionSpecification);
 
         return paymentPositionRepository.findAll(spec, pageable);
     }
