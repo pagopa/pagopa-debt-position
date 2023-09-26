@@ -10,7 +10,6 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
-import it.gov.pagopa.debtposition.model.pd.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.repository.specification.*;
@@ -139,17 +138,14 @@ public class PaymentPositionCRUDService {
 
         Specification<PaymentPosition> paymentPositionSpecification =
                 new PaymentPositionByOrganizationFiscalCode(filterAndOrder.getFilter().getOrganizationFiscalCode())
-                .and(new PaymentPositionByDueDate(
+                .and(new PaymentPositionByOptionsAttribute(
                         filterAndOrder.getFilter().getDueDateFrom(),
-                        filterAndOrder.getFilter().getDueDateTo()))
+                        filterAndOrder.getFilter().getDueDateTo(),
+                        filterAndOrder.getFilter().getSegregationCodes())
                 .and(new PaymentPositionByPaymentDate(
                         filterAndOrder.getFilter().getPaymentDateFrom(),
                         filterAndOrder.getFilter().getPaymentDateTo()))
-                .and(new PaymentPositionByStatus(filterAndOrder.getFilter().getStatus()));
-
-        for(String segCode: filterAndOrder.getFilter().getSegregationCodes()) {
-            paymentPositionSpecification = paymentPositionSpecification.and(new PaymentPositionBySegregationCode(segCode));
-        }
+                .and(new PaymentPositionByStatus(filterAndOrder.getFilter().getStatus())));
 
         Specification<PaymentPosition> spec = Specification.where(paymentPositionSpecification);
 
