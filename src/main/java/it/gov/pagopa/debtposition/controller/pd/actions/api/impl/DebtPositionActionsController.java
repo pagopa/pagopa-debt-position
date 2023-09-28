@@ -14,6 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 
 @Controller
 @Slf4j
@@ -30,10 +33,11 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
     private String auxDigit;
 
     @Override
-    public ResponseEntity<PaymentPositionModel> publishDebtPosition(String organizationFiscalCode, String iupd) {
+    public ResponseEntity<PaymentPositionModel> publishDebtPosition(String organizationFiscalCode, String iupd, String segregationCodes) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "publishDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
 
-        PaymentPosition publishedDebtPos = paymentPositionActionsService.publish(organizationFiscalCode, iupd);
+        ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
+        PaymentPosition publishedDebtPos = paymentPositionActionsService.publish(organizationFiscalCode, iupd, segCodes);
         if (null != publishedDebtPos) {
         	PaymentPositionModel paymentPosition = modelMapper.map(publishedDebtPos, PaymentPositionModel.class);
         	//PAGOPA-1155: add nav info to PO
@@ -45,10 +49,11 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
     }
 
     @Override
-    public ResponseEntity<PaymentPositionModel> invalidateDebtPosition(String organizationFiscalCode, String iupd) {
+    public ResponseEntity<PaymentPositionModel> invalidateDebtPosition(String organizationFiscalCode, String iupd, String segregationCodes) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "invalidateDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
 
-        PaymentPosition invalidatedDebtPos = paymentPositionActionsService.invalidate(organizationFiscalCode, iupd);
+        ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
+        PaymentPosition invalidatedDebtPos = paymentPositionActionsService.invalidate(organizationFiscalCode, iupd, segCodes);
         if (null != invalidatedDebtPos) {
         	PaymentPositionModel paymentPosition = modelMapper.map(invalidatedDebtPos, PaymentPositionModel.class);
         	//PAGOPA-1155: add nav info to PO

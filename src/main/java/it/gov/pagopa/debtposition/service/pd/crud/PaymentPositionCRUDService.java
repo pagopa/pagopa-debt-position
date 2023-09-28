@@ -53,11 +53,13 @@ public class PaymentPositionCRUDService {
     private ModelMapper modelMapper;
 
 
-    public PaymentPosition create(@NotNull PaymentPosition debtPosition, @NotBlank String organizationFiscalCode, boolean toPublish) {
+    public PaymentPosition create(@NotNull PaymentPosition debtPosition, @NotBlank String organizationFiscalCode, boolean toPublish, ArrayList<String> segCodes) {
 
         final String ERROR_CREATION_LOG_MSG = "Error during debt position creation: %s";
 
         try {
+            if(segCodes != null && !isAuthorizedBySegregationCode(debtPosition, segCodes))
+                throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, debtPosition.getIupd());
 
             // verifico la correttezza dei dati in input
             DebtPositionValidation.checkPaymentPositionInputDataAccurancy(debtPosition);
@@ -115,7 +117,7 @@ public class PaymentPositionCRUDService {
     }
 
     public PaymentPosition getDebtPositionByIUPD(String organizationFiscalCode,
-                                                 String iupd) {
+                                                 String iupd, ArrayList<String> segCodes) {
 
         Specification<PaymentPosition> spec = Specification.where(
                 new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
@@ -125,6 +127,9 @@ public class PaymentPositionCRUDService {
         Optional<PaymentPosition> pp = paymentPositionRepository.findOne(spec);
         if (pp.isEmpty()) {
             throw new AppException(AppError.DEBT_POSITION_NOT_FOUND, organizationFiscalCode, iupd);
+        }
+        if(segCodes != null && !pp.isEmpty() && !isAuthorizedBySegregationCode(pp.get(), segCodes)) {
+            throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, iupd);
         }
 
         return pp.get();
@@ -153,21 +158,20 @@ public class PaymentPositionCRUDService {
     }
 
     @Transactional
-    public void delete(@NotBlank String organizationFiscalCode, @NotBlank String iupd) {
-        PaymentPosition ppToRemove = this.getDebtPositionByIUPD(organizationFiscalCode, iupd);
+    public void delete(@NotBlank String organizationFiscalCode, @NotBlank String iupd, ArrayList<String> segregationCodes) {
+        PaymentPosition ppToRemove = this.getDebtPositionByIUPD(organizationFiscalCode, iupd, segregationCodes);
         if (DebtPositionStatus.getPaymentPosAlreadyPaidStatus().contains(ppToRemove.getStatus())) {
             throw new AppException(AppError.DEBT_POSITION_PAYMENT_FOUND, organizationFiscalCode, iupd);
         }
         paymentPositionRepository.delete(ppToRemove);
     }
 
-
     @Transactional
-    public PaymentPosition update(@NotNull @Valid PaymentPositionModel paymentPositionModel, @NotBlank String organizationFiscalCode, boolean toPublish) {
+    public PaymentPosition update(@NotNull @Valid PaymentPositionModel paymentPositionModel, @NotBlank String organizationFiscalCode, boolean toPublish, ArrayList<String> segregationCodes) {
 
         final String ERROR_UPDATE_LOG_MSG = "Error during debt position update: %s";
 
-        PaymentPosition ppToUpdate = this.getDebtPositionByIUPD(organizationFiscalCode, paymentPositionModel.getIupd());
+        PaymentPosition ppToUpdate = this.getDebtPositionByIUPD(organizationFiscalCode, paymentPositionModel.getIupd(), segregationCodes);
 
         if (DebtPositionStatus.getPaymentPosNotUpdatableStatus().contains(ppToUpdate.getStatus())) {
             throw new AppException(AppError.DEBT_POSITION_NOT_UPDATABLE, organizationFiscalCode, paymentPositionModel.getIupd());
@@ -189,7 +193,7 @@ public class PaymentPositionCRUDService {
             paymentPositionRepository.flush();
             // the version is increased at each change
             ppToUpdate.setVersion(ppToUpdate.getVersion()+1);
-            return this.create(ppToUpdate, organizationFiscalCode, toPublish);
+            return this.create(ppToUpdate, organizationFiscalCode, toPublish, segregationCodes);
         	
         } catch (ValidationException e) {
             throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
@@ -229,5 +233,12 @@ public class PaymentPositionCRUDService {
         filterAndOrder.getFilter().setDueDateTo(verifiedDueDates.get(1));
         filterAndOrder.getFilter().setPaymentDateFrom(verifiedPaymentDates.get(0));
         filterAndOrder.getFilter().setPaymentDateTo(verifiedPaymentDates.get(1));
+    }
+
+    private boolean isAuthorizedBySegregationCode(PaymentPosition paymentPosition, ArrayList<String> segregationCodes) {
+        // It is enough to check only one IUV of the payment position. Here it is assumed that they all have the same segregation code.
+        String paymentPositionSegregationCode = paymentPosition.getPaymentOption().get(0).getIuv().substring(1,3);
+        System.out.println("paymentPositionSegregationCode: " + paymentPositionSegregationCode + ", contains: " + segregationCodes.contains(paymentPositionSegregationCode));
+        return segregationCodes.contains(paymentPositionSegregationCode);
     }
 }
