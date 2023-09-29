@@ -528,7 +528,6 @@ public class DebtPositionMock {
 
 		return pPMock;
 	}
-	
 
 	public static PaymentPositionDTO createPaymentPosition400Mock1() {
 
@@ -758,7 +757,7 @@ public class DebtPositionMock {
 
 		PaymentOptionDTO pOMock = new PaymentOptionDTO();
 		pOMock.setAmount(10000);
-		pOMock.setIuv("123456IUVMULTIPLEMOCK3");
+		pOMock.setIuv("333456IUVMULTIPLEMOCK3");
 		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.HOURS));
 		pOMock.setIsPartialPayment(Boolean.FALSE);
 		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
@@ -771,7 +770,7 @@ public class DebtPositionMock {
 
 		PaymentOptionDTO pOMock = new PaymentOptionDTO();
 		pOMock.setAmount(5000);
-		pOMock.setIuv("123456IUVMULTIPLEMOCK4");
+		pOMock.setIuv("333456IUVMULTIPLEMOCK4");
 		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.HOURS));
 		pOMock.setIsPartialPayment(Boolean.TRUE);
 		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
@@ -785,7 +784,7 @@ public class DebtPositionMock {
 
 		PaymentOptionDTO pOMock = new PaymentOptionDTO();
 		pOMock.setAmount(5000);
-		pOMock.setIuv("123456IUVMULTIPLEMOCK5");
+		pOMock.setIuv("333456IUVMULTIPLEMOCK5");
 		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(4, ChronoUnit.HOURS));
 		pOMock.setIsPartialPayment(Boolean.TRUE);
 		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);

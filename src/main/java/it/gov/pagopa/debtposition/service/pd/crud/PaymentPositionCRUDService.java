@@ -57,10 +57,10 @@ public class PaymentPositionCRUDService {
 
         final String ERROR_CREATION_LOG_MSG = "Error during debt position creation: %s";
 
-        try {
-            if(segCodes != null && !isAuthorizedBySegregationCode(debtPosition, segCodes))
-                throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, debtPosition.getIupd());
+        if(segCodes != null && !isAuthorizedBySegregationCode(debtPosition, segCodes))
+            throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, debtPosition.getIupd());
 
+        try {
             // verifico la correttezza dei dati in input
             DebtPositionValidation.checkPaymentPositionInputDataAccurancy(debtPosition);
 
@@ -87,7 +87,6 @@ public class PaymentPositionCRUDService {
                     t.setInsertedDate(Objects.requireNonNullElse(debtPosition.getInsertedDate(), currentDate));
                     t.setLastUpdatedDate(currentDate);
                     t.setStatus(TransferStatus.T_UNREPORTED);
-
                 }
             }
 
@@ -110,6 +109,8 @@ public class PaymentPositionCRUDService {
             throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
         } catch (ValidationException e) {
             throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
+        } catch (AppException appException) {
+            throw appException;
         } catch (Exception e) {
             log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
             throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
@@ -237,8 +238,7 @@ public class PaymentPositionCRUDService {
 
     private boolean isAuthorizedBySegregationCode(PaymentPosition paymentPosition, ArrayList<String> segregationCodes) {
         // It is enough to check only one IUV of the payment position. Here it is assumed that they all have the same segregation code.
-        String paymentPositionSegregationCode = paymentPosition.getPaymentOption().get(0).getIuv().substring(1,3);
-        System.out.println("paymentPositionSegregationCode: " + paymentPositionSegregationCode + ", contains: " + segregationCodes.contains(paymentPositionSegregationCode));
+        String paymentPositionSegregationCode = paymentPosition.getPaymentOption().get(0).getIuv().substring(0,2);
         return segregationCodes.contains(paymentPositionSegregationCode);
     }
 }

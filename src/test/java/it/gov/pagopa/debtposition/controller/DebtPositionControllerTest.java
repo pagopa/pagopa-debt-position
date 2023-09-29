@@ -61,7 +61,7 @@ class DebtPositionControllerTest {
 
 	@Test
 	void createDebtPosition_Multiple_201() throws Exception {
-		// creazione di due posizione debitorie per la stessa organizzazione
+		// creazione di due posizione debitorie per la stessa organizzazione (2 PaymentOption)
 		mvc.perform(post("/organizations/12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock2())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated())
@@ -202,6 +202,27 @@ class DebtPositionControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isConflict());
 	}
 
+	@Test
+	void createDebtPositionAuthorizedBySegregationCodes_201() throws Exception {
+		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock1();
+		String validSegregationCode = paymentPositionDTO.getPaymentOption().get(0).getIuv().substring(1,3);
+		String anotherSegregationCode = "99";
+		mvc.perform(post("/organizations/12345678901/debtpositions?segregationCodes=" + validSegregationCode + "," + anotherSegregationCode)
+							.content(TestUtil.toJson(paymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+								   .value("3123456IUVMOCK1"));
+	}
+
+	@Test
+	void createDebtPositionAuthorizedBySegregationCodes_403() throws Exception {
+		String notSufficientSegregationCode = "99";
+		mvc.perform(post("/organizations/12345678901/debtpositions?segregationCodes=" + notSufficientSegregationCode)
+							.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isForbidden());
+	}
+
 	/**
 	 *  GET DEBT POSITION BY IUPD
 	 */
@@ -209,14 +230,14 @@ class DebtPositionControllerTest {
 	void getDebtPositionByIUPD_200() throws Exception {
 		// creo una posizione debitoria e la recupero
 		mvc.perform(post("/organizations/200_12345678901/debtpositions")
-				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
-		.andExpect(status().isCreated());
+							.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
 
 		String url = "/organizations/200_12345678901/debtpositions/12345678901IUPDMOCK1";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-				.value("3123456IUVMOCK1"));
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+								   .value("3123456IUVMOCK1"));
 	}
 
 	@Test
@@ -224,6 +245,35 @@ class DebtPositionControllerTest {
 		String url = "/organizations/200_12345678901/debtpositions/12345678901IUPDNOTEXIST";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
+	}
+
+	@Test
+	void getDebtPositionByIUPD_SegregationCodeAuthorized_200() throws Exception {
+		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock1();
+		String validSegregationCode = paymentPositionDTO.getPaymentOption().get(0).getIuv().substring(1,3);
+		String anotherSegregationCode = "99";
+		// creo una posizione debitoria e la recupero
+		mvc.perform(post("/organizations/200_12345678901/debtpositions")
+							.content(TestUtil.toJson(paymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+
+		String url = "/organizations/200_12345678901/debtpositions/12345678901IUPDMOCK1?segregationCodes=" + validSegregationCode + "," + anotherSegregationCode;
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+								   .value("3123456IUVMOCK1"));
+	}
+
+	@Test
+	void getDebtPositionByIUPD_SegregationCodeForbidden_403() throws Exception {
+		String notSufficientSegregationCode = "99";
+		// creo una posizione debitoria e la recupero
+		mvc.perform(post("/organizations/200_12345678901/debtpositions")
+							.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+
+		String url = "/organizations/200_12345678901/debtpositions/12345678901IUPDMOCK1?segregationCodes=" + notSufficientSegregationCode;
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isForbidden());
 	}
 
 	/**
@@ -261,7 +311,6 @@ class DebtPositionControllerTest {
 				.value("3123456IUVMULTIPLEMOCK4"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[2].nav")
 				.value("3123456IUVMULTIPLEMOCK5"));
-		
 	}
 
 	@Test
@@ -504,6 +553,52 @@ class DebtPositionControllerTest {
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON));
 	}
 
+	@Test
+	void getDebtPositionListBySegregationCode_200() throws Exception {
+		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock2();
+		String iuv1 = paymentPositionDTO.getPaymentOption().get(0).getIuv();
+		String iuv2 = paymentPositionDTO.getPaymentOption().get(1).getIuv();
+		String firstSegregationCode = paymentPositionDTO.getPaymentOption().get(0).getIuv().substring(0,2);
+		// Create 2 DEBT POSITION but GET only the one related to the given segregation code because the caller is authorized only for the first
+		mvc.perform(post("/organizations/LIST_12345678901/debtpositions")
+							.content(TestUtil.toJson(paymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+
+		mvc.perform(post("/organizations/LIST_12345678901/debtpositions")
+							.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+
+		String url = "/organizations/LIST_12345678901/debtpositions?page=0&segregationCodes=" + firstSegregationCode;
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(1)))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[*].iuv")
+								   .value(Matchers.hasSize(2)))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[0].nav")
+								   .value("3"+iuv1))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[1].nav")
+								   .value("3"+iuv2));
+	}
+
+	@Test
+	void getDebtPositionListBySegregationCode_403() throws Exception {
+		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock2();
+		String firstSegregationCode = "99";
+		// Create 2 DEBT POSITION but GET only the one related to the given segregation code because the caller is authorized only for the first
+		mvc.perform(post("/organizations/LIST_12345678901/debtpositions")
+							.content(TestUtil.toJson(paymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+
+		mvc.perform(post("/organizations/LIST_12345678901/debtpositions")
+							.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+
+		String url = "/organizations/LIST_12345678901/debtpositions?page=0&segregationCodes=" + firstSegregationCode;
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(0)));
+	}
+
 	/**
 	 * DELETE DEBT POSITION
 	 */
@@ -560,6 +655,32 @@ class DebtPositionControllerTest {
 		.andExpect(status().isConflict());
 	}
 
+	@Test
+	void deleteDebtPosition_SegregationCode_200() throws Exception {
+		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock1();
+		String segregationCode = paymentPositionDTO.getPaymentOption().get(0).getIuv().substring(0,2);
+		mvc.perform(post("/organizations/DEL_12345678901/debtpositions")
+							.content(TestUtil.toJson(paymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+
+		mvc.perform(delete("/organizations/DEL_12345678901/debtpositions/12345678901IUPDMOCK1?segregationCodes=" + segregationCode)
+							.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	void deleteDebtPosition_SegregationCode_403() throws Exception {
+		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock1();
+		String segregationCode = "99";
+		mvc.perform(post("/organizations/DEL_12345678901/debtpositions")
+							.content(TestUtil.toJson(paymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+
+		mvc.perform(delete("/organizations/DEL_12345678901/debtpositions/12345678901IUPDMOCK1?segregationCodes=" + segregationCode)
+							.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isForbidden());
+	}
+
 	/**
 	 * UPDATE DEBT POSITION
 	 */
@@ -613,7 +734,66 @@ class DebtPositionControllerTest {
 				.value("3123456IUVMULTIPLEMOCK1"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[1].nav")
 				.value("3123456IUVMULTIPLEMOCK2"));
+	}
 
+	@Test
+	void updateDebtPosition_SegregationCode_200() throws Exception {
+		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock1();
+		String iupd = paymentPositionDTO.getIupd();
+		String iuv = paymentPositionDTO.getPaymentOption().get(0).getIuv();
+		String segregationCode = paymentPositionDTO.getPaymentOption().get(0).getIuv().substring(0,2);
+		mvc.perform(post("/organizations/UPD_12345678901/debtpositions")
+							.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+								   .value('3'+iuv));
+
+		// aggiorno la posizione debitoria
+		mvc.perform(put("/organizations/UPD_12345678901/debtpositions/" + iupd
+								+ "?segregationCodes=" + segregationCode)
+							.content(TestUtil.toJson(DebtPositionMock.getMock4()))
+							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+
+		// verifico che il nuovo contenuto
+		mvc.perform(get("/organizations/UPD_12345678901/debtpositions/" + iupd)
+							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.companyName")
+								   .value("Comune di Roma"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[*].iuv")
+								   .value(Matchers.hasSize(2)))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].amount")
+								   .value(1000))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].amount")
+								   .value(1000))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[1].amount")
+								   .value(500))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[1].transfer[0].amount")
+								   .value(500))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+								   .value("3123456IUVMULTIPLEMOCK1"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[1].nav")
+								   .value("3123456IUVMULTIPLEMOCK2"));
+	}
+
+	@Test
+	void updateDebtPosition_SegregationCode_403() throws Exception {
+		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock1();
+		String iupd = paymentPositionDTO.getIupd();
+		String iuv = paymentPositionDTO.getPaymentOption().get(0).getIuv();
+		String notSufficientSegregationCode = "99";
+		mvc.perform(post("/organizations/UPD_12345678901/debtpositions")
+							.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+								   .value('3'+iuv));
+
+		mvc.perform(put("/organizations/UPD_12345678901/debtpositions/" + iupd
+								+ "?segregationCodes=" + notSufficientSegregationCode)
+							.content(TestUtil.toJson(DebtPositionMock.getMock4()))
+							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isForbidden());
 	}
 	
 	@Test

@@ -16,8 +16,6 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
     private static final String PAYMENT_OPT_JOIN = "paymentOption";
     private static final String DUEDATE_FIELD = "dueDate";
     private static final String IUV_FIELD = "iuv";
-    //@Value("${nav.aux.digit}")
-    private static final String AUX_DIGIT = "3";
 
     private LocalDateTime dateFrom;
     private LocalDateTime dateTo;
@@ -52,7 +50,7 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
         if (segregationCodes != null && !segregationCodes.isEmpty()) {
             for(String segregationCode: segregationCodes) {
                 segregationCodesPredicate = cb.or(segregationCodesPredicate,
-                        cb.between(ppOptionsJoin.get(IUV_FIELD), AUX_DIGIT+segregationCode, AUX_DIGIT+getSegregationCodeEnd(segregationCode)));
+                        cb.between(ppOptionsJoin.get(IUV_FIELD), segregationCode, getSegregationCodeEnd(segregationCode)));
             }
         } else {
             segregationCodesPredicate = cb.isTrue(cb.literal(true));;

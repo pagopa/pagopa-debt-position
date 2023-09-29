@@ -117,7 +117,7 @@ public class DebtPositionValidation {
                 );
             }
 
-            chechPaymentOptionTransfers(po);
+            checkPaymentOptionTransfers(po);
 
             checkPaymentOptionAmounts(po);
         }
@@ -125,7 +125,7 @@ public class DebtPositionValidation {
 
     }
 
-    private static void chechPaymentOptionTransfers(final PaymentOption po) {
+    private static void checkPaymentOptionTransfers(final PaymentOption po) {
         int maxNumberOfTrasfersForPO = TransferId.values().length;
         // verifica numero massimo di transazioni per PO
         if (po.getTransfer().size() > maxNumberOfTrasfersForPO) {
