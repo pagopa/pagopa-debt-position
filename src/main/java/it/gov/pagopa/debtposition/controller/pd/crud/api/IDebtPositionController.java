@@ -55,7 +55,7 @@ public interface IDebtPositionController {
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
             @Valid @RequestBody PaymentPositionModel paymentPositionModel,
             @RequestParam(required = false, defaultValue = "false") boolean toPublish,
-            @Valid @Parameter(description = "Segregation codes for which broker is authorized") @Pattern(regexp = "\\d{2}(,\\d{2})*")
+            @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
             @RequestParam(required = false) String segregationCodes);
 
     @Operation(summary = "Return the list of the organization debt positions. " +
@@ -80,7 +80,7 @@ public interface IDebtPositionController {
             @Valid @Parameter(description = "Filter by debt position status") @RequestParam(value = "status", required = false) DebtPositionStatus status,
             @RequestParam(required = false, name = "orderby", defaultValue = "COMPANY_NAME") @Parameter(description = "Order by INSERTED_DATE, COMPANY_NAME, IUPD or STATUS") Order.PaymentPositionOrder orderBy,
             @RequestParam(required = false, name = "ordering", defaultValue = "DESC") @Parameter(description = "Direction of ordering") Sort.Direction ordering,
-            @Valid @Parameter(description = "Segregation codes for which broker is authorized") @Pattern(regexp = "\\d{2}(,\\d{2})*")
+            @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
             @RequestParam(required = false) String segregationCodes);
 
     @Operation(summary = "Return the details of a specific debt position.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizationDebtPositionByIUPD")
@@ -96,7 +96,7 @@ public interface IDebtPositionController {
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
             @Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.", required = true)
             @PathVariable("iupd") String iupd,
-            @Valid @Parameter(description = "Segregation codes for which broker is authorized") @Pattern(regexp = "\\d{2}(,\\d{2})*")
+            @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
             @RequestParam(required = false) String segregationCodes);
 
     @Operation(summary = "The Organization deletes a debt position", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "deletePosition")
@@ -113,7 +113,7 @@ public interface IDebtPositionController {
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
             @Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.", required = true)
             @PathVariable("iupd") String iupd,
-            @Valid @Parameter(description = "Segregation codes for which broker is authorized") @Pattern(regexp = "\\d{2}(,\\d{2})*")
+            @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
             @RequestParam(required = false) String segregationCodes);
 
 
@@ -135,6 +135,6 @@ public interface IDebtPositionController {
             @PathVariable("iupd") String iupd,
             @Valid @RequestBody PaymentPositionModel paymentPositionModel,
             @RequestParam(required = false, defaultValue = "false") boolean toPublish,
-            @Valid @Parameter(description = "Segregation codes for which broker is authorized") @Pattern(regexp = "\\d{2}(,\\d{2})*")
+            @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
             @RequestParam(required = false) String segregationCodes);
 }
