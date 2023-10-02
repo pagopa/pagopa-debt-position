@@ -13,10 +13,12 @@ import javax.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
+import it.gov.pagopa.debtposition.util.LocalDateTimeDeserializer;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -56,6 +58,7 @@ public class PaymentPositionModel implements Serializable {
     @NotBlank(message = "company name is required")
     private String companyName; // es. Comune di Roma
     private String officeName; // es. Ufficio Tributi
+    @JsonDeserialize(using = LocalDateTimeDeserializer .class)
     private LocalDateTime validityDate;
     @JsonProperty(access = Access.READ_ONLY)
     private LocalDateTime paymentDate;
