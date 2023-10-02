@@ -22,14 +22,19 @@ microservice-chart:
     periodSeconds: 5
   deployment:
     create: true
-  service:
+  serviceMonitor:
     create: true
+  ports:
+    - 8080
+  service:
     type: ClusterIP
-    port: 8080
+    ports:
+      - 8080
   ingress:
     create: true
     host: "weuprod.gps.internal.platform.pagopa.it"
     path: /pagopa-gpd-core/(.*)
+    servicePort: 8080
   serviceAccount:
     create: false
     annotations: {}
