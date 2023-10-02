@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.7.1-3-PAGOPA-1139-sviluppo-gpd-core-gestione-enti-pluri-intermediati"
+    tag: "0.7.1-4-PAGOPA-1139-sviluppo-gpd-core-gestione-enti-pluri-intermediati"
     pullPolicy: Always
   livenessProbe:
     httpGet:
