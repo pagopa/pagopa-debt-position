@@ -11,7 +11,7 @@
     </parent>
     <groupId>it.gov.pagopa.debtposition</groupId>
     <artifactId>gpd</artifactId>
-    <version>0.7.1-6-PAGOPA-1139-sviluppo-gpd-core-gestione-enti-pluri-intermediati</version>
+    <version>0.7.1-7-PAGOPA-1139-sviluppo-gpd-core-gestione-enti-pluri-intermediati</version>
     <name>Gestione Posizioni Debitorie</name>
     <description>Progetto Gestione Posizioni Debitorie</description>
     <properties>
