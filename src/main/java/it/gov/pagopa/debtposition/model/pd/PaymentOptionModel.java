@@ -10,8 +10,10 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import it.gov.pagopa.debtposition.util.LocalDateTimeDeserializer;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -33,8 +35,12 @@ public class PaymentOptionModel implements Serializable {
     private String description;
     @NotNull(message = "is partial payment is required")
     private Boolean isPartialPayment;
+    @Schema(description = "date by which the debt position must be paid", pattern = "[yyyy-MM-ddTHH:mm:ss.SSSZ] or [yyyy-MM-ddTHH:mm:ss]")
     @NotNull(message = "due date is required")
+    @JsonDeserialize(using = LocalDateTimeDeserializer .class)
     private LocalDateTime dueDate;
+    @Schema(description = "date by which the debt position can still be paid after its expiry", pattern = "[yyyy-MM-ddTHH:mm:ss.SSSZ] or [yyyy-MM-ddTHH:mm:ss]")
+    @JsonDeserialize(using = LocalDateTimeDeserializer .class)
     private LocalDateTime retentionDate;
     private long fee;
 

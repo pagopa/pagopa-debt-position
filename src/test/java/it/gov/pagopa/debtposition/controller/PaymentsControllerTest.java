@@ -985,7 +985,7 @@ class PaymentsControllerTest {
 		long poAmountAfterUpdate = newPOAmount + notificationFeeUpdateModel.getNotificationFee();
 
 		// modifico la posizione debitoria per capire se la notification fee viene modificata
-		paymentPositionDTO.getPaymentOption().get(0).setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(1, ChronoUnit.DAYS));
+		paymentPositionDTO.getPaymentOption().get(0).setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(1, ChronoUnit.DAYS).truncatedTo(ChronoUnit.SECONDS));
 		paymentPositionDTO.getPaymentOption().get(0).setAmount(newPOAmount);
 		paymentPositionDTO.getPaymentOption().get(0).getTransfer().get(0).setAmount(newPOAmount);
 		paymentPositionDTO.getPaymentOption().get(0).setNotificationFee(5000L);

@@ -147,8 +147,8 @@ function buildUpdateDebtPositionInfoRequest(debtPosition, payer) {
                 amount: debtPosition.paymentOption[0].amount * 100,
                 description: "Canone Unico Patrimoniale - SkyLab Inc. - Edit",
                 isPartialPayment: false,
-                dueDate: debtPosition.paymentOption[0].dueDate,
-                retentionDate: debtPosition.paymentOption[0].retentionDate,
+                dueDate: debtPosition.paymentOption[0].dueDate+"Z",
+                retentionDate: debtPosition.paymentOption[0].retentionDate+"Z",
                 fee: 0,
                 transfer: [
                     {
