@@ -201,12 +201,12 @@ class DebtPositionActionsControllerTest {
 		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock1();
 		String segregationCode = paymentPositionDTO.getPaymentOption().get(0).getIuv().substring(0,2);
 		// creo una posizione debitoria (senza 'validity date' impostata)
-		mvc.perform(post("/organizations/PBHVALID_12345678901/debtpositions")
+		mvc.perform(post("/organizations/PBHVALID_SC_12345678901/debtpositions")
 							.content(TestUtil.toJson(paymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 
 		// recupero la posizione debitoria e verifico lo stato in draft
-		mvc.perform(get("/organizations/PBHVALID_12345678901/debtpositions/12345678901IUPDMOCK1")
+		mvc.perform(get("/organizations/PBHVALID_SC_12345678901/debtpositions/12345678901IUPDMOCK1")
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.status")
@@ -214,12 +214,12 @@ class DebtPositionActionsControllerTest {
 				.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isEmpty());
 
 		// porto in pubblicata/validata lo stato della posizione debitoria
-		mvc.perform(post("/organizations/PBHVALID_12345678901/debtpositions/12345678901IUPDMOCK1/publish?" +
+		mvc.perform(post("/organizations/PBHVALID_SC_12345678901/debtpositions/12345678901IUPDMOCK1/publish?" +
 								 "segregationCodes=" + segregationCode)
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
 		// verifico che lo stato sia stato aggiornato a valid (doppio passaggio di stato)
-		mvc.perform(get("/organizations/PBHVALID_12345678901/debtpositions/12345678901IUPDMOCK1")
+		mvc.perform(get("/organizations/PBHVALID_SC_12345678901/debtpositions/12345678901IUPDMOCK1")
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.status")
@@ -231,12 +231,12 @@ class DebtPositionActionsControllerTest {
 	void publishDebtPosition_segregationCodes_403() throws Exception {
 		String notSufficientSegregationCode = "99";
 		// creo una posizione debitoria (senza 'validity date' impostata)
-		mvc.perform(post("/organizations/PBHVALID_12345678901/debtpositions")
+		mvc.perform(post("/organizations/PBHVALID_403_SC_12345678901/debtpositions")
 							.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 
 		// recupero la posizione debitoria e verifico lo stato in draft
-		mvc.perform(get("/organizations/PBHVALID_12345678901/debtpositions/12345678901IUPDMOCK1")
+		mvc.perform(get("/organizations/PBHVALID_403_SC_12345678901/debtpositions/12345678901IUPDMOCK1")
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.status")
@@ -244,7 +244,7 @@ class DebtPositionActionsControllerTest {
 				.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isEmpty());
 
 		// porto in pubblicata/validata lo stato della posizione debitoria
-		mvc.perform(post("/organizations/PBHVALID_12345678901/debtpositions/12345678901IUPDMOCK1/publish?" +
+		mvc.perform(post("/organizations/PBHVALID_403_SC_12345678901/debtpositions/12345678901IUPDMOCK1/publish?" +
 								 "segregationCodes=" + notSufficientSegregationCode)
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isForbidden());
 	}
@@ -316,13 +316,13 @@ class DebtPositionActionsControllerTest {
 		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock1();
 		String segregationCode = paymentPositionDTO.getPaymentOption().get(0).getIuv().substring(0,2);
 		// creo una posizione debitoria (senza 'validity date' impostata)
-		mvc.perform(post("/organizations/INVALIDATE_12345678901" +
+		mvc.perform(post("/organizations/INVALIDATE_SC_12345678901" +
 								 "/debtpositions?segregationCodes=" + segregationCode)
 							.content(TestUtil.toJson(paymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 
 		// recupero la posizione debitoria e verifico lo stato in draft
-		mvc.perform(get("/organizations/INVALIDATE_12345678901/debtpositions/12345678901IUPDMOCK1" +
+		mvc.perform(get("/organizations/INVALIDATE_SC_12345678901/debtpositions/12345678901IUPDMOCK1" +
 								"?segregationCodes=" + segregationCode)
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -331,12 +331,12 @@ class DebtPositionActionsControllerTest {
 				.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isEmpty());
 
 		// porto in pubblicata/validata lo stato della posizione debitoria
-		mvc.perform(post("/organizations/INVALIDATE_12345678901/debtpositions/12345678901IUPDMOCK1" +
+		mvc.perform(post("/organizations/INVALIDATE_SC_12345678901/debtpositions/12345678901IUPDMOCK1" +
 								 "/publish?segregationCodes=" + segregationCode)
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
 		// verifico che lo stato sia stato aggiornato a valid (doppio passaggio di stato)
-		mvc.perform(get("/organizations/INVALIDATE_12345678901/debtpositions/12345678901IUPDMOCK1" +
+		mvc.perform(get("/organizations/INVALIDATE_SC_12345678901/debtpositions/12345678901IUPDMOCK1" +
 								"?segregationCodes=" + segregationCode)
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -345,7 +345,7 @@ class DebtPositionActionsControllerTest {
 				.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty());
 
 		// invalido la posizione debitoria
-		mvc.perform(post("/organizations/INVALIDATE_12345678901/debtpositions/12345678901IUPDMOCK1" +
+		mvc.perform(post("/organizations/INVALIDATE_SC_12345678901/debtpositions/12345678901IUPDMOCK1" +
 								 "/invalidate?segregationCodes=" + segregationCode)
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -361,13 +361,13 @@ class DebtPositionActionsControllerTest {
 		String segregationCode = paymentPositionDTO.getPaymentOption().get(0).getIuv().substring(0,2);
 		String notSufficientSegregationCode = "99";
 		// creo una posizione debitoria (senza 'validity date' impostata)
-		mvc.perform(post("/organizations/INVALIDATE_12345678901" +
+		mvc.perform(post("/organizations/INVALIDATE_403_SC_12345678901" +
 								 "/debtpositions?segregationCodes=" + segregationCode)
 							.content(TestUtil.toJson(paymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 
 		// recupero la posizione debitoria e verifico lo stato in draft
-		mvc.perform(get("/organizations/INVALIDATE_12345678901/debtpositions/12345678901IUPDMOCK1" +
+		mvc.perform(get("/organizations/INVALIDATE_403_SC_12345678901/debtpositions/12345678901IUPDMOCK1" +
 								"?segregationCodes=" + segregationCode)
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -376,12 +376,12 @@ class DebtPositionActionsControllerTest {
 				.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isEmpty());
 
 		// porto in pubblicata/validata lo stato della posizione debitoria
-		mvc.perform(post("/organizations/INVALIDATE_12345678901/debtpositions/12345678901IUPDMOCK1" +
+		mvc.perform(post("/organizations/INVALIDATE_403_SC_12345678901/debtpositions/12345678901IUPDMOCK1" +
 								 "/publish?segregationCodes=" + segregationCode)
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
 		// verifico che lo stato sia stato aggiornato a valid (doppio passaggio di stato)
-		mvc.perform(get("/organizations/INVALIDATE_12345678901/debtpositions/12345678901IUPDMOCK1" +
+		mvc.perform(get("/organizations/INVALIDATE_403_SC_12345678901/debtpositions/12345678901IUPDMOCK1" +
 								"?segregationCodes=" + segregationCode)
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -390,9 +390,8 @@ class DebtPositionActionsControllerTest {
 				.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty());
 
 		// invalido la posizione debitoria
-		mvc.perform(post("/organizations/INVALIDATE_12345678901/debtpositions/12345678901IUPDMOCK1" +
+		mvc.perform(post("/organizations/INVALIDATE_403_SC_12345678901/debtpositions/12345678901IUPDMOCK1" +
 								 "/invalidate?segregationCodes=" + notSufficientSegregationCode)
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isForbidden());
 	}
-
 }

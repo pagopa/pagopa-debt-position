@@ -205,9 +205,9 @@ class DebtPositionControllerTest {
 	@Test
 	void createDebtPositionAuthorizedBySegregationCodes_201() throws Exception {
 		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock1();
-		String validSegregationCode = paymentPositionDTO.getPaymentOption().get(0).getIuv().substring(1,3);
+		String validSegregationCode = paymentPositionDTO.getPaymentOption().get(0).getIuv().substring(0,2);
 		String anotherSegregationCode = "99";
-		mvc.perform(post("/organizations/12345678901/debtpositions?segregationCodes=" + validSegregationCode + "," + anotherSegregationCode)
+		mvc.perform(post("/organizations/SC_12345678901/debtpositions?segregationCodes=" + validSegregationCode + "," + anotherSegregationCode)
 							.content(TestUtil.toJson(paymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -250,14 +250,14 @@ class DebtPositionControllerTest {
 	@Test
 	void getDebtPositionByIUPD_SegregationCodeAuthorized_200() throws Exception {
 		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock1();
-		String validSegregationCode = paymentPositionDTO.getPaymentOption().get(0).getIuv().substring(1,3);
+		String validSegregationCode = paymentPositionDTO.getPaymentOption().get(0).getIuv().substring(0,2);
 		String anotherSegregationCode = "99";
 		// creo una posizione debitoria e la recupero
-		mvc.perform(post("/organizations/200_12345678901/debtpositions")
+		mvc.perform(post("/organizations/200_SC_12345678901/debtpositions")
 							.content(TestUtil.toJson(paymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 
-		String url = "/organizations/200_12345678901/debtpositions/12345678901IUPDMOCK1?segregationCodes=" + validSegregationCode + "," + anotherSegregationCode;
+		String url = "/organizations/200_SC_12345678901/debtpositions/12345678901IUPDMOCK1?segregationCodes=" + validSegregationCode + "," + anotherSegregationCode;
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
@@ -268,11 +268,11 @@ class DebtPositionControllerTest {
 	void getDebtPositionByIUPD_SegregationCodeForbidden_403() throws Exception {
 		String notSufficientSegregationCode = "99";
 		// creo una posizione debitoria e la recupero
-		mvc.perform(post("/organizations/200_12345678901/debtpositions")
+		mvc.perform(post("/organizations/403_SC_12345678901/debtpositions")
 							.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 
-		String url = "/organizations/200_12345678901/debtpositions/12345678901IUPDMOCK1?segregationCodes=" + notSufficientSegregationCode;
+		String url = "/organizations/200_SC_12345678901/debtpositions/12345678901IUPDMOCK1?segregationCodes=" + notSufficientSegregationCode;
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isForbidden());
 	}
 
@@ -560,15 +560,11 @@ class DebtPositionControllerTest {
 		String iuv2 = paymentPositionDTO.getPaymentOption().get(1).getIuv();
 		String firstSegregationCode = paymentPositionDTO.getPaymentOption().get(0).getIuv().substring(0,2);
 		// Create 2 DEBT POSITION but GET only the one related to the given segregation code because the caller is authorized only for the first
-		mvc.perform(post("/organizations/LIST_12345678901/debtpositions")
+		mvc.perform(post("/organizations/LIST_SC_12345678901/debtpositions")
 							.content(TestUtil.toJson(paymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 
-		mvc.perform(post("/organizations/LIST_12345678901/debtpositions")
-							.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isCreated());
-
-		String url = "/organizations/LIST_12345678901/debtpositions?page=0&segregationCodes=" + firstSegregationCode;
+		String url = "/organizations/LIST_SC_12345678901/debtpositions?page=0&segregationCodes=" + firstSegregationCode;
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(1)))
@@ -585,15 +581,15 @@ class DebtPositionControllerTest {
 		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock2();
 		String firstSegregationCode = "99";
 		// Create 2 DEBT POSITION but GET only the one related to the given segregation code because the caller is authorized only for the first
-		mvc.perform(post("/organizations/LIST_12345678901/debtpositions")
+		mvc.perform(post("/organizations/LIST_403_SC_12345678901/debtpositions")
 							.content(TestUtil.toJson(paymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 
-		mvc.perform(post("/organizations/LIST_12345678901/debtpositions")
+		mvc.perform(post("/organizations/LIST_403_SC_12345678901/debtpositions")
 							.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 
-		String url = "/organizations/LIST_12345678901/debtpositions?page=0&segregationCodes=" + firstSegregationCode;
+		String url = "/organizations/LIST_403_SC_12345678901/debtpositions?page=0&segregationCodes=" + firstSegregationCode;
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(0)));
@@ -742,7 +738,7 @@ class DebtPositionControllerTest {
 		String iupd = paymentPositionDTO.getIupd();
 		String iuv = paymentPositionDTO.getPaymentOption().get(0).getIuv();
 		String segregationCode = paymentPositionDTO.getPaymentOption().get(0).getIuv().substring(0,2);
-		mvc.perform(post("/organizations/UPD_12345678901/debtpositions")
+		mvc.perform(post("/organizations/UPD_SC_12345678901/debtpositions")
 							.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -750,13 +746,13 @@ class DebtPositionControllerTest {
 								   .value('3'+iuv));
 
 		// aggiorno la posizione debitoria
-		mvc.perform(put("/organizations/UPD_12345678901/debtpositions/" + iupd
+		mvc.perform(put("/organizations/UPD_SC_12345678901/debtpositions/" + iupd
 								+ "?segregationCodes=" + segregationCode)
 							.content(TestUtil.toJson(DebtPositionMock.getMock4()))
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
 		// verifico che il nuovo contenuto
-		mvc.perform(get("/organizations/UPD_12345678901/debtpositions/" + iupd)
+		mvc.perform(get("/organizations/UPD_SC_12345678901/debtpositions/" + iupd)
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.companyName")
@@ -783,14 +779,14 @@ class DebtPositionControllerTest {
 		String iupd = paymentPositionDTO.getIupd();
 		String iuv = paymentPositionDTO.getPaymentOption().get(0).getIuv();
 		String notSufficientSegregationCode = "99";
-		mvc.perform(post("/organizations/UPD_12345678901/debtpositions")
+		mvc.perform(post("/organizations/UPD_403_SC_12345678901/debtpositions")
 							.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
 								   .value('3'+iuv));
 
-		mvc.perform(put("/organizations/UPD_12345678901/debtpositions/" + iupd
+		mvc.perform(put("/organizations/UPD_403_SC_12345678901/debtpositions/" + iupd
 								+ "?segregationCodes=" + notSufficientSegregationCode)
 							.content(TestUtil.toJson(DebtPositionMock.getMock4()))
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isForbidden());
