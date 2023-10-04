@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
+import java.util.List;
 
 
 @Service
@@ -28,7 +28,7 @@ public class PaymentPositionActionsService {
     private PaymentPositionRepository paymentPositionRepository;
 
 
-    public PaymentPosition publish(@NotBlank String organizationFiscalCode, @NotBlank String iupd, ArrayList<String> segregationCodes) {
+    public PaymentPosition publish(@NotBlank String organizationFiscalCode, @NotBlank String iupd, List<String> segregationCodes) {
         long t1 = System.currentTimeMillis();
         PaymentPosition ppToPublish = paymentPositionCRUDService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segregationCodes);
         long getTime = System.currentTimeMillis() - t1;
@@ -43,7 +43,7 @@ public class PaymentPositionActionsService {
 
 
     @Transactional
-    public PaymentPosition invalidate(@NotBlank String organizationFiscalCode, @NotBlank String iupd, ArrayList<String> segregationCodes) {
+    public PaymentPosition invalidate(@NotBlank String organizationFiscalCode, @NotBlank String iupd, List<String> segregationCodes) {
         PaymentPosition ppToInvalidate = paymentPositionCRUDService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segregationCodes);
         if (DebtPositionStatus.getPaymentPosNotIvalidableStatus().contains(ppToInvalidate.getStatus())) {
             throw new AppException(AppError.DEBT_POSITION_NOT_INVALIDABLE, organizationFiscalCode, iupd);

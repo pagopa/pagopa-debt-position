@@ -31,8 +31,8 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
 
     	Join<?, ?> ppOptionsJoin = root.join(PAYMENT_OPT_JOIN, JoinType.INNER);
 
-        Predicate dueDatePredicate = cb.isTrue(cb.literal(true));;
-        Predicate segregationCodesPredicate = cb.isTrue(cb.literal(false));;
+        Predicate dueDatePredicate = cb.isTrue(cb.literal(true));
+        Predicate segregationCodesPredicate = cb.isTrue(cb.literal(false));
 
         // due date predicate
         if (dateFrom != null && dateTo == null) {
@@ -53,7 +53,7 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
                         cb.between(ppOptionsJoin.get(IUV_FIELD), segregationCode, getSegregationCodeEnd(segregationCode)));
             }
         } else {
-            segregationCodesPredicate = cb.isTrue(cb.literal(true));;
+            segregationCodesPredicate = cb.isTrue(cb.literal(true));
         }
 
         return cb.and(dueDatePredicate, segregationCodesPredicate);
