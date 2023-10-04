@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Positive;
 import java.time.LocalDate;
 
@@ -53,23 +54,9 @@ public interface IDebtPositionController {
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
             @Valid @RequestBody PaymentPositionModel paymentPositionModel,
-            @RequestParam(required = false, defaultValue = "false") boolean toPublish);
-
-
-    @Operation(summary = "Return the details of a specific debt position.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizationDebtPositionByIUPD")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Obtained debt position details.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(name = "PaymentPositionResponse", implementation = PaymentPositionModelBaseResponse.class))),
-            @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
-            @ApiResponse(responseCode = "404", description = "No debt position found.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
-            @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
-    @GetMapping(value = "/organizations/{organizationfiscalcode}/debtpositions/{iupd}",
-            produces = {"application/json"})
-    ResponseEntity<PaymentPositionModelBaseResponse> getOrganizationDebtPositionByIUPD(
-            @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
-            @PathVariable("organizationfiscalcode") String organizationFiscalCode,
-            @Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.", required = true)
-            @PathVariable("iupd") String iupd);
-
+            @RequestParam(required = false, defaultValue = "false") boolean toPublish,
+            @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
+            @RequestParam(required = false) String segregationCodes);
 
     @Operation(summary = "Return the list of the organization debt positions. " +
                                  "The due dates interval is mutually exclusive with the payment dates interval.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizationDebtPositions")
@@ -92,8 +79,25 @@ public interface IDebtPositionController {
             @Valid @Parameter(description = "Filter to payment_date (if provided use the format yyyy-MM-dd). If not provided will be set to 30 days after the payment_date_from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "payment_date_to", required = false)  LocalDate paymentDateTo,
             @Valid @Parameter(description = "Filter by debt position status") @RequestParam(value = "status", required = false) DebtPositionStatus status,
             @RequestParam(required = false, name = "orderby", defaultValue = "COMPANY_NAME") @Parameter(description = "Order by INSERTED_DATE, COMPANY_NAME, IUPD or STATUS") Order.PaymentPositionOrder orderBy,
-            @RequestParam(required = false, name = "ordering", defaultValue = "DESC") @Parameter(description = "Direction of ordering") Sort.Direction ordering);
+            @RequestParam(required = false, name = "ordering", defaultValue = "DESC") @Parameter(description = "Direction of ordering") Sort.Direction ordering,
+            @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
+            @RequestParam(required = false) String segregationCodes);
 
+    @Operation(summary = "Return the details of a specific debt position.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizationDebtPositionByIUPD")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Obtained debt position details.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(name = "PaymentPositionResponse", implementation = PaymentPositionModelBaseResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
+            @ApiResponse(responseCode = "404", description = "No debt position found.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
+            @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
+    @GetMapping(value = "/organizations/{organizationfiscalcode}/debtpositions/{iupd}",
+            produces = {"application/json"})
+    ResponseEntity<PaymentPositionModelBaseResponse> getOrganizationDebtPositionByIUPD(
+            @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
+            @PathVariable("organizationfiscalcode") String organizationFiscalCode,
+            @Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.", required = true)
+            @PathVariable("iupd") String iupd,
+            @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
+            @RequestParam(required = false) String segregationCodes);
 
     @Operation(summary = "The Organization deletes a debt position", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "deletePosition")
     @ApiResponses(value = {
@@ -108,7 +112,9 @@ public interface IDebtPositionController {
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
             @Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.", required = true)
-            @PathVariable("iupd") String iupd);
+            @PathVariable("iupd") String iupd,
+            @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
+            @RequestParam(required = false) String segregationCodes);
 
 
     @Operation(summary = "The Organization updates a debt position ", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "updatePosition")
@@ -128,5 +134,7 @@ public interface IDebtPositionController {
             @Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.", required = true)
             @PathVariable("iupd") String iupd,
             @Valid @RequestBody PaymentPositionModel paymentPositionModel,
-            @RequestParam(required = false, defaultValue = "false") boolean toPublish);
+            @RequestParam(required = false, defaultValue = "false") boolean toPublish,
+            @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
+            @RequestParam(required = false) String segregationCodes);
 }

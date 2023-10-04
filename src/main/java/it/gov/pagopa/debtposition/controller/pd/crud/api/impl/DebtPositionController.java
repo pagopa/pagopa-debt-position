@@ -27,9 +27,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
-import javax.validation.Valid;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -50,14 +51,15 @@ public class DebtPositionController implements IDebtPositionController {
 
     @Override
     public ResponseEntity<PaymentPositionModel> createDebtPosition(String organizationFiscalCode,
-                                                                   @Valid PaymentPositionModel paymentPositionModel,
-                                                                   boolean toPublish) {
+                                                                   PaymentPositionModel paymentPositionModel,
+                                                                   boolean toPublish, String segregationCodes) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "createDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, paymentPositionModel.getIupd())));
 
         // flip model to entity
         PaymentPosition debtPosition = modelMapper.map(paymentPositionModel, PaymentPosition.class);
 
-        PaymentPosition createdDebtPos = paymentPositionService.create(debtPosition, organizationFiscalCode, toPublish);
+        ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
+        PaymentPosition createdDebtPos = paymentPositionService.create(debtPosition, organizationFiscalCode, toPublish, segCodes);
 
         if (null != createdDebtPos) {
         	PaymentPositionModel paymentPosition = modelMapper.map(createdDebtPos, PaymentPositionModel.class);
@@ -70,27 +72,15 @@ public class DebtPositionController implements IDebtPositionController {
     }
 
     @Override
-    public ResponseEntity<PaymentPositionModelBaseResponse> getOrganizationDebtPositionByIUPD(String organizationFiscalCode,
-                                                                                              String iupd) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationDebtPositionByIUPD", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
-
-        // flip entity to model
-        PaymentPositionModelBaseResponse paymentPositionResponse = ObjectMapperUtils.map(
-                paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd),
-                PaymentPositionModelBaseResponse.class);
-        //PAGOPA-1155: add nav info to PO
-        paymentPositionResponse.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv()));
-
-        return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
-    }
-
-    @Override
     @ExclusiveParamGroup(firstGroup = {"due_date_to", "due_date_from"}, secondGroup = {"payment_date_from", "payment_date_to"})
     public ResponseEntity<PaymentPositionsInfo> getOrganizationDebtPositions(String organizationFiscalCode,
                                                                              Integer limit, Integer page, LocalDate dueDateFrom,
                                                                              LocalDate dueDateTo, LocalDate paymentDateFrom, LocalDate paymentDateTo,
-                                                                             DebtPositionStatus status, PaymentPositionOrder orderBy, Direction ordering) {
+                                                                             DebtPositionStatus status, PaymentPositionOrder orderBy, Direction ordering,
+                                                                             String segregationCodes) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
+
+        ArrayList<String> segCodesList = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
 
         // Create filter and order object
         FilterAndOrder filterOrder = FilterAndOrder.builder()
@@ -101,6 +91,7 @@ public class DebtPositionController implements IDebtPositionController {
                         .paymentDateFrom(paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : null)
                         .paymentDateTo(paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : null)
                         .status(status)
+                        .segregationCodes(segCodesList)
                         .build())
                 .order(Order.builder()
                         .orderBy(orderBy)
@@ -126,17 +117,33 @@ public class DebtPositionController implements IDebtPositionController {
     }
 
     @Override
-    public ResponseEntity<String> deleteDebtPosition(String organizationFiscalCode, String iupd) {
+    public ResponseEntity<PaymentPositionModelBaseResponse> getOrganizationDebtPositionByIUPD(String organizationFiscalCode, String iupd, String segregationCodes) {
+        log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationDebtPositionByIUPD", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
+
+        ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
+        // flip entity to model
+        PaymentPositionModelBaseResponse paymentPositionResponse = ObjectMapperUtils.map(
+                paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segCodes),
+                PaymentPositionModelBaseResponse.class);
+        //PAGOPA-1155: add nav info to PO
+        paymentPositionResponse.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv()));
+
+        return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<String> deleteDebtPosition(String organizationFiscalCode, String iupd, String segregationCodes) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "DELETE", "deleteDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
 
-        paymentPositionService.delete(organizationFiscalCode, iupd);
+        ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
+        paymentPositionService.delete(organizationFiscalCode, iupd, segCodes);
         return new ResponseEntity<>(Constants.DEBT_POSITION_DELETED, HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<PaymentPositionModel> updateDebtPosition(String organizationFiscalCode, String iupd,
-                                                                   @Valid PaymentPositionModel paymentPositionModel,
-                                                                   boolean toPublish) {
+                                                                   PaymentPositionModel paymentPositionModel,
+                                                                   boolean toPublish, String segregationCodes) {
         final String IUPD_VALIDATION_ERROR = "IUPD mistmatch error: path variable IUPD [%s] and request body IUPD [%s] must be the same";
 
         log.info(String.format(LOG_BASE_HEADER_INFO, "PUT", "updateDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
@@ -148,7 +155,8 @@ public class DebtPositionController implements IDebtPositionController {
             throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, String.format(IUPD_VALIDATION_ERROR, iupd, paymentPositionModel.getIupd()));
         }
 
-        PaymentPosition updatedDebtPos = paymentPositionService.update(paymentPositionModel, organizationFiscalCode, toPublish);
+        ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
+        PaymentPosition updatedDebtPos = paymentPositionService.update(paymentPositionModel, organizationFiscalCode, toPublish, segCodes);
 
         if (null != updatedDebtPos) {
         	PaymentPositionModel paymentPosition = modelMapper.map(updatedDebtPos, PaymentPositionModel.class);

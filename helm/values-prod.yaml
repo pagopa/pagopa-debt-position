@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.7.1"
+    tag: "0.7.1-7-PAGOPA-1139-sviluppo-gpd-core-gestione-enti-pluri-intermediati"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -25,11 +25,13 @@ microservice-chart:
   service:
     create: true
     type: ClusterIP
-    port: 8080
+    ports:
+      - 8080
   ingress:
     create: true
     host: "weuprod.gps.internal.platform.pagopa.it"
     path: /pagopa-gpd-core/(.*)
+    servicePort: 8080
   serviceAccount:
     create: false
     annotations: {}

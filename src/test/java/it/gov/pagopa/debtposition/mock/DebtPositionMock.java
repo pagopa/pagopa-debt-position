@@ -528,7 +528,6 @@ public class DebtPositionMock {
 
 		return pPMock;
 	}
-	
 
 	public static PaymentPositionDTO createPaymentPosition400Mock1() {
 
