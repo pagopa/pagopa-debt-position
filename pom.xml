@@ -20,6 +20,7 @@
         <modelmapper-version>3.1.0</modelmapper-version>
         <jackson-datatype-jsr310-version>2.13.1</jackson-datatype-jsr310-version>
         <flyway-version>8.5.10</flyway-version>
+        <openfeign-version>3.1.8</openfeign-version>
     </properties>
 
     <dependencies>
@@ -103,6 +104,16 @@
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
             <version>${flyway-version}</version>
+        </dependency>
+        <!-- Feign -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+            <version>${openfeign-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.retry</groupId>
+            <artifactId>spring-retry</artifactId>
         </dependency>
     </dependencies>
 

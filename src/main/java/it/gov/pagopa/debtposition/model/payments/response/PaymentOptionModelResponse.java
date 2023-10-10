@@ -39,6 +39,7 @@ public class PaymentOptionModelResponse implements Serializable {
     private String idFlowReporting;
     private PaymentOptionStatus status;
     private LocalDateTime lastUpdatedDate;
+    private LocalDateTime lastUpdatedDateNotificationFee;
 
     private List<TransferModelResponse> transfer = new ArrayList<>();
 }

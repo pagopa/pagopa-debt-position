@@ -1,0 +1,1 @@
+ALTER TABLE payment_option ADD COLUMN last_updated_date_notification_fee timestamp NULL;
