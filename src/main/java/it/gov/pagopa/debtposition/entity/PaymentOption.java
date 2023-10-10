@@ -100,6 +100,14 @@ public class PaymentOption implements Serializable {
     @NotNull
     @Column(name = "last_updated_date")
     private LocalDateTime lastUpdatedDate;
+    
+    @Column(name = "last_updated_date_notification_fee")
+    private LocalDateTime lastUpdatedDateNotificationFee;
+    
+    // flag that identifies if the payment option has a payment in progress (false = no payment in progress)
+    @Builder.Default
+    @Transient
+    private boolean paymentInProgress = false;
 
     @ManyToOne(
             targetEntity = PaymentPosition.class,
