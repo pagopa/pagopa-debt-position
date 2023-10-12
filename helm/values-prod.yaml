@@ -94,6 +94,11 @@ microservice-chart:
     CRON_JOB_SCHEDULE_EXPRESSION_TO_VALID: "0 */30 * * * *"
     CRON_JOB_SCHEDULE_EXPRESSION_TO_EXPIRED: "0 */40 * * * *"
     AUX_DIGIT: "3"
+    NODE_HOST: "https://api.platform.pagopa.it/"
+    NODE_CHECK_POSITION_PATH: "/nodo/nodo-per-pm/v1/checkPosition"
+    NODE_CONNECTION_TIMEOUT: "3000"
+    RETRY_MAX_DELAY: "2000"
+    RETRY_MAX_ATTEMPTS: "1"
     LOG_LEVEL: "INFO"
     SQL_LOG_LEVEL: "INFO"
     SQL_BINDER_LOG_LEVEL: "INFO"
@@ -102,6 +107,7 @@ microservice-chart:
     APPLICATIONINSIGHTS_CONNECTION_STRING: 'ai-p-connection-string'
     SPRING_DATASOURCE_PASSWORD: "db-apd-user-password"
     SPRING_DATASOURCE_USERNAME: "db-apd-user-name"
+    NODE_SUBSCRIPTION_KEY: "gpd-p-node-subscription-key"
   keyvault:
     name: "pagopa-p-gps-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"

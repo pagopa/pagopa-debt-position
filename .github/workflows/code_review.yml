@@ -41,7 +41,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           sonar_token: ${{ secrets.SONAR_TOKEN }}
           project_key: ${{env.PROJECT_KEY}}
-          coverage_exclusions: "**/config/*,**/*Mock*,**/model/**,**/entity/*"
+          coverage_exclusions: "**/config/*, **/config/feign/*, **/*Mock*,**/model/**,**/entity/*,**/util/CustomHttpStatus"
           cpd_exclusions: "**/model/**,**/entity/*"
 
   smoke-test:

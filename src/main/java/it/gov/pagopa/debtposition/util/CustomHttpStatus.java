@@ -137,10 +137,12 @@ public enum CustomHttpStatus {
 				return this.value;
 			}
 
+			
 			/**
+			 * @deprecated
 			 * Return the {@code Series} enum constant for the supplied {@code HttpStatus}.
 			 */
-			@Deprecated
+			@Deprecated (since = "", forRemoval=true)
 			public static Series valueOf(CustomHttpStatus status) {
 				return status.series;
 			}

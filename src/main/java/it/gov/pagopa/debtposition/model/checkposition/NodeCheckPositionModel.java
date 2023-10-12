@@ -18,6 +18,6 @@ public class NodeCheckPositionModel implements Serializable{
 	 */
 	private static final long serialVersionUID = -8146130541120434068L;
 	
-	List<NodePosition> positionslist;
+	private List<NodePosition> positionslist;
 
 }
