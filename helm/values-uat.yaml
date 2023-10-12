@@ -95,7 +95,7 @@ microservice-chart:
     CRON_JOB_SCHEDULE_EXPRESSION_TO_EXPIRED: "0 */20 * * * *"
     AUX_DIGIT: "3"
     NODE_HOST: "https://api.uat.platform.pagopa.it"
-    NODE_CHECK_POSITION_PATH: "/nodo/nodo-per-pm/v1/checkPosition"
+    NODE_CHECK_POSITION_PATH: "/nodo-auth/nodo-per-pm/v1/checkPosition"
     NODE_CONNECTION_TIMEOUT: "3000"
     RETRY_MAX_DELAY: "2000"
     RETRY_MAX_ATTEMPTS: "1"
