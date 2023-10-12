@@ -1160,20 +1160,20 @@ class PaymentsControllerTest {
 		when(nodeClient.getCheckPosition(any(NodeCheckPositionModel.class))).thenReturn(NodeCheckPositionResponse.builder().outcome("KO").build());
 
 		// creo una posizione debitoria e recupero la payment option associata
-		mvc.perform(post("/organizations/PO200_notificationfee_12345678901/debtpositions")
+		mvc.perform(post("/organizations/PO209_notificationfee_12345678901/debtpositions")
 						.content(TestUtil.toJson(paymentPositionDTO))
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 
 		// leggo il valore della notification fee per accertarmi che non venga inserita anche se passata in input
-		mvc.perform(get("/organizations/PO200_notificationfee_12345678901/paymentoptions/123456IUVMOCK1")
+		mvc.perform(get("/organizations/PO209_notificationfee_12345678901/paymentoptions/123456IUVMOCK1")
 						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.notificationFee")
 						.value(0L));
 
 		// aggiorno il valore della notification fee
-		mvc.perform(MockMvcRequestBuilders.put("/organizations/PO200_notificationfee_12345678901/paymentoptions/123456IUVMOCK1/notificationfee")
+		mvc.perform(MockMvcRequestBuilders.put("/organizations/PO209_notificationfee_12345678901/paymentoptions/123456IUVMOCK1/notificationfee")
 				.content(TestUtil.toJson(notificationFeeUpdateModel))
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().is(CustomHttpStatus.IN_PROGRESS.value()))
@@ -1187,7 +1187,7 @@ class PaymentsControllerTest {
 		verify(nodeClient, times(1)).getCheckPosition(any(NodeCheckPositionModel.class));
 
 		// leggo nuovamente la payment option per capire se gli amount sono stati modificati correttamente
-		mvc.perform(get("/organizations/PO200_notificationfee_12345678901/paymentoptions/123456IUVMOCK1")
+		mvc.perform(get("/organizations/PO209_notificationfee_12345678901/paymentoptions/123456IUVMOCK1")
 						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.notificationFee")
@@ -1207,20 +1207,20 @@ class PaymentsControllerTest {
 		when(nodeClient.getCheckPosition(any(NodeCheckPositionModel.class))).thenThrow(new RuntimeException("Connection timeout"));
 
 		// creo una posizione debitoria e recupero la payment option associata
-		mvc.perform(post("/organizations/PO200_notificationfee_12345678901/debtpositions")
+		mvc.perform(post("/organizations/PO209_exception_notificationfee_12345678901/debtpositions")
 						.content(TestUtil.toJson(paymentPositionDTO))
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 
 		// leggo il valore della notification fee per accertarmi che non venga inserita anche se passata in input
-		mvc.perform(get("/organizations/PO200_notificationfee_12345678901/paymentoptions/123456IUVMOCK1")
+		mvc.perform(get("/organizations/PO209_exception_notificationfee_12345678901/paymentoptions/123456IUVMOCK1")
 						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.notificationFee")
 						.value(0L));
 
 		// aggiorno il valore della notification fee
-		mvc.perform(MockMvcRequestBuilders.put("/organizations/PO200_notificationfee_12345678901/paymentoptions/123456IUVMOCK1/notificationfee")
+		mvc.perform(MockMvcRequestBuilders.put("/organizations/PO209_exception_notificationfee_12345678901/paymentoptions/123456IUVMOCK1/notificationfee")
 				.content(TestUtil.toJson(notificationFeeUpdateModel))
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().is(CustomHttpStatus.IN_PROGRESS.value()))
@@ -1234,7 +1234,7 @@ class PaymentsControllerTest {
 		verify(nodeClient, times(1)).getCheckPosition(any(NodeCheckPositionModel.class));
 
 		// leggo nuovamente la payment option per capire se gli amount sono stati modificati correttamente
-		mvc.perform(get("/organizations/PO200_notificationfee_12345678901/paymentoptions/123456IUVMOCK1")
+		mvc.perform(get("/organizations/PO209_exception_notificationfee_12345678901/paymentoptions/123456IUVMOCK1")
 						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.notificationFee")

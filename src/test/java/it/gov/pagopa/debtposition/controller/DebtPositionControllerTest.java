@@ -1,5 +1,7 @@
 package it.gov.pagopa.debtposition.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -20,6 +22,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -27,8 +30,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
+import it.gov.pagopa.debtposition.client.NodeClient;
 import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import it.gov.pagopa.debtposition.mock.DebtPositionMock;
+import it.gov.pagopa.debtposition.model.checkposition.NodeCheckPositionModel;
+import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPositionResponse;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 
@@ -41,6 +47,8 @@ class DebtPositionControllerTest {
 
 	@Mock
 	private ModelMapper modelMapperMock;
+	
+	@MockBean private NodeClient nodeClient;
 
 	@BeforeEach
 	void setUp() {
@@ -1102,6 +1110,8 @@ class DebtPositionControllerTest {
 	void updateDebtPosition_noValidTransfer_422() throws Exception {
 
 		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.paymentPositionForNotificationUpdateMock1();
+		
+		when(nodeClient.getCheckPosition(any(NodeCheckPositionModel.class))).thenReturn(NodeCheckPositionResponse.builder().outcome("OK").build());
 
 		// creo una posizione debitoria e recupero la payment option associata
 		mvc.perform(post("/organizations/UPD422_novalidtransfer_12345678901/debtpositions")
