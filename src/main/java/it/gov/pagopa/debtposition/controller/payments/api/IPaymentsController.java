@@ -79,6 +79,7 @@ public interface IPaymentsController {
     @Operation(summary = "The organization updates the notification fee of a payment option.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "updateNotificationFee")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Request updated."),
+            @ApiResponse(responseCode = "209", description = "Request updated with a payment in progress."),
             @ApiResponse(responseCode = "400", description = "Malformed request.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
             @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
             @ApiResponse(responseCode = "404", description = "No payment option found.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
