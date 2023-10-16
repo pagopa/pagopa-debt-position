@@ -138,14 +138,7 @@ public enum CustomHttpStatus {
 			}
 
 			/**
-			 * Return the {@code Series} enum constant for the supplied {@code HttpStatus}.
-			 */
-			@Deprecated
-			public static Series valueOf(CustomHttpStatus status) {
-				return status.series;
-			}
 
-			/**
 			 * Return the {@code Series} enum constant for the supplied status code.
 			 */
 			public static Series valueOf(int statusCode) {

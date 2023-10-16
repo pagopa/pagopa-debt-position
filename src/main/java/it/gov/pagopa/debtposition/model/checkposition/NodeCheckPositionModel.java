@@ -12,12 +12,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class NodeCheckPositionModel implements Serializable{
+public class NodeCheckPositionModel implements Serializable {
 	/**
 	 * generated serialVersionUID
 	 */
 	private static final long serialVersionUID = -8146130541120434068L;
 	
-	List<NodePosition> positionslist;
-
+	private List<NodePosition> positionslist;
 }
