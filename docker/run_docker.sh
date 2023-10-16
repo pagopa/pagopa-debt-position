@@ -25,7 +25,6 @@ FILE=.env
 if test -f "$FILE"; then
     rm .env
 fi
-
 config=$(yq  -r '."microservice-chart".envConfig' ../helm/values-$ENV.yaml)
 IFS=$'\n'
 for line in $(echo "$config" | jq -r '. | to_entries[] | select(.key) | "\(.key)=\(.value)"'); do
@@ -34,10 +33,10 @@ done
 
 keyvault=$(yq  -r '."microservice-chart".keyvault.name' ../helm/values-$ENV.yaml)
 secret=$(yq  -r '."microservice-chart".envSecret' ../helm/values-$ENV.yaml)
-for line in $(echo $secret | jq -r '. | to_entries[] | select(.key) | "\(.key)=\(.value)"'); do
+for line in $(echo "$secret" | jq -r '. | to_entries[] | select(.key) | "\(.key)=\(.value)"'); do
   IFS='=' read -r -a array <<< "$line"
   response=$(az keyvault secret show --vault-name $keyvault --name "${array[1]}")
-  value=$(echo $response | jq -r '.value')
+  value=$(echo "$response" | jq -r '.value')
   echo "${array[0]}=$value" >> .env
 done
 
@@ -45,12 +44,11 @@ done
 stack_name=$(cd .. && basename "$PWD")
 docker compose -p "${stack_name}" up -d --remove-orphans --force-recreate --build
 
-
 # waiting the containers
 printf 'Waiting for the service'
 attempt_counter=0
-max_attempts=75
-until [ $(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/info) -ne 200 ]; do
+max_attempts=50
+until $(curl --output /dev/null --silent --head --fail http://localhost:8080/info); do
     if [ ${attempt_counter} -eq ${max_attempts} ];then
       echo "Max attempts reached"
       exit 1
