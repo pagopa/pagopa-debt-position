@@ -1,5 +1,13 @@
 package it.gov.pagopa.debtposition.controller.payments.api.impl;
 
+import javax.validation.Valid;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+
 import it.gov.pagopa.debtposition.controller.payments.api.IPaymentsController;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.Transfer;
@@ -10,17 +18,10 @@ import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResp
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.TransferModelResponse;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
-import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.service.payments.PaymentsService;
+import it.gov.pagopa.debtposition.util.CustomHttpStatus;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-
-import javax.validation.Valid;
 
 
 @Controller
@@ -80,7 +81,10 @@ public class PaymentsController implements IPaymentsController {
         log.info(String.format(LOG_BASE_HEADER_INFO, "PUT", "updateNotificationFee", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv) + "; notificationFee=" + notificationFee));
         PaymentOption updatedPaymentOption = paymentsService.updateNotificationFee(organizationFiscalCode, iuv, notificationFee);
         if (updatedPaymentOption != null) {
-            return new ResponseEntity<>(ObjectMapperUtils.map(updatedPaymentOption, PaymentOptionModelResponse.class), HttpStatus.OK);
+        	ResponseEntity.status(Boolean.FALSE.equals(updatedPaymentOption.isPaymentInProgress())?HttpStatus.OK.value():CustomHttpStatus.IN_PROGRESS.value());
+            return ResponseEntity
+            		.status(Boolean.FALSE.equals(updatedPaymentOption.isPaymentInProgress())?HttpStatus.OK.value():CustomHttpStatus.IN_PROGRESS.value())
+            		.body(ObjectMapperUtils.map(updatedPaymentOption, PaymentOptionModelResponse.class));
         }
         throw new AppException(AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_FAILED, organizationFiscalCode, iuv);
     }

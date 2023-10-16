@@ -1,10 +1,31 @@
 package it.gov.pagopa.debtposition.service.payments;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import it.gov.pagopa.debtposition.client.NodeClient;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
+import it.gov.pagopa.debtposition.model.checkposition.NodeCheckPositionModel;
+import it.gov.pagopa.debtposition.model.checkposition.NodePosition;
+import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPositionResponse;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
@@ -14,17 +35,6 @@ import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
 
 
 @Service
@@ -37,6 +47,11 @@ public class PaymentsService {
 
     @Autowired
     private PaymentPositionRepository paymentPositionRepository;
+    
+    @Autowired private NodeClient nodeClient;
+    
+    @Value("${nav.aux.digit}")
+    private String auxDigit;
 
     public PaymentOption getPaymentOptionByIUV(@NotBlank String organizationFiscalCode,
                                                @NotBlank String iuv) {
@@ -98,9 +113,25 @@ public class PaymentsService {
         if (!PaymentOptionStatus.PO_UNPAID.equals(paymentOption.getStatus())) {
             throw new AppException(AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_NOT_UPDATABLE, organizationFiscalCode, iuv);
         }
-
+        
         // Executing the amount updating with the inserted notification fee
         updateAmountsWithNotificationFee(paymentOption, organizationFiscalCode, notificationFeeAmount);
+        
+        // Executes a call to the node's checkPosition API to see if there is a payment in progress
+        try {
+        	NodePosition position = NodePosition.builder().fiscalCode(organizationFiscalCode).noticeNumber(auxDigit+iuv).build();
+        	NodeCheckPositionResponse chkPositionRes = 
+        			nodeClient.getCheckPosition(NodeCheckPositionModel.builder().positionslist(Collections.singletonList(position)).build());
+        	paymentOption.setPaymentInProgress("OK".equalsIgnoreCase(chkPositionRes.getOutcome())?Boolean.FALSE:Boolean.TRUE);
+        } catch (Exception e) {
+            log.error("Error checking the position on the node for PO with fiscalCode " + organizationFiscalCode + " and noticeNumber " + auxDigit+iuv, e);
+            // By business rules it is expected to treat the error as if the node had responded KO
+            paymentOption.setPaymentInProgress(Boolean.TRUE);
+        }
+
+        // Updated to track the PO update
+        paymentOption.setLastUpdatedDate(LocalDateTime.now(ZoneOffset.UTC));
+        paymentOption.setLastUpdatedDateNotificationFee(LocalDateTime.now(ZoneOffset.UTC));
 
         paymentOptionRepository.saveAndFlush(paymentOption);
         return paymentOption;
@@ -121,7 +152,7 @@ public class PaymentsService {
          */
         long oldNotificationFee = Optional.of(paymentOption.getNotificationFee()).orElse(0L);
 
-        // Setting the new value of the notification fee and updating the amount of the payment option
+        // Setting the new value of the notification fee, updating the amount of the payment option and the last updated date fee
         paymentOption.setNotificationFee(notificationFeeAmount);
         paymentOption.setAmount(paymentOption.getAmount() - oldNotificationFee);
         paymentOption.setAmount(paymentOption.getAmount() + notificationFeeAmount);
