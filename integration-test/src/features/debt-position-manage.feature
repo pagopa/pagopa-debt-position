@@ -11,7 +11,7 @@ Feature: Managing a debt position
 
   Scenario: Debt position notification fee update
     When the notification fee of the debt position is updated
-    Then the organization gets the status code 200
+    Then the organization gets the status code 209
     And the organization gets the updated amounts
 
   Scenario: Debt position filter list by status and due date

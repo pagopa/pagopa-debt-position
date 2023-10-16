@@ -1167,7 +1167,7 @@ class PaymentsControllerTest {
 
 		// leggo il valore della notification fee per accertarmi che non venga inserita anche se passata in input
 		mvc.perform(get("/organizations/PO209_notificationfee_12345678901/paymentoptions/123456IUVMOCK1")
-						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.notificationFee")
 						.value(0L));
