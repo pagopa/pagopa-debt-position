@@ -59,6 +59,18 @@ async function executeDebtPositionNotificationFeeUpdate(bundle, idOrg, fee) {
     bundle.responseToCheck = response;    
 }
 
+async function executeDebtPositionNotificationFeeUpdateNodeOK(bundle, idOrg, fee) {
+    let iuv = bundle.debtPosition.iuvOK;
+    let response = await updateNotificationFee(idOrg, iuv, {notificationFee: fee});
+    bundle.responseToCheck = response;    
+}
+
+async function executeDebtPositionNotificationFeeUpdateNodeKO(bundle, idOrg, fee) {
+    let iuv = bundle.debtPosition.iuvKO;
+    let response = await updateNotificationFee(idOrg, iuv, {notificationFee: fee});
+    bundle.responseToCheck = response;    
+}
+
 async function executeDebtPositionGetList(bundle, idOrg, dueDateFrom, dueDateTo, paymentDateFrom, paymentDateTo, status) {
     let response = await getDebtPositionList(idOrg, dueDateFrom, dueDateTo, paymentDateFrom, paymentDateTo, status);
     bundle.responseToCheck = response;
@@ -124,5 +136,7 @@ module.exports = {
     executeDebtPositionUpdateAndPublication,
     executePaymentOptionGetByIuv,
     executeKODebtPositionCreation,
-    executeOKDebtPositionCreation
+    executeOKDebtPositionCreation,
+    executeDebtPositionNotificationFeeUpdateNodeOK,
+    executeDebtPositionNotificationFeeUpdateNodeKO
 }

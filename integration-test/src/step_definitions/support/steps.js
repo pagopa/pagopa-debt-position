@@ -13,10 +13,12 @@ const { executeDebtPositionCreation,
         executeDebtPositionUpdateAndPublication,
         executePaymentOptionGetByIuv,
         executeOKDebtPositionCreation,
-        executeKODebtPositionCreation
+        executeKODebtPositionCreation,
+        executeDebtPositionNotificationFeeUpdateNodeOK,
+        executeDebtPositionNotificationFeeUpdateNodeKO
 } = require('./logic/gpd_logic');
 const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, assertNotificationFeeUpdatedAmounts, 
-assertStatusString, executeAfterAllStep, randomOrg, randomIupd, assertIupd, assertNav } = require('./logic/common_logic');
+assertStatusString, executeAfterAllStep, randomOrg, randomIupd, assertIupd, assertNav, assertNotificationFeeUpdatedDateNotificationFee } = require('./logic/common_logic');
 const { gpdSessionBundle, gpdUpdateBundle, gpdPayBundle } = require('./utility/data');
 const { getValidBundle, addDays, format } = require('./utility/helpers');
 
@@ -84,8 +86,10 @@ Then('the organization gets the updated amounts', () => assertNotificationFeeUpd
 /*
  * Debt position notification fee update by querying the node with existing positions
  */
- When('the notification fee of the debt position is updated using an OK position on the node', () => executeDebtPositionNotificationFeeUpdate(gpdSessionBundle, idOrg, 150));
- When('the notification fee of the debt position is updated using an KO position on the node', () => executeDebtPositionNotificationFeeUpdate(gpdSessionBundle, idOrg, 150));
+ When('the notification fee of the debt position is updated using an OK position on the node', () => executeDebtPositionNotificationFeeUpdateNodeOK(gpdSessionBundle, idOrg, 150));
+ When('the notification fee of the debt position is updated using an KO position on the node', () => executeDebtPositionNotificationFeeUpdateNodeKO(gpdSessionBundle, idOrg, 150));
+ Then('the organization gets the updated last updated date notification fee', () => assertNotificationFeeUpdatedDateNotificationFee(gpdSessionBundle.createdDebtPosition, 
+ gpdSessionBundle.responseToCheck.data));
  
 
 /*
@@ -154,4 +158,6 @@ function resetParams() {
 AfterAll(async function() {
     // postcondition -> deletion possible duplication
     await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd);
+    await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupdOK);
+    await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupdKO);
 });

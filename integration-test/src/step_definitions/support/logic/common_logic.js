@@ -39,6 +39,11 @@ async function assertNotificationFeeUpdatedAmounts(createdDebtPosition, response
     assert.strictEqual(response.transfer[1].amount, createdDebtPosition.paymentOption[0].transfer[1].amount);
 }
 
+async function assertNotificationFeeUpdatedDateNotificationFee(createdDebtPosition, response) {
+	let lastUpdatedDateNotificationFee = response.lastUpdatedDateNotificationFee;
+	assert.notEqual(lastUpdatedDateNotificationFee, null);
+}
+
 async function assertNav(debtPosition, response) {
     // nav = auxDigit + iuv
     assert.strictEqual(response.paymentOption[0].nav, auxDigit + debtPosition.paymentOption[0].iuv);
@@ -63,5 +68,6 @@ module.exports = {
     randomOrg,
     randomIupd,
     assertIupd,
-    assertNav
+    assertNav,
+    assertNotificationFeeUpdatedDateNotificationFee
 }

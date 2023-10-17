@@ -58,6 +58,8 @@ Feature: Managing a debt position
     When the notification fee of the debt position is updated using an OK position on the node
     Then the organization gets the status code 200
     And the organization gets the updated amounts
+    And the organization gets the updated last updated date notification fee
     When the notification fee of the debt position is updated using an KO position on the node
     Then the organization gets the status code 209
     And the organization gets the updated amounts
+    And the organization gets the updated last updated date notification fee
