@@ -27,6 +27,7 @@ function put(url, body, config) {
             return res;
         })
         .catch(error => {
+	console.log("**** error: ", error)
             return error.response;
         });
 }
