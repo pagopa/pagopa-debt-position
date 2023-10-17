@@ -9,6 +9,8 @@ let gpdSessionBundle = {
         iuv1: undefined,
         iuv2: undefined,
         iuv3: undefined,
+        iuvOK: undefined,
+        iuvKO: undefined,
         iuvPrefix: 'IUV',
         iban: 'mockIban',
         dueDate: undefined,
