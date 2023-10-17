@@ -1,4 +1,4 @@
-const { Given, When, Then, AfterAll, Before} = require('@cucumber/cucumber')
+const { Given, When, Then, AfterAll, Before, BeforeAll} = require('@cucumber/cucumber')
 const { executeHealthCheckForGPD } = require('./logic/health_checks_logic');
 const { executeDebtPositionCreation,
         executeDebtPositionDeletion,
@@ -32,6 +32,11 @@ let dueDateTo;
 let paymentDateFrom;
 let paymentDateTo;
 
+BeforeAll(async function() {
+    await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupdOK);
+    await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupdKO);
+ });
+
 /*
  *  'Given' precondition for health checks on various services.
  */
@@ -45,8 +50,6 @@ Given('a random iupd', async function () {
     iupd = randomIupd();
     // precondition -> deletion possible dirty data
     await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd);
-    await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupdOK);
-    await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupdKO);
     });
 When('the debt position is created', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, status));
 Then('the debt position gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));

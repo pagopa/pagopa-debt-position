@@ -17,7 +17,7 @@ function post(url, body, config) {
             return res;
         })
         .catch(error => {
-	console.log("**** error: ", error)
+	console.log("**** post error: ", error)
             return error.response;
         });
 }
@@ -28,7 +28,7 @@ function put(url, body, config) {
             return res;
         })
         .catch(error => {
-	console.log("**** error: ", error)
+	console.log("**** put error: ", error)
             return error.response;
         });
 }
@@ -40,6 +40,7 @@ function del(url, config) {
             return res;
         })
         .catch(error => {
+	console.log("**** del error: ", error)
             return error.response;
         });
 }
