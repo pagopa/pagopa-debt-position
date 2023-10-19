@@ -6,8 +6,8 @@ function buildDebtPositionDynamicData(gpdSessionBundle, iupdIn) {
         iuv1: "IUV" + makeidNumber(14),
         iuv2: "IUV" + makeidNumber(14),
         iuv3: "IUV" + makeidNumber(14),
-        iuvOK: "11101751670642134",
-        iuvKO: "03163674189686371",
+        iuvOK: process.env.iuv_ok,  // es. "11101751670642134"
+        iuvKO: process.env.iuv_ko,  // es. "03163674189686371"
         iban: gpdSessionBundle.debtPosition.iban,
         dueDate: addDays(30),
         retentionDate: addDays(90),

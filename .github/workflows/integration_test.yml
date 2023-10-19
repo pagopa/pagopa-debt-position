@@ -51,7 +51,7 @@ jobs:
           
           cd ./integration-test
           chmod +x ./run_integration_test.sh
-          ./run_integration_test.sh ${{( github.event.inputs == null && 'dev') || inputs.environment }} ${{ secrets.API_SUBSCRIPTION_KEY }}
+          ./run_integration_test.sh ${{( github.event.inputs == null && 'uat') || inputs.environment }} ${{ secrets.API_SUBSCRIPTION_KEY }}
 
   notify:
     needs: [ integration_test ]
