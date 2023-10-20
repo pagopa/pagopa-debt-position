@@ -81,7 +81,7 @@ jobs:
           
           cd ./integration-test
           chmod +x ./run_integration_test.sh
-          ./run_integration_test.sh local
+          ./run_integration_test.sh local ${{ secrets.API_SUBSCRIPTION_KEY }}
 
 
   delete_github_deployments:

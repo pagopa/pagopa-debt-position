@@ -6,6 +6,8 @@ function buildDebtPositionDynamicData(gpdSessionBundle, iupdIn) {
         iuv1: "IUV" + makeidNumber(14),
         iuv2: "IUV" + makeidNumber(14),
         iuv3: "IUV" + makeidNumber(14),
+        iuvOK: process.env.iuv_ok,  // es. "11101751670642134"
+        iuvKO: process.env.iuv_ko,  // es. "03163674189686371"
         iban: gpdSessionBundle.debtPosition.iban,
         dueDate: addDays(30),
         retentionDate: addDays(90),
@@ -63,6 +65,57 @@ function buildCreateDebtPositionRequest(debtPosition, payer) {
                     {
                         idTransfer: debtPosition.transferId2,
                         organizationFiscalCode: debtPosition.transferOtherCIFiscalCode,
+                        amount: (debtPosition.amount * 100 / 3) * 2,
+                        remittanceInformation: "Rata 2",
+                        category: "9/0101108TS/",
+                        iban: debtPosition.iban,
+                    }
+                ]
+            }
+        ]
+    };
+}
+
+function buildCreateOK_KODebtPositionRequest(bundle, action) {
+	let debtPosition = bundle.debtPosition;
+	let payer = bundle.payer;
+    return {
+        iupd: debtPosition.iupd,
+        type: "F",
+        fiscalCode: payer.fiscalCode,
+        fullName: payer.name,
+        streetName: payer.streetName,
+        civicNumber: payer.civicNumber,
+        postalCode: payer.postalCode,
+        city: payer.city,
+        province: payer.province,
+        region: payer.region,
+        country: payer.country,
+        email: payer.email,
+        phone: payer.phone,
+        companyName: payer.companyName,
+        officeName: payer.officeName,
+        switchToExpired: false,
+        paymentOption: [
+            {
+                iuv: action == "OK" ? debtPosition.iuvOK:debtPosition.iuvKO,
+                amount: debtPosition.amount * 100,
+                description: "Canone Unico Patrimoniale - SkyLab Inc.",
+                isPartialPayment: false,
+                dueDate: debtPosition.dueDate,
+                retentionDate: debtPosition.retentionDate,
+                fee: 0,
+                transfer: [
+                    {
+                        idTransfer: debtPosition.transferId1,
+                        amount: (debtPosition.amount * 100 / 3),
+                        remittanceInformation: "Rata 1",
+                        category: "9/0101108TS/",
+                        iban: debtPosition.iban,
+                    },
+                    {
+                        idTransfer: debtPosition.transferId2,
+                        organizationFiscalCode: bundle.organizationCode,
                         amount: (debtPosition.amount * 100 / 3) * 2,
                         remittanceInformation: "Rata 2",
                         category: "9/0101108TS/",
@@ -176,5 +229,6 @@ module.exports = {
     buildCreateDebtPositionRequest,
     buildUpdateDebtPositionRequest,
     buildDebtPositionDynamicData,
-    buildUpdateDebtPositionInfoRequest
+    buildUpdateDebtPositionInfoRequest,
+    buildCreateOK_KODebtPositionRequest
 }
