@@ -49,6 +49,10 @@ async function assertNav(debtPosition, response) {
     assert.strictEqual(response.paymentOption[0].nav, auxDigit + debtPosition.paymentOption[0].iuv);
 }
 
+async function assertSize (array, expectedSize){
+	assert.strictEqual(array.length, expectedSize)
+}
+
 function randomOrg() {
     return "Org_" + Math.floor(Math.random() * 100);
 }
@@ -69,5 +73,6 @@ module.exports = {
     randomIupd,
     assertIupd,
     assertNav,
-    assertNotificationFeeUpdatedDateNotificationFee
+    assertNotificationFeeUpdatedDateNotificationFee,
+    assertSize
 }
