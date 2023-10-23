@@ -15,10 +15,15 @@ const { executeDebtPositionCreation,
         executeOKDebtPositionCreation,
         executeKODebtPositionCreation,
         executeDebtPositionNotificationFeeUpdateNodeOK,
-        executeDebtPositionNotificationFeeUpdateNodeKO
+        executeDebtPositionNotificationFeeUpdateNodeKO,
+        executeDebtPositionCreationWithSegregationCodes,
+        executeDebtPositionUpdateWithSegregationCodes,
+        executeDebtPositionGetWithSegregationCodes,
+        executeDebtPositionGetListWithSegregationCodes,
+        executeDebtPositionDeletionWithSegregationCodes
 } = require('./logic/gpd_logic');
 const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, assertNotificationFeeUpdatedAmounts, 
-assertStatusString, executeAfterAllStep, randomOrg, randomIupd, assertIupd, assertNav, assertNotificationFeeUpdatedDateNotificationFee } = require('./logic/common_logic');
+assertStatusString, executeAfterAllStep, randomOrg, randomIupd, assertIupd, assertNav, assertNotificationFeeUpdatedDateNotificationFee, assertSize } = require('./logic/common_logic');
 const { gpdSessionBundle, gpdUpdateBundle, gpdPayBundle } = require('./utility/data');
 const { getValidBundle, addDays, format } = require('./utility/helpers');
 
@@ -149,6 +154,23 @@ Then('the debt position gets status {string}', (statusString) => assertStatusStr
 
 Given('a new debt position', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, status));
 When('the debt position is updated and published', () => executeDebtPositionUpdateAndPublication(gpdSessionBundle, idOrg, iupd));
+
+/*
+ * Debt position manage with segregation codes
+ */
+ 
+ When('the debt position using segregation codes is created', () => executeDebtPositionCreationWithSegregationCodes(gpdSessionBundle, idOrg, iupd, status));
+ When('the debt position using segregation codes is updated', () => executeDebtPositionUpdateWithSegregationCodes(gpdSessionBundle, gpdUpdateBundle, idOrg, iupd));
+ When('the organization gets the debt position using segregation codes', () => executeDebtPositionGetWithSegregationCodes(gpdSessionBundle, idOrg, iupd));
+ When('the debt position using segregation codes is deleted', () => executeDebtPositionDeletionWithSegregationCodes(gpdSessionBundle, idOrg, iupd));
+ When('the organization gets the list of debt positions using segregation codes', async () => {
+    await executeDebtPositionGetListWithSegregationCodes(gpdSessionBundle, idOrg)
+    resetParams();});
+ Then('the debt positions list size is {int}', (size) => assertSize(gpdSessionBundle.responseToCheck.data.payment_position_list, size));
+ 
+ 
+ 
+ 
 
 function resetParams() {
     dueDateFrom = null;

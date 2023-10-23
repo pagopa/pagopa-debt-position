@@ -11,9 +11,12 @@ function gpdHealthCheck() {
     })
 }
 
-function createDebtPosition(orgId, body){
+function createDebtPosition(orgId, body, segCodes){
+	const params = {}
+	if (segCodes) {params.segregationCodes = segCodes}
     return post(gpd_host + `/organizations/${orgId}/debtpositions`, body, {
         timeout: 10000,
+        params,
         headers: {
             "Ocp-Apim-Subscription-Key": process.env.API_SUBSCRIPTION_KEY,
             "Content-Type": "application/json"
@@ -21,9 +24,12 @@ function createDebtPosition(orgId, body){
     })
 }
 
-function updateDebtPosition(orgId, iupd, body) {
+function updateDebtPosition(orgId, iupd, body, segCodes) {
+	const params = {}
+	if (segCodes) {params.segregationCodes = segCodes}
     return put(gpd_host + `/organizations/${orgId}/debtpositions/${iupd}`, body, {
         timeout: 10000,
+        params,
         headers: {
             "Ocp-Apim-Subscription-Key": process.env.API_SUBSCRIPTION_KEY,
             "Content-Type": "application/json"
@@ -41,13 +47,14 @@ function publishDebtPosition(orgId, iupd) {
     })
 }
 
-function getDebtPositionList(orgId, dueDateFrom, dueDateTo, paymentDateFrom, paymentDateTo, status) {
+function getDebtPositionList(orgId, dueDateFrom, dueDateTo, paymentDateFrom, paymentDateTo, status, segCodes) {
     const params = {}
     if (dueDateFrom != null) params.due_date_from = dueDateFrom;
     if (dueDateTo != null) params.due_date_to = dueDateTo;
     if (paymentDateFrom != null) params.payment_date_from = paymentDateFrom;
     if (paymentDateTo != null) params.payment_date_to = paymentDateTo;
     if (status != null) params.status = status;
+    if (segCodes) {params.segregationCodes = segCodes}
     params.orderby = "INSERTED_DATE";
     params.ordering = "ASC";
     params.page = 0;
@@ -62,7 +69,9 @@ function getDebtPositionList(orgId, dueDateFrom, dueDateTo, paymentDateFrom, pay
     })
 }
 
-function getDebtPosition(orgId, iupd) {
+function getDebtPosition(orgId, iupd, segCodes) {
+	const params = {}
+	if (segCodes) {params.segregationCodes = segCodes}
     return get(gpd_host + `/organizations/${orgId}/debtpositions/${iupd}`, {
         timeout: 10000,
         headers: {
@@ -82,9 +91,12 @@ function getPaymentOptionByIuv(orgId, iuv) {
     })
 }
 
-function deleteDebtPosition(orgId, iupd) {
+function deleteDebtPosition(orgId, iupd, segCodes) {
+	const params = {}
+	if (segCodes) {params.segregationCodes = segCodes}
     return del(gpd_host + `/organizations/${orgId}/debtpositions/${iupd}`, {
         timeout: 10000,
+        params,
         headers: {
             "Ocp-Apim-Subscription-Key": process.env.API_SUBSCRIPTION_KEY,
             "Content-Type": "application/json"

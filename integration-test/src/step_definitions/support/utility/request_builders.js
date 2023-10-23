@@ -3,9 +3,9 @@ const { addDays, buildStringFromDate, makeidNumber, makeidMix,  } = require("./h
 function buildDebtPositionDynamicData(gpdSessionBundle, iupdIn) {
     return {
         iupd: iupdIn,
-        iuv1: "IUV" + makeidNumber(14),
-        iuv2: "IUV" + makeidNumber(14),
-        iuv3: "IUV" + makeidNumber(14),
+        iuv1: makeidNumber(17),
+        iuv2: makeidNumber(17),
+        iuv3: makeidNumber(17),
         iuvOK: process.env.iuv_ok,  // es. "11101751670642134"
         iuvKO: process.env.iuv_ko,  // es. "03163674189686371"
         iban: gpdSessionBundle.debtPosition.iban,
