@@ -15,6 +15,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -119,6 +120,18 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
                 .title(BAD_REQUEST)
                 .detail(detailsMessage)
                 .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(javax.validation.ConstraintViolationException.class)
+    public ResponseEntity<Object> handleConstraintViolationException(javax.validation.ConstraintViolationException exception, ServletWebRequest webRequest) {
+        String detailsMessage = exception.getMessage();
+        log.warn("Input not valid: " + exception.getMessage());
+        ProblemJson errorResponse = ProblemJson.builder()
+                                    .status(HttpStatus.BAD_REQUEST.value())
+                                    .title(BAD_REQUEST)
+                                    .detail(detailsMessage)
+                                    .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
