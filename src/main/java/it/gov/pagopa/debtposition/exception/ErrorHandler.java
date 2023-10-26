@@ -125,7 +125,7 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(javax.validation.ConstraintViolationException.class)
     public ResponseEntity<Object> handleConstraintViolationException(javax.validation.ConstraintViolationException exception, ServletWebRequest webRequest) {
-        String detailsMessage = exception.getLocalizedMessage();
+        String detailsMessage = exception.getMessage();
         log.warn("Input not valid: " + exception.getMessage());
         ProblemJson errorResponse = ProblemJson.builder()
                                     .status(HttpStatus.BAD_REQUEST.value())
