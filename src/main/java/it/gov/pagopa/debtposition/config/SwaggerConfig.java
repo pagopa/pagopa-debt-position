@@ -8,6 +8,7 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import org.springdoc.core.GroupedOpenApi;
 import org.springdoc.core.customizers.OpenApiCustomiser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -59,8 +60,17 @@ public class SwaggerConfig {
     }
 
     @Bean
+    public Map<String, GroupedOpenApi> configureGroupOpenApi(Map<String, GroupedOpenApi> groupOpenApi) {
+        groupOpenApi.forEach((id, groupedOpenApi) -> groupedOpenApi
+                                                                .getOpenApiCustomisers()
+                                                                .add(addCommonHeaders()));
+        return groupOpenApi;
+    }
+
+    @Bean
     public OpenApiCustomiser addCommonHeaders() {
         return openApi -> openApi.getPaths().forEach((key, value) -> {
+
 
             // add Request-ID as request header
             value.addParametersItem(new Parameter().in("header")
