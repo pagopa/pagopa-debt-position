@@ -38,5 +38,8 @@ public class PaymentOptionModelResponse implements Serializable {
     private PaymentOptionStatus status;
     private LocalDateTime lastUpdatedDate;
 
+    private List<PaymentOptionMetadataModelResponse> poMetadata = new ArrayList<>();
+    
     private List<TransferModelResponse> transfer = new ArrayList<>();
+    
 }

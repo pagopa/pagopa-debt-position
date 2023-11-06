@@ -8,6 +8,7 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -44,6 +45,11 @@ public class PaymentOptionModel implements Serializable {
 
     @Valid
     private List<TransferModel> transfer = new ArrayList<>();
+    
+    @Valid
+    @Size(min=0, max=10)
+    @Schema(description = "it can added a maximum of 10 key-value pairs for metadata")
+    private List<PaymentOptionMetadataModel> paymentOptionMetadata = new ArrayList<>();
 
     public void addTransfers(TransferModel trans) {
         transfer.add(trans);
@@ -51,5 +57,13 @@ public class PaymentOptionModel implements Serializable {
 
     public void removeTransfers(TransferModel trans) {
         transfer.remove(trans);
+    }
+    
+    public void addPaymentOptionMetadata(PaymentOptionMetadataModel paymentOptMetadata) {
+    	paymentOptionMetadata.add(paymentOptMetadata);
+    }
+
+    public void removePaymentOptionMetadata(PaymentOptionMetadataModel paymentOptMetadata) {
+    	paymentOptionMetadata.remove(paymentOptMetadata);
     }
 }
