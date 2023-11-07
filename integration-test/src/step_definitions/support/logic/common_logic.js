@@ -54,7 +54,7 @@ async function assertSize (array, expectedSize){
 }
 
 async function assertMinSize (array, minSize){
-	assert.ok(array.length > minSize)
+	assert.ok(array.length >= minSize)
 }
 
 function randomOrg() {
