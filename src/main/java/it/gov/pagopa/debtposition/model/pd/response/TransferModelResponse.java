@@ -31,5 +31,5 @@ public class TransferModelResponse implements Serializable {
     private TransferStatus status;
     private LocalDateTime lastUpdatedDate;
     
-    private List<TransferMetadataModelResponse> tMetadata = new ArrayList<>();
+    private List<TransferMetadataModelResponse> transferMetadata = new ArrayList<>();
 }
