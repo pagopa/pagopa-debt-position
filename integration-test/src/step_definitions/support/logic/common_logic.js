@@ -53,6 +53,10 @@ async function assertSize (array, expectedSize){
 	assert.strictEqual(array.length, expectedSize)
 }
 
+async function assertMinSize (array, minSize){
+	assert.ok(array.length > minSize)
+}
+
 function randomOrg() {
     return "Org_" + Math.floor(Math.random() * 100);
 }
@@ -74,5 +78,6 @@ module.exports = {
     assertIupd,
     assertNav,
     assertNotificationFeeUpdatedDateNotificationFee,
-    assertSize
+    assertSize,
+    assertMinSize
 }
