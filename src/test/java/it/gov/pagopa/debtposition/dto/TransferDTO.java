@@ -1,6 +1,8 @@
 package it.gov.pagopa.debtposition.dto;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import lombok.Data;
@@ -23,4 +25,14 @@ public class TransferDTO implements Serializable {
     private String iban;
     private String postalIban;
     private TransferStatus status;  
+    
+    private List<TransferMetadataDTO> transferMetadata = new ArrayList<>();
+    
+    public void addTransferMetadata(TransferMetadataDTO metadata) {
+    	transferMetadata.add(metadata);
+    }
+
+    public void removeTransferMetadata(TransferMetadataDTO metadata) {
+    	transferMetadata.remove(metadata);
+    }
 }
