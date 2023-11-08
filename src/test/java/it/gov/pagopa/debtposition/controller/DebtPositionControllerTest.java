@@ -1,5 +1,6 @@
 package it.gov.pagopa.debtposition.controller;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -31,6 +32,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
 import it.gov.pagopa.debtposition.client.NodeClient;
+import it.gov.pagopa.debtposition.dto.PaymentOptionDTO;
 import it.gov.pagopa.debtposition.dto.PaymentOptionMetadataDTO;
 import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import it.gov.pagopa.debtposition.dto.TransferMetadataDTO;
@@ -246,6 +248,22 @@ class DebtPositionControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata[0].key").value("keypometadatamock9"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].transferMetadata[0].key").value("keytransfermetadatamock3"));
 				
+	}
+	
+	@Test
+	void createDebtPositionWithMetadata_400() throws Exception {
+		// creo una posizione debitoria con più di 10 occorrenze di metadati (numero massimo accettato) --> request rifiutata
+		PaymentPositionDTO pp = DebtPositionMock.getMetadataMock8();
+		PaymentOptionDTO po = pp.getPaymentOption().get(0);
+		for (int i=0; i<=10; i++) {
+			po.addPaymentOptionMetadata(PaymentOptionMetadataDTO.builder().key("key"+i).value("value"+i).build());
+		}
+		System.out.println(TestUtil.toJson(pp));
+		mvc.perform(post("/organizations/12345678901/debtpositions")
+				.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isBadRequest())
+		.andExpect(content().string(containsString("size must be between 0 and 10")));
 	}
 
 	/**
