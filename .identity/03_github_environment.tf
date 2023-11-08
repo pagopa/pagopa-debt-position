@@ -24,7 +24,7 @@ locals {
     "CLIENT_ID" : module.github_runner_app.application_id,
     "TENANT_ID" : data.azurerm_client_config.current.tenant_id,
     "SUBSCRIPTION_ID" : data.azurerm_subscription.current.subscription_id,
-    "SUBKEY" : data.azurerm_key_vault_secret.key_vault_integration_test_subkey.value,
+    "API_SUBSCRIPTION_KEY" : data.azurerm_key_vault_secret.key_vault_integration_test_subkey.value,
     "DATASOURCE_USERNAME": data.azurerm_key_vault_secret.key_vault_datasource_username.value,
     "DATASOURCE_PASSWORD": data.azurerm_key_vault_secret.key_vault_datasource_password.value,
     "DATASOURCE_URL": data.azurerm_key_vault_secret.key_vault_datasource_url.value,

@@ -13,7 +13,7 @@ Feature: Paying a debt position
    Then the debt position gets the status code 200
    And the organization gets the nav value after publication
 
- Scenario: Payment option publication
+ Scenario: Payment option payment
    When the payment option is paid
    Then the payment option gets the status code 200
 

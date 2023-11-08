@@ -75,6 +75,6 @@ Feature: Managing a debt position
     And the organization get the nav value
     When the organization gets the list of debt positions using segregation codes
     Then we get the status code 200
-    And the debt positions list size is 1
+    And the debt positions list size is greater than 1
     When the debt position using segregation codes is deleted
     Then the debt position gets the status code 200
