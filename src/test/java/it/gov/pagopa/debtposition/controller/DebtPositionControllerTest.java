@@ -72,6 +72,18 @@ class DebtPositionControllerTest {
 	}
 
 	@Test
+	void createDebtPosition_ACA_METADATA_201() throws Exception {
+		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock1();
+		paymentPositionDTO.setIupd("ACA_12345678910");
+		mvc.perform(post("/organizations/12345678901/debtpositions")
+							.content(TestUtil.toJson(paymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata[0].value")
+								   .value("ACA"));
+	}
+
+	@Test
 	void createDebtPosition_Multiple_201() throws Exception {
 		// creazione di due posizione debitorie per la stessa organizzazione (2 PaymentOption)
 		mvc.perform(post("/organizations/12345678901/debtpositions")
