@@ -2,12 +2,15 @@ package it.gov.pagopa.debtposition.model.payments.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
+import it.gov.pagopa.debtposition.model.pd.response.TransferMetadataModelResponse;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -30,4 +33,6 @@ public class TransferModelResponse implements Serializable {
     private LocalDateTime insertedDate;
     private TransferStatus status;
     private LocalDateTime lastUpdatedDate;
+    
+    private List<TransferMetadataModelResponse> transferMetadata = new ArrayList<>();
 }
