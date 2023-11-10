@@ -68,6 +68,12 @@ The easiest way to develop locally is start only db container and run spring-boo
 /usr/local/bin/docker-compose up -d flyway
 ```
 
+### Run the project with h2 database
+
+```
+mvn spring-boot:run -Dspring-boot.run.profiles=h2
+```
+
 ### FlyWay - versioning schema changes
 For Spring Boot project:
 - Add Flyway as a dependency in pom.xml
@@ -108,34 +114,9 @@ Under `gpd` main project folder typing `mvn clean verify`, if all right you'll s
 under main `gpd` project folder typing
 
 ```sh
- bash api-test/run_test.sh l int
+ integration-test/run_integration_test.sh local
 ```
 > **NOTE**: suppose `Started DebtPositionApplication` on port `8080`
-
-if all  right you'll see something like that :
-
-```sh
-┌─────────────────────────┬───────────────────┬──────────────────┐
-│                         │          executed │           failed │
-├─────────────────────────┼───────────────────┼──────────────────┤
-│              iterations │                 1 │                0 │
-├─────────────────────────┼───────────────────┼──────────────────┤
-│                requests │                 9 │                0 │
-├─────────────────────────┼───────────────────┼──────────────────┤
-│            test-scripts │                18 │                0 │
-├─────────────────────────┼───────────────────┼──────────────────┤
-│      prerequest-scripts │                10 │                0 │
-├─────────────────────────┼───────────────────┼──────────────────┤
-│              assertions │                13 │                0 │
-├─────────────────────────┴───────────────────┴──────────────────┤
-│ total run duration: 1003ms                                     │
-├────────────────────────────────────────────────────────────────┤
-│ total data received: 5.25kB (approx)                           │
-├────────────────────────────────────────────────────────────────┤
-│ average response time: 79ms [min: 8ms, max: 207ms, s.d.: 61ms] │
-└────────────────────────────────────────────────────────────────┘
-```
-
 
 #### Load testing
 
