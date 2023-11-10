@@ -2,6 +2,7 @@ package it.gov.pagopa.debtposition.model.payments.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
+import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionMetadataModelResponse;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -40,6 +41,8 @@ public class PaymentOptionModelResponse implements Serializable {
     private PaymentOptionStatus status;
     private LocalDateTime lastUpdatedDate;
     private LocalDateTime lastUpdatedDateNotificationFee;
+    
+    private List<PaymentOptionMetadataModelResponse> paymentOptionMetadata = new ArrayList<>();
 
     private List<TransferModelResponse> transfer = new ArrayList<>();
 }

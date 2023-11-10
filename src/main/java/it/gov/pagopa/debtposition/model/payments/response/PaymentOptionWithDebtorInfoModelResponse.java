@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
+import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionMetadataModelResponse;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -40,6 +41,7 @@ public class PaymentOptionWithDebtorInfoModelResponse implements Serializable {
     private String idReceipt;
     private String idFlowReporting;
     private PaymentOptionStatus status;
+    private List<PaymentOptionMetadataModelResponse> paymentOptionMetadata = new ArrayList<>();
 
     // PaymentPosition entity fields
     private String iupd;

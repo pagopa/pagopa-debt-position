@@ -36,6 +36,16 @@ public class PaymentOptionDTO implements Serializable {
     private String idFlowReporting;
     private PaymentOptionStatus status;   
 
+    private List<PaymentOptionMetadataDTO> paymentOptionMetadata = new ArrayList<>();
+    
+    public void addPaymentOptionMetadata(PaymentOptionMetadataDTO metadata) {
+    	paymentOptionMetadata.add(metadata);
+    }
+
+    public void removePaymentOptionMetadata(PaymentOptionMetadataDTO metadata) {
+    	paymentOptionMetadata.remove(metadata);
+    }
+    
     private List<TransferDTO> transfer = new ArrayList<>();
     
     public void addTransfers(TransferDTO trans) {

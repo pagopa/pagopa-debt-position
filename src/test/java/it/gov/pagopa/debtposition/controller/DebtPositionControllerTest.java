@@ -1,5 +1,6 @@
 package it.gov.pagopa.debtposition.controller;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -31,7 +32,10 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
 import it.gov.pagopa.debtposition.client.NodeClient;
+import it.gov.pagopa.debtposition.dto.PaymentOptionDTO;
+import it.gov.pagopa.debtposition.dto.PaymentOptionMetadataDTO;
 import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
+import it.gov.pagopa.debtposition.dto.TransferMetadataDTO;
 import it.gov.pagopa.debtposition.mock.DebtPositionMock;
 import it.gov.pagopa.debtposition.model.checkposition.NodeCheckPositionModel;
 import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPositionResponse;
@@ -230,6 +234,37 @@ class DebtPositionControllerTest {
 							.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isForbidden());
 	}
+	
+	@Test
+	void createDebtPositionWithMetadata_201() throws Exception {
+		// creo una posizione debitoria con metadati su PO e transfer
+		mvc.perform(post("/organizations/12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.getMetadataMock8())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value("3123456IUVMETADATAMOCK9"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata").isArray())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata[0].key").value("keypometadatamock9"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].transferMetadata[0].key").value("keytransfermetadatamock3"));
+				
+	}
+	
+	@Test
+	void createDebtPositionWithMetadata_400() throws Exception {
+		// creo una posizione debitoria con più di 10 occorrenze di metadati (numero massimo accettato) --> request rifiutata
+		PaymentPositionDTO pp = DebtPositionMock.getMetadataMock8();
+		PaymentOptionDTO po = pp.getPaymentOption().get(0);
+		for (int i=0; i<=10; i++) {
+			po.addPaymentOptionMetadata(PaymentOptionMetadataDTO.builder().key("key"+i).value("value"+i).build());
+		}
+		System.out.println(TestUtil.toJson(pp));
+		mvc.perform(post("/organizations/12345678901/debtpositions")
+				.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isBadRequest())
+		.andExpect(content().string(containsString("size must be between 0 and 10")));
+	}
 
 	/**
 	 *  GET DEBT POSITION BY IUPD
@@ -246,6 +281,30 @@ class DebtPositionControllerTest {
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
 								   .value("3123456IUVMOCK1"));
+	}
+	
+	@Test
+	void getDebtPositionByIUPDWithMetadata_200() throws Exception {
+		// creo una posizione debitoria con metadati su PO e transfer, la recupero e verifico siano presenti i metadati inseriti
+		mvc.perform(post("/organizations/200_metadata_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.getMetadataMock8())).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("3123456IUVMETADATAMOCK9"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata").isArray())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata[0].key")
+						.value("keypometadatamock9"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].transferMetadata[0].key")
+						.value("keytransfermetadatamock3"));
+
+		String url = "/organizations/200_metadata_12345678901/debtpositions/12345678901IUPDMETADATAMOCK7";
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("3123456IUVMETADATAMOCK9"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata").isArray())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata[0].key")
+						.value("keypometadatamock9"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].transferMetadata[0].key")
+						.value("keytransfermetadatamock3"));
 	}
 
 	@Test
@@ -738,6 +797,65 @@ class DebtPositionControllerTest {
 				.value("3123456IUVMULTIPLEMOCK1"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[1].nav")
 				.value("3123456IUVMULTIPLEMOCK2"));
+	}
+	
+	@Test
+	void updateDebtPositionWithMetadata_200() throws Exception {
+		// creo una posizione debitoria con metadati su PO e transfer
+		mvc.perform(post("/organizations/200_UPD_metadata_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.getMetadataMock8())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("3123456IUVMETADATAMOCK9"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata").isArray())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata[0].key")
+				.value("keypometadatamock9"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].transferMetadata[0].key")
+				.value("keytransfermetadatamock3"));
+
+		//recupero la posizione debitoria e verifico siano presenti i metadati inseriti
+		String url = "/organizations/200_UPD_metadata_12345678901/debtpositions/12345678901IUPDMETADATAMOCK7";
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("3123456IUVMETADATAMOCK9"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata").isArray())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata[0].key")
+				.value("keypometadatamock9"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].transferMetadata[0].key")
+				.value("keytransfermetadatamock3"));
+
+		// aggiorno la posizione debitoria aggiungendo dei metadati
+		PaymentPositionDTO ppToUpdate = DebtPositionMock.getMetadataMock8();
+		ppToUpdate.getPaymentOption().get(0).addPaymentOptionMetadata(PaymentOptionMetadataDTO.builder().key("keypometadataupd").build());
+		ppToUpdate.getPaymentOption().get(0).getTransfer().get(0).addTransferMetadata(TransferMetadataDTO.builder().key("keytransfermetadataupd").build());
+		mvc.perform(put("/organizations/200_UPD_metadata_12345678901/debtpositions/12345678901IUPDMETADATAMOCK7")
+				.content(TestUtil.toJson(ppToUpdate))
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("3123456IUVMETADATAMOCK9"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata").isArray())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata[0].key")
+				.value("keypometadatamock9"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].transferMetadata[0].key")
+				.value("keytransfermetadatamock3"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata[1].key")
+				.value("keypometadataupd"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].transferMetadata[1].key")
+				.value("keytransfermetadataupd"));
+
+		//recupero la posizione debitoria e verifico siano presenti i metadati inseriti
+		url = "/organizations/200_UPD_metadata_12345678901/debtpositions/12345678901IUPDMETADATAMOCK7";
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("3123456IUVMETADATAMOCK9"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata").isArray())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata[0].key")
+				.value("keypometadatamock9"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].transferMetadata[0].key")
+				.value("keytransfermetadatamock3"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata[1].key")
+				.value("keypometadataupd"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].transferMetadata[1].key")
+				.value("keytransfermetadataupd"));
 	}
 
 	@Test

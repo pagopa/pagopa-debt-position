@@ -1,18 +1,35 @@
 package it.gov.pagopa.debtposition.entity;
 
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
+
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author aacitelli
@@ -125,6 +142,15 @@ public class PaymentOption implements Serializable {
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     private List<Transfer> transfer = new ArrayList<>();
+    
+    @Builder.Default
+    @OneToMany(
+            targetEntity = PaymentOptionMetadata.class,
+            fetch = FetchType.LAZY,
+            mappedBy = "paymentOption",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<PaymentOptionMetadata> paymentOptionMetadata = new ArrayList<>();
 
     public void addTransfer(Transfer t) {
         transfer.add(t);
@@ -134,5 +160,15 @@ public class PaymentOption implements Serializable {
     public void removeTransfer(Transfer t) {
         transfer.remove(t);
         t.setPaymentOption(null);
+    }
+    
+    public void addPaymentOptionMetadata(PaymentOptionMetadata paymentOptMetadata) {
+    	paymentOptionMetadata.add(paymentOptMetadata);
+    	paymentOptMetadata.setPaymentOption(this);
+    }
+
+    public void removePaymentOptionMetadata(PaymentOptionMetadata paymentOptMetadata) {
+    	paymentOptionMetadata.remove(paymentOptMetadata);
+    	paymentOptMetadata.setPaymentOption(null);
     }
 }

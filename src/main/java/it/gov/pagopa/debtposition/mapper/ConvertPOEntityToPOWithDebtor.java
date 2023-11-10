@@ -3,6 +3,7 @@ package it.gov.pagopa.debtposition.mapper;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.TransferModelResponse;
+import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionMetadataModelResponse;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
@@ -33,6 +34,8 @@ public class ConvertPOEntityToPOWithDebtor implements Converter<PaymentOption, P
     destination.setIdReceipt(source.getIdReceipt());
     destination.setIdFlowReporting(source.getIdFlowReporting());
     destination.setStatus(source.getStatus());
+    
+    destination.setPaymentOptionMetadata(ObjectMapperUtils.mapAll(source.getPaymentOptionMetadata(), PaymentOptionMetadataModelResponse.class));
 
     // PaymentPosition info
     destination.setIupd(source.getPaymentPosition().getIupd());

@@ -1,16 +1,23 @@
 package it.gov.pagopa.debtposition.mapper;
 
-import it.gov.pagopa.debtposition.entity.PaymentOption;
-import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import it.gov.pagopa.debtposition.entity.Transfer;
-import it.gov.pagopa.debtposition.model.pd.PaymentOptionModel;
-import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
-import it.gov.pagopa.debtposition.model.pd.TransferModel;
-import org.modelmapper.Converter;
-import org.modelmapper.spi.MappingContext;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
-import java.util.List;
+
+import org.modelmapper.Converter;
+import org.modelmapper.spi.MappingContext;
+import org.springframework.util.CollectionUtils;
+
+import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.entity.TransferMetadata;
+import it.gov.pagopa.debtposition.model.pd.PaymentOptionMetadataModel;
+import it.gov.pagopa.debtposition.model.pd.PaymentOptionModel;
+import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
+import it.gov.pagopa.debtposition.model.pd.TransferMetadataModel;
+import it.gov.pagopa.debtposition.model.pd.TransferModel;
 
 public class ConvertPPModelToPPEntityForUpdate implements Converter<PaymentPositionModel, PaymentPosition> {
 
@@ -66,6 +73,13 @@ public class ConvertPPModelToPPEntityForUpdate implements Converter<PaymentPosit
                 po.addTransfer(this.convertTransfModelToTransfEntityForUpdate(tModel));
             }
         }
+        
+        List<PaymentOptionMetadataModel> metadata = pom.getPaymentOptionMetadata();
+        if (!CollectionUtils.isEmpty(metadata)) {
+            for (PaymentOptionMetadataModel m : metadata) {
+                po.addPaymentOptionMetadata(PaymentOptionMetadata.builder().key(m.getKey()).value(m.getValue()).build());
+            }
+        }
 
         return po;
 
@@ -86,6 +100,13 @@ public class ConvertPPModelToPPEntityForUpdate implements Converter<PaymentPosit
             t.setProvincialResidence(tm.getStamp().getProvincialResidence());
         }
         t.setRemittanceInformation(tm.getRemittanceInformation());
+        
+        List<TransferMetadataModel> metadata = tm.getTransferMetadata();
+        if (!CollectionUtils.isEmpty(metadata)) {
+            for (TransferMetadataModel m : metadata) {
+                t.addTransferMetadata(TransferMetadata.builder().key(m.getKey()).value(m.getValue()).build());
+            }
+        }
 
         return t;
     }

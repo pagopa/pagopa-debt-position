@@ -5,8 +5,10 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
 import it.gov.pagopa.debtposition.dto.PaymentOptionDTO;
+import it.gov.pagopa.debtposition.dto.PaymentOptionMetadataDTO;
 import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import it.gov.pagopa.debtposition.dto.TransferDTO;
+import it.gov.pagopa.debtposition.dto.TransferMetadataDTO;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
@@ -40,6 +42,10 @@ public class DebtPositionMock {
 	
 	public final static PaymentPositionDTO getMock7() {
 		return createPaymentPositionMock6();
+	}
+	
+	public final static PaymentPositionDTO getMetadataMock8() {
+		return createPaymentPositionMetadataMock7();
 	}
 	
 	public final static PaymentOptionDTO getPayPOMock1() {
@@ -235,6 +241,29 @@ public class DebtPositionMock {
 		pPMock.setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plus(5, ChronoUnit.SECONDS));
 		pPMock.setSwitchToExpired(true);
 		pPMock.addPaymentOptions(createPaymentOptionsMock1());
+
+		return pPMock;
+	}
+	
+	public static PaymentPositionDTO createPaymentPositionMetadataMock7() {
+
+		PaymentPositionDTO pPMock = new PaymentPositionDTO();
+		// debtor properties
+		pPMock.setFiscalCode("MRDPLL54H17D542L");
+		pPMock.setType(Type.F);
+		pPMock.setFullName("Mario Rossi");
+		pPMock.setPhone("3330987654");
+		pPMock.setStreetName("Via di novoli");
+		pPMock.setCivicNumber("50/2");
+		pPMock.setProvince("FI");
+		pPMock.setCountry("IT");
+		pPMock.setEmail("mario@firenze.it");
+		pPMock.setPostalCode("50100");
+		// payment position properties
+		pPMock.setIupd("12345678901IUPDMETADATAMOCK7");
+		pPMock.setCompanyName("Comune di Firenze");
+		pPMock.setOfficeName("Ufficio tributario");
+		pPMock.addPaymentOptions(createPaymentOptionsMetadataMock9());
 
 		return pPMock;
 	}
@@ -700,6 +729,21 @@ public class DebtPositionMock {
 		return pOMock;
 	}
 	
+	public static PaymentOptionDTO createPaymentOptionsMetadataMock9() {
+
+		PaymentOptionDTO pOMock = new PaymentOptionDTO();
+		pOMock.setAmount(1000);
+		pOMock.setIuv("123456IUVMETADATAMOCK9");
+		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.SECONDS));
+		pOMock.setRetentionDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
+		pOMock.setIsPartialPayment(Boolean.FALSE);
+		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
+		pOMock.addPaymentOptionMetadata(PaymentOptionMetadataDTO.builder().key("keypometadatamock9").value("valuepometadatamock9").build());
+		pOMock.addTransfers(createTransfersMetadataMock3()); 
+
+		return pOMock;
+	}
+	
 	public static PaymentOptionDTO createPaymentOptions_Min_Due_Date_Mock1() {
 
 		PaymentOptionDTO pOMock = new PaymentOptionDTO();
@@ -857,6 +901,18 @@ public class DebtPositionMock {
 
 		return tMock;
 	}
+	
+	public static TransferDTO createTransfersMetadataMock3() {
+		TransferDTO tMock = new TransferDTO();
+		tMock.setIdTransfer("3");
+		tMock.setIban("IT75I0306902887100000300015");
+		tMock.setAmount(1000);
+		tMock.setRemittanceInformation("causale metadata mock 3");
+		tMock.setCategory("10/22252/20");
+		tMock.addTransferMetadata(TransferMetadataDTO.builder().key("keytransfermetadatamock3").value("valuetransfermetadatamock3").build()); 
+
+		return tMock;
+	}
 
 
 	public static TransferDTO createTransfersMultipleMock1() {
@@ -924,6 +980,7 @@ public class DebtPositionMock {
 
 		return tMock;
 	}
+	
 
 	public static PaymentPositionDTO paymentPositionForNotificationUpdateMock1() {
 		PaymentPositionDTO mock = createPaymentPositionMock1();
