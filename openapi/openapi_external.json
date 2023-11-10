@@ -466,8 +466,8 @@
           "required" : false,
           "schema" : {
             "type" : "string",
-            "enum" : [ "INSERTED_DATE", "IUPD", "STATUS", "COMPANY_NAME" ],
-            "default" : "COMPANY_NAME"
+            "default" : "COMPANY_NAME",
+            "enum" : [ "INSERTED_DATE", "IUPD", "STATUS", "COMPANY_NAME" ]
           }
         }, {
           "name" : "ordering",
@@ -476,8 +476,8 @@
           "required" : false,
           "schema" : {
             "type" : "string",
-            "enum" : [ "ASC", "DESC" ],
-            "default" : "DESC"
+            "default" : "DESC",
+            "enum" : [ "ASC", "DESC" ]
           }
         } ],
         "responses" : {

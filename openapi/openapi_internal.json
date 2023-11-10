@@ -184,8 +184,8 @@
           "required" : false,
           "schema" : {
             "type" : "string",
-            "enum" : [ "INSERTED_DATE", "IUPD", "STATUS", "COMPANY_NAME" ],
-            "default" : "COMPANY_NAME"
+            "default" : "COMPANY_NAME",
+            "enum" : [ "INSERTED_DATE", "IUPD", "STATUS", "COMPANY_NAME" ]
           }
         }, {
           "name" : "ordering",
@@ -194,8 +194,8 @@
           "required" : false,
           "schema" : {
             "type" : "string",
-            "enum" : [ "ASC", "DESC" ],
-            "default" : "DESC"
+            "default" : "DESC",
+            "enum" : [ "ASC", "DESC" ]
           }
         } ],
         "responses" : {
@@ -1044,6 +1044,24 @@
           }
         } ],
         "responses" : {
+          "200" : {
+            "description" : "Obtained payment option details.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaymentsWithDebtorInfoModelResponse"
+                }
+              }
+            }
+          },
           "401" : {
             "description" : "Wrong or missing function key.",
             "headers" : {
@@ -1069,24 +1087,6 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemJson"
-                }
-              }
-            }
-          },
-          "200" : {
-            "description" : "Obtained payment option details.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            },
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/PaymentsWithDebtorInfoModelResponse"
                 }
               }
             }
@@ -1644,6 +1644,17 @@
           }
         }
       },
+      "PaymentOptionMetadataModelResponse" : {
+        "type" : "object",
+        "properties" : {
+          "key" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "string"
+          }
+        }
+      },
       "PaymentsModelResponse" : {
         "type" : "object",
         "properties" : {
@@ -1715,6 +1726,12 @@
             "type" : "string",
             "format" : "date-time"
           },
+          "paymentOptionMetadata" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PaymentOptionMetadataModelResponse"
+            }
+          },
           "transfer" : {
             "type" : "array",
             "items" : {
@@ -1762,6 +1779,12 @@
           "lastUpdatedDate" : {
             "type" : "string",
             "format" : "date-time"
+          },
+          "transferMetadata" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TransferMetadataModelResponse"
+            }
           }
         }
       },
@@ -1784,6 +1807,17 @@
             "type" : "string",
             "description" : "The provincial of the residence",
             "example" : "RM"
+          }
+        }
+      },
+      "TransferMetadataModelResponse" : {
+        "type" : "object",
+        "properties" : {
+          "key" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "string"
           }
         }
       },
@@ -2079,6 +2113,12 @@
             "type" : "string",
             "enum" : [ "PO_UNPAID", "PO_PAID", "PO_PARTIALLY_REPORTED", "PO_REPORTED" ]
           },
+          "paymentOptionMetadata" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PaymentOptionMetadataModelResponse"
+            }
+          },
           "iupd" : {
             "type" : "string"
           },
@@ -2160,17 +2200,6 @@
             "type" : "integer",
             "description" : "Total number of pages",
             "format" : "int32"
-          }
-        }
-      },
-      "PaymentOptionMetadataModelResponse" : {
-        "type" : "object",
-        "properties" : {
-          "key" : {
-            "type" : "string"
-          },
-          "value" : {
-            "type" : "string"
           }
         }
       },
@@ -2321,17 +2350,6 @@
           },
           "page_info" : {
             "$ref" : "#/components/schemas/PageInfo"
-          }
-        }
-      },
-      "TransferMetadataModelResponse" : {
-        "type" : "object",
-        "properties" : {
-          "key" : {
-            "type" : "string"
-          },
-          "value" : {
-            "type" : "string"
           }
         }
       },

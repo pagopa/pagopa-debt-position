@@ -147,6 +147,60 @@ class PaymentsControllerTest {
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
 	}
+	
+	@Test
+	void getPaymentOptionWithMetadataByIUV_POPAID_200() throws Exception {
+		// creo una posizione debitoria (senza 'validity date' impostata)
+		mvc.perform(post("/organizations/POPAID_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.getMetadataMock8())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata").isArray())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata[0].key").value("keypometadatamock9"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].transferMetadata[0].key").value("keytransfermetadatamock3"));
+
+		// porto in pubblicata/validata lo stato della posizione debitoria
+		mvc.perform(post("/organizations/POPAID_12345678901/debtpositions/12345678901IUPDMETADATAMOCK7/publish")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+
+		// effettuo la notifica di pagamento e verifico lo stato in paid
+		mvc.perform(post("/organizations/POPAID_12345678901/paymentoptions/123456IUVMETADATAMOCK9/pay")
+				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMETADATAMOCK9"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(PaymentOptionStatus.PO_PAID.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptionMetadata").isArray())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptionMetadata[0].key").value("keypometadatamock9"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.transfer[0].transferMetadata[0].key").value("keytransfermetadatamock3"));
+
+		// recupero la payment option e verifico di nuovo lo stato in paid
+		String url = "/organizations/POPAID_12345678901/paymentoptions/123456IUVMETADATAMOCK9";
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv")
+				.value("123456IUVMETADATAMOCK9"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.iupd")
+            .value("12345678901IUPDMETADATAMOCK7"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.amount")
+				.value("1000"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(PaymentOptionStatus.PO_PAID.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.transfer[*]")
+				.value(Matchers.hasSize(1)))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptionMetadata").isArray())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptionMetadata[0].key").value("keypometadatamock9"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.transfer[0].transferMetadata[0].key").value("keytransfermetadatamock3"));
+		
+		// effettuo la rendicontazione per l'unica transazione della PO con id 3
+		mvc.perform(post("/organizations/POPAID_12345678901/paymentoptions/123456IUVMETADATAMOCK9/transfers/3/report")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(TransferStatus.T_REPORTED.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.transferMetadata").isArray())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.transferMetadata[0].key").value("keytransfermetadatamock3"));
+	}
 
 	/**
 	 *  PAY A PAYMENT OPTION
