@@ -1,9 +1,6 @@
 package it.gov.pagopa.debtposition.service.pd.crud;
 
-import it.gov.pagopa.debtposition.entity.PaymentOption;
-import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
-import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.entity.*;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.exception.ValidationException;
@@ -46,8 +43,8 @@ import java.util.stream.Collectors;
 public class PaymentPositionCRUDService {
 
     private static final String UNIQUE_KEY_VIOLATION = "23505";
-    private static final String PO_TYPE_METADATA_KEY = "PO_TYPE";
-    private static final String PO_TYPE_ACA_METADATA_VALUE = "ACA";
+    private static final String STANDIN_METADATA_KEY = "PAGOPA_STANDIN";
+    private static final String STANDIN_METADATA_VALUE = "true";
     private static final String ACA_IUPD_PREFIX = "ACA";
     @Value("${max.days.interval}")
     private String maxDaysInterval;
@@ -80,7 +77,7 @@ public class PaymentPositionCRUDService {
             debtPosition.setOrganizationFiscalCode(organizationFiscalCode);
             debtPosition.setStatus(DebtPositionStatus.DRAFT);
 
-            boolean isACA = debtPosition.getIupd().startsWith(ACA_IUPD_PREFIX);
+            boolean isSTANDIN = debtPosition.getIupd().startsWith(ACA_IUPD_PREFIX);
 
             for (PaymentOption po : debtPosition.getPaymentOption()) {
                 po.setOrganizationFiscalCode(organizationFiscalCode);
@@ -88,17 +85,20 @@ public class PaymentPositionCRUDService {
                 po.setLastUpdatedDate(currentDate);
                 po.setStatus(PaymentOptionStatus.PO_UNPAID);
 
-                if(isACA)
-                    po.getPaymentOptionMetadata().add(PaymentOptionMetadata.builder().key(PO_TYPE_METADATA_KEY).value(PO_TYPE_ACA_METADATA_VALUE)
-                                                              .paymentOption(po)
-                                                              .build());
-
                 for (Transfer t : po.getTransfer()) {
                     t.setIuv(po.getIuv());
                     t.setOrganizationFiscalCode(Objects.requireNonNullElse(t.getOrganizationFiscalCode(), organizationFiscalCode));
                     t.setInsertedDate(Objects.requireNonNullElse(debtPosition.getInsertedDate(), currentDate));
                     t.setLastUpdatedDate(currentDate);
                     t.setStatus(TransferStatus.T_UNREPORTED);
+
+                    if(isSTANDIN) {
+                        t.getTransferMetadata().add(TransferMetadata.builder()
+                                                            .key(STANDIN_METADATA_KEY)
+                                                            .value(STANDIN_METADATA_VALUE)
+                                                            .transfer(t)
+                                                            .build());
+                    }
                 }
             }
 

@@ -72,13 +72,15 @@ class DebtPositionControllerTest {
 	}
 
 	@Test
-	void createDebtPosition_ACA_METADATA_201() throws Exception {
+	void createDebtPosition_STANDIN_METADATA_201() throws Exception {
 		mvc.perform(post("/organizations/12345678901/debtpositions")
 							.content(TestUtil.toJson(DebtPositionMock.getMetadataACAMock9())).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata[0].value")
-								   .value("ACA"));
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].transferMetadata[0].key")
+								   .value("PAGOPA_STANDIN"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].transferMetadata[0].value")
+									.value("true"));
 	}
 
 	@Test
