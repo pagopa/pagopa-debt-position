@@ -1,7 +1,6 @@
 package it.gov.pagopa.debtposition.service.pd.crud;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
-import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
@@ -46,9 +45,6 @@ import java.util.stream.Collectors;
 public class PaymentPositionCRUDService {
 
     private static final String UNIQUE_KEY_VIOLATION = "23505";
-    private static final String PO_TYPE_METADATA_KEY = "PO_TYPE";
-    private static final String PO_TYPE_ACA_METADATA_VALUE = "ACA";
-    private static final String ACA_IUPD_PREFIX = "ACA";
     @Value("${max.days.interval}")
     private String maxDaysInterval;
     @Autowired
@@ -80,18 +76,11 @@ public class PaymentPositionCRUDService {
             debtPosition.setOrganizationFiscalCode(organizationFiscalCode);
             debtPosition.setStatus(DebtPositionStatus.DRAFT);
 
-            boolean isACA = debtPosition.getIupd().startsWith(ACA_IUPD_PREFIX);
-
             for (PaymentOption po : debtPosition.getPaymentOption()) {
                 po.setOrganizationFiscalCode(organizationFiscalCode);
                 po.setInsertedDate(Objects.requireNonNullElse(debtPosition.getInsertedDate(), currentDate));
                 po.setLastUpdatedDate(currentDate);
                 po.setStatus(PaymentOptionStatus.PO_UNPAID);
-
-                if(isACA)
-                    po.getPaymentOptionMetadata().add(PaymentOptionMetadata.builder().key(PO_TYPE_METADATA_KEY).value(PO_TYPE_ACA_METADATA_VALUE)
-                                                              .paymentOption(po)
-                                                              .build());
 
                 for (Transfer t : po.getTransfer()) {
                     t.setIuv(po.getIuv());

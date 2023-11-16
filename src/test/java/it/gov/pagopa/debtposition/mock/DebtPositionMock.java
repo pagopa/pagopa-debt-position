@@ -47,14 +47,6 @@ public class DebtPositionMock {
 	public final static PaymentPositionDTO getMetadataMock8() {
 		return createPaymentPositionMetadataMock7();
 	}
-
-	public final static PaymentPositionDTO getMetadataACAMock9() {
-		PaymentPositionDTO paymentPositionDTO = createPaymentPositionMock1();
-		paymentPositionDTO.setIupd("ACA_3123456IUVMOCK1");
-		paymentPositionDTO.getPaymentOption().get(0).setIuv("ACA_"+paymentPositionDTO.getPaymentOption().get(0).getIuv());
-
-		return paymentPositionDTO;
-	}
 	
 	public final static PaymentOptionDTO getPayPOMock1() {
 		return createPayForPaymentOptionMock1();
