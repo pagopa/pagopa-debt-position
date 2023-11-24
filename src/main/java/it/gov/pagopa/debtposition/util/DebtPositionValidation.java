@@ -31,7 +31,7 @@ public class DebtPositionValidation {
     private static final String AMOUNTS_VALIDATION_ERROR = "Amounts congruence error: payment option amount must coincide with the total of the transfers amount [payment_option_amount(in cent)=%s; total_tranfers_amount(in cent)=%s]";
     private static final String NUM_TRANSFERS_VALIDATION_ERROR = "Number of transfers congruence error: Each payment option must have a maximum of %s transactions [transactions found=%s]";
     private static final String TRANSFER_ID_VALIDATION_ERROR = "Transfer ID congruence error: The transaction id not have a value between those expected [transaction id=%s; expected values=%s]";
-    private static final String IBAN_STAMP_MUTUAL = "Iban, postalIban and Stamp are mutually exclusive. One of them is required.";
+    private static final String IBAN_STAMP_MUTUAL = "Iban, postalIban and Stamp are mutually exclusive [iuv=%s, transaction id=%s]. One of them is required.";
 
     private DebtPositionValidation() {
         super();
@@ -156,7 +156,7 @@ public class DebtPositionValidation {
         for (Transfer t : po.getTransfer()) {
             checkTransferCategory(t);
             checkTransferIban(t);
-            checkMutualExclusive(t);
+            checkMutualExclusive(po.getIuv(),t);
             totalTranfersAmout += t.getAmount();
         }
 
@@ -171,7 +171,7 @@ public class DebtPositionValidation {
 
     }
 
-    private static void checkMutualExclusive(Transfer t) {
+    private static void checkMutualExclusive(String iuv, Transfer t) {
         int i = 0;
         if (Strings.isNotEmpty(t.getIban())) {
             i++;
@@ -183,7 +183,7 @@ public class DebtPositionValidation {
             i++;
         }
         if (i != 1) {
-            throw new ValidationException(IBAN_STAMP_MUTUAL);
+            throw new ValidationException(String.format(IBAN_STAMP_MUTUAL, iuv, t.getIdTransfer()));
         }
     }
 

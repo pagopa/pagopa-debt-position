@@ -18,6 +18,8 @@ import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.PublishPaymentUtil;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.SerializationUtils;
 import org.hibernate.exception.ConstraintViolationException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,47 +59,11 @@ public class PaymentPositionCRUDService {
 
         final String ERROR_CREATION_LOG_MSG = "Error during debt position creation: %s";
 
-        if(segCodes != null && !isAuthorizedBySegregationCode(debtPosition, segCodes))
-            throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, debtPosition.getIupd());
-
         try {
-            // verifico la correttezza dei dati in input
-            DebtPositionValidation.checkPaymentPositionInputDataAccurancy(debtPosition);
-
-            // predispongo i dati ad uso interno prima dell'aggiornamento
-            LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-            LocalDateTime minDueDate = debtPosition.getPaymentOption().stream().map(PaymentOption::getDueDate).min(LocalDateTime::compareTo).orElse(currentDate);
-            LocalDateTime maxDueDate = debtPosition.getPaymentOption().stream().map(PaymentOption::getDueDate).max(LocalDateTime::compareTo).orElse(currentDate);
-            debtPosition.setMinDueDate(minDueDate);
-            debtPosition.setMaxDueDate(maxDueDate);
-            debtPosition.setInsertedDate(Objects.requireNonNullElse(debtPosition.getInsertedDate(), currentDate));
-            debtPosition.setLastUpdatedDate(currentDate);
-            debtPosition.setPublishDate(null);
-            debtPosition.setOrganizationFiscalCode(organizationFiscalCode);
-            debtPosition.setStatus(DebtPositionStatus.DRAFT);
-
-            for (PaymentOption po : debtPosition.getPaymentOption()) {
-                po.setOrganizationFiscalCode(organizationFiscalCode);
-                po.setInsertedDate(Objects.requireNonNullElse(debtPosition.getInsertedDate(), currentDate));
-                po.setLastUpdatedDate(currentDate);
-                po.setStatus(PaymentOptionStatus.PO_UNPAID);
-
-                for (Transfer t : po.getTransfer()) {
-                    t.setIuv(po.getIuv());
-                    t.setOrganizationFiscalCode(Objects.requireNonNullElse(t.getOrganizationFiscalCode(), organizationFiscalCode));
-                    t.setInsertedDate(Objects.requireNonNullElse(debtPosition.getInsertedDate(), currentDate));
-                    t.setLastUpdatedDate(currentDate);
-                    t.setStatus(TransferStatus.T_UNREPORTED);
-                }
-            }
-
-            //Se la pubblicazione immediata è richiesta, si procede
-            if(toPublish){
-                PublishPaymentUtil.publishProcess(debtPosition);
-            }
-
-            //Inserisco (ed eventualmente pubblico)la posizione debitoria
-            return paymentPositionRepository.saveAndFlush(debtPosition);
+      
+            //Inserisce (ed eventualmente porta in stato pubblicato) la posizione debitoria
+            return paymentPositionRepository.saveAndFlush(
+            		this.checkAndBuildDebtPositionToSave(debtPosition, organizationFiscalCode, toPublish, segCodes));
 
         } catch (DataIntegrityViolationException e) {
             log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
@@ -210,6 +176,41 @@ public class PaymentPositionCRUDService {
             throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
         }
     }
+    
+    public List<PaymentPosition> createMultipleDebtPositions(@Valid List<PaymentPosition> debtPositions,
+			String organizationFiscalCode, boolean toPublish, List<String> segCodes) {
+    	
+    	final String ERROR_CREATION_LOG_MSG = "Error during debt position creation: %s";
+    	
+    	List<PaymentPosition> ppToSaveList = new ArrayList<>();
+
+        try {
+        	
+        	for (PaymentPosition debtPosition: debtPositions) {
+        		ppToSaveList.add(this.checkAndBuildDebtPositionToSave(debtPosition, organizationFiscalCode, toPublish, segCodes));
+        	}
+      
+            //Inserisce il blocco di posizioni debitorie
+            return paymentPositionRepository.saveAllAndFlush(ppToSaveList);
+
+        } catch (DataIntegrityViolationException e) {
+            log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
+            if (e.getCause() instanceof ConstraintViolationException) {
+                String sqlState = ((ConstraintViolationException) e.getCause()).getSQLState();
+                if (sqlState.equals(UNIQUE_KEY_VIOLATION)) {
+                    throw new AppException(AppError.DEBT_POSITION_UNIQUE_VIOLATION, organizationFiscalCode);
+                }
+            }
+            throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
+        } catch (ValidationException e) {
+            throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
+        } catch (AppException appException) {
+            throw appException;
+        } catch (Exception e) {
+            log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
+            throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
+        }
+	}
 
     private PaymentPosition setOldNotificationFee(List<PaymentOption> oldPaymentOptions, String organizationFiscalCode, PaymentPosition paymentPosition) {
         Map<String, Long> oldPONotificationFeeMapping = oldPaymentOptions.stream().collect(Collectors.toMap(PaymentOption::getIuv, PaymentOption::getNotificationFee));
@@ -237,10 +238,63 @@ public class PaymentPositionCRUDService {
         filterAndOrder.getFilter().setPaymentDateFrom(verifiedPaymentDates.get(0));
         filterAndOrder.getFilter().setPaymentDateTo(verifiedPaymentDates.get(1));
     }
+    
+    private PaymentPosition checkAndBuildDebtPositionToSave(PaymentPosition debtPosition, String organizationFiscalCode, boolean toPublish,
+			List<String> segCodes) {
+    	
+    	PaymentPosition pp = SerializationUtils.clone(debtPosition);
+    	
+		if(segCodes != null && !isAuthorizedBySegregationCode(pp, segCodes)) {
+		    throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, pp.getIupd());
+		}
+		
+		// verifico la correttezza dei dati in input
+		DebtPositionValidation.checkPaymentPositionInputDataAccurancy(pp);
+
+		// predispongo i dati ad uso interno prima dell'aggiornamento
+		LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+		LocalDateTime minDueDate = pp.getPaymentOption().stream().map(PaymentOption::getDueDate).min(LocalDateTime::compareTo).orElse(currentDate);
+		LocalDateTime maxDueDate = pp.getPaymentOption().stream().map(PaymentOption::getDueDate).max(LocalDateTime::compareTo).orElse(currentDate);
+		pp.setMinDueDate(minDueDate);
+		pp.setMaxDueDate(maxDueDate);
+		pp.setInsertedDate(Objects.requireNonNullElse(pp.getInsertedDate(), currentDate));
+		pp.setLastUpdatedDate(currentDate);
+		pp.setPublishDate(null);
+		pp.setOrganizationFiscalCode(organizationFiscalCode);
+		pp.setStatus(DebtPositionStatus.DRAFT);
+
+		for (PaymentOption po : pp.getPaymentOption()) {
+		    po.setOrganizationFiscalCode(organizationFiscalCode);
+		    po.setInsertedDate(Objects.requireNonNullElse(pp.getInsertedDate(), currentDate));
+		    po.setLastUpdatedDate(currentDate);
+		    po.setStatus(PaymentOptionStatus.PO_UNPAID);
+		    po.setPaymentPosition(pp);
+		    po.getPaymentOptionMetadata().forEach(pom -> pom.setPaymentOption(po));
+
+		    for (Transfer t : po.getTransfer()) {
+		        t.setIuv(po.getIuv());
+		        t.setOrganizationFiscalCode(Objects.requireNonNullElse(t.getOrganizationFiscalCode(), organizationFiscalCode));
+		        t.setInsertedDate(Objects.requireNonNullElse(pp.getInsertedDate(), currentDate));
+		        t.setLastUpdatedDate(currentDate);
+		        t.setStatus(TransferStatus.T_UNREPORTED);
+		        t.setPaymentOption(po);
+		        t.getTransferMetadata().forEach(tm -> tm.setTransfer(t));
+		    }
+		}
+
+		//Se la pubblicazione immediata è richiesta, si procede
+		if(toPublish){
+		    PublishPaymentUtil.publishProcess(pp);
+		}
+		
+		return pp;
+	}
 
     private boolean isAuthorizedBySegregationCode(PaymentPosition paymentPosition, List<String> segregationCodes) {
         // It is enough to check only one IUV of the payment position. Here it is assumed that they all have the same segregation code.
         String paymentPositionSegregationCode = paymentPosition.getPaymentOption().get(0).getIuv().substring(0,2);
         return segregationCodes.contains(paymentPositionSegregationCode);
     }
+
+	
 }

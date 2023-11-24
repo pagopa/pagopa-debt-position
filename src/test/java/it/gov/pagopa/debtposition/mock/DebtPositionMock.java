@@ -3,7 +3,11 @@ package it.gov.pagopa.debtposition.mock;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 
+
+import it.gov.pagopa.debtposition.dto.MultiplePaymentPositionDTO;
 import it.gov.pagopa.debtposition.dto.PaymentOptionDTO;
 import it.gov.pagopa.debtposition.dto.PaymentOptionMetadataDTO;
 import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
@@ -99,6 +103,12 @@ public class DebtPositionMock {
 
 	public final static PaymentPositionDTO get409_Valid_Date_Mock1() {
 		return createPaymentPosition409_Valid_Date_Mock1();
+	}
+	public final static MultiplePaymentPositionDTO getMultipleDebtPositions_Mock() {
+		return createMultipleDebtPositionsMock();
+	}
+	public final static MultiplePaymentPositionDTO getMultipleDebtPositions_400_Mock() {
+		return createMultipleDebtPositionsMock_400();
 	}
 
 
@@ -992,5 +1002,18 @@ public class DebtPositionMock {
 		NotificationFeeUpdateModel mock = new NotificationFeeUpdateModel();
 		mock.setNotificationFee(notificationFee);
 		return mock;
+	}
+	
+	public static MultiplePaymentPositionDTO createMultipleDebtPositionsMock() {
+		List<PaymentPositionDTO> pPMockList = new ArrayList<>();
+		pPMockList.add(createPaymentPositionMock1());
+		pPMockList.add(createPaymentPositionMock5());
+		return MultiplePaymentPositionDTO.builder().paymentPositions(pPMockList).build();
+	}
+	
+	public static MultiplePaymentPositionDTO createMultipleDebtPositionsMock_400() {
+		List<PaymentPositionDTO> pPMockList = new ArrayList<>();
+		pPMockList.add(createPaymentPosition400Mock1());
+		return MultiplePaymentPositionDTO.builder().paymentPositions(pPMockList).build();
 	}
 }
