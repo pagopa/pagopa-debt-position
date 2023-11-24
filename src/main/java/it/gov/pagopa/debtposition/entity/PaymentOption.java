@@ -131,7 +131,7 @@ public class PaymentOption implements Serializable {
             fetch = FetchType.LAZY,
             optional = false,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "payment_position_id")
+    @JoinColumn(name = "payment_position_id", nullable = false)
     private PaymentPosition paymentPosition;
 
     @Builder.Default
