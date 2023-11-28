@@ -6,8 +6,6 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
-import it.gov.pagopa.debtposition.model.pd.MultiplePaymentPositionModel;
-import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import lombok.Builder;
 import lombok.Data;
 
