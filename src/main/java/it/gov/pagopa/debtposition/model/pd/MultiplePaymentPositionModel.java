@@ -6,6 +6,7 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
+import it.gov.pagopa.debtposition.controller.pd.validator.ValidDebtPositionsSize;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -20,6 +21,7 @@ public class MultiplePaymentPositionModel implements Serializable{
 	
 	@Valid
 	@NotEmpty
+	@ValidDebtPositionsSize
 	private List<PaymentPositionModel> paymentPositions;
 
 }
