@@ -1248,4 +1248,22 @@ class DebtPositionControllerTest {
 				.content(TestUtil.toJson(paymentPositionDTO))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isUnprocessableEntity());
 	}
+	
+	/**
+	 * CREATE MULTIPLE DEBT POSITIONS
+	 */
+	@Test
+	void createMultipleDebtPositions_201() throws Exception {
+		mvc.perform(post("/organizations/12345678901_multiple/debtpositions/bulk")
+				.content(TestUtil.toJson(DebtPositionMock.getMultipleDebtPositions_Mock())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated());
+	}
+	
+	@Test
+	void createMultipleDebtPositions_400() throws Exception {
+		mvc.perform(post("/organizations/12345678901_multiple/debtpositions/bulk")
+				.content(TestUtil.toJson(DebtPositionMock.getMultipleDebtPositions_400_Mock())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isBadRequest())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
+	}
 }

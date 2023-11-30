@@ -10,6 +10,7 @@ import it.gov.pagopa.debtposition.model.filterandorder.Filter;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
 import it.gov.pagopa.debtposition.model.filterandorder.Order.PaymentPositionOrder;
+import it.gov.pagopa.debtposition.model.pd.MultiplePaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
@@ -26,12 +27,16 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.validation.Valid;
+import javax.validation.constraints.Pattern;
 
 
 @Controller
@@ -168,4 +173,23 @@ public class DebtPositionController implements IDebtPositionController {
         throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
 
     }
+
+	@Override
+	public ResponseEntity<Void> createMultipleDebtPositions(String organizationFiscalCode,
+			@Valid MultiplePaymentPositionModel multiplePaymentPositionModel, boolean toPublish,
+			@Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
+		log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "createMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
+		
+		// flip model to entity
+        List<PaymentPosition> debtPositions = ObjectMapperUtils.mapAll(multiplePaymentPositionModel.getPaymentPositions(), PaymentPosition.class); 
+        
+        ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
+        List<PaymentPosition> createdDebtPosList = paymentPositionService.createMultipleDebtPositions(debtPositions, organizationFiscalCode, toPublish, segCodes);
+        
+        if (!CollectionUtils.isEmpty(createdDebtPosList)) {
+        	return ResponseEntity.status(HttpStatus.CREATED).build();
+        }
+
+        throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
+	}
 }

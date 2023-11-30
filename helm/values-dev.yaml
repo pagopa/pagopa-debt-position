@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.10.0"
+    tag: "0.10.0-1-PAGOPA-1361-bulk-loading"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -102,6 +102,7 @@ microservice-chart:
     LOG_LEVEL: "INFO"
     SQL_LOG_LEVEL: "DEBUG"
     SQL_BINDER_LOG_LEVEL: "TRACE"
+    MAX_DEBT_POSITIONS: "100"
   envSecret:
     # required
     APPLICATIONINSIGHTS_CONNECTION_STRING: 'ai-d-connection-string'

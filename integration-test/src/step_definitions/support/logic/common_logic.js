@@ -3,13 +3,13 @@ const assert = require("assert");
 const auxDigit = process.env.aux_digit
 
 async function assertAmount(bundle, amount) {
-    assertOutcome(bundle, "OK");
-    assert.match(bundle.responseToCheck.data, new RegExp(`<amount>${amount}</amount>`, "g"));
+    await assertOutcome(bundle, "OK");
+    await assert.match(bundle.responseToCheck.data, new RegExp(`<amount>${amount}</amount>`, "g"));
 }
 
 async function assertFaultCode(bundle, fault) {
-    assertOutcome(bundle, "KO");
-    assert.match(bundle.responseToCheck.data, new RegExp(`<faultCode>${fault}</faultCode>`, "g"));
+    await assertOutcome(bundle, "KO");
+    await assert.match(bundle.responseToCheck.data, new RegExp(`<faultCode>${fault}</faultCode>`, "g"));
 }
 
 async function assertOutcome(bundle, outcome) {

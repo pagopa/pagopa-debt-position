@@ -1,4 +1,4 @@
-const { Given, When, Then, AfterAll, Before, BeforeAll} = require('@cucumber/cucumber')
+const { Given, When, Then, AfterAll, Before, BeforeAll, setDefaultTimeout} = require('@cucumber/cucumber')
 const { executeHealthCheckForGPD } = require('./logic/health_checks_logic');
 const { executeDebtPositionCreation,
         executeDebtPositionDeletion,
@@ -28,6 +28,11 @@ const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCo
 assertStatusString, executeAfterAllStep, randomOrg, randomIupd, assertIupd, assertNav, assertNotificationFeeUpdatedDateNotificationFee, assertSize, assertMinSize } = require('./logic/common_logic');
 const { gpdSessionBundle, gpdUpdateBundle, gpdPayBundle } = require('./utility/data');
 const { getValidBundle, addDays, format } = require('./utility/helpers');
+
+
+
+// increase cucumber promise timeout
+setDefaultTimeout(10000);
 
 let idOrg = process.env.organization_fiscal_code;
 let iupd;

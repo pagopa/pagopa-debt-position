@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import it.gov.pagopa.debtposition.model.ProblemJson;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
+import it.gov.pagopa.debtposition.model.pd.MultiplePaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
@@ -54,6 +55,24 @@ public interface IDebtPositionController {
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
             @Valid @RequestBody PaymentPositionModel paymentPositionModel,
+            @RequestParam(required = false, defaultValue = "false") boolean toPublish,
+            @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
+            @RequestParam(required = false) String segregationCodes);
+    
+    @Operation(summary = "The Organization creates multiple debt positions.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "createMultiplePositions")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Request created."),
+            @ApiResponse(responseCode = "400", description = "Malformed request.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
+            @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
+            @ApiResponse(responseCode = "409", description = "Conflict: duplicate debt position found.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
+            @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
+    @PostMapping(value = "/organizations/{organizationfiscalcode}/debtpositions/bulk",
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Void> createMultipleDebtPositions(
+            @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
+            @PathVariable("organizationfiscalcode") String organizationFiscalCode,
+            @Valid @RequestBody MultiplePaymentPositionModel multiplePaymentPositionModel,
             @RequestParam(required = false, defaultValue = "false") boolean toPublish,
             @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
             @RequestParam(required = false) String segregationCodes);
