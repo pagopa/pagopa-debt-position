@@ -101,7 +101,7 @@ __pycache__
 local.settings.json
 **/*.iml
 /lib/
-**/.env
+**/*.env
 bin/
 **/application-azure.properties
 .cache_ggshield
