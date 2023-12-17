@@ -42,7 +42,7 @@ public class PaymentPositionDTO implements Serializable {
     private LocalDateTime insertedDate;
     private LocalDateTime publishDate;
     private LocalDateTime validityDate;
-    private Boolean switchToExpired;
+    private Boolean switchToExpired = false;
     private DebtPositionStatus status;
     private LocalDateTime paymentDate;
 
