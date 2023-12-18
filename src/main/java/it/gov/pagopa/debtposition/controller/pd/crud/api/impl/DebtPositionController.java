@@ -34,6 +34,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
@@ -181,8 +182,10 @@ public class DebtPositionController implements IDebtPositionController {
 		log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "createMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
 		
 		// flip model to entity
-        List<PaymentPosition> debtPositions = ObjectMapperUtils.mapAll(multiplePaymentPositionModel.getPaymentPositions(), PaymentPosition.class); 
-        
+        List<PaymentPosition> debtPositions = multiplePaymentPositionModel.getPaymentPositions()
+                .stream().map( dp -> modelMapper.map(dp, PaymentPosition.class))
+                .collect(Collectors.toList());
+
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
         List<PaymentPosition> createdDebtPosList = paymentPositionService.createMultipleDebtPositions(debtPositions, organizationFiscalCode, toPublish, segCodes);
         
