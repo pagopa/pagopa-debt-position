@@ -76,6 +76,61 @@ function buildCreateDebtPositionRequest(debtPosition, payer) {
     };
 }
 
+function buildCreateMassiveDebtPositionRequest(debtPosition, payer) {
+	
+	return {
+			  paymentPositions: [
+			    {
+			        iupd: debtPosition.iupd,
+			        type: "F",
+			        fiscalCode: payer.fiscalCode,
+			        fullName: payer.name,
+			        streetName: payer.streetName,
+			        civicNumber: payer.civicNumber,
+			        postalCode: payer.postalCode,
+			        city: payer.city,
+			        province: payer.province,
+			        region: payer.region,
+			        country: payer.country,
+			        email: payer.email,
+			        phone: payer.phone,
+			        companyName: payer.companyName,
+			        officeName: payer.officeName,
+			        switchToExpired: false,
+			        paymentOption: [
+			            {
+			                iuv: debtPosition.iuv1,
+			                amount: debtPosition.amount * 100,
+			                description: "Canone Unico Patrimoniale - SkyLab Inc.",
+			                isPartialPayment: false,
+			                dueDate: debtPosition.dueDate,
+			                retentionDate: debtPosition.retentionDate,
+			                fee: 0,
+			                transfer: [
+			                    {
+			                        idTransfer: debtPosition.transferId1,
+			                        amount: (debtPosition.amount * 100 / 3),
+			                        remittanceInformation: "Rata 1",
+			                        category: "9/0101108TS/",
+			                        iban: debtPosition.iban,
+			                    },
+			                    {
+			                        idTransfer: debtPosition.transferId2,
+			                        organizationFiscalCode: debtPosition.transferOtherCIFiscalCode,
+			                        amount: (debtPosition.amount * 100 / 3) * 2,
+			                        remittanceInformation: "Rata 2",
+			                        category: "9/0101108TS/",
+			                        iban: debtPosition.iban,
+			                    }
+			                ],
+			                paymentOptionMetadata: [{key: "string",value: "string"}]
+			            }
+			      ]
+			   }
+			 ]
+		};
+}
+
 function buildCreateOK_KODebtPositionRequest(bundle, action) {
 	let debtPosition = bundle.debtPosition;
 	let payer = bundle.payer;
@@ -230,5 +285,6 @@ module.exports = {
     buildUpdateDebtPositionRequest,
     buildDebtPositionDynamicData,
     buildUpdateDebtPositionInfoRequest,
-    buildCreateOK_KODebtPositionRequest
+    buildCreateOK_KODebtPositionRequest,
+    buildCreateMassiveDebtPositionRequest
 }

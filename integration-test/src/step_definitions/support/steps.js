@@ -22,7 +22,8 @@ const { executeDebtPositionCreation,
         executeDebtPositionGetListWithSegregationCodes,
         executeDebtPositionDeletionWithSegregationCodes,
         executeDebtPositionPublishWithSegregationCodes,
-        executeDebtPositionInvalidateWithSegregationCodes
+        executeDebtPositionInvalidateWithSegregationCodes,
+        executeMassiveDebtPositionsCreation
 } = require('./logic/gpd_logic');
 const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, assertNotificationFeeUpdatedAmounts, 
 assertStatusString, executeAfterAllStep, randomOrg, randomIupd, assertIupd, assertNav, assertNotificationFeeUpdatedDateNotificationFee, assertSize, assertMinSize } = require('./logic/common_logic');
@@ -66,6 +67,13 @@ Given('a random iupd', async function () {
 When('the debt position is created', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, status));
 Then('the debt position gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
 Then('the organization gets the nav value after creation', () => assertNav(gpdSessionBundle.createdDebtPosition, gpdSessionBundle.responseToCheck.data));
+
+/*
+ *  Massive debt positions creation
+ */
+
+When('the debit position items is created', () => executeMassiveDebtPositionsCreation(gpdSessionBundle, idOrg, iupd, status));
+
 
 /*
  * Node OK and KO result Debt position creation

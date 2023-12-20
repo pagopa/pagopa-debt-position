@@ -25,6 +25,19 @@ function createDebtPosition(orgId, body, segCodes){
     })
 }
 
+function createMassiveDebtPositions(orgId, body, segCodes){
+	const params = {}
+	if (segCodes) {params.segregationCodes = segCodes}
+    return post(GPD_HOST + `/organizations/${orgId}/debtpositions/bulk`, body, {
+        timeout: 10000,
+        params,
+        headers: {
+            "Ocp-Apim-Subscription-Key": process.env.API_SUBSCRIPTION_KEY,
+            "Content-Type": "application/json"
+        }
+    })
+}
+
 function updateDebtPosition(orgId, iupd, body, segCodes) {
 	const params = {}
 	if (segCodes) {params.segregationCodes = segCodes}
@@ -191,5 +204,6 @@ module.exports = {
     createAndPublishDebtPosition,
     updateAndPublishDebtPosition,
     getPaymentOptionByIuv,
-    invalidateDebtPosition
+    invalidateDebtPosition,
+    createMassiveDebtPositions
 }
