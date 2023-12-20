@@ -3,7 +3,7 @@ name: pagopa-gpd-core
 description: micro-service to manage Creditor Institution debtor positions
 type: application
 version: 0.68.0
-appVersion: 0.10.2-1-PAGOPA-1392-gpd-core-po-and-transfer-metadata-nullable-dev
+appVersion: 0.10.2-1-PAGOPA-1393-switch-to-expired-error
 dependencies:
   - name: microservice-chart
     version: 2.4.0
