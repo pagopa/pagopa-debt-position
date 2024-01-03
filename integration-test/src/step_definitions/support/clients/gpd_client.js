@@ -2,6 +2,7 @@ const { get, post, del, put } = require("../utility/axios_common");
 const fs = require("fs");
 
 const GPD_HOST = process.env.gpd_host;
+const GPD_HOST_V2 = process.env.gpd_host_v2;
 const GPD_EXTERNAL_HOST = process.env.gpd_external_host;
 
 function gpdHealthCheck() {
@@ -28,7 +29,7 @@ function createDebtPosition(orgId, body, segCodes){
 function createMassiveDebtPositions(orgId, body, segCodes){
 	const params = {}
 	if (segCodes) {params.segregationCodes = segCodes}
-    return post(GPD_HOST + `/organizations/${orgId}/debtpositions/bulk`, body, {
+    return post(GPD_HOST_V2 + `/organizations/${orgId}/debtpositions/bulk`, body, {
         timeout: 20000,
         params,
         headers: {
