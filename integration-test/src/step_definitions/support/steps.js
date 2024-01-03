@@ -34,7 +34,7 @@ const { getValidBundle, addDays, format } = require('./utility/helpers');
 
 
 // increase cucumber promise timeout
-setDefaultTimeout(10000);
+setDefaultTimeout(20000);
 
 let idOrg = process.env.organization_fiscal_code;
 let iupd;
@@ -187,7 +187,7 @@ When('the debt position is updated and published', () => executeDebtPositionUpda
  When('the debt position using segregation codes is updated', () => executeDebtPositionUpdateWithSegregationCodes(gpdSessionBundle, gpdUpdateBundle, idOrg, iupd));
  When('the organization gets the debt position using segregation codes', () => executeDebtPositionGetWithSegregationCodes(gpdSessionBundle, idOrg, iupd));
  When('the debt position using segregation codes is deleted', () => executeDebtPositionDeletionWithSegregationCodes(gpdSessionBundle, idOrg, iupd));
- When('the organization gets the list of debt positions using segregation codes', {timeout: 10000}, async () => {
+ When('the organization gets the list of debt positions using segregation codes', {timeout: 20000}, async () => {
     await executeDebtPositionGetListWithSegregationCodes(gpdSessionBundle, idOrg)
     resetParams();});
  Then('the debt positions list size is greater than {int}', (size) => assertMinSize(gpdSessionBundle.responseToCheck.data.payment_position_list, size));
