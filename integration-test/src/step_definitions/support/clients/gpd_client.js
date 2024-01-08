@@ -31,8 +31,8 @@ function createDebtPosition(orgId, body, segCodes){
 function createMassiveDebtPositions(orgId, body, segCodes){
 	const params = {}
 	if (segCodes) {params.segregationCodes = segCodes}
-	console.log("*************** request:" + GPD_HOST_V2 + ` + GPD_API_MASSIVE + `, body);
-    return post(GPD_HOST_V2 + ` + GPD_API_MASSIVE + `, body, {
+	console.log("*************** request:" + GPD_HOST_V2 + `GPD_API_MASSIVE`, body);
+    return post(GPD_HOST_V2 + `GPD_API_MASSIVE`, body, {
         timeout: 20000,
         params,
         headers: {
