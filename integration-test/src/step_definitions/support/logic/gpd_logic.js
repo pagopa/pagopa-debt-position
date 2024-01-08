@@ -36,6 +36,7 @@ async function executeMassiveDebtPositionsCreation(bundle, idOrg, iupd) {
     bundle.organizationCode = idOrg;
     bundle.debtPosition = buildDebtPositionDynamicData(bundle, iupd);
     let response = await createMassiveDebtPositions(bundle.organizationCode, buildCreateMassiveDebtPositionRequest(bundle.debtPosition, bundle.payer));
+    console.log (response);
     bundle.responseToCheck = response;
 }
 
