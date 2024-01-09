@@ -73,7 +73,7 @@ Then('the organization gets the nav value after creation', () => assertNav(gpdSe
  *  Massive debt positions creation
  */
 
-When('the debit position items is created', () => executeMassiveDebtPositionsCreation(gpdSessionBundle, idOrg, iupd, status));
+When('the debt position items is created', () => executeMassiveDebtPositionsCreation(gpdSessionBundle, idOrg, iupd, status));
 
 
 /*
