@@ -22,7 +22,9 @@ const { executeDebtPositionCreation,
         executeDebtPositionGetListWithSegregationCodes,
         executeDebtPositionDeletionWithSegregationCodes,
         executeDebtPositionPublishWithSegregationCodes,
-        executeDebtPositionInvalidateWithSegregationCodes
+        executeDebtPositionInvalidateWithSegregationCodes,
+        executeMassiveDebtPositionsCreation,
+        executeMassiveDebtPositionCreationWithSegregationCodes
 } = require('./logic/gpd_logic');
 const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, assertNotificationFeeUpdatedAmounts, 
 assertStatusString, executeAfterAllStep, randomOrg, randomIupd, assertIupd, assertNav, assertNotificationFeeUpdatedDateNotificationFee, assertSize, assertMinSize } = require('./logic/common_logic');
@@ -32,7 +34,7 @@ const { getValidBundle, addDays, format } = require('./utility/helpers');
 
 
 // increase cucumber promise timeout
-setDefaultTimeout(10000);
+setDefaultTimeout(30000);
 
 let idOrg = process.env.organization_fiscal_code;
 let iupd;
@@ -66,6 +68,13 @@ Given('a random iupd', async function () {
 When('the debt position is created', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, status));
 Then('the debt position gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
 Then('the organization gets the nav value after creation', () => assertNav(gpdSessionBundle.createdDebtPosition, gpdSessionBundle.responseToCheck.data));
+
+/*
+ *  Massive debt positions creation
+ */
+
+When('the debt position items is created', () => executeMassiveDebtPositionsCreation(gpdSessionBundle, idOrg, iupd, status));
+
 
 /*
  * Node OK and KO result Debt position creation
@@ -174,18 +183,16 @@ When('the debt position is updated and published', () => executeDebtPositionUpda
  */
  
  When('the debt position using segregation codes is created', () => executeDebtPositionCreationWithSegregationCodes(gpdSessionBundle, idOrg, iupd, status));
+ When('the debt position items, using segregation codes, is created', () => executeMassiveDebtPositionCreationWithSegregationCodes(gpdSessionBundle, idOrg, iupd, status));
  When('the debt position using segregation codes is updated', () => executeDebtPositionUpdateWithSegregationCodes(gpdSessionBundle, gpdUpdateBundle, idOrg, iupd));
  When('the organization gets the debt position using segregation codes', () => executeDebtPositionGetWithSegregationCodes(gpdSessionBundle, idOrg, iupd));
  When('the debt position using segregation codes is deleted', () => executeDebtPositionDeletionWithSegregationCodes(gpdSessionBundle, idOrg, iupd));
- When('the organization gets the list of debt positions using segregation codes', {timeout: 10000}, async () => {
+ When('the organization gets the list of debt positions using segregation codes', {timeout: 20000}, async () => {
     await executeDebtPositionGetListWithSegregationCodes(gpdSessionBundle, idOrg)
     resetParams();});
  Then('the debt positions list size is greater than {int}', (size) => assertMinSize(gpdSessionBundle.responseToCheck.data.payment_position_list, size));
  
  
- 
- 
-
 function resetParams() {
     dueDateFrom = null;
     dueDateTo = null;

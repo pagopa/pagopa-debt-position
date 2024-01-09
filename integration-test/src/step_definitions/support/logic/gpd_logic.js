@@ -11,7 +11,8 @@ const {
     createAndPublishDebtPosition,
     updateAndPublishDebtPosition,
     getPaymentOptionByIuv,
-    invalidateDebtPosition
+    invalidateDebtPosition,
+    createMassiveDebtPositions
 } = require("../clients/gpd_client");
 
 const {
@@ -19,7 +20,8 @@ const {
     buildCreateDebtPositionRequest,
     buildUpdateDebtPositionRequest,
     buildUpdateDebtPositionInfoRequest,
-    buildCreateOK_KODebtPositionRequest
+    buildCreateOK_KODebtPositionRequest,
+    buildCreateMassiveDebtPositionRequest
 } = require("../utility/request_builders");
 
 async function executeDebtPositionCreation(bundle, idOrg, iupd) {
@@ -30,6 +32,13 @@ async function executeDebtPositionCreation(bundle, idOrg, iupd) {
     bundle.createdDebtPosition = bundle.responseToCheck.data;
 }
 
+async function executeMassiveDebtPositionsCreation(bundle, idOrg, iupd) {
+    bundle.organizationCode = idOrg;
+    bundle.debtPosition = buildDebtPositionDynamicData(bundle, iupd);
+    let response = await createMassiveDebtPositions(bundle.organizationCode, buildCreateMassiveDebtPositionRequest(bundle.debtPosition, bundle.payer));
+    bundle.responseToCheck = response;
+}
+
 async function executeDebtPositionCreationWithSegregationCodes(bundle, idOrg, iupd) {
     bundle.organizationCode = idOrg;
     bundle.debtPosition = buildDebtPositionDynamicData(bundle, iupd);
@@ -37,6 +46,14 @@ async function executeDebtPositionCreationWithSegregationCodes(bundle, idOrg, iu
     let response = await createDebtPosition(bundle.organizationCode, buildCreateDebtPositionRequest(bundle.debtPosition, bundle.payer), segCodes);
     bundle.responseToCheck = response;
     bundle.createdDebtPosition = bundle.responseToCheck.data;
+}
+
+async function executeMassiveDebtPositionCreationWithSegregationCodes (bundle, idOrg, iupd) {
+	bundle.organizationCode = idOrg;
+    bundle.debtPosition = buildDebtPositionDynamicData(bundle, iupd);
+    let segCodes = bundle.debtPosition.iuv1.slice(0, 2)
+    let response = await createMassiveDebtPositions(bundle.organizationCode, buildCreateMassiveDebtPositionRequest(bundle.debtPosition, bundle.payer), segCodes);
+    bundle.responseToCheck = response;
 }
 
 async function executeOKDebtPositionCreation(bundle, idOrg, iupd) {
@@ -197,5 +214,7 @@ module.exports = {
     executeDebtPositionGetListWithSegregationCodes,
     executeDebtPositionDeletionWithSegregationCodes,
     executeDebtPositionPublishWithSegregationCodes,
-    executeDebtPositionInvalidateWithSegregationCodes
+    executeDebtPositionInvalidateWithSegregationCodes,
+    executeMassiveDebtPositionsCreation,
+    executeMassiveDebtPositionCreationWithSegregationCodes
 }
