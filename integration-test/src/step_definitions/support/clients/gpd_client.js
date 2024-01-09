@@ -196,7 +196,10 @@ function updateAndPublishDebtPosition(orgId, iupd, body) {
 }
 
 String.prototype.customReplace = function(str, newstr) {
-    return this.split(str).join(newstr);
+	console.log ("##################1", str, newstr)
+	let tmp = this.split(str).join(newstr);
+	console.log ("##################2", tmp)
+    return tmp;
 };
 
 module.exports = {
