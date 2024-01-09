@@ -3,7 +3,7 @@ const fs = require("fs");
 
 const GPD_HOST = process.env.gpd_host;
 const GPD_HOST_V2 = process.env.gpd_host_v2;
-const GPD_API_MASSIVE = (orgId) => process.env.gpd_api_massive.replace("${orgId}", orgId);
+const GPD_API_MASSIVE = (orgId) => process.env.gpd_api_massive.customReplace("${orgId}", orgId);
 
 const GPD_EXTERNAL_HOST = process.env.gpd_external_host;
 
@@ -31,7 +31,7 @@ function createDebtPosition(orgId, body, segCodes){
 function createMassiveDebtPositions(orgId, body, segCodes){
 	const params = {}
 	if (segCodes) {params.segregationCodes = segCodes}
-	let path = process.env.gpd_api_massive.toString().replace("${orgId}", "pippo");
+	let path = GPD_API_MASSIVE(orgId);
 	console.log ("******************* " + GPD_HOST_V2 + path, orgId);
     return post(GPD_HOST_V2 + path, body, {
         timeout: 20000,
@@ -194,6 +194,10 @@ function updateAndPublishDebtPosition(orgId, iupd, body) {
         }
     })
 }
+
+String.prototype.customReplace = function(str, newstr) {
+    return this.split(str).join(newstr);
+};
 
 module.exports = {
     gpdHealthCheck,
