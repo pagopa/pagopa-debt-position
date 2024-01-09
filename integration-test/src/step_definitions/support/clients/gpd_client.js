@@ -31,6 +31,7 @@ function createDebtPosition(orgId, body, segCodes){
 function createMassiveDebtPositions(orgId, body, segCodes){
 	const params = {}
 	if (segCodes) {params.segregationCodes = segCodes}
+	console.log("******************** env var before replace", process.env.gpd_api_massive)
 	let path = GPD_API_MASSIVE(orgId);
 	console.log ("******************* " + GPD_HOST_V2 + path, orgId);
     return post(GPD_HOST_V2 + path, body, {
