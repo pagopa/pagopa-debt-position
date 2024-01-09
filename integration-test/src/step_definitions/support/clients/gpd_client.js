@@ -31,8 +31,8 @@ function createDebtPosition(orgId, body, segCodes){
 function createMassiveDebtPositions(orgId, body, segCodes){
 	const params = {}
 	if (segCodes) {params.segregationCodes = segCodes}
-	let path = process.env.gpd_api_massive.toString().replace("${orgId}", orgId.toString());
-	console.log ("******************* " + GPD_HOST_V2 + path);
+	let path = process.env.gpd_api_massive.toString().replace("${orgId}", "pippo");
+	console.log ("******************* " + GPD_HOST_V2 + path, orgId);
     return post(GPD_HOST_V2 + path, body, {
         timeout: 20000,
         params,
