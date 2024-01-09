@@ -5,9 +5,14 @@ import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
 import it.gov.pagopa.debtposition.model.filterandorder.OrderType;
 import lombok.experimental.UtilityClass;
+
+import java.util.List;
+
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 
@@ -51,6 +56,19 @@ public class CommonUtil {
                 .itemsFound(page.getNumberOfElements())
                 .build();
     }
+    
+    /**
+     * @param list the page content
+     * @param pageNumber the page number
+     * @param pageSize the number of items per page
+     * @param totalRecords the total amount of items available
+     * @return return the page info
+     */
+    public static <T> Page<T> toPage(List<T> list, 
+    		int pageNumber, int pageSize, long totalRecords) {
+    	PageRequest pageable = PageRequest.of(pageNumber, pageSize);
+    	return new PageImpl<>(list, pageable, totalRecords);
+}
 
 
 }

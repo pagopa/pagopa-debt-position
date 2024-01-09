@@ -11,6 +11,7 @@ import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
+import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.repository.specification.*;
 import it.gov.pagopa.debtposition.service.payments.PaymentsService;
@@ -51,6 +52,8 @@ public class PaymentPositionCRUDService {
     private String maxDaysInterval;
     @Autowired
     private PaymentPositionRepository paymentPositionRepository;
+    @Autowired
+    private PaymentOptionRepository paymentOptionRepository;
     @Autowired
     private ModelMapper modelMapper;
 
@@ -108,7 +111,7 @@ public class PaymentPositionCRUDService {
         checkAndUpdateDates(filterAndOrder);
 
         Pageable pageable = PageRequest.of(pageNum, limit, CommonUtil.getSort(filterAndOrder));
-
+        
         Specification<PaymentPosition> paymentPositionSpecification =
                 new PaymentPositionByOrganizationFiscalCode(filterAndOrder.getFilter().getOrganizationFiscalCode())
                 .and(new PaymentPositionByOptionsAttribute(
@@ -120,9 +123,22 @@ public class PaymentPositionCRUDService {
                         filterAndOrder.getFilter().getPaymentDateTo()))
                 .and(new PaymentPositionByStatus(filterAndOrder.getFilter().getStatus())));
 
-        Specification<PaymentPosition> spec = Specification.where(paymentPositionSpecification);
-
-        return paymentPositionRepository.findAll(spec, pageable);
+        Specification<PaymentPosition> specPP = Specification.where(paymentPositionSpecification);
+        
+        Page<PaymentPosition> page = paymentPositionRepository.findAll(specPP, pageable);
+        List<PaymentPosition> positions = page.getContent();
+        // The retrieval of PaymentOptions is done manually to apply filters which, in the automatic fetch, are not used by JPA
+        for(PaymentPosition pp: positions) {
+        	Specification<PaymentOption> specPO = Specification.where(new PaymentOptionByAttribute (pp,
+            		filterAndOrder.getFilter().getDueDateFrom(),
+                    filterAndOrder.getFilter().getDueDateTo(),
+                    filterAndOrder.getFilter().getSegregationCodes()));
+        	
+        	List<PaymentOption> poList = paymentOptionRepository.findAll(specPO);
+        	pp.setPaymentOption(poList);
+        }
+        
+        return CommonUtil.toPage(positions, page.getNumber(), page.getSize(), page.getTotalElements());
     }
 
     @Transactional

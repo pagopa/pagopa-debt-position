@@ -23,6 +23,7 @@ public class PaymentPositionByOrganizationFiscalCode implements Specification<Pa
 
     @Override
     public Predicate toPredicate(Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+    	query.distinct(true);
         if (organizationFiscalCode == null) {
             return cb.isTrue(cb.literal(true)); // always true = no filtering
         }
