@@ -3,7 +3,7 @@ const fs = require("fs");
 
 const GPD_HOST = process.env.gpd_host;
 const GPD_HOST_V2 = process.env.gpd_host_v2;
-const GPD_API_MASSIVE = (orgId) => process.env.gpd_api_massive.replace('${orgId}', orgId);
+const GPD_API_MASSIVE = (orgId) => process.env.gpd_api_massive.replace('{orgId}', orgId);
 
 const GPD_EXTERNAL_HOST = process.env.gpd_external_host;
 
