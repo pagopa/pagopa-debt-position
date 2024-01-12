@@ -34,7 +34,7 @@ const { getValidBundle, addDays, format } = require('./utility/helpers');
 
 
 // increase cucumber promise timeout
-setDefaultTimeout(180000);
+setDefaultTimeout(30000);
 
 let idOrg = process.env.organization_fiscal_code;
 let iupd;
