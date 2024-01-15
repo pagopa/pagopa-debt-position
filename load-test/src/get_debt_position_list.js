@@ -3,11 +3,10 @@ import { check } from 'k6';
 import { SharedArray } from 'k6/data';
 import { makeidMix, randomString } from './modules/helpers.js';
 
-//k6 run -o influxdb=http://influxdb:8086/k6 -e BASE_URL=http://localhost:8080 gpd/load-test/src/payments_workflow.js
 export let options = JSON.parse(open(__ENV.TEST_TYPE));
 
-const varsArray = new SharedArray('vars', function () {
-    return JSON.parse(open(`${__ENV.VARS}`)).environment;
+const varsArray = new SharedArray('vars', function() {
+  return JSON.parse(open(`${__ENV.VARS}`)).environment;
 });
 
 // workaround to use shared array (only array should be used)
@@ -15,25 +14,25 @@ const vars = varsArray[0];
 const rootUrl = `${vars.host}`;
 
 const params = {
-    headers: {
-        'Content-Type': 'application/json',
-        'Ocp-Apim-Subscription-Key': __ENV.API_SUBSCRIPTION_KEY
-    },
+  headers: {
+    'Content-Type': 'application/json',
+    'Ocp-Apim-Subscription-Key': __ENV.API_SUBSCRIPTION_KEY
+  },
 };
 
-export default function () {
+export default function() {
 
-  const creditor_institution_code = randomString(11, "0123456789");
+  // fixed value for the creditor_institution with multiple debt positions
+  const creditor_institution_code = '77777777777'
   const iupd = makeidMix(35);
   const iuv = makeidMix(35);
-  const due_date = new Date().addDays(30);
+  const due_date = new Date().addDays(1);
   const retention_date = new Date().addDays(90);
   const transfer_id = '1';
 
-  // Create new debt position (no validity date).
-
+  // precondition: creation of a new debt position --> the GET of the list of debt positions returns at least one element
   var url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions`;
-
+  
   var payload = JSON.stringify(
     {
       "iupd": iupd,
@@ -77,30 +76,27 @@ export default function () {
 
   var r = http.post(url, payload, params);
 
-  console.log("CreateDebtPosition call - creditor_institution_code = " + creditor_institution_code + ", Status = " + r.status);
-
   check(r, {
     'CreateDebtPosition status is 201': (r) => r.status === 201,
   });
 
-  // if the debt position has been correctly created => publish
-  if (r.status === 201) {
-    // sleep(1);
-    // Update the debt position.
-    url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions/${iupd}`;
 
-    const payload2 = JSON.parse(payload)
-    payload2.civicNumber=999
-    payload2.paymentOption[0].transfer[0].organizationFiscalCode="00011122201"
+  // ----- NEXT STEP -----
+  // if the debt position has been correctly created => get the list of organization debt positions by due_date
+  if (r.status !== 201) return; // exit flow if failed
+  
+  let due_date_from = new Date().subDays(5).toISOString().split('T')[0];
+  let due_date_to = new Date().addDays(5).toISOString().split('T')[0];
+  
+  url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions?limit=50&page=0&due_date_from=${due_date_from}&due_date_to=${due_date_to}&status=DRAFT&orderby=INSERTED_DATE&ordering=DESC`;
 
-    r = http.put(url,JSON.stringify(payload2), params);
+  r = http.get(url, params);
 
-    console.log("Update call - creditor_institution_code = " + creditor_institution_code + ", iupd = " + iupd + ", Status = " + r.status);
+  check(r, {
+    'GetOrganizationsList status is 200': (r) => r.status === 200,
+  });
 
-    check(r, {
-      'PublishDebtPosition status is 200': (r) => r.status === 200,
-    });
-  }
+  check(r, {
+    'GetOrganizationsList size is >= 1': (r) => (JSON.parse(r.body)).payment_position_list.length >= 1,
+  });
 }
-
-

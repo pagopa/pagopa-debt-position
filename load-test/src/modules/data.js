@@ -13,6 +13,7 @@ export function getDebtPosition(iupd, iuv_1, iuv_2, iuv_3, due_date, retention_d
     country: "IT",
     email: "lorem@lorem.com",
     phone: "333-123456789",
+    switchToExpired: false,
     companyName: "companyName",
     officeName: "officeName",
     paymentOption: [
