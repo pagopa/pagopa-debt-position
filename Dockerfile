@@ -1,7 +1,7 @@
 #
 # Build
 #
-FROM maven:3.8.4-jdk-11-slim as buildtime
+FROM maven:3.8.5-openjdk-17-slim as buildtime
 WORKDIR /build
 COPY . .
 RUN mvn clean package -Dmaven.test.skip=true
@@ -9,12 +9,12 @@ RUN mvn clean package -Dmaven.test.skip=true
 #
 # Package stage
 #
-FROM adoptopenjdk/openjdk11:alpine-jre as builder
+FROM eclipse-temurin:17-jdk-alpine as builder
 COPY --from=buildtime /build/target/*.jar application.jar
 RUN java -Djarmode=layertools -jar application.jar extract
 
 
-FROM ghcr.io/pagopa/docker-base-springboot-openjdk11:v1.0.1@sha256:bbbe948e91efa0a3e66d8f308047ec255f64898e7f9250bdb63985efd3a95dbf
+FROM ghcr.io/pagopa/docker-base-springboot-openjdk17:v1.1.0@sha256:6fa320d452fa22066441f1ef292d15eb06f944bc8bca293e1a91ea460d30a613
 
 COPY --chown=spring:spring  --from=builder dependencies/ ./
 COPY --chown=spring:spring  --from=builder snapshot-dependencies/ ./
