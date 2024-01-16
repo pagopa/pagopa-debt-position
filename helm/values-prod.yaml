@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.10.4-5-PAGOPA-1377-outofmemory"
+    tag: "0.10.5"
     pullPolicy: Always
   livenessProbe:
     httpGet:
