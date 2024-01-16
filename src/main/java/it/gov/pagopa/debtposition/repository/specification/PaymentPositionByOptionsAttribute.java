@@ -1,6 +1,8 @@
 package it.gov.pagopa.debtposition.repository.specification;
 
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.util.CommonUtil;
+
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.*;
@@ -50,18 +52,12 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
         if (segregationCodes != null && !segregationCodes.isEmpty()) {
             for(String segregationCode: segregationCodes) {
                 segregationCodesPredicate = cb.or(segregationCodesPredicate,
-                        cb.between(ppOptionsJoin.get(IUV_FIELD), segregationCode, getSegregationCodeEnd(segregationCode)));
+                        cb.between(ppOptionsJoin.get(IUV_FIELD), segregationCode, CommonUtil.getSegregationCodeEnd(segregationCode)));
             }
         } else {
             segregationCodesPredicate = cb.isTrue(cb.literal(true));
         }
 
         return cb.and(dueDatePredicate, segregationCodesPredicate);
-    }
-
-    private String getSegregationCodeEnd(String segregationCode) {
-        int length = segregationCode.length() - 1;
-        int nextChar = segregationCode.toCharArray()[length] + 1;
-        return segregationCode.substring(0, length) + (char) nextChar;
     }
 }

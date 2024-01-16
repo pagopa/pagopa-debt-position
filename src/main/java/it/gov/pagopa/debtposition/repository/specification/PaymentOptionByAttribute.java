@@ -2,11 +2,12 @@ package it.gov.pagopa.debtposition.repository.specification;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.util.CommonUtil;
+
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.*;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class PaymentOptionByAttribute implements Specification<PaymentOption> {
@@ -15,7 +16,6 @@ public class PaymentOptionByAttribute implements Specification<PaymentOption> {
      * generated serialVersionUID
      */
     private static final long serialVersionUID = 6534338388239897792L;
-    private static final String PAYMENT_OPT_JOIN = "paymentOption";
     private static final String DUEDATE_FIELD = "dueDate";
     private static final String IUV_FIELD = "iuv";
 
@@ -53,7 +53,7 @@ public class PaymentOptionByAttribute implements Specification<PaymentOption> {
         if (segregationCodes != null && !segregationCodes.isEmpty()) {
             for(String segregationCode: segregationCodes) {
                 segregationCodesPredicate = cb.or(segregationCodesPredicate,
-                        cb.between(root.get(IUV_FIELD), segregationCode, getSegregationCodeEnd(segregationCode)));
+                        cb.between(root.get(IUV_FIELD), segregationCode, CommonUtil.getSegregationCodeEnd(segregationCode)));
             }
         } else {
             segregationCodesPredicate = cb.isTrue(cb.literal(true));
@@ -62,9 +62,5 @@ public class PaymentOptionByAttribute implements Specification<PaymentOption> {
         return cb.and(paymentPositionIdPredicate, dueDatePredicate, segregationCodesPredicate);
     }
 
-    private String getSegregationCodeEnd(String segregationCode) {
-        int length = segregationCode.length() - 1;
-        int nextChar = segregationCode.toCharArray()[length] + 1;
-        return segregationCode.substring(0, length) + (char) nextChar;
-    }
+    
 }

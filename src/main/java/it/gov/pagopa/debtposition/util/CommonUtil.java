@@ -68,7 +68,17 @@ public class CommonUtil {
     		int pageNumber, int pageSize, long totalRecords) {
     	PageRequest pageable = PageRequest.of(pageNumber, pageSize);
     	return new PageImpl<>(list, pageable, totalRecords);
-}
+    }
+    
+    /**
+     * @param segregationCode the segregationCode value
+     * @return return the input string incremented to the next character
+     */
+    public static String getSegregationCodeEnd(String segregationCode) {
+        int length = segregationCode.length() - 1;
+        int nextChar = segregationCode.toCharArray()[length] + 1;
+        return segregationCode.substring(0, length) + (char) nextChar;
+    }
 
 
 }
