@@ -15,7 +15,7 @@ or that for `yaml` version
 
 ---
 ## Technology Stack
-- Java 11
+- Java 17
 - Spring Boot
 - Spring Web
 - Hibernate
@@ -58,7 +58,7 @@ bash ./docker/run_docker.sh local
 ### Prerequisites
 - git
 - maven
-- jdk-11
+- jdk-17
 - docker
 
 ### Run the project
