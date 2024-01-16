@@ -49,6 +49,7 @@ export default function () {
       "country": "IT",
       "email": "lorem@lorem.com",
       "phone": "333-123456789",
+      "switchToExpired": false,
       "companyName": "companyName",
       "officeName": "officeName",
       "validityDate": validity_date,

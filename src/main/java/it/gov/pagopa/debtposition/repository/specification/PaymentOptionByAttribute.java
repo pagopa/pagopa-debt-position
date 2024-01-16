@@ -6,7 +6,6 @@ import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.*;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class PaymentOptionByAttribute implements Specification<PaymentOption> {
@@ -15,7 +14,6 @@ public class PaymentOptionByAttribute implements Specification<PaymentOption> {
      * generated serialVersionUID
      */
     private static final long serialVersionUID = 6534338388239897792L;
-    private static final String PAYMENT_OPT_JOIN = "paymentOption";
     private static final String DUEDATE_FIELD = "dueDate";
     private static final String IUV_FIELD = "iuv";
 
