@@ -63,7 +63,6 @@ jobs:
           client-id: ${{ secrets.CLIENT_ID }}
           tenant-id: ${{ secrets.TENANT_ID }}
           subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
-          java_version: 17
 
       - name: Run Service on Docker
         shell: bash

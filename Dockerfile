@@ -1,7 +1,7 @@
 #
 # Build
 #
-FROM maven:3.8.5-amazoncorretto-17-al2023@sha256:eeaa7ab572d931f7273fc5cf31429923f172091ae388969e11f42ec6dd817d74 as buildtime
+FROM maven:3.9.5-amazoncorretto-17-al2023@sha256:eeaa7ab572d931f7273fc5cf31429923f172091ae388969e11f42ec6dd817d74 as buildtime
 WORKDIR /build
 COPY . .
 RUN mvn clean package -Dmaven.test.skip=true
