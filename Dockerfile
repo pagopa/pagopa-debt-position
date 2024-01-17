@@ -1,7 +1,7 @@
 #
 # Build
 #
-FROM maven:3.8.5-eclipse-temurin:17-jre@sha256:e7ba39bd08d3c1761f610b737164abf964f0784589095fb7dfa1185010a3b70f as buildtime
+FROM maven:maven:3.9.5-eclipse-temurin-17-alpine as buildtime
 WORKDIR /build
 COPY . .
 RUN mvn clean package -Dmaven.test.skip=true
