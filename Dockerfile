@@ -1,7 +1,7 @@
 #
 # Build
 #
-FROM maven:3.9.5-eclipse-temurin-17-alpine as buildtime
+FROM maven:3.9.5-amazoncorretto-17-al2023@sha256:eeaa7ab572d931f7273fc5cf31429923f172091ae388969e11f42ec6dd817d74 as buildtime
 WORKDIR /build
 COPY . .
 RUN mvn clean package -Dmaven.test.skip=true
@@ -9,7 +9,7 @@ RUN mvn clean package -Dmaven.test.skip=true
 #
 # Package stage
 #
-FROM eclipse-temurin:17-jre@sha256:e7ba39bd08d3c1761f610b737164abf964f0784589095fb7dfa1185010a3b70f as builder
+FROM amazoncorretto:17.0.9-alpine3.18@sha256:df48bf2e183230040890460ddb4359a10aa6c7aad24bd88899482c52053c7e17 as builder
 COPY --from=buildtime /build/target/*.jar application.jar
 RUN java -Djarmode=layertools -jar application.jar extract
 
