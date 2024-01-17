@@ -1,7 +1,7 @@
 #
 # Build
 #
-FROM maven:maven:3.9.5-eclipse-temurin-17-alpine as buildtime
+FROM maven:3.9.5-eclipse-temurin-17-alpine as buildtime
 WORKDIR /build
 COPY . .
 RUN mvn clean package -Dmaven.test.skip=true
