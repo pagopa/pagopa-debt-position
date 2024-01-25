@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 adoptopenjdk/openjdk11:jdk-11.0.9.1_1-alpine
+FROM --platform=linux/amd64 amazoncorretto:17.0.9-alpine3.18@sha256:df48bf2e183230040890460ddb4359a10aa6c7aad24bd88899482c52053c7e17
 ARG JAR_FILE=./target/gpd*.jar
 
 EXPOSE 8080
