@@ -4,7 +4,7 @@ ARG JAR_FILE=target/*.jar
 COPY ${JAR_FILE}  application.jar
 RUN java -Djarmode=layertools -jar application.jar extract
 
-FROM eclipse-temurin:17-jdk-alpine
+FROM amazoncorretto:17.0.9-alpine3.18@sha256:df48bf2e183230040890460ddb4359a10aa6c7aad24bd88899482c52053c7e17
 
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
