@@ -942,6 +942,7 @@ public class DebtPositionMock {
 		tMock.setAmount(500);
 		tMock.setRemittanceInformation("causale mock multiple 2");
 		tMock.setCategory("10/22252/20");
+		tMock.setIban("IT75I0306902887100000300005");
 		tMock.setPostalIban("IT82E0760113600000000118547");
 
 		return tMock;
