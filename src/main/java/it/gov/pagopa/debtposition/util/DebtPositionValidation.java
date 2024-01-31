@@ -31,7 +31,7 @@ public class DebtPositionValidation {
     private static final String AMOUNTS_VALIDATION_ERROR = "Amounts congruence error: payment option amount must coincide with the total of the transfers amount [payment_option_amount(in cent)=%s; total_tranfers_amount(in cent)=%s]";
     private static final String NUM_TRANSFERS_VALIDATION_ERROR = "Number of transfers congruence error: Each payment option must have a maximum of %s transactions [transactions found=%s]";
     private static final String TRANSFER_ID_VALIDATION_ERROR = "Transfer ID congruence error: The transaction id not have a value between those expected [transaction id=%s; expected values=%s]";
-    private static final String IBAN_STAMP_MUTUAL = "Iban, postalIban and Stamp are mutually exclusive [iuv=%s, transaction id=%s]. One of them is required.";
+    private static final String IBAN_STAMP_MUTUAL = "The Iban may be present (optionally combined with the Postal Iban) or the Stamp. Not all at the same time [iuv=%s, transaction id=%s].";
 
     private DebtPositionValidation() {
         super();
@@ -176,11 +176,11 @@ public class DebtPositionValidation {
         if (Strings.isNotEmpty(t.getIban())) {
             i++;
         }
-        if (Strings.isNotEmpty(t.getPostalIban())) {
-            i++;
-        }
-        if (Strings.isNotEmpty(t.getStampType()) && Strings.isNotEmpty(t.getHashDocument()) && Strings.isNotEmpty(t.getProvincialResidence())) {
-            i++;
+        if (Strings.isNotEmpty(t.getStampType()) && 
+        		Strings.isNotEmpty(t.getHashDocument()) && 
+        		Strings.isNotEmpty(t.getProvincialResidence())) {
+        	
+        	if (Strings.isEmpty(t.getPostalIban())) i++; else throw new ValidationException(String.format(IBAN_STAMP_MUTUAL, iuv, t.getIdTransfer()));
         }
         if (i != 1) {
             throw new ValidationException(String.format(IBAN_STAMP_MUTUAL, iuv, t.getIdTransfer()));

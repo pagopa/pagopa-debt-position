@@ -38,10 +38,10 @@ public class TransferModel implements Serializable {
     @NotBlank(message = "category is required")
     private String category; // taxonomy
 
-    @Schema(description = "mutual exclusive with postalIban and stamp", example = "IT0000000000000000000000000")
+    @Schema(description = "mutual exclusive with stamp", example = "IT0000000000000000000000000")
     private String iban;
 
-    @Schema(description = "mutual exclusive with iban and stamp", example = "IT0000000000000000000000000")
+    @Schema(description = "optional - can be combined with iban but not with stamp", example = "IT0000000000000000000000000")
     private String postalIban;
 
     @Schema(description = "mutual exclusive with iban and postalIban")
