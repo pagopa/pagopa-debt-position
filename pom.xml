@@ -11,7 +11,7 @@
     </parent>
     <groupId>it.gov.pagopa.debtposition</groupId>
     <artifactId>gpd</artifactId>
-    <version>0.11.0</version>
+    <version>0.11.1</version>
     <name>Gestione Posizioni Debitorie</name>
     <description>Progetto Gestione Posizioni Debitorie</description>
     <properties>
@@ -21,6 +21,8 @@
         <jackson-datatype-jsr310-version>2.13.1</jackson-datatype-jsr310-version>
         <flyway-version>8.5.10</flyway-version>
         <openfeign-version>3.1.8</openfeign-version>
+        <azure.data.table.version>12.3.18</azure.data.table.version>
+        <azure.core.version>1.45.1</azure.core.version>
     </properties>
 
     <dependencies>
@@ -55,6 +57,18 @@
             <artifactId>springdoc-openapi-ui</artifactId>
             <version>${springdoc-version}</version>
         </dependency>
+        <!-- Start cosmos tables-->
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-core</artifactId>
+            <version>${azure.core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-data-tables</artifactId>
+            <version>${azure.data.table.version}</version>
+        </dependency>
+        <!-- End cosmos tables -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
