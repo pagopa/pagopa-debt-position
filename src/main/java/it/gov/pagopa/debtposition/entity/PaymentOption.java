@@ -24,6 +24,9 @@ import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -49,6 +52,7 @@ import lombok.Setter;
                         columnNames = {"iuv", "organization_fiscal_code"})
         },
         indexes = @Index(name = "payment_option_payment_position_id_idx", columnList = "payment_position_id"))
+@JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="@paymentOptionId")
 public class PaymentOption implements Serializable {
 
     /**
