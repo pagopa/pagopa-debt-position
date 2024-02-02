@@ -2,6 +2,7 @@ package it.gov.pagopa.debtposition.scheduler;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
+import javax.persistence.Query;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,10 +47,20 @@ public class HistoricizationScheduler {
     private Thread threadOfExecution;
     private TableClient tableClient;
     
+    // extraction params
     @Value("${cron.job.schedule.extraction.history.query:SELECT pp FROM PaymentPosition pp WHERE pp.status IN ('PAID', 'REPORTED', 'INVALID', 'EXPIRED') AND pp.lastUpdatedDate < ?1}")
     private String extractionQuery;
     @Value("${cron.job.schedule.extraction.history.query.interval:365}")
     private short extractionInterval;
+    // extraction params: pagination mode
+    @Value("${cron.job.schedule.extraction.history.query.paginated:true}")
+    private boolean paginationMode;
+    @Value("${cron.job.schedule.extraction.history.query.count:SELECT count(pp.id) FROM PaymentPosition pp WHERE pp.status IN ('PAID', 'REPORTED', 'INVALID', 'EXPIRED') AND pp.lastUpdatedDate < ?1}")
+    private String countExtractionQuery;
+    @Value("${cron.job.schedule.extraction.history.query.page.size:100000}")
+    private int pageSize;
+    
+    // azure storage params
     @Value("${azure.archive.storage.connection}")
     private String archiveStorageConnection;
     @Value("${azure.archive.storage.table.po:pagopadweugpsarchivesapaymentoptiontable}")
@@ -69,10 +81,35 @@ public class HistoricizationScheduler {
     	log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
     	EntityManager em = emf.createEntityManager();
     	LocalDateTime ldt = LocalDateTime.now().minusDays(extractionInterval);
-    	List<PaymentPosition> ppList = em.createQuery(extractionQuery, PaymentPosition.class).setParameter(1,ldt).getResultList(); 
-    	log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "Number of extracted rows to historicize: " + ppList.size()));
-    	
-    	Map<String, List<PaymentPosition>> ppListByOrganizationFiscalCode = ppList.stream()
+    	List<PaymentPosition> ppList;
+    	if (paginationMode) {
+    		long countResult = em.createQuery(countExtractionQuery, Long.class).setParameter(1,ldt).getSingleResult(); 
+    		int numOfPages = (int)Math.ceil((float)countResult/pageSize);
+    		for (int pageNumber=0; pageNumber<numOfPages; pageNumber++) {
+    			ppList = em.createQuery(extractionQuery, PaymentPosition.class).setParameter(1,ldt).setFirstResult((pageNumber) * pageSize).setMaxResults(pageSize).getResultList();
+    			log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, 
+    					"Paginated historical extraction info: Found n. "+countResult+" debt positions to archive splitted on n. "+numOfPages+" of pages. " + 
+    					System.lineSeparator() +
+    			        "Page number "+pageNumber+" has been extracted and contains "+ppList.size()+" occurrences"));
+    			this.archivesDebtPositions(ppList);
+    		}
+    	} else {
+    		ppList = em.createQuery(extractionQuery, PaymentPosition.class).setParameter(1,ldt).getResultList(); 
+    		log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "Total entries extraction info: Number of extracted rows to historicize: " + ppList.size()));
+    		this.archivesDebtPositions(ppList);
+    	}
+
+    	// historicized debt positions are removed 
+    	//paymentPositionRepository.deleteAll(ppList);
+    	log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "deleted historicized debt positions"));
+    }
+    
+    public Thread getThreadOfExecution() {
+        return this.threadOfExecution;
+    }
+
+	private void archivesDebtPositions(List<PaymentPosition> ppList) throws JsonProcessingException {
+		Map<String, List<PaymentPosition>> ppListByOrganizationFiscalCode = ppList.stream()
                 .collect(Collectors.groupingBy(p -> p.getOrganizationFiscalCode(), Collectors.mapping((PaymentPosition p) -> p, Collectors.toList())));
     	
     	ObjectMapper objectMapper = new ObjectMapper();
@@ -88,17 +125,9 @@ public class HistoricizationScheduler {
             	// write on azure table storage to persist the PP debt position info and json
             	this.saveToPPTable(entry.getKey(), pp, objectMapper);
             }
-            log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "historicized n. "+organizationPpList.size()+" debt positions for the organization fiscal code: " +entry.getKey()));
+            log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "archivesDebtPositions", "historicized n. "+organizationPpList.size()+" debt positions for the organization fiscal code: " +entry.getKey()));
         }
-    	
-    	// historicized debt positions are removed 
-    	//paymentPositionRepository.deleteAll(ppList);
-    	log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "deleted historicized debt positions"));
-    }
-
-    public Thread getThreadOfExecution() {
-        return this.threadOfExecution;
-    }
+	}
     
 	private void saveToPOTable(String organizationFiscalCode, PaymentPosition pp, PaymentOption po) {
 		tableClient = new TableClientBuilder()
@@ -114,6 +143,8 @@ public class HistoricizationScheduler {
 			tableClient.createEntity(tableEntity);
 		} catch (TableServiceException e) {
 			if (e.getValue().getErrorCode() == TableErrorCode.ENTITY_ALREADY_EXISTS) {
+				log.warn(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "saveToPOTable",
+						TableErrorCode.ENTITY_ALREADY_EXISTS + " managed error while storing the table information [organizationFiscalCode="+organizationFiscalCode+", iuv="+po.getIuv()+"]"), e);
 				tableClient.updateEntity(tableEntity);
 			} else {
 				log.error(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "saveToPOTable",
@@ -137,6 +168,8 @@ public class HistoricizationScheduler {
 			tableClient.createEntity(tableEntity);
 		} catch (TableServiceException e) {
 			if (e.getValue().getErrorCode() == TableErrorCode.ENTITY_ALREADY_EXISTS) {
+				log.warn(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "saveToPPTable",
+						TableErrorCode.ENTITY_ALREADY_EXISTS + " managed error while storing the table information [organizationFiscalCode="+organizationFiscalCode+", iupd="+pp.getIupd()+"]"), e);
 				tableClient.updateEntity(tableEntity);
 			} else {
 				log.error(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "saveToPPTable",
