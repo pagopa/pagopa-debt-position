@@ -23,6 +23,7 @@
         <openfeign-version>3.1.8</openfeign-version>
         <azure.data.table.version>12.3.18</azure.data.table.version>
         <azure.core.version>1.45.1</azure.core.version>
+        <shedlock.version>5.10.2</shedlock.version>
     </properties>
 
     <dependencies>
@@ -57,6 +58,10 @@
             <artifactId>springdoc-openapi-ui</artifactId>
             <version>${springdoc-version}</version>
         </dependency>
+        <dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-batch</artifactId>
+		</dependency>
         <!-- Start cosmos tables-->
         <dependency>
             <groupId>com.azure</groupId>
@@ -69,6 +74,18 @@
             <version>${azure.data.table.version}</version>
         </dependency>
         <!-- End cosmos tables -->
+        <!-- Start ShedLock -->
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-spring</artifactId>
+            <version>${shedlock.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-jdbc-template</artifactId>
+            <version>${shedlock.version}</version>
+        </dependency>
+        <!-- End ShedLock -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>

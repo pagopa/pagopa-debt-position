@@ -35,6 +35,7 @@ import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
 @Component
 @Slf4j
@@ -75,6 +76,7 @@ public class HistoricizationScheduler {
     
     
     @Scheduled(cron = "${cron.job.schedule.expression.historicization.debt.positions}")
+    @SchedulerLock(name = "HistoricizationScheduler_manageDebtPositionsToHistoricize", lockAtMostFor = "180m", lockAtLeastFor = "15m")
     @Async
     @Transactional
     public void manageDebtPositionsToHistoricize() throws JsonProcessingException, TableServiceException {
