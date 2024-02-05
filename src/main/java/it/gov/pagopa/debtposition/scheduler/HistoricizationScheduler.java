@@ -2,7 +2,6 @@ package it.gov.pagopa.debtposition.scheduler;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +11,6 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
-import javax.persistence.Query;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,19 +32,24 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
 @Component
 @Slf4j
-@ConditionalOnProperty(name = "cron.job.schedule.historicization.enabled", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "archiving-service", name = "cron.job.schedule.historicization.enabled", matchIfMissing = true)
+@NoArgsConstructor
 public class HistoricizationScheduler {
 
-    private static final String LOG_BASE_HEADER_INFO = "[OperationType: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
+	private static final String LOG_BASE_HEADER_INFO = "[OperationType: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
     private static final String CRON_JOB = "CRON JOB";
     private static final String METHOD = "manageDebtPositionsToHistoricize";
+    @Getter
     private Thread threadOfExecution;
-    private TableClient tableClient;
+    
+    
     
     // extraction params
     @Value("${cron.job.schedule.extraction.history.query:SELECT pp FROM PaymentPosition pp WHERE pp.status IN ('PAID', 'REPORTED', 'INVALID', 'EXPIRED') AND pp.lastUpdatedDate < ?1}")
@@ -74,14 +77,18 @@ public class HistoricizationScheduler {
     @PersistenceUnit
 	private EntityManagerFactory emf;
     
-    
+    public HistoricizationScheduler(PaymentPositionRepository paymentPositionRepository) {
+		super();
+		this.paymentPositionRepository = paymentPositionRepository;
+	}
+  
     @Scheduled(cron = "${cron.job.schedule.expression.historicization.debt.positions}")
     @SchedulerLock(name = "HistoricizationScheduler_manageDebtPositionsToHistoricize", lockAtMostFor = "180m", lockAtLeastFor = "15m")
     @Async
     @Transactional
     public void manageDebtPositionsToHistoricize() throws JsonProcessingException, TableServiceException {
     	log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
-    	EntityManager em = emf.createEntityManager();
+    	EntityManager em = this.getEntityManager();
     	LocalDateTime ldt = LocalDateTime.now().minusDays(extractionInterval);
     	List<PaymentPosition> ppList;
     	if (paginationMode) {
@@ -94,48 +101,33 @@ public class HistoricizationScheduler {
     					System.lineSeparator() +
     			        "Page number "+pageNumber+" has been extracted and contains "+ppList.size()+" occurrences"));
     			this.archivesDebtPositions(ppList);
+    			// archived debt positions are removed 
+    	    	paymentPositionRepository.deleteAll(ppList);
+    	    	log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "deleted n. "+ppList.size()+" archived debt positions"));
     		}
     	} else {
     		ppList = em.createQuery(extractionQuery, PaymentPosition.class).setParameter(1,ldt).getResultList(); 
-    		log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "Total entries extraction info: Number of extracted rows to historicize: " + ppList.size()));
+    		log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "Total entries historical extraction info: Number of extracted rows to historicize: " + ppList.size()));
     		this.archivesDebtPositions(ppList);
-    	}
-
-    	// historicized debt positions are removed 
-    	//paymentPositionRepository.deleteAll(ppList);
-    	log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "deleted historicized debt positions"));
+    		// archived debt positions are removed 
+        	paymentPositionRepository.deleteAll(ppList);
+        	log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "deleted n. "+ppList.size()+" archived debt positions"));
+    	}    	
     }
     
-    public Thread getThreadOfExecution() {
-        return this.threadOfExecution;
+    public EntityManager getEntityManager() {
+        return emf.createEntityManager();
     }
-
-	private void archivesDebtPositions(List<PaymentPosition> ppList) throws JsonProcessingException {
-		Map<String, List<PaymentPosition>> ppListByOrganizationFiscalCode = ppList.stream()
-                .collect(Collectors.groupingBy(p -> p.getOrganizationFiscalCode(), Collectors.mapping((PaymentPosition p) -> p, Collectors.toList())));
-    	
-    	ObjectMapper objectMapper = new ObjectMapper();
-    	objectMapper.registerModule(new JavaTimeModule());
-    	
-    	for (Entry<String, List<PaymentPosition>> entry : ppListByOrganizationFiscalCode.entrySet()) {
-            List<PaymentPosition> organizationPpList = ppListByOrganizationFiscalCode.get(entry.getKey());
-            for (PaymentPosition pp: organizationPpList) {
-            	pp.getPaymentOption().forEach(po -> {
-            		// write on azure table storage to persist the PO debt position info
-                	this.saveToPOTable(entry.getKey(), pp, po);
-            	});
-            	// write on azure table storage to persist the PP debt position info and json
-            	this.saveToPPTable(entry.getKey(), pp, objectMapper);
-            }
-            log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "archivesDebtPositions", "historicized n. "+organizationPpList.size()+" debt positions for the organization fiscal code: " +entry.getKey()));
-        }
-	}
     
-	private void saveToPOTable(String organizationFiscalCode, PaymentPosition pp, PaymentOption po) {
-		tableClient = new TableClientBuilder()
-			    .connectionString(archiveStorageConnection)
-			    .tableName(archiveStoragePOTable)
+    public TableClient getTableClient(String connectionString, String tableName) {
+    	return new TableClientBuilder()
+			    .connectionString(connectionString)
+			    .tableName(tableName)
 			    .buildClient();
+    }
+
+	public void saveToPOTable(String organizationFiscalCode, PaymentPosition pp, PaymentOption po) {
+	    TableClient tableClient = this.getTableClient(archiveStorageConnection, archiveStoragePOTable);
 		TableEntity tableEntity = new TableEntity(organizationFiscalCode, po.getIuv());
 		try {
 			Map<String, Object> properties = new HashMap<>();
@@ -156,12 +148,8 @@ public class HistoricizationScheduler {
 		}
 	}
 
-	private void saveToPPTable(String organizationFiscalCode, PaymentPosition pp, ObjectMapper objectMapper)
-			throws JsonProcessingException {
-		tableClient = new TableClientBuilder()
-			    .connectionString(archiveStorageConnection)
-			    .tableName(archiveStoragePPTable)
-			    .buildClient();
+	public void saveToPPTable(String organizationFiscalCode, PaymentPosition pp, ObjectMapper objectMapper) throws JsonProcessingException {
+		TableClient tableClient = this.getTableClient(archiveStorageConnection, archiveStoragePPTable);
 		TableEntity tableEntity = new TableEntity(organizationFiscalCode, pp.getIupd());
 		try {
 			Map<String, Object> properties = new HashMap<>();
@@ -179,5 +167,26 @@ public class HistoricizationScheduler {
 				throw e;
 			}
 		}
+	}
+	
+	private void archivesDebtPositions(List<PaymentPosition> ppList) throws JsonProcessingException {
+		Map<String, List<PaymentPosition>> ppListByOrganizationFiscalCode = ppList.stream()
+                .collect(Collectors.groupingBy(p -> p.getOrganizationFiscalCode(), Collectors.mapping((PaymentPosition p) -> p, Collectors.toList())));
+    	
+    	ObjectMapper objectMapper = new ObjectMapper();
+    	objectMapper.registerModule(new JavaTimeModule());
+    	
+    	for (Entry<String, List<PaymentPosition>> entry : ppListByOrganizationFiscalCode.entrySet()) {
+            List<PaymentPosition> organizationPpList = ppListByOrganizationFiscalCode.get(entry.getKey());
+            for (PaymentPosition pp: organizationPpList) {
+            	pp.getPaymentOption().forEach(po -> {
+            		// write on azure table storage to persist the PO debt position info
+                	this.saveToPOTable(entry.getKey(), pp, po);
+            	});
+            	// write on azure table storage to persist the PP debt position info and json
+            	this.saveToPPTable(entry.getKey(), pp, objectMapper);
+            }
+            log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "archivesDebtPositions", "historicized n. "+organizationPpList.size()+" debt positions for the organization fiscal code: " +entry.getKey()));
+        }
 	}
 }

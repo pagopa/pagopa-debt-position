@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter;
 
 @Component
 @Slf4j
-@ConditionalOnProperty(name = "cron.job.schedule.enabled", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "status-change-service", name = "cron.job.schedule.enabled", matchIfMissing = true)
 public class Scheduler {
 
     private static final String LOG_BASE_HEADER_INFO = "[OperationType: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
