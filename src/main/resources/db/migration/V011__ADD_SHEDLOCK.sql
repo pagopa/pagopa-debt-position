@@ -1,3 +1,5 @@
+-- see: https://www.springcloud.io/post/2022-07/shedlock/#gsc.tab=0 
+
 CREATE TABLE shedlock (
   name VARCHAR(64),
   lock_until TIMESTAMP(3) NULL,

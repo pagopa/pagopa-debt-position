@@ -15,7 +15,7 @@ import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 @Configuration
 @EnableScheduling
 @EnableAsync
-@EnableSchedulerLock(defaultLockAtMostFor = "5m")
+@EnableSchedulerLock(defaultLockAtMostFor = "${cron.job.schedule.history.shedlock.defaultlockatmostfor}")
 public class SchedulerConfig {
 	@Bean
     public LockProvider lockProvider(DataSource dataSource) {

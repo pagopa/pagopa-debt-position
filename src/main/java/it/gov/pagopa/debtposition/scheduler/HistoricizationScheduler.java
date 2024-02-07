@@ -39,7 +39,7 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
 @Component
 @Slf4j
-@ConditionalOnProperty(name = "cron.job.schedule.historicization.enabled", matchIfMissing = true)
+@ConditionalOnProperty(name = "cron.job.schedule.history.enabled", matchIfMissing = true)
 @NoArgsConstructor
 public class HistoricizationScheduler {
 
@@ -52,24 +52,24 @@ public class HistoricizationScheduler {
     
     
     // extraction params
-    @Value("${cron.job.schedule.extraction.history.query:SELECT pp FROM PaymentPosition pp WHERE pp.status IN ('PAID', 'REPORTED', 'INVALID', 'EXPIRED') AND pp.lastUpdatedDate < ?1}")
+    @Value("${cron.job.schedule.history.query:SELECT pp FROM PaymentPosition pp WHERE pp.status IN ('PAID', 'REPORTED', 'INVALID', 'EXPIRED') AND pp.lastUpdatedDate < ?1}")
     private String extractionQuery;
-    @Value("${cron.job.schedule.extraction.history.query.interval:365}")
+    @Value("${cron.job.schedule.history.query.interval:365}")
     private short extractionInterval;
     // extraction params: pagination mode
-    @Value("${cron.job.schedule.extraction.history.query.paginated:true}")
+    @Value("${cron.job.schedule.history.paginated:true}")
     private boolean paginationMode;
-    @Value("${cron.job.schedule.extraction.history.query.count:SELECT count(pp.id) FROM PaymentPosition pp WHERE pp.status IN ('PAID', 'REPORTED', 'INVALID', 'EXPIRED') AND pp.lastUpdatedDate < ?1}")
+    @Value("${cron.job.schedule.history.query.count:SELECT count(pp.id) FROM PaymentPosition pp WHERE pp.status IN ('PAID', 'REPORTED', 'INVALID', 'EXPIRED') AND pp.lastUpdatedDate < ?1}")
     private String countExtractionQuery;
-    @Value("${cron.job.schedule.extraction.history.query.page.size:100000}")
+    @Value("${cron.job.schedule.history.query.page.size:100000}")
     private int pageSize;
     
     // azure storage params
     @Value("${azure.archive.storage.connection}")
     private String archiveStorageConnection;
-    @Value("${azure.archive.storage.table.po:pagopadweugpsarchivesapaymentoptiontable}")
+    @Value("${azure.archive.storage.table.po:paymentoptiontable}")
     private String archiveStoragePOTable;
-    @Value("${azure.archive.storage.table.pp:pagopadweugpsarchivesapaymentpositiontable}")
+    @Value("${azure.archive.storage.table.pp:paymentpositiontable}")
     private String archiveStoragePPTable;
     
     @Autowired
@@ -82,8 +82,9 @@ public class HistoricizationScheduler {
 		this.paymentPositionRepository = paymentPositionRepository;
 	}
   
-    @Scheduled(cron = "${cron.job.schedule.expression.historicization.debt.positions}")
-    @SchedulerLock(name = "HistoricizationScheduler_manageDebtPositionsToHistoricize", lockAtMostFor = "180m", lockAtLeastFor = "15m")
+    @Scheduled(cron = "${cron.job.schedule.history.trigger}")
+    @SchedulerLock(name = "HistoricizationScheduler_manageDebtPositionsToHistoricize", lockAtMostFor = "${cron.job.schedule.history.shedlock.lockatmostfor}", 
+    lockAtLeastFor = "${cron.job.schedule.history.shedlock.lockatleastfor}")
     @Async
     @Transactional
     public void manageDebtPositionsToHistoricize() throws JsonProcessingException, TableServiceException {
@@ -126,7 +127,7 @@ public class HistoricizationScheduler {
 			    .buildClient();
     }
 
-	public void saveToPOTable(String organizationFiscalCode, PaymentPosition pp, PaymentOption po) {
+	public void upsertPOTable(String organizationFiscalCode, PaymentPosition pp, PaymentOption po) {
 	    TableClient tableClient = this.getTableClient(archiveStorageConnection, archiveStoragePOTable);
 		TableEntity tableEntity = new TableEntity(organizationFiscalCode, po.getIuv());
 		try {
@@ -148,7 +149,7 @@ public class HistoricizationScheduler {
 		}
 	}
 
-	public void saveToPPTable(String organizationFiscalCode, PaymentPosition pp, ObjectMapper objectMapper) throws JsonProcessingException {
+	public void upsertPPTable(String organizationFiscalCode, PaymentPosition pp, ObjectMapper objectMapper) throws JsonProcessingException {
 		TableClient tableClient = this.getTableClient(archiveStorageConnection, archiveStoragePPTable);
 		TableEntity tableEntity = new TableEntity(organizationFiscalCode, pp.getIupd());
 		try {
@@ -181,10 +182,10 @@ public class HistoricizationScheduler {
             for (PaymentPosition pp: organizationPpList) {
             	pp.getPaymentOption().forEach(po -> 
             		// write on azure table storage to persist the PO debt position info
-                	this.saveToPOTable(entry.getKey(), pp, po)
+                	this.upsertPOTable(entry.getKey(), pp, po)
             	);
             	// write on azure table storage to persist the PP debt position info and json
-            	this.saveToPPTable(entry.getKey(), pp, objectMapper);
+            	this.upsertPPTable(entry.getKey(), pp, objectMapper);
             }
             log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "archivesDebtPositions", "historicized n. "+organizationPpList.size()+" debt positions for the organization fiscal code: " +entry.getKey()));
         }

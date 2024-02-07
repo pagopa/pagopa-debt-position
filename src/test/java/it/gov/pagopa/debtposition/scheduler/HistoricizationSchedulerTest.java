@@ -76,14 +76,14 @@ class HistoricizationSchedulerTest {
 
 		TableClient tc = scheduler.getTableClient(archiveStorageConnection, "mockTable");
 		doReturn(tc).when(scheduler).getTableClient(any(), any());
-		doNothing().when(scheduler).saveToPOTable(any(), any(), any());
-		doNothing().when(scheduler).saveToPPTable(any(), any(), any());
+		doNothing().when(scheduler).upsertPOTable(any(), any(), any());
+		doNothing().when(scheduler).upsertPPTable(any(), any(), any());
 
 		// lancio il batch di archiviazione delle posizioni debitorie
 		scheduler.manageDebtPositionsToHistoricize();
 
-		verify(scheduler, times(1)).saveToPOTable(any(), any(), any());
-		verify(scheduler, times(1)).saveToPPTable(any(), any(), any());
+		verify(scheduler, times(1)).upsertPOTable(any(), any(), any());
+		verify(scheduler, times(1)).upsertPPTable(any(), any(), any());
 		verify(paymentPositionRepository, times(1)).deleteAll(any());
 	}
 
@@ -117,14 +117,14 @@ class HistoricizationSchedulerTest {
 
 		TableClient tc = scheduler.getTableClient(archiveStorageConnection, "mockTable");
 		doReturn(tc).when(scheduler).getTableClient(any(), any());
-		doNothing().when(scheduler).saveToPOTable(any(), any(), any());
-		doNothing().when(scheduler).saveToPPTable(any(), any(), any());
+		doNothing().when(scheduler).upsertPOTable(any(), any(), any());
+		doNothing().when(scheduler).upsertPPTable(any(), any(), any());
 
 		// lancio il batch di archiviazione delle posizioni debitorie
 		scheduler.manageDebtPositionsToHistoricize();
 
-		verify(scheduler, times(1)).saveToPOTable(any(), any(), any());
-		verify(scheduler, times(1)).saveToPPTable(any(), any(), any());
+		verify(scheduler, times(1)).upsertPOTable(any(), any(), any());
+		verify(scheduler, times(1)).upsertPPTable(any(), any(), any());
 		verify(paymentPositionRepository, times(1)).deleteAll(any());
 	}
 
@@ -158,15 +158,15 @@ class HistoricizationSchedulerTest {
 
 		TableClient tc = scheduler.getTableClient(archiveStorageConnection, "mockTable");
 		doReturn(tc).when(scheduler).getTableClient(any(), any());
-		doThrow(TableServiceException.class).when(scheduler).saveToPOTable(any(), any(), any());
+		doThrow(TableServiceException.class).when(scheduler).upsertPOTable(any(), any(), any());
 
 		try {
 			// lancio il batch di archiviazione delle posizioni debitorie
 			scheduler.manageDebtPositionsToHistoricize();
 			fail();
 		} catch (TableServiceException e) {
-			verify(scheduler, times(1)).saveToPOTable(any(), any(), any());
-			verify(scheduler, times(0)).saveToPPTable(any(), any(), any());
+			verify(scheduler, times(1)).upsertPOTable(any(), any(), any());
+			verify(scheduler, times(0)).upsertPPTable(any(), any(), any());
 			verify(paymentPositionRepository, times(0)).deleteAll(any());
 		}
 	}
@@ -208,8 +208,8 @@ class HistoricizationSchedulerTest {
 		// lancio il batch di archiviazione delle posizioni debitorie
 		scheduler.manageDebtPositionsToHistoricize();
 
-		verify(scheduler, times(1)).saveToPOTable(any(), any(), any());
-		verify(scheduler, times(1)).saveToPPTable(any(), any(), any());
+		verify(scheduler, times(1)).upsertPOTable(any(), any(), any());
+		verify(scheduler, times(1)).upsertPPTable(any(), any(), any());
 		// 2 creates and 2 updates one of both in saveToPOTable and in saveToPPTable
 		verify(tc, times(2)).createEntity(any());
 		verify(tc, times(2)).updateEntity(any());
@@ -255,9 +255,9 @@ class HistoricizationSchedulerTest {
 			scheduler.manageDebtPositionsToHistoricize();
 			fail();
 		} catch (TableServiceException e) {
-			verify(scheduler, times(1)).saveToPOTable(any(), any(), any());
+			verify(scheduler, times(1)).upsertPOTable(any(), any(), any());
 			verify(tc, times(1)).createEntity(any());
-			verify(scheduler, times(0)).saveToPPTable(any(), any(), any());
+			verify(scheduler, times(0)).upsertPPTable(any(), any(), any());
 			verify(paymentPositionRepository, times(0)).deleteAll(any());
 		}  
 	}
