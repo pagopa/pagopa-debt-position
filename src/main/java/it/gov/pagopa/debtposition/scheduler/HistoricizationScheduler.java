@@ -39,7 +39,7 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
 @Component
 @Slf4j
-@ConditionalOnProperty(prefix = "archiving-service", name = "cron.job.schedule.historicization.enabled", matchIfMissing = true)
+@ConditionalOnProperty(name = "cron.job.schedule.historicization.enabled", matchIfMissing = true)
 @NoArgsConstructor
 public class HistoricizationScheduler {
 
@@ -179,10 +179,10 @@ public class HistoricizationScheduler {
     	for (Entry<String, List<PaymentPosition>> entry : ppListByOrganizationFiscalCode.entrySet()) {
             List<PaymentPosition> organizationPpList = ppListByOrganizationFiscalCode.get(entry.getKey());
             for (PaymentPosition pp: organizationPpList) {
-            	pp.getPaymentOption().forEach(po -> {
+            	pp.getPaymentOption().forEach(po -> 
             		// write on azure table storage to persist the PO debt position info
-                	this.saveToPOTable(entry.getKey(), pp, po);
-            	});
+                	this.saveToPOTable(entry.getKey(), pp, po)
+            	);
             	// write on azure table storage to persist the PP debt position info and json
             	this.saveToPPTable(entry.getKey(), pp, objectMapper);
             }
