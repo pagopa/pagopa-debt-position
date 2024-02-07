@@ -39,7 +39,7 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
 @Component
 @Slf4j
-@ConditionalOnProperty(prefix = "archiving-service", name = "cron.job.schedule.historicization.enabled", matchIfMissing = true)
+@ConditionalOnProperty(name = "cron.job.schedule.historicization.enabled", matchIfMissing = true)
 @NoArgsConstructor
 public class HistoricizationScheduler {
 
