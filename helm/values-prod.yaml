@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.11.1"
+    tag: "0.11.1-2-PAGOPA-1436-infra-use-dns-pgflex-for-bcdr"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -133,7 +133,7 @@ microservice-chart:
             namespaces: ["gps"]
             topologyKey: topology.kubernetes.io/zone
   canaryDelivery:
-    create: true
+    create: false
     ingress:
       create: true
       canary:
