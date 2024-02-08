@@ -19,7 +19,7 @@ import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 public class SchedulerConfig {
 	@Bean
     public LockProvider lockProvider(DataSource dataSource) {
-        return new JdbcTemplateLockProvider(dataSource);
+        return new JdbcTemplateLockProvider(dataSource, "apd.shedlock");
     }
 
 }
