@@ -11,7 +11,7 @@
     </parent>
     <groupId>it.gov.pagopa.debtposition</groupId>
     <artifactId>gpd</artifactId>
-    <version>0.11.1-2-PAGOPA-1436-infra-use-dns-pgflex-for-bcdr</version>
+    <version>0.11.1-4-PAGOPA-1488-renewal-debt-positions</version>
     <name>Gestione Posizioni Debitorie</name>
     <description>Progetto Gestione Posizioni Debitorie</description>
     <properties>
@@ -21,6 +21,10 @@
         <jackson-datatype-jsr310-version>2.13.1</jackson-datatype-jsr310-version>
         <flyway-version>8.5.10</flyway-version>
         <openfeign-version>3.1.8</openfeign-version>
+        <azure.data.table.version>12.3.18</azure.data.table.version>
+        <azure.core.version>1.45.1</azure.core.version>
+        <shedlock.version>5.10.2</shedlock.version>
+        <mockito-inline.version>5.2.0</mockito-inline.version>
     </properties>
 
     <dependencies>
@@ -56,6 +60,34 @@
             <version>${springdoc-version}</version>
         </dependency>
         <dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-batch</artifactId>
+		</dependency>
+        <!-- Start cosmos tables-->
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-core</artifactId>
+            <version>${azure.core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-data-tables</artifactId>
+            <version>${azure.data.table.version}</version>
+        </dependency>
+        <!-- End cosmos tables -->
+        <!-- Start ShedLock -->
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-spring</artifactId>
+            <version>${shedlock.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-jdbc-template</artifactId>
+            <version>${shedlock.version}</version>
+        </dependency>
+        <!-- End ShedLock -->
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
@@ -89,6 +121,13 @@
         <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- overriding the managed version of mockito for mocking final classes -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-inline</artifactId>
+            <version>${mockito-inline.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

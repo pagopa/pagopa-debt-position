@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.11.1-2-PAGOPA-1436-infra-use-dns-pgflex-for-bcdr"
+    tag: "0.11.1-4-PAGOPA-1488-renewal-debt-positions"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -85,7 +85,7 @@ microservice-chart:
   envConfig:
     WEBSITE_SITE_NAME: 'pagopa-u-gpd-core-service'
     ENV: 'Azure Kubernetes'
-    SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.u.internal.postgresql.pagopa.it:6432/apd?sslmode=require&prepareThreshold=0"
+    SPRING_DATASOURCE_URL: "jdbc:postgresql://pagopa-u-gpd-pgflex.postgres.database.azure.com:6432/apd?sslmode=require&prepareThreshold=0"
     SPRING_DATASOURCE_TYPE: "org.springframework.jdbc.datasource.SimpleDriverDataSource"
     SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
     SPRING_JPA_HIBERNATE_SHOW_SQL: "false"
@@ -93,6 +93,18 @@ microservice-chart:
     CRON_JOB_SCHEDULE_ENABLED: "true"
     CRON_JOB_SCHEDULE_EXPRESSION_TO_VALID: "0 */10 * * * *"
     CRON_JOB_SCHEDULE_EXPRESSION_TO_EXPIRED: "0 */20 * * * *"
+    CRON_JOB_SCHEDULE_HISTORY_ENABLED: "false"
+    CRON_JOB_SCHEDULE_HISTORY_TRIGGER: "0 */45 * * * *"
+    CRON_JOB_SCHEDULE_HISTORY_QUERY: "SELECT pp FROM PaymentPosition pp WHERE pp.status IN ('PAID', 'REPORTED', 'INVALID', 'EXPIRED') AND pp.lastUpdatedDate < ?1"
+    CRON_JOB_SCHEDULE_HISTORY_PAGINATED: "true"
+    CRON_JOB_SCHEDULE_HISTORY_QUERY_COUNT: "SELECT count(pp.id) FROM PaymentPosition pp WHERE pp.status IN ('PAID', 'REPORTED', 'INVALID', 'EXPIRED') AND pp.lastUpdatedDate < ?1"
+    CRON_JOB_SCHEDULE_HISTORY_QUERY_PAGE_SIZE: "100000"
+    CRON_JOB_SCHEDULE_HISTORY_QUERY_INTERVAL: "90"
+    CRON_JOB_SCHEDULE_HISTORY_SHEDLOCK_DEFAULTLOCKATMOSTFOR: "5m"
+    CRON_JOB_SCHEDULE_HISTORY_SHEDLOCK_LOCKATMOSTFOR: "30m"
+    CRON_JOB_SCHEDULE_HISTORY_SHEDLOCK_LOCKATLEASTFOR: "5m"
+    GPD_ARCHIVE_SA_PO_TABLE: "paymentoptiontable"
+    GPD_ARCHIVE_SA_PP_TABLE: "paymentpositiontable"
     AUX_DIGIT: "3"
     NODE_HOST: "https://api.uat.platform.pagopa.it"
     NODE_CHECK_POSITION_PATH: "/nodo/nodo-per-pm/v1/checkPosition"
@@ -109,6 +121,7 @@ microservice-chart:
     SPRING_DATASOURCE_PASSWORD: "db-apd-user-password"
     SPRING_DATASOURCE_USERNAME: "db-apd-user-name"
     NODE_SUBSCRIPTION_KEY: "gpd-u-node-subscription-key"
+    GPD_ARCHIVE_SA_CONNECTION_STRING: "gpd-archive-u-sa-connection-string"
   keyvault:
     name: "pagopa-u-gps-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
@@ -138,7 +151,7 @@ microservice-chart:
       create: true
       image:
         repository: ghcr.io/pagopa/pagopa-debt-position
-        tag: "0.11.1-1-PAGOPA-1436-infra-use-dns-pgflex-for-bcdr"
+        tag: "0.9.0"
         pullPolicy: Always
       envConfig: {}
       envSecret: {}
