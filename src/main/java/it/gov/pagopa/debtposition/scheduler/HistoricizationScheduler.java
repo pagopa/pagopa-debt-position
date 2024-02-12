@@ -96,7 +96,7 @@ public class HistoricizationScheduler {
     		int numOfPages = (int)Math.ceil((float)countResult/pageSize);
     		for (int pageNumber=0; pageNumber<numOfPages; pageNumber++) {
     			ppList = em.createQuery(extractionQuery, PaymentPosition.class).setParameter(1,ldt).setFirstResult((pageNumber) * pageSize).setMaxResults(pageSize).getResultList();
-    			log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, 
+    			log.debug(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, 
     					"Paginated historical extraction info: Found n. "+countResult+" debt positions to archive splitted on n. "+numOfPages+" of pages. " + 
     					System.lineSeparator() +
     			        "Page number "+pageNumber+" has been extracted and contains "+ppList.size()+" occurrences"));
@@ -107,7 +107,7 @@ public class HistoricizationScheduler {
     		}
     	} else {
     		ppList = em.createQuery(extractionQuery, PaymentPosition.class).setParameter(1,ldt).getResultList(); 
-    		log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "Total entries historical extraction info: Number of extracted rows to historicize: " + ppList.size()));
+    		log.debug(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "Total entries historical extraction info: Number of extracted rows to historicize: " + ppList.size()));
     		this.archivesDebtPositions(ppList);
     		// archived debt positions are removed 
         	paymentPositionRepository.deleteAll(ppList);
@@ -186,7 +186,7 @@ public class HistoricizationScheduler {
             	// write on azure table storage to persist the PP debt position info and json
             	this.saveToPPTable(entry.getKey(), pp, objectMapper);
             }
-            log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "archivesDebtPositions", "historicized n. "+organizationPpList.size()+" debt positions for the organization fiscal code: " +entry.getKey()));
+            log.debug(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "archivesDebtPositions", "historicized n. "+organizationPpList.size()+" debt positions for the organization fiscal code: " +entry.getKey()));
         }
 	}
 }
