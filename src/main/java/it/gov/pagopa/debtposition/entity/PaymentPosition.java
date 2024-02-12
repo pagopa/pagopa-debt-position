@@ -10,6 +10,10 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,6 +36,7 @@ import java.util.List;
         },
         indexes = @Index(name = "payment_position_status_validity_date_idx", columnList = "status, validity_date")
 )
+@JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="@paymentPositionId")
 public class PaymentPosition implements Serializable {
 
 

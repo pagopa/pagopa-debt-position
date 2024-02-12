@@ -4,6 +4,7 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 
 @Component
 @Slf4j
+@ConditionalOnProperty(name = "cron.job.schedule.enabled", matchIfMissing = true)
 public class Scheduler {
 
     private static final String LOG_BASE_HEADER_INFO = "[OperationType: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
@@ -34,6 +36,7 @@ public class Scheduler {
         this.threadOfExecution = Thread.currentThread();
     }
 
+    
     @Scheduled(cron = "${cron.job.schedule.expression.expired.status}")
     @Async
     @Transactional
@@ -44,6 +47,7 @@ public class Scheduler {
         log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "changeDebtPositionStatusToExpired", "Number of updated rows " + numAffectedRows));
         this.threadOfExecution = Thread.currentThread();
     }
+    
 
     public Thread getThreadOfExecution() {
         return this.threadOfExecution;
