@@ -105,6 +105,7 @@ microservice-chart:
     CRON_JOB_SCHEDULE_HISTORY_SHEDLOCK_LOCKATLEASTFOR: "5m"
     GPD_ARCHIVE_SA_PO_TABLE: "paymentoptiontable"
     GPD_ARCHIVE_SA_PP_TABLE: "paymentpositiontable"
+    GPD_ARCHIVE_BATCH_OPERATION_SIZE: "100"
     AUX_DIGIT: "3"
     NODE_HOST: "https://api.uat.platform.pagopa.it"
     NODE_CHECK_POSITION_PATH: "/nodo/nodo-per-pm/v1/checkPosition"
