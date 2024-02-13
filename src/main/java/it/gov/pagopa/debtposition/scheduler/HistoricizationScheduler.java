@@ -23,7 +23,6 @@ import org.springframework.stereotype.Component;
 import com.azure.data.tables.TableClient;
 import com.azure.data.tables.TableClientBuilder;
 import com.azure.data.tables.models.TableEntity;
-import com.azure.data.tables.models.TableErrorCode;
 import com.azure.data.tables.models.TableServiceException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -136,17 +135,11 @@ public class HistoricizationScheduler {
 			properties.put("PaymentDate", po.getPaymentDate());
 			properties.put("IUPD", pp.getIupd());
 			tableEntity.setProperties(properties);
-			tableClient.createEntity(tableEntity);
+			tableClient.upsertEntity(tableEntity);
 		} catch (TableServiceException e) {
-			if (e.getValue().getErrorCode() == TableErrorCode.ENTITY_ALREADY_EXISTS) {
-				log.warn(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "saveToPOTable",
-						TableErrorCode.ENTITY_ALREADY_EXISTS + " managed error while storing the table information [organizationFiscalCode="+organizationFiscalCode+", iuv="+po.getIuv()+"]"), e);
-				tableClient.updateEntity(tableEntity);
-			} else {
-				log.error(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "saveToPOTable",
+			log.error(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "saveToPOTable",
 						"error while storing the table information [organizationFiscalCode="+organizationFiscalCode+", iuv="+po.getIuv()+"]"), e);
-				throw e;
-			}
+			throw e;
 		}
 	}
 
@@ -157,17 +150,11 @@ public class HistoricizationScheduler {
 			Map<String, Object> properties = new HashMap<>();
 			properties.put("PaymentPosition", objectMapper.writeValueAsString(pp));
 			tableEntity.setProperties(properties);
-			tableClient.createEntity(tableEntity);
+			tableClient.upsertEntity(tableEntity);
 		} catch (TableServiceException e) {
-			if (e.getValue().getErrorCode() == TableErrorCode.ENTITY_ALREADY_EXISTS) {
-				log.warn(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "saveToPPTable",
-						TableErrorCode.ENTITY_ALREADY_EXISTS + " managed error while storing the table information [organizationFiscalCode="+organizationFiscalCode+", iupd="+pp.getIupd()+"]"), e);
-				tableClient.updateEntity(tableEntity);
-			} else {
-				log.error(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "saveToPPTable",
-						"error while storing the table information [organizationFiscalCode="+organizationFiscalCode+", iupd="+pp.getIupd()+"]"), e);
-				throw e;
-			}
+			log.error(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "saveToPPTable",
+					"error while storing the table information [organizationFiscalCode="+organizationFiscalCode+", iupd="+pp.getIupd()+"]"), e);
+			throw e;
 		}
 	}
 	

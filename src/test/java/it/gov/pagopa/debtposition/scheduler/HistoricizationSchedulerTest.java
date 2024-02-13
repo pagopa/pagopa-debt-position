@@ -211,8 +211,7 @@ class HistoricizationSchedulerTest {
 		verify(scheduler, times(1)).upsertPOTable(any(), any(), any());
 		verify(scheduler, times(1)).upsertPPTable(any(), any(), any());
 		// 2 creates and 2 updates one of both in saveToPOTable and in saveToPPTable
-		verify(tc, times(2)).createEntity(any());
-		verify(tc, times(2)).updateEntity(any());
+		verify(tc, times(2)).upsertEntity(any());
 		verify(paymentPositionRepository, times(1)).deleteAll(any());
 	}
 
@@ -248,7 +247,7 @@ class HistoricizationSchedulerTest {
 		TableServiceException tsExc = new TableServiceException("", mock(HttpResponse.class), tsErr); 
 		TableClient tc = mock(TableClient.class);
 		doReturn(tc).when(scheduler).getTableClient(any(), any());
-		doThrow(tsExc).when(tc).createEntity(any());
+		doThrow(tsExc).when(tc).upsertEntity(any());
 
 		try {
 			// lancio il batch di archiviazione delle posizioni debitorie
@@ -256,7 +255,7 @@ class HistoricizationSchedulerTest {
 			fail();
 		} catch (TableServiceException e) {
 			verify(scheduler, times(1)).upsertPOTable(any(), any(), any());
-			verify(tc, times(1)).createEntity(any());
+			verify(tc, times(1)).upsertEntity(any());
 			verify(scheduler, times(0)).upsertPPTable(any(), any(), any());
 			verify(paymentPositionRepository, times(0)).deleteAll(any());
 		}  
