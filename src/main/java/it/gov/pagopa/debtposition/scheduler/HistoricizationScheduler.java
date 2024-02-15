@@ -1,11 +1,9 @@
 package it.gov.pagopa.debtposition.scheduler;
 
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,7 +18,6 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -76,8 +73,8 @@ public class HistoricizationScheduler {
     private String archiveStoragePOTable;
     @Value("${azure.archive.storage.table.pp:paymentpositiontable}")
     private String archiveStoragePPTable;
-    @Value("${azure.archive.storage.batch.operation.size:500}")
-    private short batchOperationSize;
+    @Value("${azure.archive.storage.batch.operation.size:100}")
+    private short maxBatchOperationSize;
     
     @Autowired
     private PaymentPositionRepository paymentPositionRepository;
@@ -102,7 +99,7 @@ public class HistoricizationScheduler {
     		int numOfPages = (int)Math.ceil((float)countResult/pageSize);
     		for (int pageNumber=0; pageNumber<numOfPages; pageNumber++) {
     			ppList = em.createQuery(extractionQuery, PaymentPosition.class).setParameter(1,ldt).setFirstResult((pageNumber) * pageSize).setMaxResults(pageSize).getResultList();
-    			log.debug(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, 
+    			log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, 
     					"Paginated historical extraction info: Found n. "+countResult+" debt positions to archive splitted on n. "+numOfPages+" of pages. " + 
     					System.lineSeparator() +
     			        "Page number "+pageNumber+" has been extracted and contains "+ppList.size()+" occurrences"));
@@ -120,26 +117,23 @@ public class HistoricizationScheduler {
         return emf.createEntityManager();
     }
     
-    /*
-    public TableClient getTableClient(String connectionString, String tableName) {
-    	return new TableClientBuilder()
-			    .connectionString(connectionString)
-			    .tableName(tableName)
-			    .buildClient();
-    }*/
+    
+    public CloudTable getCloudTableClient(String connectionString, String tableName) throws InvalidKeyException, URISyntaxException, StorageException {
+    	return CloudStorageAccount.parse(connectionString).createCloudTableClient()
+				.getTableReference(tableName);
+    }
 
     public void upsertPOTable(List<PaymentPosition> organizationPpList/*String organizationFiscalCode, PaymentPosition pp, PaymentOption po*/) throws InvalidKeyException, URISyntaxException, StorageException {
     	TableBatchOperation batchOperation = new TableBatchOperation();
     	short numOfBatchOperations = 0;
     	try {
-    		CloudTable poTable = CloudStorageAccount.parse(archiveStorageConnection).createCloudTableClient()
-    				.getTableReference(this.archiveStoragePOTable);
+    		CloudTable poTable = this.getCloudTableClient(archiveStorageConnection, archiveStoragePOTable);
     		for (int i=0; i<organizationPpList.size(); i++) {
     			PaymentPosition pp = organizationPpList.get(i);
     			for (int j=0; j<pp.getPaymentOption().size(); j++) {
     				PaymentOption po = pp.getPaymentOption().get(j);
     				// bulk operation to persist the PO debt position info
-    				if (numOfBatchOperations < batchOperationSize - 1 && i < organizationPpList.size() - 1) {
+    				if (numOfBatchOperations < maxBatchOperationSize - 1 && i < organizationPpList.size() - 1) {
     					batchOperation.insertOrMerge(
     							new POEntity(pp.getOrganizationFiscalCode(), po.getIuv(), pp.getIupd(), 
     									Optional.ofNullable(po.getPaymentDate()).map(o -> o.format(DateTimeFormatter.ISO_DATE_TIME)).orElse(null))
@@ -164,40 +158,20 @@ public class HistoricizationScheduler {
 
     	} catch (StorageException e) {
     		log.error(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "upsertPOTable",
-    				"error while storing the table information [batchOperationSize="+batchOperationSize+", numOfBatchOperations="+numOfBatchOperations+", errorCode="+e.getErrorCode()+", statusCode="+e.getHttpStatusCode()+", message="+e.getMessage()+"]"), e);
+    				"error while storing the table information [maxBatchOperationSize="+maxBatchOperationSize+", executedBlockSize="+batchOperation.size()+", errorCode="+e.getErrorCode()+", statusCode="+e.getHttpStatusCode()+", message="+e.getMessage()+"]"), e);
     		throw e;
     	}
-
-
-    	/*
-		TableBatchOperation batchOperation = new TableBatchOperation();
-		/*
-	    TableClient tableClient = this.getTableClient(archiveStorageConnection, archiveStoragePOTable);
-		TableEntity tableEntity = new TableEntity(organizationFiscalCode, po.getIuv());
-		try {
-			Map<String, Object> properties = new HashMap<>();
-			properties.put("PaymentDate", po.getPaymentDate());
-			properties.put("IUPD", pp.getIupd());
-			tableEntity.setProperties(properties);
-			tableClient.upsertEntity(tableEntity);
-		} catch (TableServiceException e) {
-			log.error(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "saveToPOTable",
-						"error while storing the table information [organizationFiscalCode="+organizationFiscalCode+", iuv="+po.getIuv()+"]"), e);
-			throw e;
-		}
-    	 */
     }
 
     public void upsertPPTable(List<PaymentPosition> organizationPpList,/*String organizationFiscalCode, PaymentPosition pp,*/ ObjectMapper objectMapper) throws JsonProcessingException, InvalidKeyException, URISyntaxException, StorageException {
     	TableBatchOperation batchOperation = new TableBatchOperation();
     	short numOfBatchOperations = 0;
     	try {
-    		CloudTable ppTable = CloudStorageAccount.parse(archiveStorageConnection).createCloudTableClient()
-    				.getTableReference(this.archiveStoragePPTable);
+    		CloudTable ppTable = this.getCloudTableClient(archiveStorageConnection, archiveStoragePPTable);
     		for (int i=0; i<organizationPpList.size(); i++) {
     			PaymentPosition pp = organizationPpList.get(i);
     			// bulk operation to persist the PO debt position info
-    			if (numOfBatchOperations < batchOperationSize - 1 && i < organizationPpList.size() - 1) {
+    			if (numOfBatchOperations < maxBatchOperationSize - 1 && i < organizationPpList.size() - 1) {
     				batchOperation.insertOrMerge(
     						new PPEntity(pp.getOrganizationFiscalCode(), pp.getIupd(), objectMapper.writeValueAsString(pp)));
     				numOfBatchOperations++;
@@ -215,29 +189,16 @@ public class HistoricizationScheduler {
 
     	} catch (StorageException e) {
     		log.error(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "upsertPPTable",
-    				"error while storing the table information [batchOperationSize="+batchOperationSize+", numOfBatchOperations="+numOfBatchOperations+", errorCode="+e.getErrorCode()+", statusCode="+e.getHttpStatusCode()+", message="+e.getMessage()+"]"), e);
+    				"error while storing the table information [maxBatchOperationSize="+maxBatchOperationSize+", executedBlockSize="+batchOperation.size()+", errorCode="+e.getErrorCode()+", statusCode="+e.getHttpStatusCode()+", message="+e.getMessage()+"]"), e);
     		throw e;
     	}
-    	/*
-		TableClient tableClient = this.getTableClient(archiveStorageConnection, archiveStoragePPTable);
-		TableEntity tableEntity = new TableEntity(organizationFiscalCode, pp.getIupd());
-		try {
-			Map<String, Object> properties = new HashMap<>();
-			properties.put("PaymentPosition", objectMapper.writeValueAsString(pp));
-			tableEntity.setProperties(properties);
-			tableClient.upsertEntity(tableEntity);
-		} catch (TableServiceException e) {
-			log.error(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "saveToPPTable",
-					"error while storing the table information [organizationFiscalCode="+organizationFiscalCode+", iupd="+pp.getIupd()+"]"), e);
-			throw e;
-		}*/
     }
     
     @Transactional
     private void archiveAndDeleteDebtPositions(List<PaymentPosition> ppList)
 			throws JsonProcessingException, InvalidKeyException, URISyntaxException, StorageException {
 		this.archivesDebtPositions(ppList);
-		// archived debt positions are removed (flush is called to synchronize immediately the deletion managed by persistence context with the underlying database)
+		// archived debt positions are removed
 		paymentPositionRepository.deleteAll(ppList);
 		log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "archiveAndDeleteDebtPositions", "deleted n. "+ppList.size()+" archived debt positions"));
 	}
@@ -253,16 +214,7 @@ public class HistoricizationScheduler {
             List<PaymentPosition> organizationPpList = ppListByOrganizationFiscalCode.get(entry.getKey());
             this.upsertPOTable(organizationPpList);
             this.upsertPPTable(organizationPpList, objectMapper);
-            /*
-            for (PaymentPosition pp: organizationPpList) {
-            	pp.getPaymentOption().forEach(po -> 
-            		// write on azure table storage to persist the PO debt position info
-                	this.upsertPOTable(entry.getKey(), pp, po)
-            	);
-            	// write on azure table storage to persist the PP debt position info and json
-            	this.upsertPPTable(entry.getKey(), pp, objectMapper);
-            }*/
-            log.debug(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "archivesDebtPositions", "historicized n. "+organizationPpList.size()+" debt positions for the organization fiscal code: " +entry.getKey()));
+            log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "archivesDebtPositions", "historicized n. "+organizationPpList.size()+" debt positions for the organization fiscal code: " +entry.getKey()));
         }
 	}
 }
