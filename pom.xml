@@ -70,7 +70,6 @@
             <artifactId>azure-storage</artifactId>
             <version>${azure.storage.table.version}</version>
         </dependency>
-        <!--  
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-core</artifactId>
@@ -81,7 +80,6 @@
             <artifactId>azure-data-tables</artifactId>
             <version>${azure.data.table.version}</version>
         </dependency>
-        -->
         <!-- End azure tables -->
         <!-- Start ShedLock -->
         <dependency>

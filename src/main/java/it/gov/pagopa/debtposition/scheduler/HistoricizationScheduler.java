@@ -4,10 +4,11 @@ import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
@@ -21,6 +22,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.azure.data.tables.TableClient;
+import com.azure.data.tables.TableClientBuilder;
+import com.azure.data.tables.models.TableEntity;
+import com.azure.data.tables.models.TableTransactionAction;
+import com.azure.data.tables.models.TableTransactionActionType;
+import com.azure.data.tables.models.TableTransactionFailedException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -29,7 +36,6 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
 import com.microsoft.azure.storage.table.TableBatchOperation;
 
-import it.gov.pagopa.debtposition.azure.storage.entity.POEntity;
 import it.gov.pagopa.debtposition.azure.storage.entity.PPEntity;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
@@ -99,7 +105,7 @@ public class HistoricizationScheduler {
     		int numOfPages = (int)Math.ceil((float)countResult/pageSize);
     		for (int pageNumber=0; pageNumber<numOfPages; pageNumber++) {
     			ppList = em.createQuery(extractionQuery, PaymentPosition.class).setParameter(1,ldt).setFirstResult((pageNumber) * pageSize).setMaxResults(pageSize).getResultList();
-    			log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, 
+    			log.debug(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, 
     					"Paginated historical extraction info: Found n. "+countResult+" debt positions to archive splitted on n. "+numOfPages+" of pages. " + 
     					System.lineSeparator() +
     			        "Page number "+pageNumber+" has been extracted and contains "+ppList.size()+" occurrences"));
@@ -122,8 +128,57 @@ public class HistoricizationScheduler {
     	return CloudStorageAccount.parse(connectionString).createCloudTableClient()
 				.getTableReference(tableName);
     }
+    
+    public TableClient getTableClient(String connectionString, String tableName) {
+    	return new TableClientBuilder()
+			    .connectionString(connectionString)
+			    .tableName(tableName)
+			    .buildClient();
+    }
 
-    public void upsertPOTable(List<PaymentPosition> organizationPpList/*String organizationFiscalCode, PaymentPosition pp, PaymentOption po*/) throws InvalidKeyException, URISyntaxException, StorageException {
+    public void upsertPOTable(List<PaymentPosition> organizationPpList/*String organizationFiscalCode, PaymentPosition pp, PaymentOption po*/)  {
+    	
+    	TableClient tc = this.getTableClient(archiveStorageConnection, archiveStoragePOTable);
+    	var transactionActions = new ArrayList<TableTransactionAction>();
+    	
+    	short numOfBatchOperations = 0;
+    	try {
+    		for (int i=0; i<organizationPpList.size(); i++) {
+    			PaymentPosition pp = organizationPpList.get(i);
+    			for (int j=0; j<pp.getPaymentOption().size(); j++) {
+    				PaymentOption po = pp.getPaymentOption().get(j);
+    				// bulk operation to persist the PO debt position info
+    				if (numOfBatchOperations < maxBatchOperationSize - 1 && i < organizationPpList.size() - 1) {
+    					TableEntity tableEntity = new TableEntity(pp.getOrganizationFiscalCode(), po.getIuv());
+    					Map<String, Object> properties = new HashMap<>();
+    					properties.put("PaymentDate", po.getPaymentDate());
+    					properties.put("IUPD", pp.getIupd());
+    					tableEntity.setProperties(properties);
+    					transactionActions.add(new TableTransactionAction(TableTransactionActionType.UPSERT_MERGE, tableEntity));
+    					numOfBatchOperations++;
+    				} else {
+    					TableEntity tableEntity = new TableEntity(pp.getOrganizationFiscalCode(), po.getIuv());
+    					Map<String, Object> properties = new HashMap<>();
+    					properties.put("PaymentDate", po.getPaymentDate());
+    					properties.put("IUPD", pp.getIupd());
+    					tableEntity.setProperties(properties);
+    					transactionActions.add(new TableTransactionAction(TableTransactionActionType.UPSERT_MERGE, tableEntity));
+    					tc.submitTransaction(transactionActions);
+    					log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "upsertPOTable", 
+    							"block of n. " + transactionActions.size() + " items are upserted to a total of " + organizationPpList.size() +" for the organization fiscal code "+pp.getOrganizationFiscalCode()));
+    					// reset for a new bulk operation
+    					transactionActions = new ArrayList<TableTransactionAction>();
+    					numOfBatchOperations = 0;
+    				}
+    			}
+    		}
+    		
+    	} catch (TableTransactionFailedException e) {
+    		log.error(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "upsertPOTable",
+    				"error while storing the table information [maxBatchOperationSize="+maxBatchOperationSize+", executedBlockSize="+transactionActions.size()+", message="+e.getMessage()+"]"), e);
+    		throw e;
+    	}
+    	/*
     	TableBatchOperation batchOperation = new TableBatchOperation();
     	short numOfBatchOperations = 0;
     	try {
@@ -161,6 +216,7 @@ public class HistoricizationScheduler {
     				"error while storing the table information [maxBatchOperationSize="+maxBatchOperationSize+", executedBlockSize="+batchOperation.size()+", errorCode="+e.getErrorCode()+", statusCode="+e.getHttpStatusCode()+", message="+e.getMessage()+"]"), e);
     		throw e;
     	}
+    	*/
     }
 
     public void upsertPPTable(List<PaymentPosition> organizationPpList,/*String organizationFiscalCode, PaymentPosition pp,*/ ObjectMapper objectMapper) throws JsonProcessingException, InvalidKeyException, URISyntaxException, StorageException {
