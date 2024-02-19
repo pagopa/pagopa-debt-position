@@ -34,9 +34,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
-import com.microsoft.azure.storage.table.TableBatchOperation;
 
-import it.gov.pagopa.debtposition.azure.storage.entity.PPEntity;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
@@ -220,7 +218,45 @@ public class HistoricizationScheduler {
     }
 
     public void upsertPPTable(List<PaymentPosition> organizationPpList,/*String organizationFiscalCode, PaymentPosition pp,*/ ObjectMapper objectMapper) throws JsonProcessingException, InvalidKeyException, URISyntaxException, StorageException {
-    	TableBatchOperation batchOperation = new TableBatchOperation();
+    	TableClient tc = this.getTableClient(archiveStorageConnection, archiveStoragePPTable);
+    	var transactionActions = new ArrayList<TableTransactionAction>();
+
+    	short numOfBatchOperations = 0;
+    	try {
+    		for (int i=0; i<organizationPpList.size(); i++) {
+    			PaymentPosition pp = organizationPpList.get(i);
+    			// bulk operation to persist the PP debt position info
+    			if (numOfBatchOperations < maxBatchOperationSize - 1 && i < organizationPpList.size() - 1) {
+    				TableEntity tableEntity = new TableEntity(pp.getOrganizationFiscalCode(), pp.getIupd());
+    				Map<String, Object> properties = new HashMap<>();
+    				properties.put("PaymentPosition", objectMapper.writeValueAsString(pp));
+    				tableEntity.setProperties(properties);
+    				transactionActions.add(new TableTransactionAction(TableTransactionActionType.UPSERT_MERGE, tableEntity));
+    				numOfBatchOperations++;
+    			} else {
+    				TableEntity tableEntity = new TableEntity(pp.getOrganizationFiscalCode(), pp.getIupd());
+    				Map<String, Object> properties = new HashMap<>();
+    				properties.put("PaymentPosition", objectMapper.writeValueAsString(pp));
+    				tableEntity.setProperties(properties);
+    				transactionActions.add(new TableTransactionAction(TableTransactionActionType.UPSERT_MERGE, tableEntity));
+    				tc.submitTransaction(transactionActions);
+    				log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "upsertPPTable", 
+    						"block of n. " + transactionActions.size() + " items are upserted to a total of " + organizationPpList.size() +" for the organization fiscal code "+pp.getOrganizationFiscalCode()));
+    				// reset for a new bulk operation
+    				transactionActions = new ArrayList<TableTransactionAction>();
+    				numOfBatchOperations = 0;
+    			}
+
+    		}
+
+    	} catch (TableTransactionFailedException e) {
+    		log.error(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "upsertPPTable",
+    				"error while storing the table information [maxBatchOperationSize="+maxBatchOperationSize+", executedBlockSize="+transactionActions.size()+", message="+e.getMessage()+"]"), e);
+    		throw e;
+    	}
+    	
+    	
+    	/*TableBatchOperation batchOperation = new TableBatchOperation();
     	short numOfBatchOperations = 0;
     	try {
     		CloudTable ppTable = this.getCloudTableClient(archiveStorageConnection, archiveStoragePPTable);
@@ -247,7 +283,7 @@ public class HistoricizationScheduler {
     		log.error(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "upsertPPTable",
     				"error while storing the table information [maxBatchOperationSize="+maxBatchOperationSize+", executedBlockSize="+batchOperation.size()+", errorCode="+e.getErrorCode()+", statusCode="+e.getHttpStatusCode()+", message="+e.getMessage()+"]"), e);
     		throw e;
-    	}
+    	}*/
     }
     
     @Transactional
@@ -255,7 +291,7 @@ public class HistoricizationScheduler {
 			throws JsonProcessingException, InvalidKeyException, URISyntaxException, StorageException {
 		this.archivesDebtPositions(ppList);
 		// archived debt positions are removed
-		paymentPositionRepository.deleteAll(ppList);
+		//paymentPositionRepository.deleteAll(ppList);
 		log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "archiveAndDeleteDebtPositions", "deleted n. "+ppList.size()+" archived debt positions"));
 	}
 	
