@@ -94,7 +94,7 @@ public class HistoricizationScheduler {
     @SchedulerLock(name = "HistoricizationScheduler_manageDebtPositionsToHistoricize", lockAtMostFor = "${cron.job.schedule.history.shedlock.lockatmostfor}", 
     lockAtLeastFor = "${cron.job.schedule.history.shedlock.lockatleastfor}")
     public void manageDebtPositionsToHistoricize() throws JsonProcessingException, InvalidKeyException, URISyntaxException, StorageException {
-    	log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
+    	log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "Running at NEW " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
     	EntityManager em = this.getEntityManager();
     	LocalDateTime ldt = LocalDateTime.now().minusDays(extractionInterval);
     	List<PaymentPosition> ppList;
