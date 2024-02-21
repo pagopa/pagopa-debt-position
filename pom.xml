@@ -23,7 +23,6 @@
         <openfeign-version>3.1.8</openfeign-version>
         <azure.data.table.version>12.3.18</azure.data.table.version>
         <azure.core.version>1.45.1</azure.core.version>
-        <azure.storage.table.version>8.6.6</azure.storage.table.version>
         <shedlock.version>5.10.2</shedlock.version>
         <mockito-inline.version>5.2.0</mockito-inline.version>
     </properties>
@@ -65,16 +64,6 @@
 			<artifactId>spring-boot-starter-batch</artifactId>
 		</dependency>
         <!-- Start azure tables-->
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-storage</artifactId>
-            <version>${azure.storage.table.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.azure</groupId>
-            <artifactId>azure-core</artifactId>
-            <version>${azure.core.version}</version>
-        </dependency>
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-data-tables</artifactId>
