@@ -30,6 +30,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.azure.data.tables.TableClient;
 import com.azure.data.tables.models.TableTransactionFailedException;
+import com.azure.data.tables.models.TableTransactionResult;
 
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.config.SchedulerConfig;
@@ -71,7 +72,9 @@ class HistoricizationSchedulerTest {
 		expected.add(pp);
 		when(mockedQuery.getResultList()).thenReturn(expected);
 
-		doNothing().when(scheduler).upsertPPTable(any(), any());
+		TableClient tc = mock(TableClient.class);
+		doReturn(tc).when(scheduler).getTableClient(any(), any());
+		doReturn(mock(TableTransactionResult.class)).when(tc).submitTransaction(any());
 
 		// lancio il batch di archiviazione delle posizioni debitorie
 		scheduler.manageDebtPositionsToHistoricize();
@@ -87,6 +90,7 @@ class HistoricizationSchedulerTest {
 
 		ReflectionTestUtils.setField(scheduler, "paginationMode", true);
 		ReflectionTestUtils.setField(scheduler, "pageSize", 5);
+		ReflectionTestUtils.setField(scheduler, "maxBatchOperationSize", (short)1);
 
 		//precondition
 		EntityManager entityManager = mock(EntityManager.class);
@@ -103,12 +107,18 @@ class HistoricizationSchedulerTest {
 
 		List<PaymentPosition> expected = new ArrayList<>();
 		PaymentOption po = PaymentOption.builder().iuv("mockIuv").paymentDate(LocalDateTime.now()).build();
-		PaymentPosition pp = PaymentPosition.builder().organizationFiscalCode("77777777777").iupd("mockIupd").paymentOption(List.of(po)).build();
-		expected.add(pp);
+		PaymentPosition pp1 = PaymentPosition.builder().organizationFiscalCode("77777777777").iupd("mockIupd").paymentOption(List.of(po)).build();
+		PaymentPosition pp2 = PaymentPosition.builder().organizationFiscalCode("77777777777").iupd("mockIupd").paymentOption(List.of(po)).build();
+		PaymentPosition pp3 = PaymentPosition.builder().organizationFiscalCode("77777777777").iupd("mockIupd").paymentOption(List.of(po)).build();
+		expected.add(pp1);
+		expected.add(pp2);
+		expected.add(pp3);
 		when(mockedQuery.getResultList()).thenReturn(expected);
-		when(mockedCountQuery.getSingleResult()).thenReturn(1L);
-
-		doNothing().when(scheduler).upsertPPTable(any(), any());
+		when(mockedCountQuery.getSingleResult()).thenReturn(3L);
+		
+		TableClient tc = mock(TableClient.class);
+		doReturn(tc).when(scheduler).getTableClient(any(), any());
+		doReturn(mock(TableTransactionResult.class)).when(tc).submitTransaction(any());
 
 		// lancio il batch di archiviazione delle posizioni debitorie
 		scheduler.manageDebtPositionsToHistoricize();
