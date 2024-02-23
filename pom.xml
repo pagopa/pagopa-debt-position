@@ -11,7 +11,7 @@
     </parent>
     <groupId>it.gov.pagopa.debtposition</groupId>
     <artifactId>gpd</artifactId>
-    <version>0.11.3</version>
+    <version>0.11.3-4-PAGOPA-1530-upsert</version>
     <name>Gestione Posizioni Debitorie</name>
     <description>Progetto Gestione Posizioni Debitorie</description>
     <properties>
@@ -63,18 +63,13 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-batch</artifactId>
 		</dependency>
-        <!-- Start cosmos tables-->
-        <dependency>
-            <groupId>com.azure</groupId>
-            <artifactId>azure-core</artifactId>
-            <version>${azure.core.version}</version>
-        </dependency>
+        <!-- Start azure tables-->
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-data-tables</artifactId>
             <version>${azure.data.table.version}</version>
         </dependency>
-        <!-- End cosmos tables -->
+        <!-- End azure tables -->
         <!-- Start ShedLock -->
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>

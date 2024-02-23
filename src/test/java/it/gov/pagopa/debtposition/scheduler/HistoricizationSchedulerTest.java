@@ -28,11 +28,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.azure.core.http.HttpResponse;
 import com.azure.data.tables.TableClient;
-import com.azure.data.tables.models.TableErrorCode;
-import com.azure.data.tables.models.TableServiceError;
-import com.azure.data.tables.models.TableServiceException;
+import com.azure.data.tables.models.TableTransactionFailedException;
+import com.azure.data.tables.models.TableTransactionResult;
 
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.config.SchedulerConfig;
@@ -64,7 +62,7 @@ class HistoricizationSchedulerTest {
 		EntityManager entityManager = mock(EntityManager.class);
 		doReturn(entityManager).when(scheduler).getEntityManager();
 
-		TypedQuery<PaymentPosition> mockedQuery	= (TypedQuery<PaymentPosition>) mock(TypedQuery.class);
+		TypedQuery<PaymentPosition> mockedQuery	= mock(TypedQuery.class);
 		when(entityManager.createQuery(any(), eq(PaymentPosition.class))).thenReturn(mockedQuery);
 		when(mockedQuery.setParameter(anyInt(), any())).thenReturn(mockedQuery);
 
@@ -74,16 +72,14 @@ class HistoricizationSchedulerTest {
 		expected.add(pp);
 		when(mockedQuery.getResultList()).thenReturn(expected);
 
-		TableClient tc = scheduler.getTableClient(archiveStorageConnection, "mockTable");
+		TableClient tc = mock(TableClient.class);
 		doReturn(tc).when(scheduler).getTableClient(any(), any());
-		doNothing().when(scheduler).upsertPOTable(any(), any(), any());
-		doNothing().when(scheduler).upsertPPTable(any(), any(), any());
+		doReturn(mock(TableTransactionResult.class)).when(tc).submitTransaction(any());
 
 		// lancio il batch di archiviazione delle posizioni debitorie
 		scheduler.manageDebtPositionsToHistoricize();
 
-		verify(scheduler, times(1)).upsertPOTable(any(), any(), any());
-		verify(scheduler, times(1)).upsertPPTable(any(), any(), any());
+		verify(scheduler, times(1)).upsertPPTable(any(), any());
 		verify(paymentPositionRepository, times(1)).deleteAll(any());
 	}
 
@@ -94,13 +90,14 @@ class HistoricizationSchedulerTest {
 
 		ReflectionTestUtils.setField(scheduler, "paginationMode", true);
 		ReflectionTestUtils.setField(scheduler, "pageSize", 5);
+		ReflectionTestUtils.setField(scheduler, "maxBatchOperationSize", (short)1);
 
 		//precondition
 		EntityManager entityManager = mock(EntityManager.class);
 		doReturn(entityManager).when(scheduler).getEntityManager();
 
-		TypedQuery<Long>            mockedCountQuery = (TypedQuery<Long>) mock(TypedQuery.class);
-		TypedQuery<PaymentPosition> mockedQuery	     = (TypedQuery<PaymentPosition>) mock(TypedQuery.class);
+		TypedQuery<Long>            mockedCountQuery = mock(TypedQuery.class);
+		TypedQuery<PaymentPosition> mockedQuery	     = mock(TypedQuery.class);
 		when(entityManager.createQuery(any(), eq(Long.class))).thenReturn(mockedCountQuery);
 		when(entityManager.createQuery(any(), eq(PaymentPosition.class))).thenReturn(mockedQuery);
 		when(mockedQuery.setParameter(anyInt(), any())).thenReturn(mockedQuery);
@@ -110,21 +107,23 @@ class HistoricizationSchedulerTest {
 
 		List<PaymentPosition> expected = new ArrayList<>();
 		PaymentOption po = PaymentOption.builder().iuv("mockIuv").paymentDate(LocalDateTime.now()).build();
-		PaymentPosition pp = PaymentPosition.builder().organizationFiscalCode("77777777777").iupd("mockIupd").paymentOption(List.of(po)).build();
-		expected.add(pp);
+		PaymentPosition pp1 = PaymentPosition.builder().organizationFiscalCode("77777777777").iupd("mockIupd").paymentOption(List.of(po)).build();
+		PaymentPosition pp2 = PaymentPosition.builder().organizationFiscalCode("77777777777").iupd("mockIupd").paymentOption(List.of(po)).build();
+		PaymentPosition pp3 = PaymentPosition.builder().organizationFiscalCode("77777777777").iupd("mockIupd").paymentOption(List.of(po)).build();
+		expected.add(pp1);
+		expected.add(pp2);
+		expected.add(pp3);
 		when(mockedQuery.getResultList()).thenReturn(expected);
-		when(mockedCountQuery.getSingleResult()).thenReturn(1L);
-
-		TableClient tc = scheduler.getTableClient(archiveStorageConnection, "mockTable");
+		when(mockedCountQuery.getSingleResult()).thenReturn(3L);
+		
+		TableClient tc = mock(TableClient.class);
 		doReturn(tc).when(scheduler).getTableClient(any(), any());
-		doNothing().when(scheduler).upsertPOTable(any(), any(), any());
-		doNothing().when(scheduler).upsertPPTable(any(), any(), any());
+		doReturn(mock(TableTransactionResult.class)).when(tc).submitTransaction(any());
 
 		// lancio il batch di archiviazione delle posizioni debitorie
 		scheduler.manageDebtPositionsToHistoricize();
 
-		verify(scheduler, times(1)).upsertPOTable(any(), any(), any());
-		verify(scheduler, times(1)).upsertPPTable(any(), any(), any());
+		verify(scheduler, times(1)).upsertPPTable(any(), any());
 		verify(paymentPositionRepository, times(1)).deleteAll(any());
 	}
 
@@ -140,8 +139,8 @@ class HistoricizationSchedulerTest {
 		EntityManager entityManager = mock(EntityManager.class);
 		doReturn(entityManager).when(scheduler).getEntityManager();
 
-		TypedQuery<Long>            mockedCountQuery = (TypedQuery<Long>) mock(TypedQuery.class);
-		TypedQuery<PaymentPosition> mockedQuery	     = (TypedQuery<PaymentPosition>) mock(TypedQuery.class);
+		TypedQuery<Long>            mockedCountQuery = mock(TypedQuery.class);
+		TypedQuery<PaymentPosition> mockedQuery	     = mock(TypedQuery.class);
 		when(entityManager.createQuery(any(), eq(Long.class))).thenReturn(mockedCountQuery);
 		when(entityManager.createQuery(any(), eq(PaymentPosition.class))).thenReturn(mockedQuery);
 		when(mockedQuery.setParameter(anyInt(), any())).thenReturn(mockedQuery);
@@ -156,66 +155,18 @@ class HistoricizationSchedulerTest {
 		when(mockedQuery.getResultList()).thenReturn(expected);
 		when(mockedCountQuery.getSingleResult()).thenReturn(1L);
 
-		TableClient tc = scheduler.getTableClient(archiveStorageConnection, "mockTable");
-		doReturn(tc).when(scheduler).getTableClient(any(), any());
-		doThrow(TableServiceException.class).when(scheduler).upsertPOTable(any(), any(), any());
+		doThrow(TableTransactionFailedException.class).when(scheduler).upsertPPTable(any(), any());
 
 		try {
 			// lancio il batch di archiviazione delle posizioni debitorie
 			scheduler.manageDebtPositionsToHistoricize();
 			fail();
-		} catch (TableServiceException e) {
-			verify(scheduler, times(1)).upsertPOTable(any(), any(), any());
-			verify(scheduler, times(0)).upsertPPTable(any(), any(), any());
+		} catch (TableTransactionFailedException e) {
 			verify(paymentPositionRepository, times(0)).deleteAll(any());
 		}
 	}
 
-	@Test
-	void manualAlreadyExistKOHistoricization() throws Exception  {
-
-		HistoricizationScheduler scheduler = spy(new HistoricizationScheduler(paymentPositionRepository));
-
-		ReflectionTestUtils.setField(scheduler, "paginationMode", true);
-		ReflectionTestUtils.setField(scheduler, "pageSize", 5);
-
-		//precondition
-		EntityManager entityManager = mock(EntityManager.class);
-		doReturn(entityManager).when(scheduler).getEntityManager();
-
-		TypedQuery<Long>            mockedCountQuery = (TypedQuery<Long>) mock(TypedQuery.class);
-		TypedQuery<PaymentPosition> mockedQuery	     = (TypedQuery<PaymentPosition>) mock(TypedQuery.class);
-		when(entityManager.createQuery(any(), eq(Long.class))).thenReturn(mockedCountQuery);
-		when(entityManager.createQuery(any(), eq(PaymentPosition.class))).thenReturn(mockedQuery);
-		when(mockedQuery.setParameter(anyInt(), any())).thenReturn(mockedQuery);
-		when(mockedQuery.setFirstResult(anyInt())).thenReturn(mockedQuery);
-		when(mockedQuery.setMaxResults(anyInt())).thenReturn(mockedQuery);
-		when(mockedCountQuery.setParameter(anyInt(), any())).thenReturn(mockedCountQuery);
-
-		List<PaymentPosition> expected = new ArrayList<>();
-		PaymentOption po = PaymentOption.builder().iuv("mockIuv").paymentDate(LocalDateTime.now()).build();
-		PaymentPosition pp = PaymentPosition.builder().organizationFiscalCode("77777777777").iupd("mockIupd").paymentOption(List.of(po)).build();
-		expected.add(pp);
-		when(mockedQuery.getResultList()).thenReturn(expected);
-		when(mockedCountQuery.getSingleResult()).thenReturn(1L);
-
-		TableServiceError tsErr = new TableServiceError(TableErrorCode.ENTITY_ALREADY_EXISTS.toString(), "mock error");
-		TableServiceException tsExc = new TableServiceException("", mock(HttpResponse.class), tsErr); 
-		TableClient tc = mock(TableClient.class);
-		doReturn(tc).when(scheduler).getTableClient(any(), any());
-		doThrow(tsExc).when(tc).createEntity(any());
-
-		// lancio il batch di archiviazione delle posizioni debitorie
-		scheduler.manageDebtPositionsToHistoricize();
-
-		verify(scheduler, times(1)).upsertPOTable(any(), any(), any());
-		verify(scheduler, times(1)).upsertPPTable(any(), any(), any());
-		// 2 creates and 2 updates one of both in saveToPOTable and in saveToPPTable
-		verify(tc, times(2)).createEntity(any());
-		verify(tc, times(2)).updateEntity(any());
-		verify(paymentPositionRepository, times(1)).deleteAll(any());
-	}
-
+	
 	@Test
 	void manualUnhandledExceptionKOHistoricization() throws Exception  {
 
@@ -228,8 +179,8 @@ class HistoricizationSchedulerTest {
 		EntityManager entityManager = mock(EntityManager.class);
 		doReturn(entityManager).when(scheduler).getEntityManager();
 
-		TypedQuery<Long>            mockedCountQuery = (TypedQuery<Long>) mock(TypedQuery.class);
-		TypedQuery<PaymentPosition> mockedQuery	     = (TypedQuery<PaymentPosition>) mock(TypedQuery.class);
+		TypedQuery<Long>            mockedCountQuery = mock(TypedQuery.class);
+		TypedQuery<PaymentPosition> mockedQuery	     = mock(TypedQuery.class);
 		when(entityManager.createQuery(any(), eq(Long.class))).thenReturn(mockedCountQuery);
 		when(entityManager.createQuery(any(), eq(PaymentPosition.class))).thenReturn(mockedQuery);
 		when(mockedQuery.setParameter(anyInt(), any())).thenReturn(mockedQuery);
@@ -244,20 +195,17 @@ class HistoricizationSchedulerTest {
 		when(mockedQuery.getResultList()).thenReturn(expected);
 		when(mockedCountQuery.getSingleResult()).thenReturn(1L);
 
-		TableServiceError tsErr = new TableServiceError(TableErrorCode.FORBIDDEN.toString(), "mock error");
-		TableServiceException tsExc = new TableServiceException("", mock(HttpResponse.class), tsErr); 
 		TableClient tc = mock(TableClient.class);
 		doReturn(tc).when(scheduler).getTableClient(any(), any());
-		doThrow(tsExc).when(tc).createEntity(any());
-
+		doThrow(TableTransactionFailedException.class).when(tc).submitTransaction(any());
+		
 		try {
 			// lancio il batch di archiviazione delle posizioni debitorie
 			scheduler.manageDebtPositionsToHistoricize();
 			fail();
-		} catch (TableServiceException e) {
-			verify(scheduler, times(1)).upsertPOTable(any(), any(), any());
-			verify(tc, times(1)).createEntity(any());
-			verify(scheduler, times(0)).upsertPPTable(any(), any(), any());
+		} catch (TableTransactionFailedException e) {
+			verify(tc, times(1)).submitTransaction(any());
+			verify(scheduler, times(1)).upsertPPTable(any(), any());
 			verify(paymentPositionRepository, times(0)).deleteAll(any());
 		}  
 	}
