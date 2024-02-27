@@ -64,6 +64,9 @@ public class PaymentOption implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "PAYMENT_OPT_SEQ")
     @SequenceGenerator(name = "PAYMENT_OPT_SEQ", sequenceName = "PAYMENT_OPT_SEQ", allocationSize = 1)
     private Long id;
+    
+    @NotNull
+    private String nav;
 
     @NotNull
     private String iuv;
