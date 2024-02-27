@@ -49,7 +49,10 @@ import lombok.Setter;
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "UniquePaymentOpt",
-                        columnNames = {"iuv", "organization_fiscal_code"})
+                        columnNames = {"iuv", "organization_fiscal_code"}),
+                @UniqueConstraint(
+                        name = "UniquePaymentOptNav",
+                        columnNames = {"nav", "organization_fiscal_code"}),
         },
         indexes = @Index(name = "payment_option_payment_position_id_idx", columnList = "payment_position_id"))
 @JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="@paymentOptionId")
@@ -64,6 +67,9 @@ public class PaymentOption implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "PAYMENT_OPT_SEQ")
     @SequenceGenerator(name = "PAYMENT_OPT_SEQ", sequenceName = "PAYMENT_OPT_SEQ", allocationSize = 1)
     private Long id;
+    
+    @NotNull
+    private String nav;
 
     @NotNull
     private String iuv;

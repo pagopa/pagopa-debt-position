@@ -1,5 +1,24 @@
 package it.gov.pagopa.debtposition.controller.pd.crud.api.impl;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.validation.Valid;
+import javax.validation.constraints.Pattern;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.CollectionUtils;
+
 import it.gov.pagopa.debtposition.config.ExclusiveParamGroup;
 import it.gov.pagopa.debtposition.controller.pd.crud.api.IDebtPositionController;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
@@ -19,25 +38,6 @@ import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.Constants;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Sort.Direction;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.util.CollectionUtils;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.validation.Valid;
-import javax.validation.constraints.Pattern;
 
 
 @Controller
@@ -50,9 +50,6 @@ public class DebtPositionController implements IDebtPositionController {
     private ModelMapper modelMapper;
     @Autowired
     private PaymentPositionCRUDService paymentPositionService;
-    
-    @Value("${nav.aux.digit}")
-    private String auxDigit;
    
 
     @Override
@@ -69,8 +66,6 @@ public class DebtPositionController implements IDebtPositionController {
 
         if (null != createdDebtPos) {
         	PaymentPositionModel paymentPosition = modelMapper.map(createdDebtPos, PaymentPositionModel.class);
-        	//PAGOPA-1155: add nav info to PO
-        	paymentPosition.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv()));
             return new ResponseEntity<>(paymentPosition, HttpStatus.CREATED);
         }
 
@@ -111,9 +106,6 @@ public class DebtPositionController implements IDebtPositionController {
         List<PaymentPositionModelBaseResponse> ppResponseList = ObjectMapperUtils.mapAll(
                 pagePP.toList(),
                 PaymentPositionModelBaseResponse.class);
-        
-        //PAGOPA-1155: add nav info to PO
-        ppResponseList.forEach(pp -> pp.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv())));
 
         return new ResponseEntity<>(PaymentPositionsInfo.builder()
                 .ppBaseResponseList(ppResponseList)
@@ -131,8 +123,6 @@ public class DebtPositionController implements IDebtPositionController {
         PaymentPositionModelBaseResponse paymentPositionResponse = ObjectMapperUtils.map(
                 paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segCodes),
                 PaymentPositionModelBaseResponse.class);
-        //PAGOPA-1155: add nav info to PO
-        paymentPositionResponse.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv()));
 
         return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
     }
@@ -166,8 +156,6 @@ public class DebtPositionController implements IDebtPositionController {
 
         if (null != updatedDebtPos) {
         	PaymentPositionModel paymentPosition = modelMapper.map(updatedDebtPos, PaymentPositionModel.class);
-        	//PAGOPA-1155: add nav info to PO
-        	paymentPosition.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv()));
             return new ResponseEntity<>(paymentPosition, HttpStatus.OK);
         }
 
