@@ -212,6 +212,27 @@ class DebtPositionControllerTest {
 				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isConflict()).andExpect(content().contentType(MediaType.APPLICATION_JSON));
 	}
+	
+	@Test
+	void createDebtPosition_Custom_NAV_409() throws Exception {
+		PaymentPositionDTO ppNav = DebtPositionMock.getMock1();
+		ppNav.getPaymentOption().forEach(po -> po.setNav("CUSTOM_"+auxDigit+po.getIuv()));
+		
+		mvc.perform(post("/organizations/409_12345678901_NAV/debtpositions")
+				.content(TestUtil.toJson(ppNav)).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value("CUSTOM_"+auxDigit+"123456IUVMOCK1"));
+		
+		// provo a creare una seconda posizione debitoria per la stessa organizzazione, cambiando lo IUPD e lo IUV ma non il NAV 
+	    // => la chiamata deve andare in errore con codice 409 (violazione unique constraint)
+		ppNav.setIupd((int)(Math.random()*100)+"_"+ppNav.getIupd());
+		ppNav.getPaymentOption().forEach(po -> po.setIuv((int)(Math.random()*100)+"_"+po.getIuv()));
+		mvc.perform(post("/organizations/409_12345678901_NAV/debtpositions")
+				.content(TestUtil.toJson(ppNav)).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isConflict()).andExpect(content().contentType(MediaType.APPLICATION_JSON));
+	}
 
 	@Test
 	void createAndPublishDebtPosition_201() throws Exception {
