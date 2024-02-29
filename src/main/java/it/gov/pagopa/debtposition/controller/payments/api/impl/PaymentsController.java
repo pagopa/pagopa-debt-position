@@ -29,38 +29,38 @@ import lombok.extern.slf4j.Slf4j;
 public class PaymentsController implements IPaymentsController {
 
     private static final String LOG_BASE_HEADER_INFO = "[RequestMethod: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
-    private static final String LOG_BASE_PARAMS_DETAIL = "organizationFiscalCode= %s; iuv= %s";
+    private static final String LOG_BASE_PARAMS_DETAIL = "organizationFiscalCode= %s; nav= %s";
     @Autowired
     private ModelMapper modelMapper;
     @Autowired
     private PaymentsService paymentsService;
 
     @Override
-    public ResponseEntity<PaymentOptionWithDebtorInfoModelResponse> getOrganizationPaymentOptionByIUV(
-            String organizationFiscalCode, String iuv) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationPaymentOptionByIUV", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv)));
+    public ResponseEntity<PaymentOptionWithDebtorInfoModelResponse> getOrganizationPaymentOptionByNAV(
+            String organizationFiscalCode, String nav) {
+        log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationPaymentOptionByIUV", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, nav)));
 
         // flip entity to model
         PaymentOptionWithDebtorInfoModelResponse paymentOptionResponse = modelMapper.map(
-                paymentsService.getPaymentOptionByIUV(organizationFiscalCode, iuv),
+                paymentsService.getPaymentOptionByNAV(organizationFiscalCode, nav),
                 PaymentOptionWithDebtorInfoModelResponse.class);
 
         return new ResponseEntity<>(paymentOptionResponse, HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<PaymentOptionModelResponse> payPaymentOption(String organizationFiscalCode, String iuv,
+    public ResponseEntity<PaymentOptionModelResponse> payPaymentOption(String organizationFiscalCode, String nav,
                                                                        @Valid PaymentOptionModel paymentOptionModel) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "payPaymentOption", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv)));
+        log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "payPaymentOption", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, nav)));
 
-        PaymentOption paidPaymentOption = paymentsService.pay(organizationFiscalCode, iuv, paymentOptionModel);
+        PaymentOption paidPaymentOption = paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
 
 
         if (null != paidPaymentOption) {
             return new ResponseEntity<>(ObjectMapperUtils.map(paidPaymentOption, PaymentOptionModelResponse.class), HttpStatus.OK);
         }
 
-        throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, iuv);
+        throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, nav);
     }
 
     @Override

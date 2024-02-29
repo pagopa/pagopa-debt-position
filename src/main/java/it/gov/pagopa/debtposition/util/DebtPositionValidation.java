@@ -41,18 +41,18 @@ public class DebtPositionValidation {
         checkPaymentPositionContentCongruency(pp);
     }
 
-    public static void checkPaymentPositionPayability(PaymentPosition ppToPay, String iuv) {
+    public static void checkPaymentPositionPayability(PaymentPosition ppToPay, String nav) {
         // Verifico se la posizione debitoria è in uno stato idoneo al pagamento
         if (DebtPositionStatus.getPaymentPosNotPayableStatus().contains(ppToPay.getStatus())) {
-            throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, ppToPay.getOrganizationFiscalCode(), iuv);
+            throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, ppToPay.getOrganizationFiscalCode(), nav);
         }
         if (DebtPositionStatus.getPaymentPosFullyPaidStatus().contains(ppToPay.getStatus())) {
-            throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, ppToPay.getOrganizationFiscalCode(), iuv);
+            throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, ppToPay.getOrganizationFiscalCode(), nav);
         }
         // Verifico se la posizione debitoria è ancora aperta
-        checkPaymentPositionOpen(ppToPay, iuv);
+        checkPaymentPositionOpen(ppToPay, nav);
         // Verifico se l'opzione di pagamento è pagabile
-        checkPaymentOptionPayable(ppToPay, iuv);
+        checkPaymentOptionPayable(ppToPay, nav);
     }
 
     public static void checkPaymentPositionAccountability(PaymentPosition ppToReport, String iuv, String transferId) {
@@ -198,34 +198,34 @@ public class DebtPositionValidation {
         t.getIban();
     }
 
-    private static void checkPaymentPositionOpen(PaymentPosition ppToPay, String iuv) {
+    private static void checkPaymentPositionOpen(PaymentPosition ppToPay, String nav) {
         for (PaymentOption po : ppToPay.getPaymentOption()) {
             if (isPaid(po)) {
-                throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, po.getOrganizationFiscalCode(), iuv);
+                throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, po.getOrganizationFiscalCode(), nav);
             }
         }
     }
 
-    private static void checkPaymentOptionPayable(PaymentPosition ppToPay, String iuv) {
-        PaymentOption poToPay = ppToPay.getPaymentOption().stream().filter(po -> po.getIuv().equals(iuv)).findFirst()
+    private static void checkPaymentOptionPayable(PaymentPosition ppToPay, String nav) {
+        PaymentOption poToPay = ppToPay.getPaymentOption().stream().filter(po -> po.getNav().equals(nav)).findFirst()
                 .orElseThrow(() -> {
                     log.error("Obtained unexpected empty payment option - ["
                             + String.format(LOG_BASE_PARAMS_DETAIL,
                             ppToPay.getOrganizationFiscalCode(),
                             ppToPay.getIupd(),
-                            iuv
+                            nav
                     )
                             + "]");
-                    throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, ppToPay.getOrganizationFiscalCode(), iuv);
+                    throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, ppToPay.getOrganizationFiscalCode(), nav);
                 });
 
         if (!poToPay.getStatus().equals(PaymentOptionStatus.PO_UNPAID)) {
-            throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, poToPay.getOrganizationFiscalCode(), iuv);
+            throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, poToPay.getOrganizationFiscalCode(), nav);
         }
 
         // La posizione debitoria è già in PARTIALLY_PAID ed arriva una richiesta di pagamento su una payment option non rateizzata (isPartialPayment = false) => errore
         if (ppToPay.getStatus().equals(DebtPositionStatus.PARTIALLY_PAID) && Boolean.FALSE.equals(poToPay.getIsPartialPayment())) {
-            throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, poToPay.getOrganizationFiscalCode(), iuv);
+            throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, poToPay.getOrganizationFiscalCode(), nav);
         }
 
     }

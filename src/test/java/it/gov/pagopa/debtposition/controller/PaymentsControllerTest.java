@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -60,6 +61,9 @@ class PaymentsControllerTest {
 	private ModelMapper modelMapperMock;
 	
 	@MockBean private NodeClient nodeClient;
+	
+	@Value("${nav.aux.digit}")
+    private String auxDigit;
 
 	@BeforeEach
 	void setUp() {
@@ -68,31 +72,41 @@ class PaymentsControllerTest {
 
 
 	/**
-	 *  GET PAYMENT OPTION BY IUV
+	 *  GET PAYMENT OPTION BY NAV
 	 */
 	@Test
-	void getPaymentOptionByIUV_200() throws Exception {
-		// creo una posizione debitoria e recupero la payment option associata
+	void getPaymentOptionByNAV_200() throws Exception {
+		// creo una posizione debitoria con NAV custom e recupero la payment option associata
+		PaymentPositionDTO pp = DebtPositionMock.getMock1();
+		pp.getPaymentOption().forEach(po -> po.setNav("CUSTOMNAV_"+po.getIuv()));
 		mvc.perform(post("/organizations/PO200_12345678901/debtpositions")
-				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
+				.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
 
-		String url = "/organizations/PO200_12345678901/paymentoptions/123456IUVMOCK1";
+		String url = "/organizations/PO200_12345678901/paymentoptions/CUSTOMNAV_123456IUVMOCK1";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.nav")
+				.value("CUSTOMNAV_123456IUVMOCK1"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv")
+				.value("123456IUVMOCK1"));
 	}
 
 	@Test
-	void getPaymentOptionByIUV_MultiplePO_200() throws Exception {
-		// creo una posizione debitoria con più payment option associate
+	void getPaymentOptionByNAV_MultiplePO_200() throws Exception {
+		// creo una posizione debitoria con NAV custom e con più payment option associate
+		PaymentPositionDTO pp = DebtPositionMock.getMock2();
+		pp.getPaymentOption().forEach(po -> po.setNav("CUSTOMNAV_"+po.getIuv()));
 		mvc.perform(post("/organizations/PO200_Multiple_12345678901/debtpositions")
-				.content(TestUtil.toJson(DebtPositionMock.getMock2())).contentType(MediaType.APPLICATION_JSON))
+				.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
 
 		// ne recupero una e verifico sia quella attesa
-		String url = "/organizations/PO200_Multiple_12345678901/paymentoptions/123456IUVMULTIPLEMOCK2";
+		String url = "/organizations/PO200_Multiple_12345678901/paymentoptions/CUSTOMNAV_123456IUVMULTIPLEMOCK2";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.nav")
+				.value("CUSTOMNAV_123456IUVMULTIPLEMOCK2"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv")
 				.value("123456IUVMULTIPLEMOCK2"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.iupd")
@@ -106,8 +120,8 @@ class PaymentsControllerTest {
 	}
 
 	@Test
-	void getPaymentOptionByIUV_POPAID_200() throws Exception {
-		// creo una posizione debitoria (senza 'validity date' impostata)
+	void getPaymentOptionByNAV_POPAID_200() throws Exception {
+		// creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato) 
 		mvc.perform(post("/organizations/POPAID_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
@@ -116,19 +130,22 @@ class PaymentsControllerTest {
 		mvc.perform(post("/organizations/POPAID_12345678901/debtpositions/12345678901IUPDMOCK1/publish")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
-		// effettuo la notifica di pagamento e verifico lo stato in paid
-		mvc.perform(post("/organizations/POPAID_12345678901/paymentoptions/123456IUVMOCK1/pay")
+		// effettuo la notifica di pagamento e verifico lo stato in paid e il nav valorizzato nel formato <AUX_DIGIT>+IUV
+		mvc.perform(post("/organizations/POPAID_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.nav").value(auxDigit+"123456IUVMOCK1"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMOCK1"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(PaymentOptionStatus.PO_PAID.toString()));
 
-		// recupero la payment option e verifico di nuovo lo stato in paid
-		String url = "/organizations/POPAID_12345678901/paymentoptions/123456IUVMOCK1";
+		// recupero la payment option e verifico di nuovo lo stato in paid e il nav valorizzato nel formato <AUX_DIGIT>+IUV 
+		String url = "/organizations/POPAID_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.nav")
+				.value(auxDigit+"123456IUVMOCK1"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv")
 				.value("123456IUVMOCK1"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.iupd")
@@ -142,18 +159,20 @@ class PaymentsControllerTest {
 	}
 
 	@Test
-	void getPaymentOptionByIUV_404() throws Exception {
-		String url = "/organizations/PO200_12345678901/paymentoptions/123456IUVNOTEXIST";
+	void getPaymentOptionByNAV_404() throws Exception {
+		String url = "/organizations/PO200_12345678901/paymentoptions/CUSTOMNAV_123456_NOTEXIST";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
 	}
 	
 	@Test
-	void getPaymentOptionWithMetadataByIUV_POPAID_200() throws Exception {
-		// creo una posizione debitoria (senza 'validity date' impostata)
+	void getPaymentOptionWithMetadataByNAV_POPAID_200() throws Exception {
+		// creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato)
 		mvc.perform(post("/organizations/POPAID_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMetadataMock8())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value(auxDigit+"123456IUVMETADATAMOCK9"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].iuv").value("123456IUVMETADATAMOCK9"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata").isArray())
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata[0].key").value("keypometadatamock9"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].transferMetadata[0].key").value("keytransfermetadatamock3"));
@@ -163,10 +182,11 @@ class PaymentsControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
 		// effettuo la notifica di pagamento e verifico lo stato in paid
-		mvc.perform(post("/organizations/POPAID_12345678901/paymentoptions/123456IUVMETADATAMOCK9/pay")
+		mvc.perform(post("/organizations/POPAID_12345678901/paymentoptions/"+auxDigit+"123456IUVMETADATAMOCK9/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.nav").value(auxDigit+"123456IUVMETADATAMOCK9"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMETADATAMOCK9"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(PaymentOptionStatus.PO_PAID.toString()))
@@ -175,9 +195,11 @@ class PaymentsControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.transfer[0].transferMetadata[0].key").value("keytransfermetadatamock3"));
 
 		// recupero la payment option e verifico di nuovo lo stato in paid
-		String url = "/organizations/POPAID_12345678901/paymentoptions/123456IUVMETADATAMOCK9";
+		String url = "/organizations/POPAID_12345678901/paymentoptions/"+auxDigit+"123456IUVMETADATAMOCK9";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.nav")
+				.value(auxDigit+"123456IUVMETADATAMOCK9"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv")
 				.value("123456IUVMETADATAMOCK9"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.iupd")
@@ -192,7 +214,7 @@ class PaymentsControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptionMetadata[0].key").value("keypometadatamock9"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.transfer[0].transferMetadata[0].key").value("keytransfermetadatamock3"));
 		
-		// effettuo la rendicontazione per l'unica transazione della PO con id 3
+		// effettuo la rendicontazione per l'unica transazione della PO con id 3 (la chiamata report lavora con lo IUV e non con il NAV)
 		mvc.perform(post("/organizations/POPAID_12345678901/paymentoptions/123456IUVMETADATAMOCK9/transfers/3/report")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -208,20 +230,25 @@ class PaymentsControllerTest {
 
 	@Test
 	void payPaymentOption_200() throws Exception {
-		// creo una posizione debitoria (senza 'validity date' impostata)
+		// creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato)
 		mvc.perform(post("/organizations/PAY_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
-		.andExpect(status().isCreated());
+		.andExpect(status().isCreated())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value(auxDigit+"123456IUVMOCK1"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].iuv")
+				.value("123456IUVMOCK1"));
 
 		// porto in pubblicata/validata lo stato della posizione debitoria
 		mvc.perform(post("/organizations/PAY_12345678901/debtpositions/12345678901IUPDMOCK1/publish")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 		
 		// effettuo la notifica di pagamento e verifico lo stato in paid
-		mvc.perform(post("/organizations/PAY_12345678901/paymentoptions/123456IUVMOCK1/pay")
+		mvc.perform(post("/organizations/PAY_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.nav").value(auxDigit+"123456IUVMOCK1"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMOCK1"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(PaymentOptionStatus.PO_PAID.toString()));
@@ -236,7 +263,7 @@ class PaymentsControllerTest {
 
 	@Test
 	void payPaymentOption_200_with_only_required_receipt_fields() throws Exception {
-		// creo una posizione debitoria (senza 'validity date' impostata)
+		// creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato)
 		mvc.perform(post("/organizations/PAY_12345678911/debtpositions")
 						.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
@@ -250,10 +277,11 @@ class PaymentsControllerTest {
 		data.setPaymentDate(null);
 		data.setPaymentMethod(null);
 		data.setFee(0); // because it is a long initialized to 0
-		mvc.perform(post("/organizations/PAY_12345678911/paymentoptions/123456IUVMOCK1/pay")
+		mvc.perform(post("/organizations/PAY_12345678911/paymentoptions/"+auxDigit+"123456IUVMOCK1/pay")
 						.content(TestUtil.toJson(data))
 						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.nav").value(auxDigit+"123456IUVMOCK1"))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMOCK1"))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 						.value(PaymentOptionStatus.PO_PAID.toString()));
@@ -268,7 +296,7 @@ class PaymentsControllerTest {
 	
 	@Test
 	void payPaymentOption_Multiple_200() throws Exception {
-		// creo una posizione debitoria (senza 'validity date' impostata) con più opzioni di pagamento
+		// creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato) con più opzioni di pagamento
 		mvc.perform(post("/organizations/PAY_Multiple_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
@@ -278,10 +306,11 @@ class PaymentsControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 		
 		// effettuo la notifica di pagamento della rata unica (setIsPartialPayment = false) e verifico lo stato in paid
-		mvc.perform(post("/organizations/PAY_Multiple_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/pay")
+		mvc.perform(post("/organizations/PAY_Multiple_12345678901/paymentoptions/"+auxDigit+"123456IUVMULTIPLEMOCK3/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.nav").value(auxDigit+"123456IUVMULTIPLEMOCK3"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMULTIPLEMOCK3"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(PaymentOptionStatus.PO_PAID.toString()));
@@ -290,13 +319,13 @@ class PaymentsControllerTest {
 		mvc.perform(get("/organizations/PAY_Multiple_12345678901/debtpositions/12345678901IUPDMULTIPLEMOCK2")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
-				.value(DebtPositionStatus.PAID.toString()));
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.PAID.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value(auxDigit+"123456IUVMULTIPLEMOCK3"));
 	}
 	
 	@Test
 	void payPaymentOption_Multiple_Partial_200() throws Exception {
-		// creo una posizione debitoria (senza 'validity date' impostata) con più opzioni di pagamento
+		// creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato) con più opzioni di pagamento
 		mvc.perform(post("/organizations/PAY_Multiple_Partial_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
@@ -306,10 +335,11 @@ class PaymentsControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 		
 		// effettuo la notifica di pagamento di una rata parziale (setIsPartialPayment = true) e verifico lo stato in paid
-		mvc.perform(post("/organizations/PAY_Multiple_Partial_12345678901/paymentoptions/123456IUVMULTIPLEMOCK4/pay")
+		mvc.perform(post("/organizations/PAY_Multiple_Partial_12345678901/paymentoptions/"+auxDigit+"123456IUVMULTIPLEMOCK4/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.nav").value(auxDigit+"123456IUVMULTIPLEMOCK4"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMULTIPLEMOCK4"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(PaymentOptionStatus.PO_PAID.toString()));
@@ -324,7 +354,7 @@ class PaymentsControllerTest {
 	
 	@Test
 	void payPaymentOption_Multiple_All_Partial_200() throws Exception {
-		// creo una posizione debitoria (senza 'validity date' impostata) con più opzioni di pagamento
+		// creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato) con più opzioni di pagamento
 		mvc.perform(post("/organizations/PAY_Multiple_All_Partial_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
@@ -334,10 +364,11 @@ class PaymentsControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 		
 		// effettuo la notifica di pagamento di una rata parziale (setIsPartialPayment = true) e verifico lo stato in paid
-		mvc.perform(post("/organizations/PAY_Multiple_All_Partial_12345678901/paymentoptions/123456IUVMULTIPLEMOCK4/pay")
+		mvc.perform(post("/organizations/PAY_Multiple_All_Partial_12345678901/paymentoptions/"+auxDigit+"123456IUVMULTIPLEMOCK4/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.nav").value(auxDigit+"123456IUVMULTIPLEMOCK4"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMULTIPLEMOCK4"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(PaymentOptionStatus.PO_PAID.toString()));
@@ -350,10 +381,11 @@ class PaymentsControllerTest {
 				.value(DebtPositionStatus.PARTIALLY_PAID.toString()));
 		
 		// effettuo la notifica di pagamento della seconda rata parziale (setIsPartialPayment = true) e verifico lo stato in paid
-		mvc.perform(post("/organizations/PAY_Multiple_All_Partial_12345678901/paymentoptions/123456IUVMULTIPLEMOCK5/pay")
+		mvc.perform(post("/organizations/PAY_Multiple_All_Partial_12345678901/paymentoptions/"+auxDigit+"123456IUVMULTIPLEMOCK5/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.nav").value(auxDigit+"123456IUVMULTIPLEMOCK5"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMULTIPLEMOCK5"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(PaymentOptionStatus.PO_PAID.toString()));
@@ -368,7 +400,7 @@ class PaymentsControllerTest {
 	
 	@Test
 	void payPaymentOption_Multiple_409() throws Exception {
-		// creo una posizione debitoria (senza 'validity date' impostata) con più opzioni di pagamento
+		// creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato) con più opzioni di pagamento
 		mvc.perform(post("/organizations/PAY_Multiple_409_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
@@ -378,10 +410,11 @@ class PaymentsControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 		
 		// effettuo la notifica di pagamento della rata unica (setIsPartialPayment = false) e verifico lo stato in paid
-		mvc.perform(post("/organizations/PAY_Multiple_409_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/pay")
+		mvc.perform(post("/organizations/PAY_Multiple_409_12345678901/paymentoptions/"+auxDigit+"123456IUVMULTIPLEMOCK3/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.nav").value(auxDigit+"123456IUVMULTIPLEMOCK3"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMULTIPLEMOCK3"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(PaymentOptionStatus.PO_PAID.toString()));
@@ -394,14 +427,14 @@ class PaymentsControllerTest {
 				.value(DebtPositionStatus.PAID.toString()));
 		
 		// effettuo un nuovo pagamento per la stessa payment option
-		mvc.perform(post("/organizations/PAY_Multiple_409_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/pay")
+		mvc.perform(post("/organizations/PAY_Multiple_409_12345678901/paymentoptions/"+auxDigit+"123456IUVMULTIPLEMOCK3/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isConflict());
 	}
 	
 	@Test
 	void payPaymentOption_Multiple_Partial_409() throws Exception {
-		// creo una posizione debitoria (senza 'validity date' impostata) con più opzioni di pagamento
+		// creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato) con più opzioni di pagamento
 		mvc.perform(post("/organizations/PAY_Multiple_Partial_409_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
@@ -411,10 +444,11 @@ class PaymentsControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 		
 		// effettuo la notifica di pagamento della rata unica (setIsPartialPayment = false) e verifico lo stato in paid
-		mvc.perform(post("/organizations/PAY_Multiple_Partial_409_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/pay")
+		mvc.perform(post("/organizations/PAY_Multiple_Partial_409_12345678901/paymentoptions/"+auxDigit+"123456IUVMULTIPLEMOCK3/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.nav").value(auxDigit+"123456IUVMULTIPLEMOCK3"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMULTIPLEMOCK3"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(PaymentOptionStatus.PO_PAID.toString()));
@@ -427,14 +461,14 @@ class PaymentsControllerTest {
 				.value(DebtPositionStatus.PAID.toString()));
 		
 		// effettuo un nuovo pagamento su una delle rate parziali (setIsPartialPayment = true) per la payment option
-		mvc.perform(post("/organizations/PAY_Multiple_Partial_409_12345678901/paymentoptions/123456IUVMULTIPLEMOCK4/pay")
+		mvc.perform(post("/organizations/PAY_Multiple_Partial_409_12345678901/paymentoptions/"+auxDigit+"123456IUVMULTIPLEMOCK4/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isConflict());
 	}
 	
 	@Test
 	void payPaymentOption_Multiple_Partial2_409() throws Exception {
-		// creo una posizione debitoria (senza 'validity date' impostata) con più opzioni di pagamento
+		// creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato) con più opzioni di pagamento
 		mvc.perform(post("/organizations/PAY_Multiple_Partial2_409_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
@@ -444,10 +478,11 @@ class PaymentsControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
 		// effettuo la notifica di pagamento di una rata parziale (isPartialPayment = true) e verifico lo stato in paid
-		mvc.perform(post("/organizations/PAY_Multiple_Partial2_409_12345678901/paymentoptions/123456IUVMULTIPLEMOCK4/pay")
+		mvc.perform(post("/organizations/PAY_Multiple_Partial2_409_12345678901/paymentoptions/"+auxDigit+"123456IUVMULTIPLEMOCK4/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.nav").value(auxDigit+"123456IUVMULTIPLEMOCK4"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMULTIPLEMOCK4"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(PaymentOptionStatus.PO_PAID.toString()));
@@ -460,14 +495,14 @@ class PaymentsControllerTest {
 				.value(DebtPositionStatus.PARTIALLY_PAID.toString()));
 		
 		// effettuo un nuovo pagamento sulla payment option non rateizzabile (isPartialPayment = false) e ottengo errore
-		mvc.perform(post("/organizations/PAY_Multiple_Partial2_409_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/pay")
+		mvc.perform(post("/organizations/PAY_Multiple_Partial2_409_12345678901/paymentoptions/"+auxDigit+"123456IUVMULTIPLEMOCK3/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isConflict());
 	}
 	
 	@Test
 	void payPaymentOption_422() throws Exception {
-		// creo una posizione debitoria (con 'validity date' impostata)
+		// creo una posizione debitoria (con 'validity date' impostata e nav non valorizzato)
 		mvc.perform(post("/organizations/PAY_422_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock6())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
@@ -477,7 +512,7 @@ class PaymentsControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 		
 		// effettuo la notifica di pagamento della rata unica (setIsPartialPayment = false) e verifico l'errore 422 di 'Not in payable state' 
-		mvc.perform(post("/organizations/PAY_422_12345678901/paymentoptions/123456IUVMOCK6/pay")
+		mvc.perform(post("/organizations/PAY_422_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK6/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isUnprocessableEntity());
 	}
@@ -485,7 +520,7 @@ class PaymentsControllerTest {
 	@Test
 	void payPaymentOption_404() throws Exception {
 		// provo a pagare una payment option che non esiste
-		String url = "/organizations/PAY_400_12345678901/paymentoptions/123456IUVNOTEXIST";
+		String url = "/organizations/PAY_400_12345678901/paymentoptions/123456_NAV_NOTEXIST";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
 	}
@@ -493,7 +528,7 @@ class PaymentsControllerTest {
 	@Test
 	void payPaymentOption_400() throws Exception {
 		// provo a pagare una payment option con body della request non corretto
-		mvc.perform(post("/organizations/PAY_Multiple_Partial2_409_12345678901/paymentoptions/123456IUVMULTIPLEMOCK4/pay")
+		mvc.perform(post("/organizations/PAY_Multiple_Partial2_409_12345678901/paymentoptions/"+auxDigit+"123456IUVMULTIPLEMOCK4/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPO400Mock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
@@ -505,7 +540,7 @@ class PaymentsControllerTest {
 
 	@Test
 	void reportTransfer_200() throws Exception {
-		// creo una posizione debitoria (senza 'validity date' impostata) con una sola PO e isPartialPayment=false
+		// creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato) con una sola PO e isPartialPayment=false
 		mvc.perform(post("/organizations/REPORT_200_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
@@ -515,10 +550,11 @@ class PaymentsControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 		
 		// effettuo la notifica di pagamento e verifico lo stato in paid
-		mvc.perform(post("/organizations/REPORT_200_12345678901/paymentoptions/123456IUVMOCK1/pay")
+		mvc.perform(post("/organizations/REPORT_200_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.nav").value(auxDigit+"123456IUVMOCK1"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMOCK1"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(PaymentOptionStatus.PO_PAID.toString()));
@@ -530,7 +566,7 @@ class PaymentsControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(DebtPositionStatus.PAID.toString()));
 		
-		// effettuo la rendicontazione per l'unica transazione della PO
+		// effettuo la rendicontazione per l'unica transazione della PO (si continua ad utilizzare lo IUV e non il NAV)
 		mvc.perform(post("/organizations/REPORT_200_12345678901/paymentoptions/123456IUVMOCK1/transfers/1/report")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -538,7 +574,7 @@ class PaymentsControllerTest {
 				.value(TransferStatus.T_REPORTED.toString()));
 		
 		//recupero la PO e verifico lo stato in PO_REPORTED
-		String url = "/organizations/REPORT_200_12345678901/paymentoptions/123456IUVMOCK1";
+		String url = "/organizations/REPORT_200_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")

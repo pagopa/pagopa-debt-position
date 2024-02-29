@@ -56,6 +56,8 @@ public class PaymentPositionCRUDService {
     private PaymentOptionRepository paymentOptionRepository;
     @Autowired
     private ModelMapper modelMapper;
+    @Value("${nav.aux.digit}")
+    private String auxDigit;
 
 
     public PaymentPosition create(@NotNull PaymentPosition debtPosition, @NotBlank String organizationFiscalCode, boolean toPublish, List<String> segCodes) {
@@ -70,8 +72,8 @@ public class PaymentPositionCRUDService {
 
         } catch (DataIntegrityViolationException e) {
             log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
-            if (e.getCause() instanceof ConstraintViolationException) {
-                String sqlState = ((ConstraintViolationException) e.getCause()).getSQLState();
+            if (e.getCause() instanceof ConstraintViolationException constraintviolationexception) {
+                String sqlState = constraintviolationexception.getSQLState();
                 if (sqlState.equals(UNIQUE_KEY_VIOLATION)) {
                     throw new AppException(AppError.DEBT_POSITION_UNIQUE_VIOLATION, organizationFiscalCode);
                 }
@@ -211,8 +213,8 @@ public class PaymentPositionCRUDService {
 
         } catch (DataIntegrityViolationException e) {
             log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
-            if (e.getCause() instanceof ConstraintViolationException) {
-                String sqlState = ((ConstraintViolationException) e.getCause()).getSQLState();
+            if (e.getCause() instanceof ConstraintViolationException constraintviolationexception) {
+                String sqlState = constraintviolationexception.getSQLState();
                 if (sqlState.equals(UNIQUE_KEY_VIOLATION)) {
                     throw new AppException(AppError.DEBT_POSITION_UNIQUE_VIOLATION, organizationFiscalCode);
                 }
@@ -286,6 +288,7 @@ public class PaymentPositionCRUDService {
 		    po.setStatus(PaymentOptionStatus.PO_UNPAID);
 		    po.setPaymentPosition(pp);
 		    po.getPaymentOptionMetadata().forEach(pom -> pom.setPaymentOption(po));
+		    po.setNav(Optional.ofNullable(po.getNav()).orElse(auxDigit+po.getIuv()));
 
 		    for (Transfer t : po.getTransfer()) {
 		        t.setIuv(po.getIuv());

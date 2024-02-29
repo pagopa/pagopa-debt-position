@@ -15,6 +15,11 @@ import java.util.Optional;
 @Repository
 public interface PaymentOptionRepository extends JpaRepository<PaymentOption, Long>, JpaSpecificationExecutor<PaymentOption> {
     // Derived Query - using method naming convention
-    Optional<PaymentOption> findByOrganizationFiscalCodeAndIuv(String organizationFiscalCode, String iuv);
+    //Optional<PaymentOption> findByOrganizationFiscalCodeAndNav(String organizationFiscalCode, String nav);  // search only by nav
+	Optional<PaymentOption> findByOrganizationFiscalCodeAndIuv(String organizationFiscalCode, String iuv);  // search only by iuv
+	
+	
+	// temporary regression management: search by nav or iuv
+	Optional<PaymentOption> findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(String organizationFiscalCodeIuv, String iuv, String organizationFiscalCodeNav, String nav); 
 }
 

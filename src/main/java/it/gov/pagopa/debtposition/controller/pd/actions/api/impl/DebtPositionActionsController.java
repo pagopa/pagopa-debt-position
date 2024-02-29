@@ -9,7 +9,6 @@ import it.gov.pagopa.debtposition.service.pd.actions.PaymentPositionActionsServi
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -28,9 +27,7 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
     private ModelMapper modelMapper;
     @Autowired
     private PaymentPositionActionsService paymentPositionActionsService;
-    
-    @Value("${nav.aux.digit}")
-    private String auxDigit;
+  
 
     @Override
     public ResponseEntity<PaymentPositionModel> publishDebtPosition(String organizationFiscalCode, String iupd, String segregationCodes) {
@@ -40,8 +37,6 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
         PaymentPosition publishedDebtPos = paymentPositionActionsService.publish(organizationFiscalCode, iupd, segCodes);
         if (null != publishedDebtPos) {
         	PaymentPositionModel paymentPosition = modelMapper.map(publishedDebtPos, PaymentPositionModel.class);
-        	//PAGOPA-1155: add nav info to PO
-        	paymentPosition.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv()));
             return new ResponseEntity<>(paymentPosition, HttpStatus.OK);
         }
 
@@ -56,8 +51,6 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
         PaymentPosition invalidatedDebtPos = paymentPositionActionsService.invalidate(organizationFiscalCode, iupd, segCodes);
         if (null != invalidatedDebtPos) {
         	PaymentPositionModel paymentPosition = modelMapper.map(invalidatedDebtPos, PaymentPositionModel.class);
-        	//PAGOPA-1155: add nav info to PO
-        	paymentPosition.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv()));
             return new ResponseEntity<>(paymentPosition, HttpStatus.OK);
         }
 
