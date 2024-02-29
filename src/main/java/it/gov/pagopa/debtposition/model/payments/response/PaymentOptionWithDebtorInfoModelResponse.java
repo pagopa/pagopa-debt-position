@@ -24,6 +24,7 @@ public class PaymentOptionWithDebtorInfoModelResponse implements Serializable {
     private static final long serialVersionUID = 9129763339251863583L;
 
     // PaymentOption entity fields
+    private String nav;
     private String iuv;
     private String organizationFiscalCode;
     private long amount;

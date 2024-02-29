@@ -103,6 +103,40 @@ class DebtPositionActionsControllerTest {
 				.value(DebtPositionStatus.PUBLISHED.toString()))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty());
 	}
+	
+	@Test
+	void publishDebtPosition_custom_NAV_200() throws Exception {
+		// creo una posizione debitoria con un custom NAV (senza 'validity date' impostata)
+		PaymentPositionDTO pp = DebtPositionMock.getMock1();
+		pp.getPaymentOption().forEach(po -> po.setNav("CUSTOMNAV_"+po.getIuv()));
+		mvc.perform(post("/organizations/PBHVALID_NAV_12345678901/debtpositions")
+				.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value("CUSTOMNAV_123456IUVMOCK1"));
+
+		// recupero la posizione debitoria e verifico lo stato in draft
+		mvc.perform(get("/organizations/PBHVALID_NAV_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.DRAFT.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isEmpty());
+
+		// porto in pubblicata/validata lo stato della posizione debitoria
+		mvc.perform(post("/organizations/PBHVALID_NAV_12345678901/debtpositions/12345678901IUPDMOCK1/publish")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+
+		// verifico che lo stato sia stato aggiornato a valid (doppio passaggio di stato) 
+		mvc.perform(get("/organizations/PBHVALID_NAV_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.VALID.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value("CUSTOMNAV_123456IUVMOCK1"));
+	}
 
 	@Test
 	void publishDebtPosition_409() throws Exception {
@@ -288,6 +322,47 @@ class DebtPositionActionsControllerTest {
 				.value(DebtPositionStatus.INVALID.toString()))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
 				.value("3123456IUVMOCK1"));
+	}
+	
+	@Test
+	void invalidateDebtPosition_Custom_NAV_200() throws Exception {
+		// creo una posizione debitoria con un custom NAV (senza 'validity date' impostata)
+		PaymentPositionDTO pp = DebtPositionMock.getMock1();
+		pp.getPaymentOption().forEach(po -> po.setNav("CUSTOMNAV_"+po.getIuv()));
+		mvc.perform(post("/organizations/INVALIDATE_NAV_12345678901/debtpositions")
+				.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value("CUSTOMNAV_123456IUVMOCK1"));
+
+		// recupero la posizione debitoria e verifico lo stato in draft
+		mvc.perform(get("/organizations/INVALIDATE_NAV_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.DRAFT.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isEmpty());
+
+		// porto in pubblicata/validata lo stato della posizione debitoria
+		mvc.perform(post("/organizations/INVALIDATE_NAV_12345678901/debtpositions/12345678901IUPDMOCK1/publish")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+
+		// verifico che lo stato sia stato aggiornato a valid (doppio passaggio di stato) 
+		mvc.perform(get("/organizations/INVALIDATE_NAV_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.VALID.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty());
+
+		// invalido la posizione debitoria
+		mvc.perform(post("/organizations/INVALIDATE_NAV_12345678901/debtpositions/12345678901IUPDMOCK1/invalidate")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.INVALID.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value("CUSTOMNAV_123456IUVMOCK1"));
 	}
 	
 	@Test
