@@ -19,6 +19,7 @@ public class PaymentOptionDTO implements Serializable {
      */
     private static final long serialVersionUID = -4792852695535892332L;
     
+    private String nav;
     private String iuv;
     private String organizationFiscalCode;
     private long amount;

@@ -25,7 +25,6 @@ public class PaymentOptionModel implements Serializable {
      */
     private static final long serialVersionUID = -8328320637402363721L;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String nav;
     @NotBlank(message = "iuv is required")
     private String iuv;
