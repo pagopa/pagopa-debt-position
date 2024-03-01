@@ -190,7 +190,8 @@ public class PaymentsService {
             }
 
             // aggiorno le proprietà per la payment option oggetto dell'attuale pagamento
-            if (po.getNav().equals(nav)) {
+            // TODO: temporary regression management --> remove "|| po.getIuv().equals(nav)" when only nav managment is enabled
+            if (po.getNav().equals(nav) || po.getIuv().equals(nav)) {
                 po.setLastUpdatedDate(currentDate);
                 po.setPaymentDate(paymentOptionModel.getPaymentDate());
                 po.setPaymentMethod(paymentOptionModel.getPaymentMethod());
