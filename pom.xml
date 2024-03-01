@@ -20,6 +20,7 @@
         <modelmapper-version>3.1.0</modelmapper-version>
         <jackson-datatype-jsr310-version>2.13.1</jackson-datatype-jsr310-version>
         <flyway-version>8.5.10</flyway-version>
+        <hikaricp.version>5.1.0</hikaricp.version>
         <openfeign-version>3.1.8</openfeign-version>
         <azure.data.table.version>12.3.18</azure.data.table.version>
         <azure.core.version>1.45.1</azure.core.version>
@@ -138,6 +139,12 @@
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
             <version>${flyway-version}</version>
+        </dependency>
+        <!-- overriding to use last version -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>${hikaricp.version}</version>
         </dependency>
         <!-- Feign -->
         <dependency>
