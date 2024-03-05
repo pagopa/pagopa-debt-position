@@ -53,6 +53,7 @@ public class PaymentsService {
     @Value("${nav.aux.digit}")
     private String auxDigit;
 
+    //TODO #naviuv: temporary regression management --> the nav variable can also be evaluated with iuv. Remove the comment when only nav managment is enabled
     public PaymentOption getPaymentOptionByNAV(@NotBlank String organizationFiscalCode,
                                                @NotBlank String nav) {
 
@@ -190,7 +191,7 @@ public class PaymentsService {
             }
 
             // aggiorno le proprietà per la payment option oggetto dell'attuale pagamento
-            // TODO: temporary regression management --> remove "|| po.getIuv().equals(nav)" when only nav managment is enabled
+            // TODO #naviuv: temporary regression management --> remove "|| po.getIuv().equals(nav)" when only nav managment is enabled
             if (po.getNav().equals(nav) || po.getIuv().equals(nav)) {
                 po.setLastUpdatedDate(currentDate);
                 po.setPaymentDate(paymentOptionModel.getPaymentDate());

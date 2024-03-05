@@ -19,7 +19,7 @@ public interface PaymentOptionRepository extends JpaRepository<PaymentOption, Lo
 	Optional<PaymentOption> findByOrganizationFiscalCodeAndIuv(String organizationFiscalCode, String iuv);  // search only by iuv
 	
 	
-	// temporary regression management: search by nav or iuv
+	// TODO #naviuv: temporary regression management: search by nav or iuv
 	Optional<PaymentOption> findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(String organizationFiscalCodeIuv, String iuv, String organizationFiscalCodeNav, String nav); 
 }
 

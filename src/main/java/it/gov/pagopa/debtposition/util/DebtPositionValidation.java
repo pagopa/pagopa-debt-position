@@ -207,7 +207,7 @@ public class DebtPositionValidation {
     }
 
     private static void checkPaymentOptionPayable(PaymentPosition ppToPay, String nav) {
-    	// TODO: temporary regression management --> remove "|| po.getIuv().equals(nav)" when only nav managment is enabled
+    	// TODO #naviuv: temporary regression management --> remove "|| po.getIuv().equals(nav)" when only nav managment is enabled
         PaymentOption poToPay = ppToPay.getPaymentOption().stream().filter(po -> po.getNav().equals(nav) || po.getIuv().equals(nav)).findFirst()
                 .orElseThrow(() -> {
                     log.error("Obtained unexpected empty payment option - ["

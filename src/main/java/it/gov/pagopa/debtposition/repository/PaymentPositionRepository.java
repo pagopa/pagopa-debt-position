@@ -39,7 +39,7 @@ public interface PaymentPositionRepository extends JpaRepository<PaymentPosition
     // Derived Query - using method naming convention - get parent PaymentPosition from child PaymentOption properties
     //Optional<PaymentPosition> findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionNav(String organizationFiscalCode, String nav); // search only by nav
     
-    // temporary regression management: search by nav or iuv
+    // TODO #naviuv: temporary regression management: search by nav or iuv
     Optional<PaymentPosition> findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvOrPaymentOptionOrganizationFiscalCodeAndPaymentOptionNav(String organizationFiscalCodeIuv, String iuv, 
     		String organizationFiscalCodeNav, String nav);
 
