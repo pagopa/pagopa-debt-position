@@ -18,6 +18,7 @@ public class ConvertPOEntityToPOWithDebtor implements Converter<PaymentOption, P
     PaymentOptionWithDebtorInfoModelResponse destination = new PaymentOptionWithDebtorInfoModelResponse();
 
     // PaymentOption info
+    destination.setNav(source.getNav());
     destination.setIuv(source.getIuv());
     destination.setOrganizationFiscalCode(source.getOrganizationFiscalCode());
     destination.setAmount(source.getAmount());

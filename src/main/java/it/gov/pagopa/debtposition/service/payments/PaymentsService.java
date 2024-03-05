@@ -53,13 +53,14 @@ public class PaymentsService {
     @Value("${nav.aux.digit}")
     private String auxDigit;
 
-    public PaymentOption getPaymentOptionByIUV(@NotBlank String organizationFiscalCode,
-                                               @NotBlank String iuv) {
+    //TODO #naviuv: temporary regression management --> the nav variable can also be evaluated with iuv. Remove the comment when only nav managment is enabled
+    public PaymentOption getPaymentOptionByNAV(@NotBlank String organizationFiscalCode,
+                                               @NotBlank String nav) {
 
-        Optional<PaymentOption> po = paymentOptionRepository.findByOrganizationFiscalCodeAndIuv(organizationFiscalCode, iuv);
+        Optional<PaymentOption> po = paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(organizationFiscalCode, nav, organizationFiscalCode, nav);
 
         if (po.isEmpty()) {
-            throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, iuv);
+            throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav);
         }
 
         return po.get();
@@ -68,18 +69,19 @@ public class PaymentsService {
 
     @Transactional
     public PaymentOption pay(@NotBlank String organizationFiscalCode,
-                             @NotBlank String iuv, @NotNull @Valid PaymentOptionModel paymentOptionModel) {
+                             @NotBlank String nav, @NotNull @Valid PaymentOptionModel paymentOptionModel) {
 
 
-        Optional<PaymentPosition> ppToPay = paymentPositionRepository.findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuv(organizationFiscalCode, iuv);
+        Optional<PaymentPosition> ppToPay = paymentPositionRepository.
+        		findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvOrPaymentOptionOrganizationFiscalCodeAndPaymentOptionNav(organizationFiscalCode, nav, organizationFiscalCode, nav);
 
         if (ppToPay.isEmpty()) {
-            throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, iuv);
+            throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav);
         }
 
-        DebtPositionValidation.checkPaymentPositionPayability(ppToPay.get(), iuv);
+        DebtPositionValidation.checkPaymentPositionPayability(ppToPay.get(), nav);
 
-        return this.updatePaymentStatus(ppToPay.get(), iuv, paymentOptionModel);
+        return this.updatePaymentStatus(ppToPay.get(), nav, paymentOptionModel);
     }
 
 
@@ -173,7 +175,7 @@ public class PaymentsService {
         return Collections.emptyList();
     }
 
-    private PaymentOption updatePaymentStatus(PaymentPosition pp, String iuv, PaymentOptionModel paymentOptionModel) {
+    private PaymentOption updatePaymentStatus(PaymentPosition pp, String nav, PaymentOptionModel paymentOptionModel) {
 
         LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
         PaymentOption poToPay = null;
@@ -189,7 +191,8 @@ public class PaymentsService {
             }
 
             // aggiorno le proprietà per la payment option oggetto dell'attuale pagamento
-            if (po.getIuv().equals(iuv)) {
+            // TODO #naviuv: temporary regression management --> remove "|| po.getIuv().equals(nav)" when only nav managment is enabled
+            if (po.getNav().equals(nav) || po.getIuv().equals(nav)) {
                 po.setLastUpdatedDate(currentDate);
                 po.setPaymentDate(paymentOptionModel.getPaymentDate());
                 po.setPaymentMethod(paymentOptionModel.getPaymentMethod());

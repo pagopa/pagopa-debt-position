@@ -37,7 +37,11 @@ public interface PaymentPositionRepository extends JpaRepository<PaymentPosition
     int updatePaymentPositionStatusToExpired(@Param(value = "currentDate") LocalDateTime currentDate, @Param(value = "status") DebtPositionStatus status);
 
     // Derived Query - using method naming convention - get parent PaymentPosition from child PaymentOption properties
-    Optional<PaymentPosition> findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuv(String organizationFiscalCode, String iuv);
+    //Optional<PaymentPosition> findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionNav(String organizationFiscalCode, String nav); // search only by nav
+    
+    // TODO #naviuv: temporary regression management: search by nav or iuv
+    Optional<PaymentPosition> findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvOrPaymentOptionOrganizationFiscalCodeAndPaymentOptionNav(String organizationFiscalCodeIuv, String iuv, 
+    		String organizationFiscalCodeNav, String nav);
 
     // Derived Query - using method naming convention - get parent PaymentPosition from child PaymentOption and Transfer properties
     Optional<PaymentPosition> findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(String organizationFiscalCode, String iuv, String idTransfer);

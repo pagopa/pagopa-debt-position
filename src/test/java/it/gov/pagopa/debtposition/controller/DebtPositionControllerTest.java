@@ -522,7 +522,7 @@ class DebtPositionControllerTest {
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
 		// effettuo la notifica di pagamento
-		mvc.perform(post("/organizations/LIST_12345678902/paymentoptions/123456IUVMOCK1/pay")
+		mvc.perform(post("/organizations/LIST_12345678902/paymentoptions/"+auxDigit+"123456IUVMOCK1/pay")
 							.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON));
@@ -555,7 +555,7 @@ class DebtPositionControllerTest {
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
 		// effettuo la notifica di pagamento
-		mvc.perform(post("/organizations/LIST_12345678903/paymentoptions/123456IUVMOCK1/pay")
+		mvc.perform(post("/organizations/LIST_12345678903/paymentoptions/"+auxDigit+"123456IUVMOCK1/pay")
 							.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
@@ -800,7 +800,7 @@ class DebtPositionControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
 		// effettuo la notifica di pagamento e verifico lo stato in paid
-		mvc.perform(post("/organizations/DEL_409_12345678901/paymentoptions/123456IUVMOCK1/pay")
+		mvc.perform(post("/organizations/DEL_409_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -1354,7 +1354,7 @@ class DebtPositionControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
 		// effettuo la notifica di pagamento e verifico lo stato in paid
-		mvc.perform(post("/organizations/UPD409_PAID_12345678901/paymentoptions/123456IUVMOCK1/pay")
+		mvc.perform(post("/organizations/UPD409_PAID_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -1388,7 +1388,7 @@ class DebtPositionControllerTest {
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 
-		// effettuo un aggiornamento della notification fee
+		// effettuo un aggiornamento della notification fee (si continua ad utilizzare lo IUV e non il NAV)
 		mvc.perform(MockMvcRequestBuilders.put("/organizations/UPD422_novalidtransfer_12345678901/paymentoptions/123456IUVMOCK1/notificationfee")
 				.content(TestUtil.toJson(DebtPositionMock.createNotificationFeeMock(150L)))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());

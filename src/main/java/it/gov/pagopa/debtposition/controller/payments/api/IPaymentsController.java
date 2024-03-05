@@ -25,19 +25,19 @@ import javax.validation.Valid;
 @RequestMapping
 public interface IPaymentsController {
 
-    @Operation(summary = "Return the details of a specific payment option.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizationPaymentOptionByIUV")
+    @Operation(summary = "Return the details of a specific payment option.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizationPaymentOptionByNAV")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Obtained payment option details.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(name = "PaymentPositionResponse", implementation = PaymentOptionWithDebtorInfoModelResponse.class))),
             @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
             @ApiResponse(responseCode = "404", description = "No payment option found.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
             @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
-    @GetMapping(value = "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}",
+    @GetMapping(value = "/organizations/{organizationfiscalcode}/paymentoptions/{nav}",
             produces = {"application/json"})
-    ResponseEntity<PaymentOptionWithDebtorInfoModelResponse> getOrganizationPaymentOptionByIUV(
+    ResponseEntity<PaymentOptionWithDebtorInfoModelResponse> getOrganizationPaymentOptionByNAV(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
-            @Parameter(description = "IUV (Unique Payment Identification). Alphanumeric code that uniquely associates and identifies three key elements of a payment: reason, payer, amount", required = true)
-            @PathVariable("iuv") String iuv);
+            @Parameter(description = "NAV (notice number) is the unique reference assigned to the payment by a creditor institution.", required = true)
+            @PathVariable("nav") String nav);
 
     @Operation(summary = "The Organization paid a payment option.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "payPaymentOption")
     @ApiResponses(value = {
@@ -48,14 +48,14 @@ public interface IPaymentsController {
             @ApiResponse(responseCode = "409", description = "Conflict: existing related payment found.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
             @ApiResponse(responseCode = "422", description = "Unprocessable: not in payable state.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
             @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
-    @PostMapping(value = "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}/pay",
+    @PostMapping(value = "/organizations/{organizationfiscalcode}/paymentoptions/{nav}/pay",
             produces = {"application/json"},
             consumes = {"application/json"})
     ResponseEntity<PaymentOptionModelResponse> payPaymentOption(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
-            @Parameter(description = "IUV (Unique Payment Identification). Alphanumeric code that uniquely associates and identifies three key elements of a payment: reason, payer, amount", required = true)
-            @PathVariable("iuv") String iuv,
+            @Parameter(description = "NAV (notice number) is the unique reference assigned to the payment by a creditor institution.", required = true)
+            @PathVariable("nav") String nav,
             @Valid @RequestBody PaymentOptionModel paymentOptionModel);
 
     @Operation(summary = "The organization reports a transaction.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "reportTransfer")
