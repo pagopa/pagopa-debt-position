@@ -56,7 +56,6 @@ public class PaymentPositionModel implements Serializable {
     // Payment Position properties
     @NotBlank(message = "company name is required")
     private String companyName; // es. Comune di Roma
-    @NotBlank(message = "office name is required")
     private String officeName; // es. Ufficio Tributi
     private LocalDateTime validityDate;
     @JsonProperty(access = Access.READ_ONLY)
