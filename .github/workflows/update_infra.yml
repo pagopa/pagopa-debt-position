@@ -1,14 +1,14 @@
 name: Open a PR in Infra repository
 
 on:
-  pull_request:
-    branches:
-      - main
-    types: [ closed ]
-    paths:
-      - 'openapi/*'
+#  pull_request:
+#    branches:
+#      - main
+#    types: [ closed ]
+#    paths:
+#      - 'openapi/*'
 
-
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
