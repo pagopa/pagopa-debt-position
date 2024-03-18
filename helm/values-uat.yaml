@@ -85,7 +85,7 @@ microservice-chart:
   envConfig:
     WEBSITE_SITE_NAME: 'pagopa-u-gpd-core-service'
     ENV: 'Azure Kubernetes'
-    SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.u.internal.postgresql.pagopa.it:6432/apd?sslmode=require&prepareThreshold=0"
+    SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.u.internal.postgresql.pagopa.it:6432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true"
     SPRING_DATASOURCE_TYPE: "org.springframework.jdbc.datasource.SimpleDriverDataSource"
     SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
     SPRING_JPA_HIBERNATE_SHOW_SQL: "false"
