@@ -172,9 +172,9 @@ public class PaymentPositionCRUDService {
 
             // migrate the notification fee value (if defined) and update the amounts
             ppToUpdate = setOldNotificationFee(oldPaymentOptions, organizationFiscalCode, ppToUpdate);
-            
+
             // check the input data
-            DebtPositionValidation.checkPaymentPositionInputDataAccurancy(ppToUpdate);
+            DebtPositionValidation.checkPaymentPositionInputDataAccuracy(ppToUpdate);
             
             paymentPositionRepository.delete(ppToUpdate);
             paymentPositionRepository.flush();
@@ -230,6 +230,55 @@ public class PaymentPositionCRUDService {
         }
 	}
 
+    @Transactional
+    public List<PaymentPosition> updateMultipleDebtPositions(@Valid List<PaymentPosition> inputPaymentPositions,
+                                                             String organizationFiscalCode, boolean toPublish, List<String> segCodes) {
+        final String ERROR_UPDATE_LOG_MSG = "Error during debt positions update: %s";
+        List<PaymentPosition> ppUpdateList = new ArrayList<>();
+        List<PaymentPosition> ppToRemoveList = new ArrayList<>();
+
+        try {
+            for (PaymentPosition inputPaymentPosition : inputPaymentPositions) {
+                PaymentPosition paymentPosition = this.getDebtPositionByIUPD(organizationFiscalCode, inputPaymentPosition.getIupd(), segCodes);
+                PaymentPosition updatePaymentPosition = paymentPosition.deepClone();
+
+                if (DebtPositionStatus.getPaymentPosNotUpdatableStatus().contains(paymentPosition.getStatus())) {
+                    throw new AppException(AppError.DEBT_POSITION_NOT_UPDATABLE, organizationFiscalCode, inputPaymentPosition.getIupd());
+                }
+
+                // flip model to entity
+                updatePaymentPosition.getPaymentOption().clear();
+                modelMapper.map(inputPaymentPosition, updatePaymentPosition);
+
+                // migrate the notification fee value (if defined) and update the amounts
+                updatePaymentPosition = setOldNotificationFee(updatePaymentPosition.getPaymentOption(), organizationFiscalCode, updatePaymentPosition);
+                // check the input data
+                DebtPositionValidation.checkPaymentPositionInputDataAccuracy(updatePaymentPosition);
+                // the version is increased at each change
+                updatePaymentPosition.setVersion(updatePaymentPosition.getVersion()+1);
+
+                ppToRemoveList.add(paymentPosition);
+                ppUpdateList.add(updatePaymentPosition);
+            }
+
+            paymentPositionRepository.deleteAll(ppToRemoveList);
+            paymentPositionRepository.flush();
+            this.createMultipleDebtPositions(ppUpdateList, organizationFiscalCode, toPublish, segCodes);
+
+            return ppUpdateList;
+        } catch (ValidationException e) {
+            throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
+        } catch (AppException e) {
+            if (AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_TRANSFER_NOT_FOUND.title.equals(e.getTitle())) {
+                throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED_NO_TRANSFER_FOR_NOTIFICATION_FEE, organizationFiscalCode, e.getMessage());
+            }
+            throw e;
+        } catch (Exception e) {
+            log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
+            throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
+        }
+    }
+
     private PaymentPosition setOldNotificationFee(List<PaymentOption> oldPaymentOptions, String organizationFiscalCode, PaymentPosition paymentPosition) {
         Map<String, Long> oldPONotificationFeeMapping = oldPaymentOptions.stream().collect(Collectors.toMap(PaymentOption::getIuv, PaymentOption::getNotificationFee));
         for (PaymentOption paymentOptionModel : paymentPosition.getPaymentOption()) {
@@ -267,7 +316,7 @@ public class PaymentPositionCRUDService {
 		}
 		
 		// verifico la correttezza dei dati in input
-		DebtPositionValidation.checkPaymentPositionInputDataAccurancy(pp);
+		DebtPositionValidation.checkPaymentPositionInputDataAccuracy(pp);
 
 		// predispongo i dati ad uso interno prima dell'aggiornamento
 		LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
