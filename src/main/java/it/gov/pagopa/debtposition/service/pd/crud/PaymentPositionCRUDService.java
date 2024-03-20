@@ -234,12 +234,19 @@ public class PaymentPositionCRUDService {
     public List<PaymentPosition> updateMultipleDebtPositions(@Valid List<PaymentPosition> inputPaymentPositions,
                                                              String organizationFiscalCode, boolean toPublish, List<String> segCodes) {
         final String ERROR_UPDATE_LOG_MSG = "Error during debt positions update: %s";
-        List<PaymentPosition> ppUpdateList = new ArrayList<>();
-        List<PaymentPosition> ppToRemoveList = new ArrayList<>();
+        List<PaymentPosition> updatePositions = new ArrayList<>();
+        Map<String, PaymentPosition> inPositionsMap = new HashMap<>();
+        inputPaymentPositions.forEach(pp -> inPositionsMap.put(pp.getIupd(), pp));
+        // findAll query
+        PaymentPositionByIUPDList spec = new PaymentPositionByIUPDList(inPositionsMap.keySet().stream().toList());
+        Specification<PaymentPosition> specPP = Specification.where(spec);
+        Pageable pageable = PageRequest.of(0, inputPaymentPositions.size());
+        Page<PaymentPosition> result = paymentPositionRepository.findAll(specPP, pageable);
+        List<PaymentPosition> readPositions = result.getContent();
 
         try {
-            for (PaymentPosition inputPaymentPosition : inputPaymentPositions) {
-                PaymentPosition paymentPosition = this.getDebtPositionByIUPD(organizationFiscalCode, inputPaymentPosition.getIupd(), segCodes);
+            for (PaymentPosition paymentPosition : readPositions) {
+                PaymentPosition inputPaymentPosition = inPositionsMap.get(paymentPosition.getIupd());
                 PaymentPosition updatePaymentPosition = paymentPosition.deepClone();
 
                 if (DebtPositionStatus.getPaymentPosNotUpdatableStatus().contains(paymentPosition.getStatus())) {
@@ -257,15 +264,14 @@ public class PaymentPositionCRUDService {
                 // the version is increased at each change
                 updatePaymentPosition.setVersion(updatePaymentPosition.getVersion()+1);
 
-                ppToRemoveList.add(paymentPosition);
-                ppUpdateList.add(updatePaymentPosition);
+                updatePositions.add(updatePaymentPosition);
             }
 
-            paymentPositionRepository.deleteAll(ppToRemoveList);
+            paymentPositionRepository.deleteAll(readPositions);
             paymentPositionRepository.flush();
-            this.createMultipleDebtPositions(ppUpdateList, organizationFiscalCode, toPublish, segCodes);
+            this.createMultipleDebtPositions(updatePositions, organizationFiscalCode, toPublish, segCodes);
 
-            return ppUpdateList;
+            return updatePositions;
         } catch (ValidationException e) {
             throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
         } catch (AppException e) {
