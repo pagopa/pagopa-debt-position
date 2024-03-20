@@ -244,6 +244,11 @@ public class PaymentPositionCRUDService {
         Page<PaymentPosition> result = paymentPositionRepository.findAll(specPP, pageable);
         List<PaymentPosition> readPositions = result.getContent();
 
+        // check whether all position entities exist: existence of all positions is a precondition for bulk update
+        if (readPositions.size() != inputPaymentPositions.size()) {
+            throw new AppException(AppError.DEBT_POSITION_NOT_FOUND, organizationFiscalCode, inPositionsMap.keySet());
+        }
+
         try {
             for (PaymentPosition paymentPosition : readPositions) {
                 PaymentPosition inputPaymentPosition = inPositionsMap.get(paymentPosition.getIupd());

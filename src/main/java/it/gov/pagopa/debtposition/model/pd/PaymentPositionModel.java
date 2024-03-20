@@ -64,7 +64,7 @@ public class PaymentPositionModel implements Serializable {
     private DebtPositionStatus status;
 
     @Valid
-    private List<PaymentOptionModel> paymentOption = new ArrayList<>();
+    private List<@Valid PaymentOptionModel> paymentOption = new ArrayList<>();
 
     public void addPaymentOptions(PaymentOptionModel paymentOpt) {
         paymentOption.add(paymentOpt);

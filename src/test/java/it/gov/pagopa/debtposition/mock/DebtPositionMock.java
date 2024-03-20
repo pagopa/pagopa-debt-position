@@ -58,7 +58,7 @@ public class DebtPositionMock {
 
 
 	public final static PaymentPositionDTO get400Mock1() {
-		return createPaymentPosition400Mock1();
+		return 	createPaymentPosition400Mock1();
 	}
 
 	public final static PaymentPositionDTO get400Mock2() {
@@ -104,13 +104,19 @@ public class DebtPositionMock {
 	public final static PaymentPositionDTO get409_Valid_Date_Mock1() {
 		return createPaymentPosition409_Valid_Date_Mock1();
 	}
-	public final static MultiplePaymentPositionDTO getMultipleDebtPositions_Mock() {
-		return createMultipleDebtPositionsMock();
+	public final static MultiplePaymentPositionDTO getMultipleDebtPositions_Mock1() {
+		return createMultipleDebtPositionsMock1();
 	}
-	public final static MultiplePaymentPositionDTO getMultipleDebtPositions_400_Mock() {
-		return createMultipleDebtPositionsMock_400();
+	public final static MultiplePaymentPositionDTO getMultipleDebtPositions_Mock2() {
+		return createMultipleDebtPositionsMock2();
+	}
+	public final static MultiplePaymentPositionDTO getMultipleDebtPositions_400_Mock1() {
+		return createMultipleDebtPositionsMock_400_1();
 	}
 
+	public final static MultiplePaymentPositionDTO getMultipleDebtPositions_400_Mock2() {
+		return createMultipleDebtPositionsMock_400_2();
+	}
 
 	public static PaymentPositionDTO createPaymentPositionMock1() {
 
@@ -1005,16 +1011,28 @@ public class DebtPositionMock {
 		return mock;
 	}
 	
-	public static MultiplePaymentPositionDTO createMultipleDebtPositionsMock() {
+	public static MultiplePaymentPositionDTO createMultipleDebtPositionsMock1() {
 		List<PaymentPositionDTO> pPMockList = new ArrayList<>();
-		pPMockList.add(createPaymentPositionMock1());
 		pPMockList.add(createPaymentPositionMock5());
 		return MultiplePaymentPositionDTO.builder().paymentPositions(pPMockList).build();
 	}
-	
-	public static MultiplePaymentPositionDTO createMultipleDebtPositionsMock_400() {
+
+	public static MultiplePaymentPositionDTO createMultipleDebtPositionsMock2() {
+		List<PaymentPositionDTO> pPMockList = new ArrayList<>();
+		pPMockList.add(createPaymentPositionMock2());
+		return MultiplePaymentPositionDTO.builder().paymentPositions(pPMockList).build();
+	}
+
+
+	public static MultiplePaymentPositionDTO createMultipleDebtPositionsMock_400_1() {
 		List<PaymentPositionDTO> pPMockList = new ArrayList<>();
 		pPMockList.add(createPaymentPosition400Mock1());
+		return MultiplePaymentPositionDTO.builder().paymentPositions(pPMockList).build();
+	}
+
+	public static MultiplePaymentPositionDTO createMultipleDebtPositionsMock_400_2() {
+		List<PaymentPositionDTO> pPMockList = new ArrayList<>();
+		pPMockList.add(createPaymentPosition400Mock2());
 		return MultiplePaymentPositionDTO.builder().paymentPositions(pPMockList).build();
 	}
 }
