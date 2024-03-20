@@ -1450,4 +1450,12 @@ class DebtPositionControllerTest {
 				.andExpect(status().isBadRequest())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON));
 	}
+
+	@Test
+	void updateMultipleDebtPositions_404() throws Exception {
+		mvc.perform(put("/organizations/12345678901_multiple/debtpositions")
+							.content(TestUtil.toJson(DebtPositionMock.getMultipleDebtPositions_Mock1())).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON));
+	}
 }
