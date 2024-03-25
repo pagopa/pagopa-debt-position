@@ -5,7 +5,7 @@ microservice-chart:
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
     tag: "0.11.2-1-PAGOPA-1530-upsert"
-    tag: "0.11.7"
+    tag: "0.11.8"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -86,7 +86,7 @@ microservice-chart:
   envConfig:
     WEBSITE_SITE_NAME: 'pagopa-d-gpd-core-service'
     ENV: 'Azure Kubernetes'
-    SPRING_DATASOURCE_URL: "jdbc:postgresql://pagopa-d-gpd-postgresql.postgres.database.azure.com:5432/apd?sslmode=require"
+    SPRING_DATASOURCE_URL: "jdbc:postgresql://pagopa-d-gpd-postgresql.postgres.database.azure.com:5432/apd?sslmode=require&tcpKeepAlive=true"
     SPRING_DATASOURCE_TYPE: "com.zaxxer.hikari.HikariDataSource"
     SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
     SPRING_JPA_HIBERNATE_SHOW_SQL: "false"
