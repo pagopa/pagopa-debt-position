@@ -108,6 +108,28 @@ public class PaymentPositionCRUDService {
         return pp.get();
     }
 
+    public List<PaymentPosition>  getDebtPositionsByIUPDs(String organizationFiscalCode, List<String> iupdList, List<String> segCodes) {
+        // findAll query by IUPD list
+        PaymentPositionByIUPDList spec = new PaymentPositionByIUPDList(iupdList);
+        Specification<PaymentPosition> specPP = Specification.where(spec);
+        Pageable pageable = PageRequest.of(0, iupdList.size());
+        Page<PaymentPosition> result = paymentPositionRepository.findAll(specPP, pageable);
+        List<PaymentPosition> paymentPositions = result.getContent();
+
+        if (paymentPositions.isEmpty() || paymentPositions.size() != iupdList.size()) {
+            throw new AppException(AppError.DEBT_POSITION_NOT_FOUND, organizationFiscalCode, iupdList);
+        }
+
+        // verify that caller is authorized to read payment positions
+        paymentPositions.forEach(pp -> {
+            if(segCodes != null && !isAuthorizedBySegregationCode(pp, segCodes)) {
+                throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, pp.getIupd());
+            }
+        });
+
+        return paymentPositions;
+    }
+
     public Page<PaymentPosition> getOrganizationDebtPositions(@Positive Integer limit, @Positive Integer pageNum, FilterAndOrder filterAndOrder) {
 
         checkAndUpdateDates(filterAndOrder);
@@ -237,17 +259,7 @@ public class PaymentPositionCRUDService {
         List<PaymentPosition> updatePositions = new ArrayList<>();
         Map<String, PaymentPosition> inPositionsMap = new HashMap<>();
         inputPaymentPositions.forEach(pp -> inPositionsMap.put(pp.getIupd(), pp));
-        // findAll query
-        PaymentPositionByIUPDList spec = new PaymentPositionByIUPDList(inPositionsMap.keySet().stream().toList());
-        Specification<PaymentPosition> specPP = Specification.where(spec);
-        Pageable pageable = PageRequest.of(0, inputPaymentPositions.size());
-        Page<PaymentPosition> result = paymentPositionRepository.findAll(specPP, pageable);
-        List<PaymentPosition> readPositions = result.getContent();
-
-        // check whether all position entities exist: existence of all positions is a precondition for bulk update
-        if (readPositions.size() != inputPaymentPositions.size()) {
-            throw new AppException(AppError.DEBT_POSITION_NOT_FOUND, organizationFiscalCode, inPositionsMap.keySet());
-        }
+        List<PaymentPosition> readPositions = getDebtPositionsByIUPDs(organizationFiscalCode, inPositionsMap.keySet().stream().toList(), segCodes);
 
         try {
             for (PaymentPosition paymentPosition : readPositions) {
@@ -287,6 +299,30 @@ public class PaymentPositionCRUDService {
         } catch (Exception e) {
             log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
             throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
+        }
+    }
+
+    @Transactional
+    public void deleteMultipleDebtPositions(@Valid List<String> multipleIUPDs,
+                                            String organizationFiscalCode, List<String> segCodes) {
+        final String ERROR_UPDATE_LOG_MSG = "Error during debt positions delete: %s";
+
+        List<PaymentPosition> readPositions = getDebtPositionsByIUPDs(organizationFiscalCode, multipleIUPDs, segCodes);
+
+        readPositions.forEach(ppToRemove -> {
+            if (DebtPositionStatus.getPaymentPosAlreadyPaidStatus().contains(ppToRemove.getStatus())) {
+                throw new AppException(AppError.DEBT_POSITION_PAYMENT_FOUND, organizationFiscalCode, ppToRemove.getIupd());
+            }
+        });
+
+        try {
+            paymentPositionRepository.deleteAll(readPositions);
+            paymentPositionRepository.flush();
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
+            throw new AppException(AppError.DEBT_POSITION_DELETE_FAILED, organizationFiscalCode);
         }
     }
 
