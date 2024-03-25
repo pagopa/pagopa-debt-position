@@ -183,4 +183,25 @@ public class DebtPositionController implements IDebtPositionController {
 
         throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
 	}
+
+    @Override
+    public ResponseEntity<Void> updateMultipleDebtPositions(String organizationFiscalCode,
+                                                            @Valid MultiplePaymentPositionModel multiplePaymentPositionModel, boolean toPublish,
+                                                            @Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
+        log.info(String.format(LOG_BASE_HEADER_INFO, "PUT", "updateMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
+
+        // flip model to entity
+        List<PaymentPosition> debtPositions = multiplePaymentPositionModel.getPaymentPositions()
+                                                      .stream().map( dp -> modelMapper.map(dp, PaymentPosition.class))
+                                                      .collect(Collectors.toList());
+
+        ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
+        List<PaymentPosition> updatedDebtPosList = paymentPositionService.updateMultipleDebtPositions(debtPositions, organizationFiscalCode, toPublish, segCodes);
+
+        if (!CollectionUtils.isEmpty(updatedDebtPosList)) {
+            return ResponseEntity.status(HttpStatus.OK).build();
+        }
+
+        throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
+    }
 }

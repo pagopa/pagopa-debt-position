@@ -138,7 +138,7 @@ public interface IDebtPositionController {
 
     @Operation(summary = "The Organization updates a debt position ", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "updatePosition")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Request updated."),
+            @ApiResponse(responseCode = "200", description = "Debt Position updated."),
             @ApiResponse(responseCode = "400", description = "Malformed request.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
             @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
             @ApiResponse(responseCode = "404", description = "No debt position found.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
@@ -156,4 +156,23 @@ public interface IDebtPositionController {
             @RequestParam(required = false, defaultValue = "false") boolean toPublish,
             @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
             @RequestParam(required = false) String segregationCodes);
+
+    @Operation(summary = "The Organization updates multiple debt positions.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "createMultiplePositions")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Debt Positions updated."),
+            @ApiResponse(responseCode = "400", description = "Malformed request.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
+            @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
+            @ApiResponse(responseCode = "409", description = "Conflict: existing related payment found.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class))),
+            @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
+    @PutMapping(value = "/organizations/{organizationfiscalcode}/debtpositions",
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Void> updateMultipleDebtPositions(
+            @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
+            @PathVariable("organizationfiscalcode") String organizationFiscalCode,
+            @Valid @RequestBody MultiplePaymentPositionModel multiplePaymentPositionModel,
+            @RequestParam(required = false, defaultValue = "false") boolean toPublish,
+            @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
+            @RequestParam(required = false) String segregationCodes);
+
 }

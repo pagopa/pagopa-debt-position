@@ -37,7 +37,7 @@ public class DebtPositionValidation {
         super();
     }
 
-    public static void checkPaymentPositionInputDataAccurancy(PaymentPosition pp) {
+    public static void checkPaymentPositionInputDataAccuracy(PaymentPosition pp) {
         checkPaymentPositionContentCongruency(pp);
     }
 

@@ -13,6 +13,7 @@ import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -129,5 +130,14 @@ public class PaymentPosition implements Serializable {
     public void removePaymentOption(PaymentOption paymentOpt) {
         paymentOption.remove(paymentOpt);
         paymentOpt.setPaymentPosition(null);
+    }
+
+    public PaymentPosition deepClone() {
+        PaymentPosition clone = SerializationUtils.clone(this);
+        List<PaymentOption> clonedPaymentOptions = new ArrayList<>();
+        paymentOption.forEach(po -> clonedPaymentOptions.add(SerializationUtils.clone(po)));
+        clone.setPaymentOption(clonedPaymentOptions);
+
+        return clone;
     }
 }
