@@ -11,7 +11,11 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class NotificationFeeUpdateModel  implements Serializable {
 
-    @NotNull(message = "Notification fee is required")
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -6961547642494729235L;
+	@NotNull(message = "Notification fee is required")
     @PositiveOrZero(message = "Notification fee must be greater or equals to zero")
     private Long notificationFee;
 }

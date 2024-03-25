@@ -85,13 +85,13 @@ public interface IPaymentsController {
             @ApiResponse(responseCode = "404", description = "No payment option found.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
             @ApiResponse(responseCode = "422", description = "Unprocessable payment option.", content = @Content(schema = @Schema(implementation = ProblemJson.class))),
             @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
-    @PutMapping(value = "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}/notificationfee",
+    @PutMapping(value = "/organizations/{organizationfiscalcode}/paymentoptions/{nav}/notificationfee",
             produces = {"application/json"})
     ResponseEntity<PaymentOptionModelResponse> updateNotificationFee(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
-            @Parameter(description = "IUV (Unique Payment Identification). Alphanumeric code that uniquely associates and identifies three key elements of a payment: reason, payer, amount", required = true)
-            @PathVariable("iuv") String iuv,
+            @Parameter(description = "NAV (notice number) is the unique reference assigned to the payment by a creditor institution.", required = true)
+            @PathVariable("nav") String nav,
             @Valid @RequestBody NotificationFeeUpdateModel notificationFeeUpdateModel);
 
 }
