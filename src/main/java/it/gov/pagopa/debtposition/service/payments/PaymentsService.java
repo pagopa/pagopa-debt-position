@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import feign.FeignException;
 import it.gov.pagopa.debtposition.client.NodeClient;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
@@ -122,20 +123,26 @@ public class PaymentsService {
         
         // Executes a call to the node's checkPosition API to see if there is a payment in progress
         try {
-        	// TODO #naviuv: temporary regression management: search by nav or iuv --> double call to the node
+        	// TODO #naviuv: temporary regression management: search by nav or iuv --> possible double call to the node
             // 1. first call attempt is with the nav variable valued as iuv (auxDigit added)
         	NodePosition position = NodePosition.builder().fiscalCode(organizationFiscalCode).noticeNumber(auxDigit+nav).build();
         	NodeCheckPositionResponse chkPositionRes = 
         			nodeClient.getCheckPosition(NodeCheckPositionModel.builder().positionslist(Collections.singletonList(position)).build());
-        	String firstCallOutcome = chkPositionRes.getOutcome();
-        	// 2. second call attempt is with the nav value
-        	position = NodePosition.builder().fiscalCode(organizationFiscalCode).noticeNumber(nav).build();
-        	chkPositionRes = 
-        			nodeClient.getCheckPosition(NodeCheckPositionModel.builder().positionslist(Collections.singletonList(position)).build());
-        	String secondCallOutcome = chkPositionRes.getOutcome();
-        	boolean paymentInProgress = "OK".equalsIgnoreCase(firstCallOutcome) || "OK".equalsIgnoreCase(secondCallOutcome)?Boolean.FALSE:Boolean.TRUE;
-        	paymentOption.setPaymentInProgress(paymentInProgress);
-        } catch (Exception e) {
+        	paymentOption.setPaymentInProgress("OK".equalsIgnoreCase(chkPositionRes.getOutcome())?Boolean.FALSE:Boolean.TRUE);
+        } catch (FeignException.BadRequest e) {
+        	// 2. if the first call fails with a bad request error --> try with a nav call
+        	NodePosition position = NodePosition.builder().fiscalCode(organizationFiscalCode).noticeNumber(nav).build();
+        	try {
+	        	NodeCheckPositionResponse chkPositionRes = 
+	        			nodeClient.getCheckPosition(NodeCheckPositionModel.builder().positionslist(Collections.singletonList(position)).build());
+	        	paymentOption.setPaymentInProgress("OK".equalsIgnoreCase(chkPositionRes.getOutcome())?Boolean.FALSE:Boolean.TRUE);
+        	} catch (Exception ex) {
+                log.error("Error checking the position on the node for PO with fiscalCode " + organizationFiscalCode + " and noticeNumber " + "("+auxDigit+")"+nav, ex);
+                // By business rules it is expected to treat the error as if the node had responded KO
+                paymentOption.setPaymentInProgress(Boolean.TRUE);
+            }
+        }
+        catch (Exception e) {
             log.error("Error checking the position on the node for PO with fiscalCode " + organizationFiscalCode + " and noticeNumber " + "("+auxDigit+")"+nav, e);
             // By business rules it is expected to treat the error as if the node had responded KO
             paymentOption.setPaymentInProgress(Boolean.TRUE);

@@ -47,8 +47,8 @@
           "required" : true
         },
         "responses" : {
-          "409" : {
-            "description" : "Conflict: duplicate debt position found.",
+          "500" : {
+            "description" : "Service unavailable.",
             "headers" : {
               "X-Request-Id" : {
                 "description" : "This header identifies the call",
@@ -65,8 +65,8 @@
               }
             }
           },
-          "201" : {
-            "description" : "Request created.",
+          "401" : {
+            "description" : "Wrong or missing function key.",
             "headers" : {
               "X-Request-Id" : {
                 "description" : "This header identifies the call",
@@ -76,8 +76,8 @@
               }
             }
           },
-          "401" : {
-            "description" : "Wrong or missing function key.",
+          "201" : {
+            "description" : "Request created.",
             "headers" : {
               "X-Request-Id" : {
                 "description" : "This header identifies the call",
@@ -105,8 +105,8 @@
               }
             }
           },
-          "500" : {
-            "description" : "Service unavailable.",
+          "409" : {
+            "description" : "Conflict: duplicate debt position found.",
             "headers" : {
               "X-Request-Id" : {
                 "description" : "This header identifies the call",
@@ -145,6 +145,35 @@
         "summary" : "Return OK if application is started",
         "operationId" : "healthCheck",
         "responses" : {
+          "500" : {
+            "description" : "Service unavailable.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Wrong or missing function key.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
           "200" : {
             "description" : "OK.",
             "headers" : {
@@ -170,35 +199,6 @@
                 "description" : "This header identifies the call",
                 "schema" : {
                   "type" : "string"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Wrong or missing function key.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Service unavailable.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            },
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemJson"
                 }
               }
             }

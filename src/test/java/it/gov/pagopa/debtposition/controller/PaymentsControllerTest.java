@@ -30,6 +30,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import feign.FeignException;
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
 import it.gov.pagopa.debtposition.client.NodeClient;
@@ -1017,7 +1018,7 @@ class PaymentsControllerTest {
 				.andExpect(MockMvcResultMatchers.jsonPath("$.transfer[0].amount")
 						.value(transferDTO.getAmount() + notificationFeeUpdateModel.getNotificationFee()));
 		
-		verify(nodeClient, times(2)).getCheckPosition(any(NodeCheckPositionModel.class));
+		verify(nodeClient, times(1)).getCheckPosition(any(NodeCheckPositionModel.class));
 
 		// leggo nuovamente la payment option per capire se gli amount sono stati modificati correttamente
 		mvc.perform(get("/organizations/PO200_notificationfee_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1")
@@ -1040,10 +1041,81 @@ class PaymentsControllerTest {
 				.andExpect(MockMvcResultMatchers.jsonPath("$.transfer[0].amount")
 						.value(transferDTO.getAmount()));
 		
-		verify(nodeClient, times(4)).getCheckPosition(any(NodeCheckPositionModel.class));
+		verify(nodeClient, times(2)).getCheckPosition(any(NodeCheckPositionModel.class));
 
 		// leggo nuovamente la payment option per capire se gli amount sono stati modificati correttamente
 		mvc.perform(get("/organizations/PO200_notificationfee_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1")
+						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.notificationFee")
+						.value(0L))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.amount")
+						.value(paymentOptionDTO.getAmount()));
+	}
+	
+	@Test
+	void updateNotificationFee_NAV_200() throws Exception {
+
+		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.paymentPositionForNotificationUpdateMock1();
+		PaymentOptionDTO paymentOptionDTO = paymentPositionDTO.getPaymentOption().get(0);
+		TransferDTO transferDTO = paymentOptionDTO.getTransfer().get(0);
+		NotificationFeeUpdateModel notificationFeeUpdateModel = DebtPositionMock.createNotificationFeeMock(150L);
+		
+		// la prima volta il nodo torna eccezione poi ritorna sempre OK
+		when(nodeClient.getCheckPosition(any(NodeCheckPositionModel.class))).thenThrow(FeignException.BadRequest.class).thenReturn(NodeCheckPositionResponse.builder().outcome("OK").build());
+
+		// creo una posizione debitoria e recupero la payment option associata
+		mvc.perform(post("/organizations/PO200_notificationfee_NAV_12345678901/debtpositions")
+						.content(TestUtil.toJson(paymentPositionDTO))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+
+		// leggo il valore della notification fee per accertarmi che non venga inserita anche se passata in input
+		mvc.perform(get("/organizations/PO200_notificationfee_NAV_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1")
+						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.notificationFee")
+						.value(0L));
+
+		// aggiorno il valore della notification fee (si continua ad utilizzare lo IUV e non il NAV)
+		mvc.perform(MockMvcRequestBuilders.put("/organizations/PO200_notificationfee_NAV_12345678901/paymentoptions/123456IUVMOCK1/notificationfee")
+				.content(TestUtil.toJson(notificationFeeUpdateModel))
+				.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.notificationFee")
+						.value(notificationFeeUpdateModel.getNotificationFee()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.amount")
+						.value(paymentOptionDTO.getAmount() + notificationFeeUpdateModel.getNotificationFee()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.transfer[0].amount")
+						.value(transferDTO.getAmount() + notificationFeeUpdateModel.getNotificationFee()));
+		
+		verify(nodeClient, times(2)).getCheckPosition(any(NodeCheckPositionModel.class));
+
+		// leggo nuovamente la payment option per capire se gli amount sono stati modificati correttamente
+		mvc.perform(get("/organizations/PO200_notificationfee_NAV_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1")
+						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.notificationFee")
+						.value(notificationFeeUpdateModel.getNotificationFee()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.amount")
+						.value(paymentOptionDTO.getAmount() + notificationFeeUpdateModel.getNotificationFee()));
+
+		// aggiorno il valore della notification fee, reimpostandolo a zero ed aspettandomi di ritornare al valore di partenza (si continua ad utilizzare lo IUV e non il NAV)
+		mvc.perform(MockMvcRequestBuilders.put("/organizations/PO200_notificationfee_NAV_12345678901/paymentoptions/123456IUVMOCK1/notificationfee")
+						.content(TestUtil.toJson(DebtPositionMock.createNotificationFeeMock(0L)))
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.notificationFee")
+						.value(0L))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.amount")
+						.value(paymentOptionDTO.getAmount()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.transfer[0].amount")
+						.value(transferDTO.getAmount()));
+		
+		verify(nodeClient, times(3)).getCheckPosition(any(NodeCheckPositionModel.class));
+
+		// leggo nuovamente la payment option per capire se gli amount sono stati modificati correttamente
+		mvc.perform(get("/organizations/PO200_notificationfee_NAV_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1")
 						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.notificationFee")
@@ -1089,7 +1161,7 @@ class PaymentsControllerTest {
 
 		long poAmountBeforeUpdate = paymentOptionDTO.getAmount() + notificationFeeUpdateModel.getNotificationFee();
 		
-		verify(nodeClient, times(2)).getCheckPosition(any(NodeCheckPositionModel.class));
+		verify(nodeClient, times(1)).getCheckPosition(any(NodeCheckPositionModel.class));
 
 		// leggo nuovamente la payment option per capire se gli amount sono stati modificati correttamente
 		mvc.perform(get("/organizations/PO200_notificationfee_afterupdate_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1")
@@ -1142,7 +1214,7 @@ class PaymentsControllerTest {
 				.content(TestUtil.toJson(DebtPositionMock.createNotificationFeeMock(0L)))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 		
-		verify(nodeClient, times(2)).getCheckPosition(any(NodeCheckPositionModel.class));
+		verify(nodeClient, times(1)).getCheckPosition(any(NodeCheckPositionModel.class));
 	}
 
 	@Test
@@ -1283,7 +1355,7 @@ class PaymentsControllerTest {
 				.andExpect(MockMvcResultMatchers.jsonPath("$.transfer[0].amount")
 						.value(transferDTO.getAmount() + notificationFeeUpdateModel.getNotificationFee()));
 		
-		verify(nodeClient, times(2)).getCheckPosition(any(NodeCheckPositionModel.class));
+		verify(nodeClient, times(1)).getCheckPosition(any(NodeCheckPositionModel.class));
 
 		// leggo nuovamente la payment option per capire se gli amount sono stati modificati correttamente
 		mvc.perform(get("/organizations/PO209_notificationfee_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1")
