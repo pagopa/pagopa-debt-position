@@ -1017,7 +1017,7 @@ class PaymentsControllerTest {
 				.andExpect(MockMvcResultMatchers.jsonPath("$.transfer[0].amount")
 						.value(transferDTO.getAmount() + notificationFeeUpdateModel.getNotificationFee()));
 		
-		verify(nodeClient, times(1)).getCheckPosition(any(NodeCheckPositionModel.class));
+		verify(nodeClient, times(2)).getCheckPosition(any(NodeCheckPositionModel.class));
 
 		// leggo nuovamente la payment option per capire se gli amount sono stati modificati correttamente
 		mvc.perform(get("/organizations/PO200_notificationfee_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1")
@@ -1040,7 +1040,7 @@ class PaymentsControllerTest {
 				.andExpect(MockMvcResultMatchers.jsonPath("$.transfer[0].amount")
 						.value(transferDTO.getAmount()));
 		
-		verify(nodeClient, times(2)).getCheckPosition(any(NodeCheckPositionModel.class));
+		verify(nodeClient, times(4)).getCheckPosition(any(NodeCheckPositionModel.class));
 
 		// leggo nuovamente la payment option per capire se gli amount sono stati modificati correttamente
 		mvc.perform(get("/organizations/PO200_notificationfee_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1")
@@ -1089,7 +1089,7 @@ class PaymentsControllerTest {
 
 		long poAmountBeforeUpdate = paymentOptionDTO.getAmount() + notificationFeeUpdateModel.getNotificationFee();
 		
-		verify(nodeClient, times(1)).getCheckPosition(any(NodeCheckPositionModel.class));
+		verify(nodeClient, times(2)).getCheckPosition(any(NodeCheckPositionModel.class));
 
 		// leggo nuovamente la payment option per capire se gli amount sono stati modificati correttamente
 		mvc.perform(get("/organizations/PO200_notificationfee_afterupdate_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1")
@@ -1142,7 +1142,7 @@ class PaymentsControllerTest {
 				.content(TestUtil.toJson(DebtPositionMock.createNotificationFeeMock(0L)))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 		
-		verify(nodeClient, times(1)).getCheckPosition(any(NodeCheckPositionModel.class));
+		verify(nodeClient, times(2)).getCheckPosition(any(NodeCheckPositionModel.class));
 	}
 
 	@Test
@@ -1283,7 +1283,7 @@ class PaymentsControllerTest {
 				.andExpect(MockMvcResultMatchers.jsonPath("$.transfer[0].amount")
 						.value(transferDTO.getAmount() + notificationFeeUpdateModel.getNotificationFee()));
 		
-		verify(nodeClient, times(1)).getCheckPosition(any(NodeCheckPositionModel.class));
+		verify(nodeClient, times(2)).getCheckPosition(any(NodeCheckPositionModel.class));
 
 		// leggo nuovamente la payment option per capire se gli amount sono stati modificati correttamente
 		mvc.perform(get("/organizations/PO209_notificationfee_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1")
