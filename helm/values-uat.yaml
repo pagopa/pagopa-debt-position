@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.11.10"
+    tag: "0.11.10-1-PAGOPA-1632-update-notificationfee-to-nav-or-iuv"
     pullPolicy: Always
   livenessProbe:
     httpGet:
