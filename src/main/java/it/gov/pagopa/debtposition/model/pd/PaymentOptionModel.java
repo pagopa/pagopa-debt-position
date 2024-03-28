@@ -30,6 +30,7 @@ public class PaymentOptionModel implements Serializable {
     private String iuv;
     @NotNull(message = "amount is required")
     private Long amount;
+    @NotBlank(message = "payment option description is required")
     private String description;
     @NotNull(message = "is partial payment is required")
     private Boolean isPartialPayment;
