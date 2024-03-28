@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 
+import it.gov.pagopa.debtposition.model.pd.MultipleIUPDModel;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -192,7 +193,7 @@ public class DebtPositionController implements IDebtPositionController {
 
         // flip model to entity
         List<PaymentPosition> debtPositions = multiplePaymentPositionModel.getPaymentPositions()
-                                                      .stream().map( dp -> modelMapper.map(dp, PaymentPosition.class))
+                                                      .stream().map( pp -> modelMapper.map(pp, PaymentPosition.class))
                                                       .collect(Collectors.toList());
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
@@ -202,6 +203,17 @@ public class DebtPositionController implements IDebtPositionController {
             return ResponseEntity.status(HttpStatus.OK).build();
         }
 
-        throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
+        throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
+    }
+
+    @Override
+    public ResponseEntity<String> deleteMultipleDebtPositions(String organizationFiscalCode, @Valid MultipleIUPDModel multipleIUPDModel,
+                                                            @Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
+        log.info(String.format(LOG_BASE_HEADER_INFO, "DELETE", "deleteMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
+
+        ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
+        paymentPositionService.deleteMultipleDebtPositions(multipleIUPDModel.getPaymentPositionIUPDs(), organizationFiscalCode, segCodes);
+
+        return new ResponseEntity<>(Constants.DEBT_POSITION_DELETED, HttpStatus.OK);
     }
 }

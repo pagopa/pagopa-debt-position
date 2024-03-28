@@ -25,6 +25,7 @@
         <azure.core.version>1.45.1</azure.core.version>
         <shedlock.version>5.10.2</shedlock.version>
         <mockito-inline.version>5.2.0</mockito-inline.version>
+        <lombok.version>1.18.30</lombok.version>
     </properties>
 
     <dependencies>
@@ -96,6 +97,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>

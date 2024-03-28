@@ -14,7 +14,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 
+import it.gov.pagopa.debtposition.dto.*;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,10 +36,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
 import it.gov.pagopa.debtposition.client.NodeClient;
-import it.gov.pagopa.debtposition.dto.PaymentOptionDTO;
-import it.gov.pagopa.debtposition.dto.PaymentOptionMetadataDTO;
-import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
-import it.gov.pagopa.debtposition.dto.TransferMetadataDTO;
 import it.gov.pagopa.debtposition.mock.DebtPositionMock;
 import it.gov.pagopa.debtposition.model.checkposition.NodeCheckPositionModel;
 import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPositionResponse;
@@ -612,7 +611,7 @@ class DebtPositionControllerTest {
 		String url = "/organizations/DUEDATEBETWEEN_12345678901/debtpositions?page=0" + "&due_date_from="
 				+ df.format(LocalDateTime.now(ZoneOffset.UTC)) + "&due_date_to="
 				+ df.format(LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.DAYS))
-				+ "&orderby=IUPD&ordering=ASC";;
+				+ "&orderby=IUPD&ordering=ASC";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(2)))
@@ -1457,5 +1456,44 @@ class DebtPositionControllerTest {
 							.content(TestUtil.toJson(DebtPositionMock.getMultipleDebtPositions_Mock1())).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isNotFound())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON));
+	}
+
+	@Test
+	void deleteMultipleDebtPositions_200() throws Exception {
+		List<String> iupdList = new ArrayList<>();
+		MultiplePaymentPositionDTO mpp = DebtPositionMock.getMultipleDebtPositions_Mock2();
+		mpp.getPaymentPositions().forEach(pp -> iupdList.add(pp.getIupd()));
+		// create if not exist
+		mvc.perform(post("/organizations/12345678901_multiple/debtpositions/bulk")
+							.content(TestUtil.toJson(mpp)).contentType(MediaType.APPLICATION_JSON));
+		// delete IUPD list
+		mvc.perform(
+				delete("/organizations/12345678901_multiple/debtpositions")
+					.content(TestUtil.toJson(MultipleIUPDDTO.builder().paymentPositionIUPDs(iupdList).build()))
+					.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk());
+	}
+
+	@Test
+	void deleteMultipleDebtPositions_404() throws Exception {
+		List<String> iupdList = new ArrayList<>();
+		iupdList.add("ThisIUPDdoesntExist");
+		mvc.perform(delete("/organizations/12345678901_multiple/debtpositions")
+								.content(TestUtil.toJson(MultipleIUPDDTO.builder().paymentPositionIUPDs(iupdList).build()))
+								.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	void deleteMultipleDebtPositions_400() throws Exception {
+		List<String> iupdList = new ArrayList<>();
+		// create max +1 IUPDs
+		for(int i = 0; i < 101; i++)
+			iupdList.add("IUPD"+i);
+
+		mvc.perform(delete("/organizations/12345678901_multiple/debtpositions")
+							.content(TestUtil.toJson(MultipleIUPDDTO.builder().paymentPositionIUPDs(iupdList).build()))
+							.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest());
 	}
 }
