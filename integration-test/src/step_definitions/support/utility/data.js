@@ -27,7 +27,7 @@ let gpdSessionBundle = {
         fiscalCode: undefined,
         paymentToken: undefined,
         applicationDate: undefined,
-        transferDate: undefined,
+        transferDate: undefined
     },
     payer: {
         name: "Michele Ventimiglia",

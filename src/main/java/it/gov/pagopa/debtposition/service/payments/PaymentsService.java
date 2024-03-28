@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import feign.FeignException;
 import it.gov.pagopa.debtposition.client.NodeClient;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
@@ -103,17 +104,18 @@ public class PaymentsService {
     }
 
     @Transactional
-    public PaymentOption updateNotificationFee(@NotBlank String organizationFiscalCode, @NotBlank String iuv, Long notificationFeeAmount) {
+    public PaymentOption updateNotificationFee(@NotBlank String organizationFiscalCode, @NotBlank String nav, Long notificationFeeAmount) {
 
         // Check if exists a payment option with the passed IUV related to the organization
-        Optional<PaymentOption> paymentOptionOpt = paymentOptionRepository.findByOrganizationFiscalCodeAndIuv(organizationFiscalCode, iuv);
+    	// TODO #naviuv: temporary regression management: search by nav or iuv
+        Optional<PaymentOption> paymentOptionOpt = paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(organizationFiscalCode, nav, organizationFiscalCode, nav);
         if (paymentOptionOpt.isEmpty()) {
-            throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, iuv);
+            throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav);
         }
         // Check if the retrieved payment option was not already paid and/or reported
         PaymentOption paymentOption = paymentOptionOpt.get();
         if (!PaymentOptionStatus.PO_UNPAID.equals(paymentOption.getStatus())) {
-            throw new AppException(AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_NOT_UPDATABLE, organizationFiscalCode, iuv);
+            throw new AppException(AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_NOT_UPDATABLE, organizationFiscalCode, nav);
         }
         
         // Executing the amount updating with the inserted notification fee
@@ -121,12 +123,27 @@ public class PaymentsService {
         
         // Executes a call to the node's checkPosition API to see if there is a payment in progress
         try {
-        	NodePosition position = NodePosition.builder().fiscalCode(organizationFiscalCode).noticeNumber(auxDigit+iuv).build();
+        	// TODO #naviuv: temporary regression management: search by nav or iuv --> possible double call to the node
+            // 1. first call attempt is with the nav variable valued as iuv (auxDigit added)
+        	NodePosition position = NodePosition.builder().fiscalCode(organizationFiscalCode).noticeNumber(auxDigit+nav).build();
         	NodeCheckPositionResponse chkPositionRes = 
         			nodeClient.getCheckPosition(NodeCheckPositionModel.builder().positionslist(Collections.singletonList(position)).build());
         	paymentOption.setPaymentInProgress("OK".equalsIgnoreCase(chkPositionRes.getOutcome())?Boolean.FALSE:Boolean.TRUE);
-        } catch (Exception e) {
-            log.error("Error checking the position on the node for PO with fiscalCode " + organizationFiscalCode + " and noticeNumber " + auxDigit+iuv, e);
+        } catch (FeignException.BadRequest e) {
+        	// 2. if the first call fails with a bad request error --> try with a nav call
+        	NodePosition position = NodePosition.builder().fiscalCode(organizationFiscalCode).noticeNumber(nav).build();
+        	try {
+	        	NodeCheckPositionResponse chkPositionRes = 
+	        			nodeClient.getCheckPosition(NodeCheckPositionModel.builder().positionslist(Collections.singletonList(position)).build());
+	        	paymentOption.setPaymentInProgress("OK".equalsIgnoreCase(chkPositionRes.getOutcome())?Boolean.FALSE:Boolean.TRUE);
+        	} catch (Exception ex) {
+                log.error("Error checking the position on the node for PO with fiscalCode " + organizationFiscalCode + " and noticeNumber " + "("+auxDigit+")"+nav, ex);
+                // By business rules it is expected to treat the error as if the node had responded KO
+                paymentOption.setPaymentInProgress(Boolean.TRUE);
+            }
+        }
+        catch (Exception e) {
+            log.error("Error checking the position on the node for PO with fiscalCode " + organizationFiscalCode + " and noticeNumber " + "("+auxDigit+")"+nav, e);
             // By business rules it is expected to treat the error as if the node had responded KO
             paymentOption.setPaymentInProgress(Boolean.TRUE);
         }
