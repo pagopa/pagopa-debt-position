@@ -623,273 +623,193 @@ public class DebtPositionMock {
 	}
 
 
+	public static PaymentOptionDTO createPaymentOption(int amount, String iuv, boolean isPartialPayment,
+													   TransferDTO transferDTO, LocalDateTime dueDate, LocalDateTime retentionDate) {
+		PaymentOptionDTO poMock = new PaymentOptionDTO();
+		poMock.setAmount(amount);
+		poMock.setIuv(iuv);
+		poMock.setDueDate(dueDate);
+		poMock.setRetentionDate(retentionDate);
+		poMock.setIsPartialPayment(isPartialPayment);
+		poMock.setStatus(PaymentOptionStatus.PO_UNPAID);
+		poMock.setDescription("payment option description");
+		poMock.addTransfers(transferDTO);
+
+		return poMock;
+	}
 
 	public static PaymentOptionDTO createPaymentOptionsMock1() {
+		PaymentOptionDTO poMock = createPaymentOption(1000, "123456IUVMOCK1", false, createTransfersMock1(),
+				LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.SECONDS),
+				LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
 
-		PaymentOptionDTO pOMock = new PaymentOptionDTO();
-		pOMock.setAmount(1000);
-		pOMock.setIuv("123456IUVMOCK1");
-		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.SECONDS));
-		pOMock.setRetentionDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
-		pOMock.setIsPartialPayment(Boolean.FALSE);
-		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
-		pOMock.addTransfers(createTransfersMock1()); 
-
-		return pOMock;
+		return poMock;
 	}
 
 	public static PaymentOptionDTO createPaymentOptionsMock2() {
+		// due_date < current date => trigger 400 BAD REQUEST
+		PaymentOptionDTO poMock = createPaymentOption(1000, "123456IUVMOCK2", false, createTransfersMock1(),
+				LocalDateTime.now(ZoneOffset.UTC).minus(1, ChronoUnit.DAYS),
+				null);
 
-		PaymentOptionDTO pOMock = new PaymentOptionDTO();
-		pOMock.setAmount(1000);
-		pOMock.setIuv("123456IUVMOCK2");
-		// due_date < current date => deve dare errore 400
-		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).minus(1, ChronoUnit.DAYS));
-		pOMock.setIsPartialPayment(Boolean.FALSE);
-		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
-		pOMock.addTransfers(createTransfersMock1()); 
-
-		return pOMock;
+		return poMock;
 	}
 	
 	public static PaymentOptionDTO createPaymentOptionsMock3() {
+		// Payment Option has a different amount from the associated transfer
+		PaymentOptionDTO poMock = createPaymentOption(1000, "123456IUVMOCK3", false, createTransfersMock2(),
+				LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
+				null);
 
-		PaymentOptionDTO pOMock = new PaymentOptionDTO();
-		// la PO ha un amount diverso dal trasfer associato
-		pOMock.setAmount(1000);
-		pOMock.setIuv("123456IUVMOCK3");
-		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
-		pOMock.setIsPartialPayment(Boolean.FALSE);
-		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
-		pOMock.addTransfers(createTransfersMock2()); 
-
-		return pOMock;
+		return poMock;
 	}
 	
 	public static PaymentOptionDTO createPaymentOptionsMock4() {
+		PaymentOptionDTO poMock = createPaymentOption(1000, "123456IUVMOCK4", false, createTransfersMock1(),
+				LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
+				LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.DAYS));
 
-		PaymentOptionDTO pOMock = new PaymentOptionDTO();
-		pOMock.setAmount(1000);
-		pOMock.setIuv("123456IUVMOCK4");
-		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
-		pOMock.setRetentionDate(LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.DAYS));
-		pOMock.setIsPartialPayment(Boolean.FALSE);
-		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
-		pOMock.addTransfers(createTransfersMock1()); 
-
-		return pOMock;
-	}
-	
-	public static PaymentOptionDTO createPaymentOptionsMock5() {
-
-		PaymentOptionDTO pOMock = new PaymentOptionDTO();
-		pOMock.setAmount(1000);
-		pOMock.setIuv("123456IUVMOCK1");
-		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.SECONDS));
-		pOMock.setRetentionDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
-		pOMock.setIsPartialPayment(Boolean.FALSE);
-		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
-		pOMock.addTransfers(createTransfersMock1()); 
-
-		return pOMock;
+		return poMock;
 	}
 	
 	public static PaymentOptionDTO createPaymentOptionsMock6() {
+		PaymentOptionDTO poMock = createPaymentOption(1000, "123456IUVMOCK6", false, createTransfersMock1(),
+				LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
+				LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
 
-		PaymentOptionDTO pOMock = new PaymentOptionDTO();
-		pOMock.setAmount(1000);
-		pOMock.setIuv("123456IUVMOCK6");
-		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
-		pOMock.setRetentionDate(LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
-		pOMock.setIsPartialPayment(Boolean.FALSE);
-		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
-		pOMock.addTransfers(createTransfersMock1()); 
-
-		return pOMock;
+		return poMock;
 	}
 	
 	public static PaymentOptionDTO createPaymentOptionsMock7() {
+		PaymentOptionDTO poMock = createPaymentOption(1000, "123456IUVMOCK7", false, createTransfersMock1(),
+				LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
+				LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
 
-		PaymentOptionDTO pOMock = new PaymentOptionDTO();
-		pOMock.setAmount(1000);
-		pOMock.setIuv("123456IUVMOCK7");
-		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
-		pOMock.setRetentionDate(LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
-		pOMock.setIsPartialPayment(Boolean.FALSE);
-		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
-		pOMock.addTransfers(createTransfersMultipleMock1()); 
-		pOMock.addTransfers(createTransfersMultipleMock2());
-		pOMock.addTransfers(createTransfersMultipleMock3());
-		pOMock.addTransfers(createTransfersMultipleMock4());
-		pOMock.addTransfers(createTransfersMultipleMock5());
-		pOMock.addTransfers(createTransfersMultipleMock6());
+		poMock.addTransfers(createTransfersMultipleMock2());
+		poMock.addTransfers(createTransfersMultipleMock3());
+		poMock.addTransfers(createTransfersMultipleMock4());
+		poMock.addTransfers(createTransfersMultipleMock5());
+		poMock.addTransfers(createTransfersMultipleMock6());
 
-		return pOMock;
+		return poMock;
 	}
 	
 	public static PaymentOptionDTO createPaymentOptionsMock8() {
+		PaymentOptionDTO poMock = createPaymentOption(1000, "123456IUVMOCK8", false, createTransfersMock1(),
+				LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
+				LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
+		poMock.addTransfers(createTransfersMultipleMock2());
+		poMock.addTransfers(createTransfersMultipleMock4());
+		poMock.addTransfers(createTransfersMultipleMock5());
+		poMock.addTransfers(createTransfersMultipleMock6());
 
-		PaymentOptionDTO pOMock = new PaymentOptionDTO();
-		pOMock.setAmount(1000);
-		pOMock.setIuv("123456IUVMOCK8");
-		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
-		pOMock.setRetentionDate(LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
-		pOMock.setIsPartialPayment(Boolean.FALSE);
-		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
-		pOMock.addTransfers(createTransfersMultipleMock1()); 
-		pOMock.addTransfers(createTransfersMultipleMock2());
-		pOMock.addTransfers(createTransfersMultipleMock4());
-		pOMock.addTransfers(createTransfersMultipleMock5());
-		pOMock.addTransfers(createTransfersMultipleMock6());
-
-		return pOMock;
+		return poMock;
 	}
 	
 	public static PaymentOptionDTO createPaymentOptionsMetadataMock9() {
+		PaymentOptionDTO poMock = createPaymentOption(1000, "123456IUVMETADATAMOCK9", false, createTransfersMetadataMock3(),
+				LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
+				LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
+		poMock.addPaymentOptionMetadata(PaymentOptionMetadataDTO.builder().key("keypometadatamock9").value("valuepometadatamock9").build());
 
-		PaymentOptionDTO pOMock = new PaymentOptionDTO();
-		pOMock.setAmount(1000);
-		pOMock.setIuv("123456IUVMETADATAMOCK9");
-		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.SECONDS));
-		pOMock.setRetentionDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
-		pOMock.setIsPartialPayment(Boolean.FALSE);
-		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
-		pOMock.addPaymentOptionMetadata(PaymentOptionMetadataDTO.builder().key("keypometadatamock9").value("valuepometadatamock9").build());
-		pOMock.addTransfers(createTransfersMetadataMock3()); 
-
-		return pOMock;
+		return poMock;
 	}
 	
 	public static PaymentOptionDTO createPaymentOptions_Min_Due_Date_Mock1() {
+		// due_date set very slightly greater than current date to pass control
+		PaymentOptionDTO poMock = createPaymentOption(1000, "123456IUVMOCK1", false, createTransfersMultipleMock1(),
+				LocalDateTime.now(ZoneOffset.UTC).plus(3, ChronoUnit.SECONDS),
+				null);
 
-		PaymentOptionDTO pOMock = new PaymentOptionDTO();
-		pOMock.setAmount(1000);
-		pOMock.setIuv("123456IUVMOCK1");
-		// due_date impostata di pochissimo maggiore della current date per passare il controllo
-		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(3, ChronoUnit.SECONDS));
-		pOMock.setIsPartialPayment(Boolean.FALSE);
-		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
-		pOMock.addTransfers(createTransfersMultipleMock1()); 
-
-		return pOMock;
+		return poMock;
 	}
 	
 	public static PaymentOptionDTO createPaymentOptions_Min_Due_Date_Mock2() {
+		PaymentOptionDTO poMock = createPaymentOption(500, "123456IUVMOCK2", false, createTransfersMultipleMock2(),
+				LocalDateTime.now(ZoneOffset.UTC).plus(1, ChronoUnit.DAYS),
+				null);
 
-		PaymentOptionDTO pOMock = new PaymentOptionDTO();
-		pOMock.setAmount(500);
-		pOMock.setIuv("123456IUVMOCK2");
-		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(1, ChronoUnit.DAYS));
-		pOMock.setIsPartialPayment(Boolean.FALSE);
-		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
-		pOMock.addTransfers(createTransfersMultipleMock2()); 
-
-		return pOMock;
+		return poMock;
 	}
 
 	public static PaymentOptionDTO createPaymentOptionsMultipleMock1() {
+		PaymentOptionDTO poMock = createPaymentOption(1000, "123456IUVMULTIPLEMOCK1", false, createTransfersMultipleMock1(),
+				LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.HOURS),
+				null);
 
-		PaymentOptionDTO pOMock = new PaymentOptionDTO();
-		pOMock.setAmount(1000);
-		pOMock.setIuv("123456IUVMULTIPLEMOCK1");
-		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.HOURS));
-		pOMock.setIsPartialPayment(Boolean.FALSE);
-		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
-		pOMock.addTransfers(createTransfersMultipleMock1()); 
-
-		return pOMock;
+		return poMock;
 	}
 
 	public static PaymentOptionDTO createPaymentOptionsMultipleMock2() {
+		PaymentOptionDTO poMock = createPaymentOption(500, "123456IUVMULTIPLEMOCK2", false, createTransfersMultipleMock2(),
+				LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
+				null);
 
-		PaymentOptionDTO pOMock = new PaymentOptionDTO();
-		pOMock.setAmount(500);
-		pOMock.setIuv("123456IUVMULTIPLEMOCK2");
-		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
-		pOMock.setIsPartialPayment(Boolean.FALSE);
-		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
-		pOMock.addTransfers(createTransfersMultipleMock2()); 
-
-		return pOMock;
+		return poMock;
 	}
 
 	public static PaymentOptionDTO createPaymentOptionsMultipleMock3() {
+		PaymentOptionDTO poMock = createPaymentOption(10000, "123456IUVMULTIPLEMOCK3", false, createTransfersMultipleMock3(),
+				LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.HOURS),
+				null);
 
-		PaymentOptionDTO pOMock = new PaymentOptionDTO();
-		pOMock.setAmount(10000);
-		pOMock.setIuv("123456IUVMULTIPLEMOCK3");
-		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.HOURS));
-		pOMock.setIsPartialPayment(Boolean.FALSE);
-		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
-		pOMock.addTransfers(createTransfersMultipleMock3()); 
-
-		return pOMock;
+		return poMock;
 	}
 
 	public static PaymentOptionDTO createPaymentOptionsMultipleMock4() {
+		PaymentOptionDTO poMock = createPaymentOption(5000, "123456IUVMULTIPLEMOCK4", true, createTransfersMultipleMock4(),
+				LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.HOURS),
+				null);
+		poMock.addTransfers(createTransfersMultipleMock5());
 
-		PaymentOptionDTO pOMock = new PaymentOptionDTO();
-		pOMock.setAmount(5000);
-		pOMock.setIuv("123456IUVMULTIPLEMOCK4");
-		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.HOURS));
-		pOMock.setIsPartialPayment(Boolean.TRUE);
-		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
-		pOMock.addTransfers(createTransfersMultipleMock4()); 
-		pOMock.addTransfers(createTransfersMultipleMock5()); 
-
-		return pOMock;
+		return poMock;
 	}
 	
 	public static PaymentOptionDTO createPaymentOptionsMultipleMock5() {
+		PaymentOptionDTO poMock = createPaymentOption(5000, "123456IUVMULTIPLEMOCK5", true, createTransfersMultipleMock4(),
+				LocalDateTime.now(ZoneOffset.UTC).plus(4, ChronoUnit.HOURS),
+				null);
+		poMock.addTransfers(createTransfersMultipleMock5());
 
-		PaymentOptionDTO pOMock = new PaymentOptionDTO();
-		pOMock.setAmount(5000);
-		pOMock.setIuv("123456IUVMULTIPLEMOCK5");
-		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(4, ChronoUnit.HOURS));
-		pOMock.setIsPartialPayment(Boolean.TRUE);
-		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
-		pOMock.addTransfers(createTransfersMultipleMock4()); 
-		pOMock.addTransfers(createTransfersMultipleMock5()); 
-
-		return pOMock;
+		return poMock;
 	}
 	
 	public static PaymentOptionDTO createPayForPaymentOptionMock1() {
+		PaymentOptionDTO poMock = new PaymentOptionDTO();
+		poMock.setPaymentDate(LocalDateTime.now(ZoneOffset.UTC));
+		poMock.setPaymentMethod("Bonifico");
+		poMock.setPspCompany("Intesa San Paolo");
+		poMock.setIdReceipt("TRN987654321");
+		poMock.setFee(0);
+		poMock.setDescription("Description");
 
-		PaymentOptionDTO pOMock = new PaymentOptionDTO();
-		pOMock.setPaymentDate(LocalDateTime.now(ZoneOffset.UTC));
-		pOMock.setPaymentMethod("Bonifico");
-		pOMock.setPspCompany("Intesa San Paolo");
-		pOMock.setIdReceipt("TRN987654321");
-		pOMock.setFee(0);
-
-		return pOMock;
+		return poMock;
 	}
 
 	public static PaymentOptionDTO createPaymentOptions400Mock1() {
+		PaymentOptionDTO poMock = new PaymentOptionDTO();
+		poMock.setAmount(1000);
+		poMock.setIuv("123456IUV400MOCK1");
+		// due_date < current date => must trigger 400 BAD_REQUEST
+		poMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).minus(1, ChronoUnit.DAYS));
+		poMock.setIsPartialPayment(Boolean.FALSE);
+		poMock.setStatus(PaymentOptionStatus.PO_UNPAID);
+		poMock.addTransfers(createTransfersMock1());
+		poMock.setDescription("Description");
 
-		PaymentOptionDTO pOMock = new PaymentOptionDTO();
-		pOMock.setAmount(1000);
-		pOMock.setIuv("123456IUV400MOCK1");
-		// due_date < current date => deve dare errore 400
-		pOMock.setDueDate(LocalDateTime.now(ZoneOffset.UTC).minus(1, ChronoUnit.DAYS));
-		pOMock.setIsPartialPayment(Boolean.FALSE);
-		pOMock.setStatus(PaymentOptionStatus.PO_UNPAID);
-		pOMock.addTransfers(createTransfersMock1()); 
-
-		return pOMock;
+		return poMock;
 	}
 	
 	public static PaymentOptionDTO createPayForPaymentOption400Mock1() {
-
-		PaymentOptionDTO pOMock = new PaymentOptionDTO();
-		pOMock.setPaymentDate(LocalDateTime.now(ZoneOffset.UTC));
-		pOMock.setPaymentMethod("Bonifico");
-		pOMock.setPspCompany("Intesa San Paolo");
+		PaymentOptionDTO poMock = new PaymentOptionDTO();
+		poMock.setPaymentDate(LocalDateTime.now(ZoneOffset.UTC));
+		poMock.setPaymentMethod("Bonifico");
+		poMock.setPspCompany("Intesa San Paolo");
 		// metto un campo obbligatorio a blank
-		pOMock.setIdReceipt("");
+		poMock.setIdReceipt("");
+		poMock.setDescription("Description");
 
-		return pOMock;
+		return poMock;
 	}
 	
 	
