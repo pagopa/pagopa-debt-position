@@ -1464,11 +1464,11 @@ class DebtPositionControllerTest {
 		MultiplePaymentPositionDTO mpp = DebtPositionMock.getMultipleDebtPositions_Mock2();
 		mpp.getPaymentPositions().forEach(pp -> iupdList.add(pp.getIupd()));
 		// create if not exist
-		mvc.perform(post("/organizations/12345678901_multiple/debtpositions/bulk")
+		mvc.perform(post("/organizations/12345678901/debtpositions/bulk")
 							.content(TestUtil.toJson(mpp)).contentType(MediaType.APPLICATION_JSON));
 		// delete IUPD list
 		mvc.perform(
-				delete("/organizations/12345678901_multiple/debtpositions")
+				delete("/organizations/12345678910/debtpositions")
 					.content(TestUtil.toJson(MultipleIUPDDTO.builder().paymentPositionIUPDs(iupdList).build()))
 					.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk());
@@ -1478,7 +1478,7 @@ class DebtPositionControllerTest {
 	void deleteMultipleDebtPositions_404() throws Exception {
 		List<String> iupdList = new ArrayList<>();
 		iupdList.add("ThisIUPDdoesntExist");
-		mvc.perform(delete("/organizations/12345678901_multiple/debtpositions")
+		mvc.perform(delete("/organizations/12345678901/debtpositions")
 								.content(TestUtil.toJson(MultipleIUPDDTO.builder().paymentPositionIUPDs(iupdList).build()))
 								.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isNotFound());
