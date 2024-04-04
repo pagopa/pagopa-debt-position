@@ -207,7 +207,7 @@ public class DebtPositionController implements IDebtPositionController {
     }
 
     @Override
-    public ResponseEntity<String> deleteMultipleDebtPositions(String organizationFiscalCode, @Valid MultipleIUPDModel multipleIUPDModel,
+    public ResponseEntity<String> deleteMultipleDebtPositions( @Pattern(regexp = "\\b\\w{11}\\b")  String organizationFiscalCode, @Valid MultipleIUPDModel multipleIUPDModel,
                                                             @Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "DELETE", "deleteMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
 
