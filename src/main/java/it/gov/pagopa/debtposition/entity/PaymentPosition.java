@@ -35,7 +35,10 @@ import java.util.List;
 @Table(name = "payment_position", uniqueConstraints = {
         @UniqueConstraint(name = "UniquePaymentPos", columnNames = {"iupd", "organization_fiscal_code"})
         },
-        indexes = @Index(name = "payment_position_status_validity_date_idx", columnList = "status, validity_date")
+        indexes = {
+            @Index(name = "payment_position_status_validity_date_idx", columnList = "status, validity_date"),
+            @Index(name = "idx_fiscal_code", columnList = "fiscal_code")
+        }
 )
 @JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="@paymentPositionId")
 public class PaymentPosition implements Serializable {
