@@ -31,6 +31,7 @@ public class PaymentOptionModel implements Serializable {
     @NotNull(message = "amount is required")
     private Long amount;
     @NotBlank(message = "payment option description is required")
+    @Size(max = 140) // compliant to paGetPaymentRes
     private String description;
     @NotNull(message = "is partial payment is required")
     private Boolean isPartialPayment;
