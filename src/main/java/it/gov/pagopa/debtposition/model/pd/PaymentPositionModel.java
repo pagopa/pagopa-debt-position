@@ -6,10 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import javax.validation.constraints.*;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
@@ -55,7 +52,9 @@ public class PaymentPositionModel implements Serializable {
 
     // Payment Position properties
     @NotBlank(message = "company name is required")
+    @Size(max = 140) // compliant to paForNode.xsd
     private String companyName; // es. Comune di Roma
+    @Size(max = 140) // compliant to paForNode.xsd
     private String officeName; // es. Ufficio Tributi
     private LocalDateTime validityDate;
     @JsonProperty(access = Access.READ_ONLY)
