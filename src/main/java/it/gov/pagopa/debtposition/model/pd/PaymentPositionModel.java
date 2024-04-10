@@ -52,9 +52,9 @@ public class PaymentPositionModel implements Serializable {
 
     // Payment Position properties
     @NotBlank(message = "company name is required")
-    @Size(max = 140) // compliant to paGetPaymentRes
+    @Size(max = 140) // compliant to paForNode.xsd
     private String companyName; // es. Comune di Roma
-    @Size(max = 140) // compliant to paGetPaymentRes
+    @Size(max = 140) // compliant to paForNode.xsd
     private String officeName; // es. Ufficio Tributi
     private LocalDateTime validityDate;
     @JsonProperty(access = Access.READ_ONLY)
