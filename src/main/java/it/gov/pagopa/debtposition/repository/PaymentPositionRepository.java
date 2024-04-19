@@ -43,11 +43,13 @@ public interface PaymentPositionRepository extends JpaRepository<PaymentPosition
     //Optional<PaymentPosition> findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionNav(String organizationFiscalCode, String nav); // search only by nav
     
     // TODO #naviuv: temporary regression management: search by nav or iuv
+    // see: https://www.baeldung.com/jpa-pessimistic-locking
     @Lock(LockModeType.PESSIMISTIC_READ)
     Optional<PaymentPosition> findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvOrPaymentOptionOrganizationFiscalCodeAndPaymentOptionNav(String organizationFiscalCodeIuv, String iuv, 
     		String organizationFiscalCodeNav, String nav);
 
     // Derived Query - using method naming convention - get parent PaymentPosition from child PaymentOption and Transfer properties
+    // see: https://www.baeldung.com/jpa-pessimistic-locking
     @Lock(LockModeType.PESSIMISTIC_READ)
     Optional<PaymentPosition> findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(String organizationFiscalCode, String iuv, String idTransfer);
 

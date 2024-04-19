@@ -301,7 +301,7 @@ public class PaymentsService {
         //numero delle PO rateizzate in stato PO_REPORTED
         long numberPOReportedPartial = pp.getPaymentOption().stream().filter(po -> (po.getStatus().equals(PaymentOptionStatus.PO_REPORTED) && Boolean.TRUE.equals(po.getIsPartialPayment()))).count();
 
-        if (numberPOReportedNoPartial > 0 || (totalNumberPartialPO > 0 && numberPOReportedPartial > 0 && totalNumberPartialPO == numberPOReportedPartial)) {
+        if (numberPOReportedNoPartial > 0 || (totalNumberPartialPO > 0 && totalNumberPartialPO == numberPOReportedPartial)) {
             pp.setStatus(DebtPositionStatus.REPORTED);
         }
 
