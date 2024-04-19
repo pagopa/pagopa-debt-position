@@ -48,41 +48,6 @@ class ConcurrentPartiallyPaidPaymentsControllerTest {
 		mvc.perform(post("/organizations/PAY_Concurrent_Partially_Paid_12345678901/debtpositions?toPublish=true")
 				.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
-/*
-		// effettuo la notifica di pagamento di una rata parziale (setIsPartialPayment = true) e verifico lo stato in paid
-		mvc.perform(post("/organizations/REPORT_Multiple_All_Partial_12345678901/paymentoptions/"+auxDigit+"123456IUVMULTIPLEMOCK4/pay")
-				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
-				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-		.andExpect(MockMvcResultMatchers.jsonPath("$.nav").value(auxDigit+"123456IUVMULTIPLEMOCK4"))
-		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMULTIPLEMOCK4"))
-		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
-				.value(PaymentOptionStatus.PO_PAID.toString()));
-
-		// recupero l'intera posizione debitoria e verifico lo stato in partially paid
-		mvc.perform(get("/organizations/REPORT_Multiple_All_Partial_12345678901/debtpositions/12345678901IUPDMULTIPLEMOCK2")
-				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
-				.value(DebtPositionStatus.PARTIALLY_PAID.toString()));
-
-		// effettuo la notifica di pagamento della seconda rata parziale (setIsPartialPayment = true) e verifico lo stato in paid
-		mvc.perform(post("/organizations/REPORT_Multiple_All_Partial_12345678901/paymentoptions/"+auxDigit+"123456IUVMULTIPLEMOCK5/pay")
-				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
-				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-		.andExpect(MockMvcResultMatchers.jsonPath("$.nav").value(auxDigit+"123456IUVMULTIPLEMOCK5"))
-		.andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMULTIPLEMOCK5"))
-		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
-				.value(PaymentOptionStatus.PO_PAID.toString()));
-
-		// recupero l'intera posizione debitoria e verifico che lo stato sia passato in paid
-		mvc.perform(get("/organizations/REPORT_Multiple_All_Partial_12345678901/debtpositions/12345678901IUPDMULTIPLEMOCK2")
-				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
-				.value(DebtPositionStatus.PAID.toString()));
-*/
 		log.info("initDebtPosition_for_partially_paid end => " + Thread.currentThread().getName());
 	}
 
