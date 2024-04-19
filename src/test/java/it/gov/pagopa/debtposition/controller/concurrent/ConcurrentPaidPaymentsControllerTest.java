@@ -87,7 +87,7 @@ class ConcurrentPaidPaymentsControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(PaymentOptionStatus.PO_PAID.toString()));	
 
-		//recupero la PP e verifico lo stato sia rimasto PAID
+		//recupero la PP e verifico lo stato sia PAID
 		mvc.perform(get("/organizations/PAY_Concurrent_Paid_12345678901/debtpositions/12345678901IUPDMULTIPLEMOCK2")
 				.contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isOk())
