@@ -61,6 +61,10 @@ public class PaymentPosition implements Serializable {
     @Column(name = "organization_fiscal_code")
     private String organizationFiscalCode;
 
+    @Builder.Default
+    @Column(name = "pull", columnDefinition = "boolean DEFAULT true")
+    private Boolean pull = true;
+
     // Debtor properties
     @NotNull
     @Enumerated(EnumType.STRING)
