@@ -9,7 +9,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -27,7 +26,6 @@ public class Scheduler {
 
     @Scheduled(cron = "${cron.job.schedule.expression.valid.status}")
     @Async
-    @Transactional
     public void changeDebtPositionStatusToValid() {
         log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "changeDebtPositionStatusToValid", "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
         LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
@@ -39,7 +37,6 @@ public class Scheduler {
     
     @Scheduled(cron = "${cron.job.schedule.expression.expired.status}")
     @Async
-    @Transactional
     public void changeDebtPositionStatusToExpired() {
         log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "changeDebtPositionStatusToExpired", "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
         LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
