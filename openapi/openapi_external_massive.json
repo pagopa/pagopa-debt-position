@@ -4,7 +4,7 @@
     "title": "PagoPA API Debt Position",
     "description": "Progetto Gestione Posizioni Debitorie",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "0.11.19"
+    "version": "0.11.20"
   },
   "servers": [
     {
@@ -56,37 +56,8 @@
           "required": true
         },
         "responses": {
-          "409": {
-            "description": "Conflict: duplicate debt position found.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
-                }
-              }
-            }
-          },
           "401": {
             "description": "Wrong or missing function key.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "201": {
-            "description": "Request created.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -110,6 +81,35 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict: duplicate debt position found.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Request created.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -161,8 +161,8 @@
         "summary": "Return OK if application is started",
         "operationId": "healthCheck",
         "responses": {
-          "401": {
-            "description": "Wrong or missing function key.",
+          "403": {
+            "description": "Forbidden.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -190,8 +190,8 @@
               }
             }
           },
-          "403": {
-            "description": "Forbidden.",
+          "401": {
+            "description": "Wrong or missing function key.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -361,6 +361,12 @@
             "example": true,
             "default": true
           },
+          "pull": {
+            "type": "boolean",
+            "description": "feature flag to enable the debt position retrieval in pull mode",
+            "example": true,
+            "default": true
+          },
           "fiscalCode": {
             "type": "string"
           },
@@ -387,10 +393,12 @@
           },
           "country": {
             "pattern": "[A-Z]{2}",
-            "type": "string"
+            "type": "string",
+            "example": "IT"
           },
           "email": {
-            "type": "string"
+            "type": "string",
+            "example": "email@domain.com"
           },
           "phone": {
             "type": "string"

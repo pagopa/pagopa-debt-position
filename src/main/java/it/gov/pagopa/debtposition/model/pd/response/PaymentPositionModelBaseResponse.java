@@ -22,6 +22,7 @@ public class PaymentPositionModelBaseResponse implements Serializable {
     private String iupd;
     private String organizationFiscalCode;
     private Type type;
+    private boolean pull;
     private String companyName; // es. Comune di Roma
     private String officeName; // es. Ufficio Tributi
     private LocalDateTime insertedDate;

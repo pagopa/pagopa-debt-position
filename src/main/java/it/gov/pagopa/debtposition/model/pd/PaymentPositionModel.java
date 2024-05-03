@@ -33,6 +33,8 @@ public class PaymentPositionModel implements Serializable {
     private Type type;
     @Schema(description = "feature flag to enable a debt position in stand-in mode", example = "true", defaultValue = "true")
     private boolean payStandIn;
+    @Schema(description = "feature flag to enable the debt position retrieval in pull mode", example = "true", defaultValue = "true")
+    private boolean pull;
     @NotBlank(message = "fiscal code is required")
     private String fiscalCode;
     @NotBlank(message = "full name is required")
@@ -43,8 +45,10 @@ public class PaymentPositionModel implements Serializable {
     private String city;
     private String province;
     private String region;
+    @Schema(example = "IT")
     @Pattern(regexp="[A-Z]{2}", message="The country must be reported with two capital letters (example: IT)")
     private String country;
+    @Schema(example = "email@domain.com")
     @Email(message = "Please provide a valid email address")
     private String email;
     private String phone;
