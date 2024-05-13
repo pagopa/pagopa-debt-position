@@ -19,7 +19,7 @@ FROM ghcr.io/pagopa/docker-base-springboot-openjdk17:v1.1.3@sha256:a4e970ef05ecf
 COPY --chown=spring:spring  --from=builder dependencies/ ./
 COPY --chown=spring:spring  --from=builder snapshot-dependencies/ ./
 # https://github.com/moby/moby/issues/37965#issuecomment-426853382
-RUN true
+RUN chown -R nobody:nobody ./
 COPY --chown=spring:spring  --from=builder spring-boot-loader/ ./
 COPY --chown=spring:spring  --from=builder application/ ./
 
