@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Pattern;
 
 
 @Tag(name = "Payments API")
@@ -35,7 +36,7 @@ public interface IPaymentsController {
             produces = {"application/json"})
     ResponseEntity<PaymentOptionWithDebtorInfoModelResponse> getOrganizationPaymentOptionByNAV(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
-            @PathVariable("organizationfiscalcode") String organizationFiscalCode,
+            @PathVariable("organizationfiscalcode") @Pattern(regexp = "\\b\\w{11}\\b") String organizationFiscalCode,
             @Parameter(description = "NAV (notice number) is the unique reference assigned to the payment by a creditor institution.", required = true)
             @PathVariable("nav") String nav);
 
@@ -53,7 +54,7 @@ public interface IPaymentsController {
             consumes = {"application/json"})
     ResponseEntity<PaymentOptionModelResponse> payPaymentOption(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
-            @PathVariable("organizationfiscalcode") String organizationFiscalCode,
+            @PathVariable("organizationfiscalcode") @Pattern(regexp = "\\b\\w{11}\\b") String organizationFiscalCode,
             @Parameter(description = "NAV (notice number) is the unique reference assigned to the payment by a creditor institution.", required = true)
             @PathVariable("nav") String nav,
             @Valid @RequestBody PaymentOptionModel paymentOptionModel);
@@ -70,7 +71,7 @@ public interface IPaymentsController {
             produces = {"application/json"})
     ResponseEntity<TransferModelResponse> reportTransfer(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
-            @PathVariable("organizationfiscalcode") String organizationFiscalCode,
+            @PathVariable("organizationfiscalcode") @Pattern(regexp = "\\b\\w{11}\\b") String organizationFiscalCode,
             @Parameter(description = "IUV (Unique Payment Identification). Alphanumeric code that uniquely associates and identifies three key elements of a payment: reason, payer, amount", required = true)
             @PathVariable("iuv") String iuv,
             @Parameter(description = "Transaction identifier. Alphanumeric code that identifies the specific transaction", required = true)
@@ -89,7 +90,7 @@ public interface IPaymentsController {
             produces = {"application/json"})
     ResponseEntity<PaymentOptionModelResponse> updateNotificationFee(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
-            @PathVariable("organizationfiscalcode") String organizationFiscalCode,
+            @PathVariable("organizationfiscalcode") @Pattern(regexp = "\\b\\w{11}\\b") String organizationFiscalCode,
             @Parameter(description = "NAV (notice number) is the unique reference assigned to the payment by a creditor institution.", required = true)
             @PathVariable("nav") String nav,
             @Valid @RequestBody NotificationFeeUpdateModel notificationFeeUpdateModel);
