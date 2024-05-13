@@ -21,7 +21,7 @@
     </springProfile>
 
     <springProfile name="!local">
-        <springProperty name="ECS_SERVICE_VERSION" source="info.application.version"/>
+        <springProperty name="ECS_SERVICE_VERSION" source="application.version"/>
         <appender name="ECS_JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder class="co.elastic.logging.logback.EcsEncoder">
                 <serviceName>${OTEL_SERVICE_NAME}</serviceName>
