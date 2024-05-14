@@ -117,7 +117,9 @@ public class DebtPositionController implements IDebtPositionController {
 
     @Override
     public ResponseEntity<PaymentPositionModelBaseResponse> getOrganizationDebtPositionByIUPD(
-            String organizationFiscalCode, String iupd, String segregationCodes) {
+            @Pattern(regexp = "[\\w*\\h-]+") String organizationFiscalCode,
+            @Pattern(regexp = "[\\w*\\h-]+") String iupd,
+            @Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationDebtPositionByIUPD", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
@@ -131,7 +133,9 @@ public class DebtPositionController implements IDebtPositionController {
 
     @Override
     public ResponseEntity<String> deleteDebtPosition(
-            String organizationFiscalCode, String iupd, String segregationCodes) {
+            @Pattern(regexp = "[\\w*\\h-]+") String organizationFiscalCode,
+            @Pattern(regexp = "[\\w*\\h-]+") String iupd,
+            @Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "DELETE", "deleteDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
