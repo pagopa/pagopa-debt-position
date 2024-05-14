@@ -36,9 +36,9 @@ public interface IDebtPositionActionsController {
             produces = {"application/json"})
     ResponseEntity<PaymentPositionModel> publishDebtPosition(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
-            @PathVariable("organizationfiscalcode") @Pattern(regexp = "\\b\\w{11}\\b") String organizationFiscalCode,
+            @PathVariable("organizationfiscalcode") String organizationFiscalCode,
             @Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.", required = true)
-            @PathVariable("iupd") @Pattern(regexp = "[\\w*\\h-]+") String iupd,
+            @PathVariable("iupd") String iupd,
             @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
             @RequestParam(required = false) String segregationCodes);
 
@@ -53,9 +53,9 @@ public interface IDebtPositionActionsController {
             produces = {"application/json"})
     ResponseEntity<PaymentPositionModel> invalidateDebtPosition(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
-            @PathVariable("organizationfiscalcode") @Pattern(regexp = "\\b\\w{11}\\b") String organizationFiscalCode,
+            @PathVariable("organizationfiscalcode") String organizationFiscalCode,
             @Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.", required = true)
-            @PathVariable("iupd") @Pattern(regexp = "[\\w*\\h-]+") String iupd,
+            @PathVariable("iupd") String iupd,
             @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
             @RequestParam(required = false) String segregationCodes);
 }

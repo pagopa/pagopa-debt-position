@@ -54,7 +54,7 @@ public class DebtPositionController implements IDebtPositionController {
    
 
     @Override
-    public ResponseEntity<PaymentPositionModel> createDebtPosition(@Pattern(regexp = "\\b\\w{11}\\b") String organizationFiscalCode,
+    public ResponseEntity<PaymentPositionModel> createDebtPosition(String organizationFiscalCode,
                                                                    PaymentPositionModel paymentPositionModel,
                                                                    boolean toPublish, String segregationCodes) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "createDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, paymentPositionModel.getIupd())));
@@ -75,7 +75,7 @@ public class DebtPositionController implements IDebtPositionController {
 
     @Override
     @ExclusiveParamGroup(firstGroup = {"due_date_to", "due_date_from"}, secondGroup = {"payment_date_from", "payment_date_to"})
-    public ResponseEntity<PaymentPositionsInfo> getOrganizationDebtPositions(@Pattern(regexp = "\\b\\w{11}\\b") String organizationFiscalCode,
+    public ResponseEntity<PaymentPositionsInfo> getOrganizationDebtPositions(String organizationFiscalCode,
                                                                              Integer limit, Integer page, LocalDate dueDateFrom,
                                                                              LocalDate dueDateTo, LocalDate paymentDateFrom, LocalDate paymentDateTo,
                                                                              DebtPositionStatus status, PaymentPositionOrder orderBy, Direction ordering,
