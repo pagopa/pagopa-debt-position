@@ -65,11 +65,9 @@ public class PaymentPositionCRUDService {
         final String ERROR_CREATION_LOG_MSG = "Error during debt position creation: %s";
 
         try {
-      
             //Inserisce (ed eventualmente porta in stato pubblicato) la posizione debitoria
             return paymentPositionRepository.saveAndFlush(
             		this.checkAndBuildDebtPositionToSave(debtPosition, organizationFiscalCode, toPublish, segCodes));
-
         } catch (DataIntegrityViolationException e) {
             log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
             if (e.getCause() instanceof ConstraintViolationException constraintviolationexception) {
@@ -202,8 +200,8 @@ public class PaymentPositionCRUDService {
             paymentPositionRepository.flush();
             // the version is increased at each change
             ppToUpdate.setVersion(ppToUpdate.getVersion()+1);
+
             return this.create(ppToUpdate, organizationFiscalCode, toPublish, segregationCodes);
-        	
         } catch (ValidationException e) {
             throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
         } catch (AppException e) {
