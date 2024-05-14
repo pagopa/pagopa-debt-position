@@ -117,7 +117,7 @@ public class DebtPositionController implements IDebtPositionController {
 
     @Override
     public ResponseEntity<PaymentPositionModelBaseResponse> getOrganizationDebtPositionByIUPD(
-            @Pattern(regexp = "\\b\\w{11}\\b") String organizationFiscalCode, @Pattern(regexp = "[\\w*\\h-]+") String iupd, String segregationCodes) {
+            String organizationFiscalCode, String iupd, String segregationCodes) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationDebtPositionByIUPD", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
@@ -131,7 +131,7 @@ public class DebtPositionController implements IDebtPositionController {
 
     @Override
     public ResponseEntity<String> deleteDebtPosition(
-            @Pattern(regexp = "\\b\\w{11}\\b") String organizationFiscalCode, @Pattern(regexp = "[\\w*\\h-]+") String iupd, String segregationCodes) {
+            String organizationFiscalCode, String iupd, String segregationCodes) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "DELETE", "deleteDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
@@ -140,10 +140,10 @@ public class DebtPositionController implements IDebtPositionController {
     }
 
     @Override
-    public ResponseEntity<PaymentPositionModel> updateDebtPosition(@Pattern(regexp = "\\b\\w{11}\\b") String organizationFiscalCode,
-                                                                   @Pattern(regexp = "[\\w*\\h-]+") String iupd,
+    public ResponseEntity<PaymentPositionModel> updateDebtPosition(String organizationFiscalCode,
+                                                                   String iupd,
                                                                    PaymentPositionModel paymentPositionModel,
-                                                                   boolean toPublish, @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
+                                                                   boolean toPublish, String segregationCodes) {
         final String IUPD_VALIDATION_ERROR = "IUPD mistmatch error: path variable IUPD [%s] and request body IUPD [%s] must be the same";
 
         log.info(String.format(LOG_BASE_HEADER_INFO, "PUT", "updateDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
@@ -164,11 +164,10 @@ public class DebtPositionController implements IDebtPositionController {
         }
 
         throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
-
     }
 
 	@Override
-	public ResponseEntity<Void> createMultipleDebtPositions(@Pattern(regexp = "\\b\\w{11}\\b") String organizationFiscalCode,
+	public ResponseEntity<Void> createMultipleDebtPositions(String organizationFiscalCode,
 			@Valid MultiplePaymentPositionModel multiplePaymentPositionModel, boolean toPublish,
 			@Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
 		log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "createMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
@@ -189,7 +188,7 @@ public class DebtPositionController implements IDebtPositionController {
 	}
 
     @Override
-    public ResponseEntity<Void> updateMultipleDebtPositions(@Pattern(regexp = "\\b\\w{11}\\b") String organizationFiscalCode,
+    public ResponseEntity<Void> updateMultipleDebtPositions(String organizationFiscalCode,
                                                             @Valid MultiplePaymentPositionModel multiplePaymentPositionModel, boolean toPublish,
                                                             @Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "PUT", "updateMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
@@ -211,7 +210,7 @@ public class DebtPositionController implements IDebtPositionController {
 
     @Override
     public ResponseEntity<String> deleteMultipleDebtPositions(
-            @Pattern(regexp = "\\b\\w{11}\\b")  String organizationFiscalCode, @Valid MultipleIUPDModel multipleIUPDModel,
+            @Pattern(regexp = "\\b\\w{11}\\b") String organizationFiscalCode, @Valid MultipleIUPDModel multipleIUPDModel,
                                                             @Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "DELETE", "deleteMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
 
