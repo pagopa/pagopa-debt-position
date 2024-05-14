@@ -45,12 +45,12 @@ public enum DebtPositionStatus {
     public static PaymentPosition updatePaymentPositionStatus(PaymentPosition pp) {
         LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
         // Validity check on the fly
-        if(pp.getStatus().equals(DebtPositionStatus.PUBLISHED) && currentDate.isAfter(pp.getValidityDate())) {
+        if(pp.getStatus().equals(DebtPositionStatus.PUBLISHED) && null != pp.getValidityDate() && currentDate.isAfter(pp.getValidityDate())) {
             pp.setStatus(DebtPositionStatus.VALID);
         }
         // Expiration check on the fly
         if(Boolean.TRUE.equals(pp.getSwitchToExpired() && pp.getStatus().equals(DebtPositionStatus.VALID))
-                && currentDate.isAfter(pp.getMaxDueDate())) {
+                && null != pp.getMaxDueDate() && currentDate.isAfter(pp.getMaxDueDate())) {
             pp.setStatus(DebtPositionStatus.EXPIRED);
         }
         return pp;
