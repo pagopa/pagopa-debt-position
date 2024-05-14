@@ -69,6 +69,11 @@ public class LoggingAspect {
         // all rest controllers
     }
 
+    @Pointcut("@within(org.springframework.stereotype.Controller)")
+    public void controller() {
+        // all controllers
+    }
+
     @Pointcut("@within(org.springframework.stereotype.Repository)")
     public void repository() {
         // all repository methods
@@ -125,7 +130,7 @@ public class LoggingAspect {
         log.trace("Trace method {} - args: {}", joinPoint.getSignature().toShortString(), joinPoint.getArgs());
     }
 
-    @Around(value = "restController()")
+    @Around(value = "controller()")
     public Object logApiInvocation(ProceedingJoinPoint joinPoint) throws Throwable {
         MDC.put(METHOD, joinPoint.getSignature().getName());
         MDC.put(START_TIME, String.valueOf(System.currentTimeMillis()));
