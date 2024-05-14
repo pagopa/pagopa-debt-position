@@ -45,6 +45,11 @@ Feature: Managing a debt position
     When we ask the list of organizations debt positions
     Then we get the status code 400
 
+  Scenario: Get Debt Position by IUV
+    Given the debt position with IUPD "77777777777" and payment option with IUV "99000000000000000" is created
+    When get the debt position by IUV "99000000000000000"
+    Then the debt position response NAV value is "399000000000000000"
+
   Scenario: Debt position notification fee update by querying the node with existing positions
     Given a random iupd
     When a node OK result debt position is created
