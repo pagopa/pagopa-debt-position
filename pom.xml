@@ -28,7 +28,6 @@
         <lombok.version>1.18.30</lombok.version>
         <logback.ecs.version>1.6.0</logback.ecs.version>
         <postgresql.version>42.6.2</postgresql.version>
-        <h2.version>2.2.224</h2.version>
     </properties>
 
     <dependencies>
@@ -96,7 +95,6 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
-            <version>${postgresql.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -117,7 +115,6 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>${h2.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
