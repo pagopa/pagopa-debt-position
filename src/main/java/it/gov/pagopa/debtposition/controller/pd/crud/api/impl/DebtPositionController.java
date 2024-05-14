@@ -169,7 +169,7 @@ public class DebtPositionController implements IDebtPositionController {
 			@Valid MultiplePaymentPositionModel multiplePaymentPositionModel, boolean toPublish,
 			@Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
 		log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "createMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
-		
+
 		// flip model to entity
         List<PaymentPosition> debtPositions = multiplePaymentPositionModel.getPaymentPositions()
                 .stream().map( dp -> modelMapper.map(dp, PaymentPosition.class))
@@ -177,7 +177,7 @@ public class DebtPositionController implements IDebtPositionController {
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
         List<PaymentPosition> createdDebtPosList = paymentPositionService.createMultipleDebtPositions(debtPositions, organizationFiscalCode, toPublish, segCodes);
-        
+
         if (!CollectionUtils.isEmpty(createdDebtPosList)) {
         	return ResponseEntity.status(HttpStatus.CREATED).build();
         }
@@ -215,5 +215,18 @@ public class DebtPositionController implements IDebtPositionController {
         paymentPositionService.deleteMultipleDebtPositions(multipleIUPDModel.getPaymentPositionIUPDs(), organizationFiscalCode, segCodes);
 
         return new ResponseEntity<>(Constants.DEBT_POSITION_DELETED, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<PaymentPositionModelBaseResponse> getDebtPositionByIUV(String organizationFiscalCode, String iuv, String segregationCodes) {
+        log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getDebtPositionByIUV", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv)));
+
+        ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
+        // flip entity to model
+        PaymentPositionModelBaseResponse paymentPositionResponse = ObjectMapperUtils.map(
+                paymentPositionService.getDebtPositionByIUV(organizationFiscalCode, iuv, segCodes),
+                PaymentPositionModelBaseResponse.class);
+
+        return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
     }
 }

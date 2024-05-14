@@ -175,10 +175,10 @@ public interface IDebtPositionController {
 
     @Operation(summary = "The Organization deletes multiple debt positions.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "deleteMultipleDebtPositions")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Debt Positions updated."),
+            @ApiResponse(responseCode = "200", description = "Debt Positions deleted."),
             @ApiResponse(responseCode = "400", description = "Malformed request.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
             @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
-            @ApiResponse(responseCode = "409", description = "Payment Position not found.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "404", description = "Payment Position not found.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
             @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))})
     @DeleteMapping(value = "/organizations/{organizationfiscalcode}/debtpositions",
             produces = MediaType.APPLICATION_JSON_VALUE,
@@ -187,6 +187,24 @@ public interface IDebtPositionController {
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
             @Pattern(regexp = "\\b\\w{11}\\b") @PathVariable("organizationfiscalcode") String organizationFiscalCode,
             @Valid @RequestBody MultipleIUPDModel multipleIUPDModel,
+            @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
+            @RequestParam(required = false) String segregationCodes);
+
+    @Operation(summary = "The Organization deletes multiple debt positions.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getDebtPositionByIUV")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Debt Positions updated."),
+            @ApiResponse(responseCode = "400", description = "Malformed request.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "401", description = "Wrong or missing function key.", content = @Content(schema = @Schema())),
+            @ApiResponse(responseCode = "404", description = "Payment Position not found.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "429", description = "Too many requests.", content = @Content(schema = @Schema())),
+            @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))})
+    @GetMapping(value = "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}/debtposition",
+            produces = {"application/json"})
+    ResponseEntity<PaymentPositionModelBaseResponse> getDebtPositionByIUV(
+            @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
+            @Pattern(regexp = "\\b\\w{11}\\b") @PathVariable("organizationfiscalcode") String organizationFiscalCode,
+            @Parameter(description = "Payment Option IUV", required = true)
+            @PathVariable("iuv") String iuv,
             @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
             @RequestParam(required = false) String segregationCodes);
 }
