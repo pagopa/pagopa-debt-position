@@ -68,7 +68,7 @@ Given('a random iupd', async function () {
     await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd);
     });
 When(/^the debt position with IUPD (.*) and payment option with IUV (.*) is created$/, (IUPD_input, iuv) => {
-    // precondition -> deletion possible dirty data
+    // precondition -> removing dirty data
     executeDebtPositionDeletion(gpdSessionBundle, idOrg, IUPD_input).then(r => console.log(""));
     executeDebtPositionCreation(gpdSessionBundle, idOrg, IUPD_input, iuv).then(r => console.log(""))
 });
