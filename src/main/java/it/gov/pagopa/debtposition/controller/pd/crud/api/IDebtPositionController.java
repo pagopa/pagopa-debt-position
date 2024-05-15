@@ -88,7 +88,7 @@ public interface IDebtPositionController {
     ResponseEntity<PaymentPositionsInfo> getOrganizationDebtPositions(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
-            @Valid @Positive @Max(100) @Parameter(description = "Number of elements on one page. Default = 50") @RequestParam(required = false, defaultValue = "50") Integer limit,
+            @Valid @Positive @Max(50) @Parameter(description = "Number of elements on one page. Default = 50") @RequestParam(required = false, defaultValue = "10") Integer limit,
             @Valid @Min(0) @Parameter(description = "Page number. Page value starts from 0", required = true) @RequestParam Integer page,
             @Valid @Parameter(description = "Filter from due_date (if provided use the format yyyy-MM-dd). If not provided will be set to 30 days before the due_date_to.") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "due_date_from", required = false) LocalDate dueDateFrom,
             @Valid @Parameter(description = "Filter to due_date (if provided use the format yyyy-MM-dd). If not provided will be set to 30 days after the due_date_from.") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(value = "due_date_to", required = false) LocalDate dueDateTo,
