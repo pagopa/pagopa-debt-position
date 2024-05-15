@@ -67,7 +67,10 @@ Given('a random iupd', async function () {
     // precondition -> deletion possible dirty data
     await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd);
     });
-When(/^the debt position with IUPD (.*) and payment option with IUV (.*) is created$/, (iupd, iuv) => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, iuv));
+When(/^the debt position with IUPD (.*) and payment option with IUV (.*) is created$/, (IUPD_input, iuv) => {
+    iupd = IUPD_input
+    executeDebtPositionCreation(gpdSessionBundle, idOrg, IUPD_input, iuv)
+});
 When('the debt position is created', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd));
 Then('the debt position gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
 Then('the organization gets the nav value after creation', () => assertNav(gpdSessionBundle.createdDebtPosition, gpdSessionBundle.responseToCheck.data));
@@ -140,7 +143,7 @@ Then(/^the debt position response IUV value is (.*)$/, (expectedIUV) => assertIU
  *  Debt position delete
  */
 When('the debt position is deleted', () => executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd));
-Then(/^the debt position with IUPD (.*) is deleted$/, (iupd) => executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd));
+Then(/^the debt position with IUPD (.*) is deleted$/, (IUPD_input) => executeDebtPositionDeletion(gpdSessionBundle, idOrg, IUPD_input));
 
 /*
  *  Debt position publish
