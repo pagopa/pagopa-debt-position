@@ -311,10 +311,12 @@ class DebtPositionControllerTest {
 	@Test
 	void getDebtPositionByIUV_200() throws Exception {
 		PaymentPositionDTO pp = DebtPositionMock.getMock1();
+		String iuv = "47999999999999999";
+		pp.getPaymentOption().get(0).setIuv(iuv);
 		mvc.perform(post("/organizations/20077777771/debtpositions")
 						.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
-		String iuv = pp.getPaymentOption().get(0).getIuv();
+
 		String url = "/organizations/20077777771/paymentoptions/" + iuv + "/debtposition";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -326,7 +328,8 @@ class DebtPositionControllerTest {
 	void getDebtPositionByIUV_WithMetadata_200() throws Exception {
 		// Creo una posizione debitoria con metadati su PO e transfer, la recupero e verifico siano presenti i metadati inseriti
 		PaymentPositionDTO pp = DebtPositionMock.getMetadataMock8();
-		String iuv = pp.getPaymentOption().get(0).getIuv();
+		String iuv = "47999999999999999";
+		pp.getPaymentOption().get(0).setIuv(iuv);
 		mvc.perform(post("/organizations/20077777772/debtpositions")
 						.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -351,6 +354,8 @@ class DebtPositionControllerTest {
 	@Test
 	void getDebtPositionByIUV_Custom_NAV_200() throws Exception {
 		PaymentPositionDTO pp = DebtPositionMock.getMock1();
+		String iuv = "47999999999999999";
+		pp.getPaymentOption().get(0).setIuv(iuv);
 		pp.getPaymentOption().forEach(po -> po.setNav("9"+auxDigit+po.getIuv()));
 
 		// Creo una posizione debitoria settando il NAV e la recupero
@@ -359,18 +364,19 @@ class DebtPositionControllerTest {
 				.andExpect(status().isCreated())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-						.value("9"+auxDigit+"123456IUVMOCK1"));
-		String iuv0 = pp.getPaymentOption().get(0).getIuv();
-		String url = "/organizations/20077777773/paymentoptions/" + iuv0 + "/debtposition";
+						.value("9"+auxDigit+iuv));
+		String url = "/organizations/20077777773/paymentoptions/" + iuv + "/debtposition";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-						.value("9"+auxDigit+"123456IUVMOCK1"));
+						.value("9"+auxDigit+iuv));
 	}
 
 	@Test
 	void getDebtPositionByIUV_SegregationCodeAuthorized_200() throws Exception {
 		PaymentPositionDTO pp = DebtPositionMock.getMock1();
+		String iuv = "47999999999999999";
+		pp.getPaymentOption().get(0).setIuv(iuv);
 		String validSegregationCode = pp.getPaymentOption().get(0).getIuv().substring(0,2);
 		String anotherSegregationCode = "99";
 		// creo una posizione debitoria e la recupero
@@ -378,7 +384,6 @@ class DebtPositionControllerTest {
 						.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 
-		String iuv = pp.getPaymentOption().get(0).getIuv();
 		String url = "/organizations/20077777774/paymentoptions/" + iuv + "/debtposition?segregationCodes=" + validSegregationCode + "," + anotherSegregationCode;
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -389,7 +394,8 @@ class DebtPositionControllerTest {
 	@Test
 	void getDebtPositionByIUV_SegregationCodeForbidden_403() throws Exception {
 		PaymentPositionDTO pp = DebtPositionMock.getMock1();
-		String iuv = pp.getPaymentOption().get(0).getIuv();
+		String iuv = "47999999999999999";
+		pp.getPaymentOption().get(0).setIuv(iuv);
 		String notSufficientSegregationCode = "99";
 		mvc.perform(post("/organizations/40377777771/debtpositions")
 						.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
@@ -400,7 +406,8 @@ class DebtPositionControllerTest {
 
 	@Test
 	void getDebtPositionByIUV_404() throws Exception {
-		String url = "/organizations/40377777771/paymentoptions/NOT_EXISTENT_IUV/debtposition";
+		String NOT_EXISTENT_IUV = "00999999999999999";
+		String url = "/organizations/40377777771/paymentoptions/" + NOT_EXISTENT_IUV + "/debtposition";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON));
 	}
