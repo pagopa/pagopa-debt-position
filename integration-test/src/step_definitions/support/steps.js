@@ -140,7 +140,7 @@ Then(/^the debt position response IUV value is (.*)$/, (expectedIUV) => assertIU
  *  Debt position delete
  */
 When('the debt position is deleted', () => executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd));
-
+Then(/^the debt position with IUPD (.*) is deleted$/, (iupd) => executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd));
 
 /*
  *  Debt position publish
@@ -166,6 +166,7 @@ Then('the payment option gets the status code {int}', (statusCode) => assertStat
  */
 When('we get the payment option by iuv', () => executePaymentOptionGetByIuv(gpdSessionBundle, idOrg, gpdSessionBundle.debtPosition.iuv1));
 Then('the get payment options returns the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
+Then('the response returns the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
 Then('the iupd is present and valued with the same value as the debt position', () => assertIupd(gpdSessionBundle));
 
 /*
