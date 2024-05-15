@@ -202,8 +202,8 @@ public interface IDebtPositionController {
             produces = {"application/json"})
     ResponseEntity<PaymentPositionModelBaseResponse> getDebtPositionByIUV(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
-            @Pattern(regexp = "\\b\\w{11}\\b") @PathVariable("organizationfiscalcode") String organizationFiscalCode,
-            @Parameter(description = "Payment Option IUV", required = true)
+            @Pattern(regexp = "\\d{11}") @PathVariable("organizationfiscalcode") String organizationFiscalCode,
+            @Pattern(regexp = "^\\d{1,30}$") @Parameter(description = "Payment Option IUV", required = true)
             @PathVariable("iuv") String iuv,
             @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
             @RequestParam(required = false) String segregationCodes);
