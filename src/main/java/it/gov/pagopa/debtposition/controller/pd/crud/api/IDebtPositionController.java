@@ -190,7 +190,7 @@ public interface IDebtPositionController {
             @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
             @RequestParam(required = false) String segregationCodes);
 
-    @Operation(summary = "The Organization deletes multiple debt positions.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getDebtPositionByIUV")
+    @Operation(summary = "The organization retrieves a debt position by payment option IUV", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getDebtPositionByIUV")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Debt Positions updated."),
             @ApiResponse(responseCode = "400", description = "Malformed request.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),

@@ -12,6 +12,7 @@ const { executeDebtPositionCreation,
         executeDebtPositionCreationAndPublication,
         executeDebtPositionUpdateAndPublication,
         executePaymentOptionGetByIuv,
+        executeDebtPositionGetByIuv,
         executeOKDebtPositionCreation,
         executeKODebtPositionCreation,
         executeDebtPositionNotificationFeeUpdateNodeOK,
@@ -27,7 +28,9 @@ const { executeDebtPositionCreation,
         executeMassiveDebtPositionCreationWithSegregationCodes
 } = require('./logic/gpd_logic');
 const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, assertNotificationFeeUpdatedAmounts, 
-assertStatusString, executeAfterAllStep, randomOrg, randomIupd, assertIupd, assertNav, assertNotificationFeeUpdatedDateNotificationFee, assertSize, assertMinSize } = require('./logic/common_logic');
+assertStatusString, executeAfterAllStep, randomOrg, randomIupd, assertIupd, assertNav, assertNotificationFeeUpdatedDateNotificationFee, assertSize, assertMinSize,
+    assertIUV
+} = require('./logic/common_logic');
 const { gpdSessionBundle, gpdUpdateBundle, gpdPayBundle } = require('./utility/data');
 const { getValidBundle, addDays, format } = require('./utility/helpers');
 
@@ -56,7 +59,6 @@ BeforeAll(async function() {
  */
 Given('GPD running', () => executeHealthCheckForGPD());
 
-
 /*
  *  Debt position creation
  */
@@ -65,7 +67,8 @@ Given('a random iupd', async function () {
     // precondition -> deletion possible dirty data
     await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd);
     });
-When('the debt position is created', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, status));
+When(/^the debt position with IUPD (.*) and payment option with IUV (.*) is created$/, (iupd, iuv) => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, iuv));
+When('the debt position is created', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd));
 Then('the debt position gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
 Then('the organization gets the nav value after creation', () => assertNav(gpdSessionBundle.createdDebtPosition, gpdSessionBundle.responseToCheck.data));
 
@@ -73,7 +76,7 @@ Then('the organization gets the nav value after creation', () => assertNav(gpdSe
  *  Massive debt positions creation
  */
 
-When('the debt position items is created', () => executeMassiveDebtPositionsCreation(gpdSessionBundle, idOrg, iupd, status));
+When('the debt position items is created', () => executeMassiveDebtPositionsCreation(gpdSessionBundle, idOrg, iupd));
 
 
 /*
@@ -128,8 +131,10 @@ Then('the organization gets the nav value after update', () => assertNav(gpdSess
  *  Debt position get
  */
 When('we get the debt position', () => executeDebtPositionGet(gpdSessionBundle, idOrg, iupd));
+When(/^we get the debt position by IUV (.*)$/, (iuv) => executeDebtPositionGetByIuv(gpdSessionBundle, idOrg, iuv));
 Then('the company name is {string}', (companyName) => assertCompanyName(gpdSessionBundle, companyName));
 Then('the organization get the nav value', () => assertNav(gpdSessionBundle.responseToCheck.data, gpdSessionBundle.responseToCheck.data))
+Then(/^the debt position response IUV value is (.*)$/, (expectedIUV) => assertIUV(gpdSessionBundle.responseToCheck.data, expectedIUV))
 
 /*
  *  Debt position delete
@@ -175,14 +180,14 @@ Then('the transfer gets the status code {int}', (statusCode) => assertStatusCode
 When('the debt position is created and published', () => executeDebtPositionCreationAndPublication(gpdSessionBundle, idOrg, iupd));
 Then('the debt position gets status {string}', (statusString) => assertStatusString(gpdSessionBundle, statusString));
 
-Given('a new debt position', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, status));
+Given('a new debt position', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd));
 When('the debt position is updated and published', () => executeDebtPositionUpdateAndPublication(gpdSessionBundle, idOrg, iupd));
 
 /*
  * Debt position manage with segregation codes
  */
  
- When('the debt position using segregation codes is created', () => executeDebtPositionCreationWithSegregationCodes(gpdSessionBundle, idOrg, iupd, status));
+ When('the debt position using segregation codes is created', () => executeDebtPositionCreationWithSegregationCodes(gpdSessionBundle, idOrg, iupd));
  When('the debt position items, using segregation codes, is created', () => executeMassiveDebtPositionCreationWithSegregationCodes(gpdSessionBundle, idOrg, iupd, status));
  When('the debt position using segregation codes is updated', () => executeDebtPositionUpdateWithSegregationCodes(gpdSessionBundle, gpdUpdateBundle, idOrg, iupd));
  When('the organization gets the debt position using segregation codes', () => executeDebtPositionGetWithSegregationCodes(gpdSessionBundle, idOrg, iupd));
