@@ -117,7 +117,7 @@ public class PaymentPositionCRUDService {
         Optional<PaymentOption> po = paymentOptionRepository.findByOrganizationFiscalCodeAndIuv(organizationFiscalCode, iuv);
 
         if (po.isEmpty()) {
-            throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, iuv);
+            throw new AppException(AppError.PAYMENT_OPTION_IUV_NOT_FOUND, organizationFiscalCode, iuv);
         }
 
         return po.get().getPaymentPosition();
