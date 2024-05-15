@@ -218,7 +218,10 @@ public class DebtPositionController implements IDebtPositionController {
     }
 
     @Override
-    public ResponseEntity<PaymentPositionModelBaseResponse> getDebtPositionByIUV(String organizationFiscalCode, String iuv, String segregationCodes) {
+    public ResponseEntity<PaymentPositionModelBaseResponse> getDebtPositionByIUV(
+            @Pattern(regexp = "\\d{11}") String organizationFiscalCode,
+            @Pattern(regexp = "^\\d{1,30}$") String iuv,
+            @Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getDebtPositionByIUV", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv)));
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
