@@ -181,7 +181,6 @@ Then('the transfer gets the status code {int}', (statusCode) => assertStatusCode
 When('the debt position is created and published', () => executeDebtPositionCreationAndPublication(gpdSessionBundle, idOrg, iupd));
 Then('the debt position gets status {string}', (statusString) => assertStatusString(gpdSessionBundle, statusString));
 
-Given('a new debt position', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd));
 When('the debt position is updated and published', () => executeDebtPositionUpdateAndPublication(gpdSessionBundle, idOrg, iupd));
 
 /*
