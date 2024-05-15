@@ -11,7 +11,7 @@
     </parent>
     <groupId>it.gov.pagopa.debtposition</groupId>
     <artifactId>gpd</artifactId>
-    <version>0.11.24</version>
+    <version>0.11.27</version>
     <name>Gestione Posizioni Debitorie</name>
     <description>Progetto Gestione Posizioni Debitorie</description>
     <properties>
@@ -26,6 +26,8 @@
         <shedlock.version>5.10.2</shedlock.version>
         <mockito-inline.version>5.2.0</mockito-inline.version>
         <lombok.version>1.18.30</lombok.version>
+        <logback.ecs.version>1.6.0</logback.ecs.version>
+        <postgresql.version>42.6.2</postgresql.version>
     </properties>
 
     <dependencies>
@@ -92,6 +94,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -150,6 +153,11 @@
         <dependency>
             <groupId>org.springframework.retry</groupId>
             <artifactId>spring-retry</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>co.elastic.logging</groupId>
+            <artifactId>logback-ecs-encoder</artifactId>
+            <version>${logback.ecs.version}</version>
         </dependency>
     </dependencies>
 
