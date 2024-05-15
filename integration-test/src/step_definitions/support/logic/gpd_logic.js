@@ -25,7 +25,7 @@ const {
     buildCreateMassiveDebtPositionRequest
 } = require("../utility/request_builders");
 
-async function executeDebtPositionCreation(bundle, idOrg, iupd, iuv = null) {
+async function executeDebtPositionCreation(bundle, idOrg, iupd, iuv) {
     bundle.organizationCode = idOrg;
     bundle.debtPosition = buildDebtPositionDynamicData(bundle, iupd, iuv);
     let response = await createDebtPosition(bundle.organizationCode, buildCreateDebtPositionRequest(bundle.debtPosition, bundle.payer));
