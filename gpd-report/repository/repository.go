@@ -1,0 +1,110 @@
+package repository
+
+import (
+	"database/sql"
+	"fmt"
+	"log"
+	"os"
+	"strconv"
+
+	_ "github.com/lib/pq"
+)
+
+type Repository struct {
+	db *sql.DB
+}
+
+func NewRepository() (*Repository, error) {
+	connStr := os.Getenv("PG_CONNECTION_STRING")
+	db, err := sql.Open("postgres", connStr)
+
+	if err != nil {
+		return nil, err
+	}
+
+	pingErr := db.Ping()
+	if pingErr != nil {
+		log.Fatal(pingErr)
+	}
+	fmt.Println("Connected!")
+	//defer db.Close()
+
+	return &Repository{db}, nil
+}
+
+func (r *Repository) Close() error {
+	return r.db.Close()
+}
+
+func (r *Repository) GetPositionsCounter(days int) (int, error) {
+	var countCreated int
+
+	query := "SELECT count(*) FROM apd.payment_position pp WHERE pp.inserted_date > NOW() - INTERVAL '" + strconv.Itoa(days) + " DAY'"
+
+	// Execute the query
+	err := r.db.QueryRow(query).Scan(&countCreated)
+	if err != nil {
+		return 0, err
+	}
+
+	return countCreated, nil
+}
+
+func (r *Repository) GetPaidOptionsCounter(days int) (int, error) {
+	var countPaid int
+
+	query := "SELECT count(*) FROM apd.payment_option po WHERE po.status = 'PO_PAID' AND po.payment_date > NOW() - INTERVAL '" + strconv.Itoa(days) + "DAY'"
+
+	// Execute the query
+	err := r.db.QueryRow(query).Scan(&countPaid)
+	if err != nil {
+		return 0, err
+	}
+
+	return countPaid, nil
+}
+
+func (r *Repository) TopCompany() ([]CompanyData, error) {
+	rows, err := r.db.Query("SELECT company_name, COUNT(*) FROM apd.payment_position pp GROUP BY company_name ORDER BY 2 DESC LIMIT 5")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var companies []CompanyData
+
+	for rows.Next() {
+		var data CompanyData
+		if err := rows.Scan(&data.CompanyName, &data.Count); err != nil {
+			return nil, err
+		}
+		companies = append(companies, data)
+	}
+
+	return companies, nil
+}
+
+type CompanyData struct {
+	CompanyName string
+	Count       int
+}
+
+// example
+func (r *Repository) QueryExample() error {
+	rows, err := r.db.Query("SELECT * FROM table")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	// Iterate over query results
+	for rows.Next() {
+		var column1 int
+		var column2 string
+		if err := rows.Scan(&column1, &column2); err != nil {
+			return err
+		}
+		fmt.Printf("column1: %d, column2: %s\n", column1, column2)
+	}
+	return nil
+}
