@@ -115,6 +115,18 @@ function getDebtPosition(orgId, iupd, segCodes) {
     })
 }
 
+function getDebtPositionByIUV(orgId, iuv, segCodes) {
+    const params = {}
+    if (segCodes) {params.segregationCodes = segCodes}
+    return get(GPD_HOST + `/organizations/${orgId}/paymentoptions/${iuv}/debtposition`, {
+        timeout: API_TIMEOUT,
+        headers: {
+            "Ocp-Apim-Subscription-Key": process.env.API_SUBSCRIPTION_KEY,
+            "Content-Type": "application/json"
+        }
+    })
+}
+
 function getPaymentOptionByIuv(orgId, iuv) {
     return get(GPD_HOST + `/organizations/${orgId}/paymentoptions/${iuv}`, {
         timeout: API_TIMEOUT,
@@ -202,6 +214,7 @@ module.exports = {
     updateNotificationFee,
     getDebtPositionList,
     getDebtPosition,
+    getDebtPositionByIUV,
     deleteDebtPosition,
     payPaymentOption,
     reportTransfer,

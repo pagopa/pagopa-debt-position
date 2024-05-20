@@ -26,6 +26,7 @@ public enum AppError {
     DEBT_POSITION_FORBIDDEN(HttpStatus.FORBIDDEN, "The payment position is forbidden", "The caller does not have proper authorization to access or modify the IUVs in the payment position. [Organization Fiscal Code=%s, IUPD=%s]"),
     ORGANIZATION_NOT_FOUND(HttpStatus.NOT_FOUND, "Not found the organization", "Not found an organization for the Organization Fiscal Code %s"),
     PAYMENT_OPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "Not found the payment option", "Not found a payment option for Organization Fiscal Code %s and NAV %s"),
+    PAYMENT_OPTION_IUV_NOT_FOUND(HttpStatus.NOT_FOUND, "Not found the payment option", "Not found a payment option for Organization Fiscal Code %s and IUV %s"),
     PAYMENT_OPTION_NOT_PAYABLE(HttpStatus.UNPROCESSABLE_ENTITY, "Not in payable state", "The payment option with Organization Fiscal Code %s and NAV %s is not in payable state"),
     PAYMENT_OPTION_ALREADY_PAID(HttpStatus.CONFLICT, "Existing related payment found", "A payment transaction has already been carried out for the Organization Fiscal Code %s and NAV %s"),
     PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "The update of the notification fee for the payment option is failed", "Notification fee update failed for the payment option with Organization Fiscal Code %s and IUV %s"),
