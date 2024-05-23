@@ -5,7 +5,7 @@ Feature: Managing a debt position
 
   Scenario: Debt position creation
     Given a random iupd
-    And a new debt position
-    When the debt position is updated and published
+    When the debt position is created
+    And the debt position is updated and published
     Then the debt position gets the status code 200
     And the debt position gets status "VALID"

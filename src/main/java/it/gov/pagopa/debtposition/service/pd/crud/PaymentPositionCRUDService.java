@@ -106,6 +106,21 @@ public class PaymentPositionCRUDService {
         return pp.get();
     }
 
+    public PaymentPosition getDebtPositionByIUV(String organizationFiscalCode,
+                                                 String iuv, List<String> segCodes) {
+        if(segCodes != null && !isAuthorizedBySegregationCode(iuv, segCodes)) {
+            throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, iuv);
+        }
+
+        Optional<PaymentOption> po = paymentOptionRepository.findByOrganizationFiscalCodeAndIuv(organizationFiscalCode, iuv);
+
+        if (po.isEmpty()) {
+            throw new AppException(AppError.PAYMENT_OPTION_IUV_NOT_FOUND, organizationFiscalCode, iuv);
+        }
+
+        return po.get().getPaymentPosition();
+    }
+
     public List<PaymentPosition>  getDebtPositionsByIUPDs(String organizationFiscalCode, List<String> iupdList, List<String> segCodes) {
         // findAll query by IUPD list
         PaymentPositionByIUPDList spec = new PaymentPositionByIUPDList(iupdList);
@@ -409,5 +424,9 @@ public class PaymentPositionCRUDService {
         return segregationCodes.contains(paymentPositionSegregationCode);
     }
 
-	
+    private boolean isAuthorizedBySegregationCode(String iuv, List<String> segregationCodes) {
+        // It is enough to check only one IUV of the payment position. Here it is assumed that they all have the same segregation code.
+        String paymentPositionSegregationCode = iuv.substring(0,2);
+        return segregationCodes.contains(paymentPositionSegregationCode);
+    }
 }
