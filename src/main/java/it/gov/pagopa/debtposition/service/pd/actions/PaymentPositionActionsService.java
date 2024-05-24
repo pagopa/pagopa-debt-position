@@ -45,7 +45,8 @@ public class PaymentPositionActionsService {
     @Transactional
     public PaymentPosition invalidate(@NotBlank String organizationFiscalCode, @NotBlank String iupd, List<String> segregationCodes) {
         PaymentPosition ppToInvalidate = paymentPositionCRUDService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segregationCodes);
-        if (DebtPositionStatus.getPaymentPosNotIvalidableStatus().contains(ppToInvalidate.getStatus())) {
+        DebtPositionStatus.updatePaymentPositionStatus(ppToInvalidate);
+        if (DebtPositionStatus.getPaymentPosNotInvalidableStatus().contains(ppToInvalidate.getStatus())) {
             throw new AppException(AppError.DEBT_POSITION_NOT_INVALIDABLE, organizationFiscalCode, iupd);
         }
         LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);

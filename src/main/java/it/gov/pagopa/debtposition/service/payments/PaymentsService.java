@@ -71,8 +71,6 @@ public class PaymentsService {
     @Transactional
     public PaymentOption pay(@NotBlank String organizationFiscalCode,
                              @NotBlank String nav, @NotNull @Valid PaymentOptionModel paymentOptionModel) {
-
-
         Optional<PaymentPosition> ppToPay = paymentPositionRepository.
         		findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvOrPaymentOptionOrganizationFiscalCodeAndPaymentOptionNav(organizationFiscalCode, nav, organizationFiscalCode, nav);
 
@@ -80,6 +78,7 @@ public class PaymentsService {
             throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav);
         }
 
+        DebtPositionStatus.updatePaymentPositionStatus(ppToPay.get());
         DebtPositionValidation.checkPaymentPositionPayability(ppToPay.get(), nav);
 
         return this.updatePaymentStatus(ppToPay.get(), nav, paymentOptionModel);
@@ -98,6 +97,7 @@ public class PaymentsService {
             throw new AppException(AppError.TRANSFER_NOT_FOUND, organizationFiscalCode, iuv, transferId);
         }
 
+        DebtPositionStatus.updatePaymentPositionStatus(ppToReport.get());
         DebtPositionValidation.checkPaymentPositionAccountability(ppToReport.get(), iuv, transferId);
 
         return this.updateTransferStatus(ppToReport.get(), iuv, transferId);
