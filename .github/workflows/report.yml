@@ -78,8 +78,9 @@ jobs:
           cd gpd-report
           export SLACK_URL='${{ secrets.TEST_SLACK_URL }}'
           export DAYS=30
-          # todo
-          export PG_CONNECTION_STRING='${{ secrets.DATASOURCE_URL }}'
+          export PG_URL='${{ secrets.DATASOURCE_URL }}'
+          export PG_USER='${{ secrets.DATASOURCE_USERNAME }}'
+          export PG_PASSWORD='${{ secrets.DATASOURCE_PASSWORD }}'
           ./go-sql
 
   cleanup_runner:
