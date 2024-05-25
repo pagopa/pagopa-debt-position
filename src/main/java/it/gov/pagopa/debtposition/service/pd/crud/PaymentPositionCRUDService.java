@@ -65,11 +65,9 @@ public class PaymentPositionCRUDService {
         final String ERROR_CREATION_LOG_MSG = "Error during debt position creation: %s";
 
         try {
-      
             //Inserisce (ed eventualmente porta in stato pubblicato) la posizione debitoria
             return paymentPositionRepository.saveAndFlush(
             		this.checkAndBuildDebtPositionToSave(debtPosition, organizationFiscalCode, toPublish, segCodes));
-
         } catch (DataIntegrityViolationException e) {
             log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
             if (e.getCause() instanceof ConstraintViolationException constraintviolationexception) {
@@ -106,6 +104,21 @@ public class PaymentPositionCRUDService {
         }
 
         return pp.get();
+    }
+
+    public PaymentPosition getDebtPositionByIUV(String organizationFiscalCode,
+                                                 String iuv, List<String> segCodes) {
+        if(segCodes != null && !isAuthorizedBySegregationCode(iuv, segCodes)) {
+            throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, iuv);
+        }
+
+        Optional<PaymentOption> po = paymentOptionRepository.findByOrganizationFiscalCodeAndIuv(organizationFiscalCode, iuv);
+
+        if (po.isEmpty()) {
+            throw new AppException(AppError.PAYMENT_OPTION_IUV_NOT_FOUND, organizationFiscalCode, iuv);
+        }
+
+        return po.get().getPaymentPosition();
     }
 
     public List<PaymentPosition>  getDebtPositionsByIUPDs(String organizationFiscalCode, List<String> iupdList, List<String> segCodes) {
@@ -202,8 +215,8 @@ public class PaymentPositionCRUDService {
             paymentPositionRepository.flush();
             // the version is increased at each change
             ppToUpdate.setVersion(ppToUpdate.getVersion()+1);
+
             return this.create(ppToUpdate, organizationFiscalCode, toPublish, segregationCodes);
-        	
         } catch (ValidationException e) {
             throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
         } catch (AppException e) {
@@ -411,5 +424,9 @@ public class PaymentPositionCRUDService {
         return segregationCodes.contains(paymentPositionSegregationCode);
     }
 
-	
+    private boolean isAuthorizedBySegregationCode(String iuv, List<String> segregationCodes) {
+        // It is enough to check only one IUV of the payment position. Here it is assumed that they all have the same segregation code.
+        String paymentPositionSegregationCode = iuv.substring(0,2);
+        return segregationCodes.contains(paymentPositionSegregationCode);
+    }
 }
