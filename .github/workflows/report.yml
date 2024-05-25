@@ -28,25 +28,6 @@ permissions:
 
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.22.1'
-      - name: Install dependencies
-        run: |
-          cd gpd-report
-          go get .
-      - name: Build
-        run: |
-          pwd
-          cd gpd-report
-          go build .
-
   create_runner:
     name: Create Runner
     runs-on: ubuntu-22.04
@@ -73,8 +54,23 @@ jobs:
     name: Report generation
     environment: ${{ inputs.environment }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22.1'
+
+      - name: Install dependencies
+        run: |
+          cd gpd-report
+          go get .
+
+      - name: Build
+        run: |
+          pwd
+          cd gpd-report
+          go build .
 
       - name: Run report go executable
         shell: bash
@@ -88,6 +84,7 @@ jobs:
   cleanup_runner:
     name: Cleanup Runner
     needs: [ create_runner, report ]
+    if: ${{ success() || failure() }}
     runs-on: ubuntu-22.04
     environment: ${{ inputs.environment }}
     steps:
