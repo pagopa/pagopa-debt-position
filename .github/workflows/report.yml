@@ -39,11 +39,12 @@ jobs:
           go-version: '1.22.1'
       - name: Install dependencies
         run: |
-          cd report
+          cd gpd-report
           go get .
       - name: Build
         run: |
-          cd report
+          pwd
+          cd gpd-report
           go build .
 
   create_runner:
@@ -51,7 +52,6 @@ jobs:
     runs-on: ubuntu-22.04
     environment:
       name: ${{ inputs.environment }}
-    if: ${{ inputs.target == inputs.environment || inputs.target == 'all' }}
     outputs:
       runner_name: ${{ steps.create_github_runner.outputs.runner_name }}
     steps:
@@ -68,9 +68,8 @@ jobs:
           pat_token: ${{ secrets.BOT_TOKEN_GITHUB }}
 
   report:
-    needs: [ create_runner ]
+    needs: [ create_runner, build ]
     runs-on: [ self-hosted, "${{ needs.create_runner.outputs.runner_name }}" ]
-    if: ${{ inputs.target == inputs.environment || inputs.target == 'all' }}
     name: Report generation
     environment: ${{ inputs.environment }}
     steps:
@@ -89,7 +88,6 @@ jobs:
   cleanup_runner:
     name: Cleanup Runner
     needs: [ create_runner, report ]
-    if: ${{ success() || failure() && inputs.target == inputs.environment || inputs.target == 'all' }}
     runs-on: ubuntu-22.04
     environment: ${{ inputs.environment }}
     steps:
