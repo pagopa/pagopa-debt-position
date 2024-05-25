@@ -41,7 +41,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Positions created in the last", days, "days:", countCreated)
 	// GetPositionLastDays <end>
 
 	// GetPaidOptionsCounter <start>
@@ -49,18 +48,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Options paid in the last", days, "days:", countPaid)
 	// GetPaidOptionsCounter <end>
 
 	// TopCompany <start>
 	var top_companies string
-	companyData, err := my_repository.TopCompany()
+	companyData, err := my_repository.TopCompany(days)
 	if err != nil {
 		log.Fatal(err)
 	}
 	for _, data := range companyData {
 		top_companies += fmt.Sprintf("%s, positions: %d\n", data.CompanyName, data.Count)
-		fmt.Printf("Company: %s, Count: %d\n", data.CompanyName, data.Count)
 	}
 	// TopCompany <end>
 

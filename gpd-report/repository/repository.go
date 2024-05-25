@@ -74,8 +74,8 @@ func (r *Repository) GetPaidOptionsCounter(days int) (int, error) {
 	return countPaid, nil
 }
 
-func (r *Repository) TopCompany() ([]CompanyData, error) {
-	rows, err := r.db.Query("SELECT company_name, COUNT(*) FROM apd.payment_position pp GROUP BY company_name ORDER BY 2 DESC LIMIT 5")
+func (r *Repository) TopCompany(days int) ([]CompanyData, error) {
+	rows, err := r.db.Query("SELECT company_name, COUNT(*) FROM apd.payment_position pp WHERE pp.inserted_date > NOW() - INTERVAL '" + strconv.Itoa(days) + "' DAY GROUP BY company_name ORDER BY 2 DESC LIMIT 5")
 	if err != nil {
 		return nil, err
 	}
