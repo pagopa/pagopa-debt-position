@@ -49,7 +49,7 @@ jobs:
           pat_token: ${{ secrets.BOT_TOKEN_GITHUB }}
 
   report:
-    needs: [ create_runner, build ]
+    needs: [ create_runner ]
     runs-on: [ self-hosted, "${{ needs.create_runner.outputs.runner_name }}" ]
     name: Report generation
     environment: ${{ inputs.environment }}
