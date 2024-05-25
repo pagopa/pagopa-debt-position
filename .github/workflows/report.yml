@@ -75,6 +75,7 @@ jobs:
       - name: Run report go executable
         shell: bash
         run: |
+          cd gpd-report
           export SLACK_URL='${{ secrets.TEST_SLACK_URL }}'
           export DAYS=30
           # todo
