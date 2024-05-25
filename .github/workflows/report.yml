@@ -39,9 +39,12 @@ jobs:
           go-version: '1.22.1'
       - name: Install dependencies
         run: |
+          cd report
           go get .
       - name: Build
-        run: go build .
+        run: |
+          cd report
+          go build .
 
   create_runner:
     name: Create Runner
