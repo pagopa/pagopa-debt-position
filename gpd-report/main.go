@@ -41,7 +41,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Positions created in the last", days, "days:", countCreated)
 	// GetPositionLastDays <end>
 
 	// GetPaidOptionsCounter <start>
@@ -49,22 +48,46 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Options paid in the last", days, "days:", countPaid)
+	// GetPaidOptionsCounter <end>
+
+	// GetPositionLastDays <start>
+	countCreatedLastYear, err := my_repository.GetPositionsCounter(365)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// GetPositionLastDays <end>
+
+	// GetPaidOptionsCounter <start>
+	countPaidLastYear, err := my_repository.GetPaidOptionsCounter(365)
+	if err != nil {
+		log.Fatal(err)
+	}
 	// GetPaidOptionsCounter <end>
 
 	// TopCompany <start>
 	var top_companies string
-	companyData, err := my_repository.TopCompany()
+	companyData, err := my_repository.TopCompany(days)
 	if err != nil {
 		log.Fatal(err)
 	}
 	for _, data := range companyData {
 		top_companies += fmt.Sprintf("%s, positions: %d\n", data.CompanyName, data.Count)
-		fmt.Printf("Company: %s, Count: %d\n", data.CompanyName, data.Count)
 	}
 	// TopCompany <end>
 
-	concatenated := fmt.Sprintf("• *Created debt positions* %d \n• *Paid payment options* %d \n *Top organizations *\n %s", countCreated, countPaid, top_companies)
+	// TopCompany <start>
+	var top_companies_last_year string
+	companyDataLastYear, err := my_repository.TopCompany(365)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, data := range companyDataLastYear {
+		top_companies_last_year += fmt.Sprintf("%s, positions: %d\n", data.CompanyName, data.Count)
+	}
+	// TopCompany <end>
+
+	concatenated := fmt.Sprintf("\n• Created debt positions %d \n• Paid payment options %d \n *Top organizations*\n %s \n*Last 365 days*\n• Created debt positions %d \n• Paid payment options %d\n *Top organizations*\n %s",
+		countCreated, countPaid, top_companies, countCreatedLastYear, countPaidLastYear, top_companies_last_year)
 	var title string = fmt.Sprintf("GPD Report last %d days", days)
 	attachment := slack.Attachment{
 		Color:         "good",

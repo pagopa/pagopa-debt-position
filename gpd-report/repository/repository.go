@@ -6,8 +6,9 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
-	_ "github.com/lib/pq"
+	"github.com/lib/pq"
 )
 
 type Repository struct {
@@ -15,9 +16,18 @@ type Repository struct {
 }
 
 func NewRepository() (*Repository, error) {
-	connStr := os.Getenv("PG_CONNECTION_STRING")
-	db, err := sql.Open("postgres", connStr)
+	url := os.Getenv("PG_URL")
+	user := os.Getenv("PG_USER")
+	pass := os.Getenv("PG_PASSWORD")
+	split := strings.Split(url, "/")
+	host := strings.Split(split[2], ":")[0]
+	port := strings.Split(split[2], ":")[1]
+	dbName := strings.Split(split[3], "?")[0]
 
+	connStr := fmt.Sprintf("host=%s port=%s dbname=%s user=%s password=%s sslmode=require", host, port, dbName, user, pass)
+
+	pq.ParseURL(connStr)
+	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, err
 	}
@@ -64,8 +74,8 @@ func (r *Repository) GetPaidOptionsCounter(days int) (int, error) {
 	return countPaid, nil
 }
 
-func (r *Repository) TopCompany() ([]CompanyData, error) {
-	rows, err := r.db.Query("SELECT company_name, COUNT(*) FROM apd.payment_position pp GROUP BY company_name ORDER BY 2 DESC LIMIT 5")
+func (r *Repository) TopCompany(days int) ([]CompanyData, error) {
+	rows, err := r.db.Query("SELECT company_name, COUNT(*) FROM apd.payment_position pp WHERE pp.inserted_date > NOW() - INTERVAL '" + strconv.Itoa(days) + "' DAY GROUP BY company_name ORDER BY 2 DESC LIMIT 5")
 	if err != nil {
 		return nil, err
 	}
