@@ -50,6 +50,20 @@ func main() {
 	}
 	// GetPaidOptionsCounter <end>
 
+	// GetPositionLastDays <start>
+	countCreatedLastYear, err := my_repository.GetPositionsCounter(365)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// GetPositionLastDays <end>
+
+	// GetPaidOptionsCounter <start>
+	countPaidLastYear, err := my_repository.GetPaidOptionsCounter(365)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// GetPaidOptionsCounter <end>
+
 	// TopCompany <start>
 	var top_companies string
 	companyData, err := my_repository.TopCompany(days)
@@ -61,7 +75,8 @@ func main() {
 	}
 	// TopCompany <end>
 
-	concatenated := fmt.Sprintf("• *Created debt positions* %d \n• *Paid payment options* %d \n *Top organizations *\n %s", countCreated, countPaid, top_companies)
+	concatenated := fmt.Sprintf("• *Created debt positions* %d \n• *Paid payment options* %d \n *Top organizations *\n %s \n• *Created debt positions last year* %d \n• *Paid payment options last year * %d",
+		countCreated, countPaid, top_companies, countCreatedLastYear, countPaidLastYear)
 	var title string = fmt.Sprintf("GPD Report last %d days", days)
 	attachment := slack.Attachment{
 		Color:         "good",
