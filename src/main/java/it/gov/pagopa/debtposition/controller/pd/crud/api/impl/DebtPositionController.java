@@ -163,7 +163,7 @@ public class DebtPositionController implements IDebtPositionController {
         PaymentPosition updatedDebtPos = paymentPositionService.update(paymentPositionModel, organizationFiscalCode, toPublish, segCodes);
 
         if (null != updatedDebtPos) {
-        	PaymentPositionModel paymentPosition = modelMapper.map(updatedDebtPos, PaymentPositionModel.class);
+        	PaymentPositionModel paymentPosition = ObjectMapperUtils.map(updatedDebtPos, PaymentPositionModel.class);
             return new ResponseEntity<>(paymentPosition, HttpStatus.OK);
         }
 

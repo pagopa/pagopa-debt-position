@@ -1,5 +1,9 @@
 package it.gov.pagopa.debtposition.util;
 
+import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.model.pd.Stamp;
+import it.gov.pagopa.debtposition.model.pd.TransferModel;
+import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;
 import org.modelmapper.convention.MatchingStrategies;
@@ -20,6 +24,32 @@ public class ObjectMapperUtils {
     static {
         modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+
+        // Add custom mapping from Transfer to TransferModel
+        modelMapper.addMappings(new PropertyMap<Transfer, TransferModel>() {
+            @Override
+            protected void configure() {
+                using(ctx -> new Stamp(
+                        ((Transfer) ctx.getSource()).getHashDocument(),
+                        ((Transfer) ctx.getSource()).getStampType(),
+                        ((Transfer) ctx.getSource()).getProvincialResidence()))
+                        .map(source, destination.getStamp());
+            }
+        });
+
+        // Add custom mapping from Transfer to TransferModelResponse
+        modelMapper.addMappings(new PropertyMap<Transfer, TransferModelResponse>() {
+            @Override
+            protected void configure() {
+                using(ctx -> {
+                    Transfer t = ((Transfer) ctx.getSource());
+                    return new Stamp(
+                                    t.getHashDocument(),
+                                    t.getStampType(),
+                                    t.getProvincialResidence());
+                    }).map(source, destination.getStamp());
+            }
+        });
     }
 
     /**

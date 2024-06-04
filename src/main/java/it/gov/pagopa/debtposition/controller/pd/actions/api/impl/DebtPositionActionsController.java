@@ -6,6 +6,7 @@ import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.service.pd.actions.PaymentPositionActionsService;
+import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +37,8 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
         PaymentPosition publishedDebtPos = paymentPositionActionsService.publish(organizationFiscalCode, iupd, segCodes);
         if (null != publishedDebtPos) {
-        	PaymentPositionModel paymentPosition = modelMapper.map(publishedDebtPos, PaymentPositionModel.class);
-            return new ResponseEntity<>(paymentPosition, HttpStatus.OK);
+        	PaymentPositionModel paymentPositionModel = ObjectMapperUtils.map(publishedDebtPos, PaymentPositionModel.class);
+            return new ResponseEntity<>(paymentPositionModel, HttpStatus.OK);
         }
 
         throw new AppException(AppError.DEBT_POSITION_PUBLISH_FAILED, organizationFiscalCode);
@@ -50,8 +51,8 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
         PaymentPosition invalidatedDebtPos = paymentPositionActionsService.invalidate(organizationFiscalCode, iupd, segCodes);
         if (null != invalidatedDebtPos) {
-        	PaymentPositionModel paymentPosition = modelMapper.map(invalidatedDebtPos, PaymentPositionModel.class);
-            return new ResponseEntity<>(paymentPosition, HttpStatus.OK);
+        	PaymentPositionModel paymentPositionModel = ObjectMapperUtils.map(invalidatedDebtPos, PaymentPositionModel.class);
+            return new ResponseEntity<>(paymentPositionModel, HttpStatus.OK);
         }
 
         throw new AppException(AppError.DEBT_POSITION_INVALIDATE_FAILED, organizationFiscalCode);

@@ -38,7 +38,7 @@ public class PaymentsController implements IPaymentsController {
     @Override
     public ResponseEntity<PaymentOptionWithDebtorInfoModelResponse> getOrganizationPaymentOptionByNAV(
             String organizationFiscalCode, String nav) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationPaymentOptionByIUV", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, nav)));
+        log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationPaymentOptionByNAV", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, nav)));
 
         // flip entity to model
         PaymentOptionWithDebtorInfoModelResponse paymentOptionResponse = modelMapper.map(
@@ -88,5 +88,4 @@ public class PaymentsController implements IPaymentsController {
         }
         throw new AppException(AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_FAILED, organizationFiscalCode, iuv);
     }
-
 }

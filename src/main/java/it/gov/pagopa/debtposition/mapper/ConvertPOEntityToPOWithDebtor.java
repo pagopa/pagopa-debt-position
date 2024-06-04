@@ -9,6 +9,8 @@ import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ConvertPOEntityToPOWithDebtor implements Converter<PaymentOption, PaymentOptionWithDebtorInfoModelResponse> {
 
@@ -56,7 +58,10 @@ public class ConvertPOEntityToPOWithDebtor implements Converter<PaymentOption, P
     destination.setType(source.getPaymentPosition().getType());
     destination.setDebtPositionStatus(source.getPaymentPosition().getStatus());
 
-    destination.setTransfer(ObjectMapperUtils.mapAll(source.getTransfer(), TransferModelResponse.class));
+    List<TransferModelResponse> list = new ArrayList<>();
+    source.getTransfer().forEach(
+            t -> list.add(ConvertTransferToTransferResponse.convert(t)));
+    destination.setTransfer(list);
 
     return destination;
   }
