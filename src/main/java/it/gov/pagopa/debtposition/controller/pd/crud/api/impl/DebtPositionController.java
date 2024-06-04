@@ -68,8 +68,7 @@ public class DebtPositionController implements IDebtPositionController {
         if (null != createdDebtPos) {
             // flip entity to model
             PaymentPositionModelBaseResponse paymentPositionResponse =
-                    modelMapper.map(modelMapper.map(createdDebtPos, PaymentPositionModel.class),
-                            PaymentPositionModelBaseResponse.class);
+                    modelMapper.map(createdDebtPos, PaymentPositionModelBaseResponse.class);
             return new ResponseEntity<>(paymentPositionResponse, HttpStatus.CREATED);
         }
 
@@ -166,7 +165,7 @@ public class DebtPositionController implements IDebtPositionController {
         PaymentPosition updatedDebtPos = paymentPositionService.update(paymentPositionModel, organizationFiscalCode, toPublish, segCodes);
 
         if (null != updatedDebtPos) {
-            PaymentPositionModelBaseResponse paymentPositionResponse =modelMapper.map(updatedDebtPos, PaymentPositionModelBaseResponse.class);
+            PaymentPositionModelBaseResponse paymentPositionResponse = modelMapper.map(updatedDebtPos, PaymentPositionModelBaseResponse.class);
             return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
         }
 
