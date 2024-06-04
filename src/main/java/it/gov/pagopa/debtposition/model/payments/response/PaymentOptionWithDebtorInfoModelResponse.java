@@ -5,6 +5,7 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionMetadataModelResponse;
+import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

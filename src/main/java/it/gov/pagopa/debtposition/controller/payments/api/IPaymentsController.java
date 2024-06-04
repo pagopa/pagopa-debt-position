@@ -12,7 +12,7 @@ import it.gov.pagopa.debtposition.model.ProblemJson;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
-import it.gov.pagopa.debtposition.model.payments.response.TransferModelResponse;
+import it.gov.pagopa.debtposition.model.payments.response.TransferModelResponsePayments;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -67,7 +67,7 @@ public interface IPaymentsController {
             @ApiResponse(responseCode = "500", description = "Service unavailable.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemJson.class)))})
     @PostMapping(value = "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}/transfers/{transferid}/report",
             produces = {"application/json"})
-    ResponseEntity<TransferModelResponse> reportTransfer(
+    ResponseEntity<TransferModelResponsePayments> reportTransfer(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
             @Parameter(description = "IUV (Unique Payment Identification). Alphanumeric code that uniquely associates and identifies three key elements of a payment: reason, payer, amount", required = true)

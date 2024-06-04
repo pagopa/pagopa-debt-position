@@ -49,7 +49,7 @@ public interface IDebtPositionController {
     @PostMapping(value = "/organizations/{organizationfiscalcode}/debtpositions",
             produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<PaymentPositionModel> createDebtPosition(
+    ResponseEntity<PaymentPositionModelBaseResponse> createDebtPosition(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
             @Valid @RequestBody PaymentPositionModel paymentPositionModel,
@@ -145,7 +145,7 @@ public interface IDebtPositionController {
     @PutMapping(value = "/organizations/{organizationfiscalcode}/debtpositions/{iupd}",
             produces = {"application/json"},
             consumes = {"application/json"})
-    ResponseEntity<PaymentPositionModel> updateDebtPosition(
+    ResponseEntity<PaymentPositionModelBaseResponse> updateDebtPosition(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
             @Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.", required = true)

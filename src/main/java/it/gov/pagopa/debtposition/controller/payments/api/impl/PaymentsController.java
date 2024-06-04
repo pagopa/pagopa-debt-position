@@ -16,7 +16,7 @@ import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
-import it.gov.pagopa.debtposition.model.payments.response.TransferModelResponse;
+import it.gov.pagopa.debtposition.model.payments.response.TransferModelResponsePayments;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
 import it.gov.pagopa.debtposition.service.payments.PaymentsService;
 import it.gov.pagopa.debtposition.util.CustomHttpStatus;
@@ -64,12 +64,12 @@ public class PaymentsController implements IPaymentsController {
     }
 
     @Override
-    public ResponseEntity<TransferModelResponse> reportTransfer(String organizationFiscalCode, String iuv,
-                                                                String transferId) {
+    public ResponseEntity<TransferModelResponsePayments> reportTransfer(String organizationFiscalCode, String iuv,
+                                                                        String transferId) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "reportTransfer", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv) + "; transferId=" + transferId));
         Transfer reportedTransfer = paymentsService.report(organizationFiscalCode, iuv, transferId);
         if (null != reportedTransfer) {
-            return new ResponseEntity<>(ObjectMapperUtils.map(reportedTransfer, TransferModelResponse.class), HttpStatus.OK);
+            return new ResponseEntity<>(ObjectMapperUtils.map(reportedTransfer, TransferModelResponsePayments.class), HttpStatus.OK);
         }
         throw new AppException(AppError.TRANSFER_REPORTING_FAILED, organizationFiscalCode, iuv, transferId);
     }

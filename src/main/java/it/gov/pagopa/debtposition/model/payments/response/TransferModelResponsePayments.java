@@ -15,7 +15,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @Schema(name = "PaymentsTransferModelResponse")
-public class TransferModelResponse implements Serializable {
+public class TransferModelResponsePayments implements Serializable {
 
     /**
      * generated serialVersionUID

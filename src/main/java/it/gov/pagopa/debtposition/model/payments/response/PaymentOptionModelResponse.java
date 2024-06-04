@@ -45,5 +45,5 @@ public class PaymentOptionModelResponse implements Serializable {
     
     private List<PaymentOptionMetadataModelResponse> paymentOptionMetadata = new ArrayList<>();
 
-    private List<TransferModelResponse> transfer = new ArrayList<>();
+    private List<TransferModelResponsePayments> transfer = new ArrayList<>();
 }

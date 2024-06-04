@@ -4,8 +4,10 @@ import it.gov.pagopa.debtposition.mapper.ConvertPOEntityToPOWithDebtor;
 import it.gov.pagopa.debtposition.mapper.ConvertPPModelToPPEntityForUpdate;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.mapper.ConvertPPToPPResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
+import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -31,9 +33,13 @@ public class DebtPositionApplication {
 
         Converter<PaymentPositionModel, PaymentPosition> convertPPModelToPPEntity = new ConvertPPModelToPPEntityForUpdate();
         Converter<PaymentOption, PaymentOptionWithDebtorInfoModelResponse> convertPOEntityToPOWithDebtor = new ConvertPOEntityToPOWithDebtor();
+        Converter<PaymentPosition, PaymentPositionModelBaseResponse> convertPPToPPResponse = new ConvertPPToPPResponse();
+
         modelMapper.createTypeMap(PaymentPositionModel.class, PaymentPosition.class).setConverter(convertPPModelToPPEntity);
         modelMapper.createTypeMap(PaymentOption.class, PaymentOptionWithDebtorInfoModelResponse.class).setConverter(convertPOEntityToPOWithDebtor);
+        modelMapper.createTypeMap(PaymentPosition.class, PaymentPositionModelBaseResponse.class).setConverter(convertPPToPPResponse);
+
+
         return modelMapper;
     }
-
 }

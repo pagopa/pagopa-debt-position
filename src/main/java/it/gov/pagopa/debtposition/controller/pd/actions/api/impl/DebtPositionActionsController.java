@@ -56,5 +56,4 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
 
         throw new AppException(AppError.DEBT_POSITION_INVALIDATE_FAILED, organizationFiscalCode);
     }
-
 }

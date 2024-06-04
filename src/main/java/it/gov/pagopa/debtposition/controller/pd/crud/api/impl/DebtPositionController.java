@@ -54,9 +54,9 @@ public class DebtPositionController implements IDebtPositionController {
    
 
     @Override
-    public ResponseEntity<PaymentPositionModel> createDebtPosition(String organizationFiscalCode,
-                                                                   PaymentPositionModel paymentPositionModel,
-                                                                   boolean toPublish, String segregationCodes) {
+    public ResponseEntity<PaymentPositionModelBaseResponse> createDebtPosition(String organizationFiscalCode,
+                                                                               PaymentPositionModel paymentPositionModel,
+                                                                               boolean toPublish, String segregationCodes) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "createDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, paymentPositionModel.getIupd())));
 
         // flip model to entity
@@ -66,8 +66,11 @@ public class DebtPositionController implements IDebtPositionController {
         PaymentPosition createdDebtPos = paymentPositionService.create(debtPosition, organizationFiscalCode, toPublish, segCodes);
 
         if (null != createdDebtPos) {
-        	PaymentPositionModel paymentPosition = modelMapper.map(createdDebtPos, PaymentPositionModel.class);
-            return new ResponseEntity<>(paymentPosition, HttpStatus.CREATED);
+            // flip entity to model
+            PaymentPositionModelBaseResponse paymentPositionResponse =
+                    modelMapper.map(modelMapper.map(createdDebtPos, PaymentPositionModel.class),
+                            PaymentPositionModelBaseResponse.class);
+            return new ResponseEntity<>(paymentPositionResponse, HttpStatus.CREATED);
         }
 
         throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
@@ -124,9 +127,9 @@ public class DebtPositionController implements IDebtPositionController {
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
         // flip entity to model
-        PaymentPositionModelBaseResponse paymentPositionResponse = ObjectMapperUtils.map(
-                paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segCodes),
-                PaymentPositionModelBaseResponse.class);
+        PaymentPositionModelBaseResponse paymentPositionResponse =
+                modelMapper.map(paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segCodes),
+                        PaymentPositionModelBaseResponse.class);
 
         return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
     }
@@ -144,10 +147,10 @@ public class DebtPositionController implements IDebtPositionController {
     }
 
     @Override
-    public ResponseEntity<PaymentPositionModel> updateDebtPosition(String organizationFiscalCode,
-                                                                   String iupd,
-                                                                   PaymentPositionModel paymentPositionModel,
-                                                                   boolean toPublish, String segregationCodes) {
+    public ResponseEntity<PaymentPositionModelBaseResponse> updateDebtPosition(String organizationFiscalCode,
+                                                                               String iupd,
+                                                                               PaymentPositionModel paymentPositionModel,
+                                                                               boolean toPublish, String segregationCodes) {
         final String IUPD_VALIDATION_ERROR = "IUPD mistmatch error: path variable IUPD [%s] and request body IUPD [%s] must be the same";
 
         log.info(String.format(LOG_BASE_HEADER_INFO, "PUT", "updateDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
@@ -163,8 +166,8 @@ public class DebtPositionController implements IDebtPositionController {
         PaymentPosition updatedDebtPos = paymentPositionService.update(paymentPositionModel, organizationFiscalCode, toPublish, segCodes);
 
         if (null != updatedDebtPos) {
-        	PaymentPositionModel paymentPosition = modelMapper.map(updatedDebtPos, PaymentPositionModel.class);
-            return new ResponseEntity<>(paymentPosition, HttpStatus.OK);
+            PaymentPositionModelBaseResponse paymentPositionResponse =modelMapper.map(updatedDebtPos, PaymentPositionModelBaseResponse.class);
+            return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
         }
 
         throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
