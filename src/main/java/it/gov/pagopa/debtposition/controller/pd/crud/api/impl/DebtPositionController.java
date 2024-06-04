@@ -54,7 +54,7 @@ public class DebtPositionController implements IDebtPositionController {
    
 
     @Override
-    public ResponseEntity<PaymentPositionModelBaseResponse> createDebtPosition(String organizationFiscalCode,
+    public ResponseEntity<PaymentPositionModel> createDebtPosition(String organizationFiscalCode,
                                                                                PaymentPositionModel paymentPositionModel,
                                                                                boolean toPublish, String segregationCodes) {
         log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "createDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, paymentPositionModel.getIupd())));
@@ -67,8 +67,8 @@ public class DebtPositionController implements IDebtPositionController {
 
         if (null != createdDebtPos) {
             // flip entity to model
-            PaymentPositionModelBaseResponse paymentPositionResponse =
-                    modelMapper.map(createdDebtPos, PaymentPositionModelBaseResponse.class);
+            PaymentPositionModel paymentPositionResponse =
+                    modelMapper.map(createdDebtPos, PaymentPositionModel.class);
             return new ResponseEntity<>(paymentPositionResponse, HttpStatus.CREATED);
         }
 
@@ -146,7 +146,7 @@ public class DebtPositionController implements IDebtPositionController {
     }
 
     @Override
-    public ResponseEntity<PaymentPositionModelBaseResponse> updateDebtPosition(String organizationFiscalCode,
+    public ResponseEntity<PaymentPositionModel> updateDebtPosition(String organizationFiscalCode,
                                                                                String iupd,
                                                                                PaymentPositionModel paymentPositionModel,
                                                                                boolean toPublish, String segregationCodes) {
@@ -165,7 +165,7 @@ public class DebtPositionController implements IDebtPositionController {
         PaymentPosition updatedDebtPos = paymentPositionService.update(paymentPositionModel, organizationFiscalCode, toPublish, segCodes);
 
         if (null != updatedDebtPos) {
-            PaymentPositionModelBaseResponse paymentPositionResponse = modelMapper.map(updatedDebtPos, PaymentPositionModelBaseResponse.class);
+            PaymentPositionModel paymentPositionResponse = modelMapper.map(updatedDebtPos, PaymentPositionModel.class);
             return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
         }
 
