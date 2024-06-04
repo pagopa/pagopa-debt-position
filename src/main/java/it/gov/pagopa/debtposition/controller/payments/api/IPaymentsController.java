@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Pattern;
 
 @Tag(name = "Payments API")
 @RequestMapping
@@ -33,8 +34,8 @@ public interface IPaymentsController {
     @GetMapping(value = "/organizations/{organizationfiscalcode}/paymentoptions/{nav}",
             produces = {"application/json"})
     ResponseEntity<PaymentOptionWithDebtorInfoModelResponse> getOrganizationPaymentOptionByNAV(
-            @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
-            @PathVariable("organizationfiscalcode") String organizationFiscalCode,
+            @Pattern(regexp = "\\d{1,30}") @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
+            @Pattern(regexp = "^\\d{1,30}$") @PathVariable("organizationfiscalcode") String organizationFiscalCode,
             @Parameter(description = "NAV (notice number) is the unique reference assigned to the payment by a creditor institution.", required = true)
             @PathVariable("nav") String nav);
 
