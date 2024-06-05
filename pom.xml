@@ -11,7 +11,7 @@
     </parent>
     <groupId>it.gov.pagopa.debtposition</groupId>
     <artifactId>gpd</artifactId>
-    <version>0.11.32-5-PAGOPA-1800-fix-stamp-mapping</version>
+    <version>0.11.32-6-PAGOPA-1800-fix-stamp-mapping</version>
     <name>Gestione Posizioni Debitorie</name>
     <description>Progetto Gestione Posizioni Debitorie</description>
     <properties>
