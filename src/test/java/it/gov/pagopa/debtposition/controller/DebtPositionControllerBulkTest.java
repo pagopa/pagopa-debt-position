@@ -65,12 +65,13 @@ public class DebtPositionControllerBulkTest {
 
     @Test
     void createMultipleDebtPositions_409() throws Exception {
+        MultiplePaymentPositionDTO multiplePaymentPositionDTO = DebtPositionMock.getMultipleDebtPositions_Mock1();
         mvc.perform(post("/organizations/12345678901_multiple_409/debtpositions/bulk")
-                            .content(TestUtil.toJson(DebtPositionMock.getMultipleDebtPositions_Mock1())).contentType(MediaType.APPLICATION_JSON))
+                            .content(TestUtil.toJson(multiplePaymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
 
         mvc.perform(post("/organizations/12345678901_multiple_409/debtpositions/bulk")
-                            .content(TestUtil.toJson(DebtPositionMock.getMultipleDebtPositions_Mock1())).contentType(MediaType.APPLICATION_JSON))
+                            .content(TestUtil.toJson(multiplePaymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict());
     }
 
@@ -80,11 +81,12 @@ public class DebtPositionControllerBulkTest {
 
     @Test
     void updateMultipleDebtPositions_200() throws Exception {
+        MultiplePaymentPositionDTO multiplePaymentPositionDTO = DebtPositionMock.getMultipleDebtPositions_Mock2();
         mvc.perform(post("/organizations/12345678901_multiple/debtpositions/bulk")
-                            .content(TestUtil.toJson(DebtPositionMock.getMultipleDebtPositions_Mock2())).contentType(MediaType.APPLICATION_JSON))
+                            .content(TestUtil.toJson(multiplePaymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
         mvc.perform(put("/organizations/12345678901_multiple/debtpositions")
-                            .content(TestUtil.toJson(DebtPositionMock.getMultipleDebtPositions_Mock2())).contentType(MediaType.APPLICATION_JSON))
+                            .content(TestUtil.toJson(multiplePaymentPositionDTO)).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
