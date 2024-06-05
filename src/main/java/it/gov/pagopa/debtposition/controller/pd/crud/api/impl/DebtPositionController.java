@@ -66,7 +66,7 @@ public class DebtPositionController implements IDebtPositionController {
         PaymentPosition createdDebtPos = paymentPositionService.create(debtPosition, organizationFiscalCode, toPublish, segCodes);
 
         if (null != createdDebtPos) {
-        	PaymentPositionModel paymentPosition = modelMapper.map(createdDebtPos, PaymentPositionModel.class);
+        	PaymentPositionModel paymentPosition = ObjectMapperUtils.map(createdDebtPos, PaymentPositionModel.class);
             return new ResponseEntity<>(paymentPosition, HttpStatus.CREATED);
         }
 
