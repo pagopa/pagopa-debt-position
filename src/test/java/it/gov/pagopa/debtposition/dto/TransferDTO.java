@@ -5,11 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
+import it.gov.pagopa.debtposition.model.pd.Stamp;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class TransferDTO implements Serializable {
 
     /**
@@ -24,10 +27,23 @@ public class TransferDTO implements Serializable {
     private String category; // taxonomy
     private String iban;
     private String postalIban;
+    private Stamp stamp;
     private TransferStatus status;  
     
     private List<TransferMetadataDTO> transferMetadata = new ArrayList<>();
-    
+
+    public TransferDTO(String fc, String id, long amount, String remittance, String category, String iban, String postalIban, Stamp stamp, TransferStatus status) {
+        this.organizationFiscalCode = fc;
+        this.idTransfer = id;
+        this.amount = amount;
+        this.remittanceInformation = remittance;
+        this.category = category;
+        this.iban = iban;
+        this.postalIban = postalIban;
+        this.stamp = stamp;
+        this.status = status;
+    }
+
     public void addTransferMetadata(TransferMetadataDTO metadata) {
     	transferMetadata.add(metadata);
     }

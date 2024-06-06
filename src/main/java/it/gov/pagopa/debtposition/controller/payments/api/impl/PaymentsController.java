@@ -1,6 +1,7 @@
 package it.gov.pagopa.debtposition.controller.payments.api.impl;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Pattern;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +38,8 @@ public class PaymentsController implements IPaymentsController {
 
     @Override
     public ResponseEntity<PaymentOptionWithDebtorInfoModelResponse> getOrganizationPaymentOptionByNAV(
-            String organizationFiscalCode, String nav) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationPaymentOptionByIUV", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, nav)));
+            @Pattern(regexp = "\\d{1,30}") String organizationFiscalCode, @Pattern(regexp = "^\\d{1,30}$") String nav) {
+        log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationPaymentOptionByNAV", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, nav)));
 
         // flip entity to model
         PaymentOptionWithDebtorInfoModelResponse paymentOptionResponse = modelMapper.map(

@@ -17,6 +17,7 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
+import org.apache.commons.lang3.RandomStringUtils;
 
 
 public class DebtPositionMock {
@@ -1005,13 +1006,19 @@ public class DebtPositionMock {
 	
 	public static MultiplePaymentPositionDTO createMultipleDebtPositionsMock1() {
 		List<PaymentPositionDTO> pPMockList = new ArrayList<>();
-		pPMockList.add(createPaymentPositionMock5());
+		PaymentPositionDTO pp = createPaymentPositionMock5();
+		pp.setIupd(RandomStringUtils.randomNumeric(20));
+		pp.getPaymentOption().get(0).setIuv(RandomStringUtils.randomNumeric(17));
+		pPMockList.add(pp);
 		return MultiplePaymentPositionDTO.builder().paymentPositions(pPMockList).build();
 	}
 
 	public static MultiplePaymentPositionDTO createMultipleDebtPositionsMock2() {
 		List<PaymentPositionDTO> pPMockList = new ArrayList<>();
-		pPMockList.add(createPaymentPositionMock2());
+		PaymentPositionDTO pp = createPaymentPositionMock2();
+		pp.setIupd(RandomStringUtils.randomNumeric(20));
+		pp.getPaymentOption().get(0).setIuv(RandomStringUtils.randomNumeric(17));
+		pPMockList.add(pp);
 		return MultiplePaymentPositionDTO.builder().paymentPositions(pPMockList).build();
 	}
 
