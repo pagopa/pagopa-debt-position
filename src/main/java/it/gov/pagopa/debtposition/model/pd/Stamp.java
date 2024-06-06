@@ -19,7 +19,9 @@ public class Stamp implements Serializable {
     private static final long serialVersionUID = -5862140737726963810L;
 
     @NotBlank
+    @Size(max = 64)
     @Schema(required = true, description = "Document hash")
+    // hashDocument input is a sha256 -> maxsize 64 chars
     private String hashDocument;
 
     @NotBlank
