@@ -4,9 +4,11 @@ import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
+import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;
 import org.modelmapper.convention.MatchingStrategies;
+import org.modelmapper.spi.MappingContext;
 
 import java.util.Collection;
 import java.util.List;
@@ -15,6 +17,17 @@ import java.util.stream.Collectors;
 public class ObjectMapperUtils {
 
     private static final ModelMapper modelMapper;
+
+    private static final Converter<Transfer, Stamp> stampConverter = new Converter<Transfer, Stamp>() {
+        @Override
+        public Stamp convert(MappingContext<Transfer, Stamp> context) {
+            Transfer t = context.getSource();
+            if (t.getHashDocument() == null && t.getStampType() == null && t.getProvincialResidence() == null) {
+                return null;
+            }
+            return new Stamp(t.getHashDocument(), t.getStampType(), t.getProvincialResidence());
+        }
+    };
 
     /**
      * Model mapper property setting are specified in the following block.
@@ -29,11 +42,7 @@ public class ObjectMapperUtils {
         modelMapper.addMappings(new PropertyMap<Transfer, TransferModel>() {
             @Override
             protected void configure() {
-                using(ctx -> new Stamp(
-                        ((Transfer) ctx.getSource()).getHashDocument(),
-                        ((Transfer) ctx.getSource()).getStampType(),
-                        ((Transfer) ctx.getSource()).getProvincialResidence()))
-                        .map(source, destination.getStamp());
+                using(stampConverter).map(source, destination.getStamp());
             }
         });
 
@@ -41,13 +50,7 @@ public class ObjectMapperUtils {
         modelMapper.addMappings(new PropertyMap<Transfer, TransferModelResponse>() {
             @Override
             protected void configure() {
-                using(ctx -> {
-                    Transfer t = ((Transfer) ctx.getSource());
-                    return new Stamp(
-                                    t.getHashDocument(),
-                                    t.getStampType(),
-                                    t.getProvincialResidence());
-                    }).map(source, destination.getStamp());
+                using(stampConverter).map(source, destination.getStamp());
             }
         });
     }
