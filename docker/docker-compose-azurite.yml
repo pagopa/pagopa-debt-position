@@ -3,7 +3,7 @@ services:
     azure-storage:
         command: "azurite"
         container_name: azurite-storage
-        image: mcr.microsoft.com/azure-storage/azurite
+        image: mcr.microsoft.com/azure-storage/azurite@sha256:01233a6593e2f2cb3e515731f83ca720454018b80e08207f18fa691b71bd054d
         ports:
             - '10000:10000'
             - '10001:10001'
