@@ -22,11 +22,14 @@ public class ConvertTransferToTransferResponse {
         destination.setStatus(t.getStatus());
         destination.setLastUpdatedDate(t.getLastUpdatedDate());
 
-        destination.setStamp(Stamp.builder()
-                                     .hashDocument(t.getHashDocument())
-                                     .provincialResidence(t.getProvincialResidence())
-                                     .stampType(t.getStampType())
-                                     .build());
+        // if one of Stamp attributes are different from null return Stamp values
+        if( t.getHashDocument() != null || t.getStampType() != null || t.getProvincialResidence() != null) {
+            destination.setStamp(Stamp.builder()
+                                         .hashDocument(t.getHashDocument())
+                                         .provincialResidence(t.getProvincialResidence())
+                                         .stampType(t.getStampType())
+                                         .build());
+        }
 
         destination.setTransferMetadata(ObjectMapperUtils.mapAll(t.getTransferMetadata(), TransferMetadataModelResponse.class));
 
