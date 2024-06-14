@@ -4,7 +4,7 @@
     "title": "PagoPA API Debt Position",
     "description": "Progetto Gestione Posizioni Debitorie",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "0.11.35"
+    "version": "0.11.35-1-fix-default-page"
   },
   "servers": [
     {
@@ -56,24 +56,6 @@
           "required": true
         },
         "responses": {
-          "500": {
-            "description": "Service unavailable.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
-                }
-              }
-            }
-          },
           "401": {
             "description": "Wrong or missing function key.",
             "headers": {
@@ -103,13 +85,20 @@
               }
             }
           },
-          "201": {
-            "description": "Request created.",
+          "500": {
+            "description": "Service unavailable.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
                 "schema": {
                   "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -128,6 +117,17 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Request created.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -161,6 +161,17 @@
         "summary": "Return OK if application is started",
         "operationId": "healthCheck",
         "responses": {
+          "401": {
+            "description": "Wrong or missing function key.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Service unavailable.",
             "headers": {
@@ -175,17 +186,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemJson"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Wrong or missing function key.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
                 }
               }
             }
@@ -459,6 +459,8 @@
         "type": "object",
         "properties": {
           "hashDocument": {
+            "maxLength": 64,
+            "minLength": 0,
             "type": "string",
             "description": "Document hash"
           },
