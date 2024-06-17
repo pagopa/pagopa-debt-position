@@ -78,7 +78,7 @@ jobs:
         run: |
           cd gpd-report
           export SLACK_URL='${{ secrets.SLACK_WEBHOOK_URL }}'
-          export DAYS=30
+          export DAYS=7
           export PG_URL='${{ secrets.DATASOURCE_URL }}'
           export PG_USER='${{ secrets.DATASOURCE_USERNAME }}'
           export PG_PASSWORD='${{ secrets.DATASOURCE_PASSWORD }}'
