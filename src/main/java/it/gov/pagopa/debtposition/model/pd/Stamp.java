@@ -19,9 +19,11 @@ public class Stamp implements Serializable {
     private static final long serialVersionUID = -5862140737726963810L;
 
     @NotBlank
-    @Size(max = 64)
-    @Schema(required = true, description = "Document hash")
-    // hashDocument input is a sha256 -> maxsize 64 chars
+    @Size(max = 72)
+    @Schema(required = true, description = "Document hash type is stBase64Binary72 as described in https://github.com/pagopa/pagopa-api.")
+    // Stamp generally get as input a base64sha256, that is the SHA256 hash of a given string encoded with Base64.
+    // It is not equivalent to base64encode(sha256(“test”)), if sha256() returns a hexadecimal representation.
+    // The result should normally be 44 characters, to be compliant with as-is it was extended to 72
     private String hashDocument;
 
     @NotBlank
