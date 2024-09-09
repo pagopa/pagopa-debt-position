@@ -45,6 +45,7 @@ public class TransferModel implements Serializable {
     private String postalIban;
 
     @Schema(description = "mutual exclusive with iban and postalIban")
+    @Valid
     private Stamp stamp;
     
     @Valid
