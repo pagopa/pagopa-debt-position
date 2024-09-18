@@ -1,0 +1,1 @@
+ALTER TABLE payment_position ADD COLUMN pay_stand_in BOOLEAN NOT NULL DEFAULT FALSE;
