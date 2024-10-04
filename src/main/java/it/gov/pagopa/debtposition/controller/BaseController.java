@@ -20,13 +20,13 @@ import it.gov.pagopa.debtposition.model.ProblemJson;
 
 @RestController()
 public class BaseController {
-    @Value("${application.name}")
+    @Value("${info.application.name}")
     private String name;
 
-    @Value("${application.version}")
+    @Value("${info.application.version}")
     private String version;
 
-    @Value("${properties.environment}")
+    @Value("${info.properties.environment}")
     private String environment;
 
 
