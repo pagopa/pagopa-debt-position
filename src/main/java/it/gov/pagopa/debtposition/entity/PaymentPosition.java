@@ -2,11 +2,7 @@ package it.gov.pagopa.debtposition.entity;
 
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -78,6 +74,7 @@ public class PaymentPosition implements Serializable {
     private String fiscalCode;
     @NotNull
     @Column(name = "full_name")
+    @ToString.Exclude
     private String fullName;
     @Column(name = "street_name")
     private String streetName;
@@ -89,7 +86,9 @@ public class PaymentPosition implements Serializable {
     private String province;
     private String region;
     private String country;
+    @ToString.Exclude
     private String email;
+    @ToString.Exclude
     private String phone;
 
     // Payment Position properties

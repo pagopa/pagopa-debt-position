@@ -7,6 +7,7 @@ import it.gov.pagopa.debtposition.model.enumeration.Type;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionMetadataModelResponse;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -48,6 +49,7 @@ public class PaymentOptionWithDebtorInfoModelResponse implements Serializable {
     private String iupd;
     private Type type;
     private String fiscalCode;
+    @ToString.Exclude
     private String fullName;
     private String streetName;
     private String civicNumber;
@@ -56,7 +58,9 @@ public class PaymentOptionWithDebtorInfoModelResponse implements Serializable {
     private String province;
     private String region;
     private String country;
+    @ToString.Exclude
     private String email;
+    @ToString.Exclude
     private String phone;
     private String companyName;
     private String officeName;

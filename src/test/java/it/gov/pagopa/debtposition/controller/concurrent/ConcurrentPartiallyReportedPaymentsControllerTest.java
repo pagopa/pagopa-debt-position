@@ -43,7 +43,7 @@ class ConcurrentPartiallyReportedPaymentsControllerTest {
 
 	@BeforeAll
 	void initDebtPosition_for_partially_reporting() throws Exception {
-		log.info("initDebtPosition_for_partially_reporting start => " + Thread.currentThread().getName());
+		log.trace("initDebtPosition_for_partially_reporting start => " + Thread.currentThread().getName());
 		// creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato)
 		mvc.perform(post("/organizations/REPORT_Concurrent_Partially_Reported_12345678901/debtpositions?toPublish=true")
 				.content(TestUtil.toJson(DebtPositionMock.getMock8())).contentType(MediaType.APPLICATION_JSON))
@@ -60,7 +60,7 @@ class ConcurrentPartiallyReportedPaymentsControllerTest {
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(DebtPositionStatus.PAID.toString()));
-		log.info("initDebtPosition_for_partially_reporting end => " + Thread.currentThread().getName());
+		log.trace("initDebtPosition_for_partially_reporting end => " + Thread.currentThread().getName());
 	}
 
 
@@ -68,17 +68,17 @@ class ConcurrentPartiallyReportedPaymentsControllerTest {
 	@ParameterizedTest
 	@ValueSource(ints = {1, 2, 3, 4, 5})
 	void concurrent_partiallyReportedTransfer_thread(int number) throws Exception {
-		log.info("concurrent_partiallyReportedTransfer_thread for transfers with id 1 - thread("+number+") start => " + Thread.currentThread().getName());
+		log.trace("concurrent_partiallyReportedTransfer_thread for transfers with id 1 - thread("+number+") start => " + Thread.currentThread().getName());
 		// effettuo la rendicontazione per una delle 2 transazioni della PO (si continua ad utilizzare lo IUV e non il NAV)
 		mvc.perform(post("/organizations/REPORT_Concurrent_Partially_Reported_12345678901/paymentoptions/123456IUVMULTIPLEMOCK8/transfers/1/report")
 				.contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().is(oneOf(200,409)));
-		log.info("concurrent_partiallyReportedTransfer_thread for transfers with id 1 - thread("+number+") end => " + Thread.currentThread().getName());
+		log.trace("concurrent_partiallyReportedTransfer_thread for transfers with id 1 - thread("+number+") end => " + Thread.currentThread().getName());
 	}
 
 	@AfterAll
 	void checkDebtPosition_after_partially_reporting() throws Exception {
-		log.info("checkDebtPosition_after_partially_reporting start => " + Thread.currentThread().getName());
+		log.trace("checkDebtPosition_after_partially_reporting start => " + Thread.currentThread().getName());
 		//recupero la PO e verifico lo stato in PO_PARTIALLY_REPORTED
 		String url = "/organizations/REPORT_Concurrent_Partially_Reported_12345678901/paymentoptions/"+auxDigit+"123456IUVMULTIPLEMOCK8";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
@@ -91,6 +91,6 @@ class ConcurrentPartiallyReportedPaymentsControllerTest {
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andExpect(MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.PAID.toString()));
-		log.info("checkDebtPosition_after_partially_reporting end => " + Thread.currentThread().getName());
+		log.trace("checkDebtPosition_after_partially_reporting end => " + Thread.currentThread().getName());
 	}
 }

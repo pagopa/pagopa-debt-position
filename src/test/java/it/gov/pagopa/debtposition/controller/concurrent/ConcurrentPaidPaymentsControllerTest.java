@@ -43,12 +43,12 @@ class ConcurrentPaidPaymentsControllerTest {
 
 	@BeforeAll
 	void initDebtPosition_for_partially_paid() throws Exception {
-		log.info("initDebtPosition_for_partially_paid start => " + Thread.currentThread().getName());
+		log.trace("initDebtPosition_for_partially_paid start => " + Thread.currentThread().getName());
 		// creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato) con più opzioni di pagamento
 		mvc.perform(post("/organizations/PAY_Concurrent_Paid_12345678901/debtpositions?toPublish=true")
 				.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
-		log.info("initDebtPosition_for_partially_paid end => " + Thread.currentThread().getName());
+		log.trace("initDebtPosition_for_partially_paid end => " + Thread.currentThread().getName());
 	}
 
 
@@ -56,30 +56,30 @@ class ConcurrentPaidPaymentsControllerTest {
 	@ParameterizedTest
 	@ValueSource(ints = {1, 2, 3})
 	void concurrent_paid_4_thread(int number) throws Exception {
-		log.info("concurrent_paid_4_thread - thread("+number+") start => " + Thread.currentThread().getName());
+		log.trace("concurrent_paid_4_thread - thread("+number+") start => " + Thread.currentThread().getName());
 		// effettuo la notifica di pagamento di una rata parziale (setIsPartialPayment = true)
 		mvc.perform(post("/organizations/PAY_Concurrent_Paid_12345678901/paymentoptions/"+auxDigit+"123456IUVMULTIPLEMOCK4/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(oneOf(200,409)))
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
-		log.info("concurrent_paid_4_thread - thread("+number+") end => " + Thread.currentThread().getName());
+		log.trace("concurrent_paid_4_thread - thread("+number+") end => " + Thread.currentThread().getName());
 	}
 	
 	@ParameterizedTest
 	@ValueSource(ints = {1, 2, 3})
 	void concurrent_paid_5_thread(int number) throws Exception {
-		log.info("concurrent_paid_5_thread - thread("+number+") start => " + Thread.currentThread().getName());
+		log.trace("concurrent_paid_5_thread - thread("+number+") start => " + Thread.currentThread().getName());
 		// effettuo la notifica di pagamento di una rata parziale (setIsPartialPayment = true)
 		mvc.perform(post("/organizations/PAY_Concurrent_Paid_12345678901/paymentoptions/"+auxDigit+"123456IUVMULTIPLEMOCK5/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().is(oneOf(200,409)))
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
-		log.info("concurrent_paid_5_thread - thread("+number+") end => " + Thread.currentThread().getName());
+		log.trace("concurrent_paid_5_thread - thread("+number+") end => " + Thread.currentThread().getName());
 	}
 
 	@AfterAll
 	void checkDebtPosition_after_partially_paid() throws Exception {
-		log.info("checkDebtPosition_after_partially_paid start => " + Thread.currentThread().getName());
+		log.trace("checkDebtPosition_after_partially_paid start => " + Thread.currentThread().getName());
 		//recupero la PO e verifico lo stato in PO_PAID
 		String url = "/organizations/PAY_Concurrent_Paid_12345678901/paymentoptions/"+auxDigit+"123456IUVMULTIPLEMOCK4";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
@@ -92,6 +92,6 @@ class ConcurrentPaidPaymentsControllerTest {
 				.contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isOk())
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.PAID.toString()));
-		log.info("checkDebtPosition_after_partially_paid end => " + Thread.currentThread().getName());
+		log.trace("checkDebtPosition_after_partially_paid end => " + Thread.currentThread().getName());
 	}
 }

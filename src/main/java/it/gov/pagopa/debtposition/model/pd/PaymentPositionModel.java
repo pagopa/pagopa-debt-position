@@ -16,6 +16,7 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @NoArgsConstructor
@@ -38,6 +39,7 @@ public class PaymentPositionModel implements Serializable {
     @NotBlank(message = "fiscal code is required")
     private String fiscalCode;
     @NotBlank(message = "full name is required")
+    @ToString.Exclude
     private String fullName;
     private String streetName;
     private String civicNumber;
@@ -50,7 +52,9 @@ public class PaymentPositionModel implements Serializable {
     private String country;
     @Schema(example = "email@domain.com")
     @Email(message = "Please provide a valid email address")
+    @ToString.Exclude
     private String email;
+    @ToString.Exclude
     private String phone;
     @Schema(description = "feature flag to enable the debt position to expire after the due date", example = "false", defaultValue = "false")
     @NotNull(message = "switch to expired value is required")

@@ -32,7 +32,7 @@ public class PaymentPositionActionsService {
         long t1 = System.currentTimeMillis();
         PaymentPosition ppToPublish = paymentPositionCRUDService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segregationCodes);
         long getTime = System.currentTimeMillis() - t1;
-        log.info("getDebtPositionByIUPD elapsed time: " + getTime);
+        log.debug("getDebtPositionByIUPD elapsed time: " + getTime);
 
         if (DebtPositionStatus.getPaymentPosNotPublishableStatus().contains(ppToPublish.getStatus())) {
             throw new AppException(AppError.DEBT_POSITION_NOT_PUBLISHABLE, organizationFiscalCode, iupd);

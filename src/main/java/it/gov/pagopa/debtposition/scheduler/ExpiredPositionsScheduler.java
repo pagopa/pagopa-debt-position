@@ -2,7 +2,9 @@ package it.gov.pagopa.debtposition.scheduler;
 
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Async;
@@ -14,10 +16,13 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+import static it.gov.pagopa.debtposition.util.SchedulerUtils.*;
+
 @Component
 @Slf4j
+@Getter
 @ConditionalOnProperty(name = "cron.job.schedule.enabled", matchIfMissing = true)
-public class Scheduler {
+public class ExpiredPositionsScheduler {
 
     private static final String LOG_BASE_HEADER_INFO = "[OperationType: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
     private static final String CRON_JOB = "CRON JOB";
@@ -41,15 +46,22 @@ public class Scheduler {
     @Async
     @Transactional
     public void changeDebtPositionStatusToExpired() {
-        log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "changeDebtPositionStatusToExpired", "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
-        LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-        int numAffectedRows = paymentPositionRepository.updatePaymentPositionStatusToExpired(currentDate, DebtPositionStatus.EXPIRED);
-        log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "changeDebtPositionStatusToExpired", "Number of updated rows " + numAffectedRows));
-        this.threadOfExecution = Thread.currentThread();
+        updateMDCForStartExecution("changeDebtPositionStatusToExpired", "");
+        try {
+            log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "changeDebtPositionStatusToExpired", "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
+            LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+            int numAffectedRows = paymentPositionRepository.updatePaymentPositionStatusToExpired(currentDate, DebtPositionStatus.EXPIRED);
+            log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "changeDebtPositionStatusToExpired", "Number of updated rows " + numAffectedRows));
+            this.threadOfExecution = Thread.currentThread();
+            updateMDCForEndExecution();
+        } catch (Exception e) {
+            updateMDCError(e, "Expired Scheduler Scheduler Error");
+            throw e;
+        }
+        finally {
+            MDC.clear();
+        }
+
     }
     
-
-    public Thread getThreadOfExecution() {
-        return this.threadOfExecution;
-    }
 }
