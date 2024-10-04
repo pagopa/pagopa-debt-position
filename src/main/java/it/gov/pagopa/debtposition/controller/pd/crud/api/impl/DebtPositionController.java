@@ -57,7 +57,7 @@ public class DebtPositionController implements IDebtPositionController {
     public ResponseEntity<PaymentPositionModel> createDebtPosition(String organizationFiscalCode,
                                                                    PaymentPositionModel paymentPositionModel,
                                                                    boolean toPublish, String segregationCodes) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "createDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, paymentPositionModel.getIupd())));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "POST", "createDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, paymentPositionModel.getIupd())));
 
         // flip model to entity
         PaymentPosition debtPosition = modelMapper.map(paymentPositionModel, PaymentPosition.class);
@@ -80,7 +80,7 @@ public class DebtPositionController implements IDebtPositionController {
                                                                              LocalDate dueDateTo, LocalDate paymentDateFrom, LocalDate paymentDateTo,
                                                                              DebtPositionStatus status, PaymentPositionOrder orderBy, Direction ordering,
                                                                              String segregationCodes) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
 
         ArrayList<String> segCodesList = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
 
@@ -120,7 +120,7 @@ public class DebtPositionController implements IDebtPositionController {
             @Pattern(regexp = "[\\w*\\h-]+") String organizationFiscalCode,
             @Pattern(regexp = "[\\w*\\h-]+") String iupd,
             @Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationDebtPositionByIUPD", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationDebtPositionByIUPD", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
         // flip entity to model
@@ -136,7 +136,7 @@ public class DebtPositionController implements IDebtPositionController {
             @Pattern(regexp = "[\\w*\\h-]+") String organizationFiscalCode,
             @Pattern(regexp = "[\\w*\\h-]+") String iupd,
             @Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "DELETE", "deleteDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "DELETE", "deleteDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
         paymentPositionService.delete(organizationFiscalCode, iupd, segCodes);
@@ -150,7 +150,7 @@ public class DebtPositionController implements IDebtPositionController {
                                                                    boolean toPublish, String segregationCodes) {
         final String IUPD_VALIDATION_ERROR = "IUPD mistmatch error: path variable IUPD [%s] and request body IUPD [%s] must be the same";
 
-        log.info(String.format(LOG_BASE_HEADER_INFO, "PUT", "updateDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "PUT", "updateDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
         // verifico la congruenza di dati tra lo iupd path variable e lo iupd nel request body
         if (!paymentPositionModel.getIupd().equals(iupd)) {
             log.error(String.format(LOG_BASE_HEADER_INFO, "PUT", "updateDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)) +
@@ -174,7 +174,7 @@ public class DebtPositionController implements IDebtPositionController {
 	public ResponseEntity<Void> createMultipleDebtPositions(String organizationFiscalCode,
 			@Valid MultiplePaymentPositionModel multiplePaymentPositionModel, boolean toPublish,
 			@Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
-		log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "createMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
+		log.debug(String.format(LOG_BASE_HEADER_INFO, "POST", "createMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
 
 		// flip model to entity
         List<PaymentPosition> debtPositions = multiplePaymentPositionModel.getPaymentPositions()
@@ -195,7 +195,7 @@ public class DebtPositionController implements IDebtPositionController {
     public ResponseEntity<Void> updateMultipleDebtPositions(String organizationFiscalCode,
                                                             @Valid MultiplePaymentPositionModel multiplePaymentPositionModel, boolean toPublish,
                                                             @Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "PUT", "updateMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "PUT", "updateMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
 
         // flip model to entity
         List<PaymentPosition> debtPositions = multiplePaymentPositionModel.getPaymentPositions()
@@ -216,7 +216,7 @@ public class DebtPositionController implements IDebtPositionController {
     public ResponseEntity<String> deleteMultipleDebtPositions(
             @Pattern(regexp = "\\b\\w{11}\\b") String organizationFiscalCode, @Valid MultipleIUPDModel multipleIUPDModel,
                                                             @Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "DELETE", "deleteMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "DELETE", "deleteMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
         paymentPositionService.deleteMultipleDebtPositions(multipleIUPDModel.getPaymentPositionIUPDs(), organizationFiscalCode, segCodes);
@@ -229,7 +229,7 @@ public class DebtPositionController implements IDebtPositionController {
             @Pattern(regexp = "\\d{11}") String organizationFiscalCode,
             @Pattern(regexp = "\\b\\w{0,35}\\b") String iuv,
             @Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getDebtPositionByIUV", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv)));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "GET", "getDebtPositionByIUV", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv)));
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
         // flip entity to model

@@ -32,7 +32,7 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
 
     @Override
     public ResponseEntity<PaymentPositionModel> publishDebtPosition(String organizationFiscalCode, String iupd, String segregationCodes) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "publishDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "POST", "publishDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
         PaymentPosition publishedDebtPos = paymentPositionActionsService.publish(organizationFiscalCode, iupd, segCodes);
@@ -46,7 +46,7 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
 
     @Override
     public ResponseEntity<PaymentPositionModel> invalidateDebtPosition(String organizationFiscalCode, String iupd, String segregationCodes) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "invalidateDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "POST", "invalidateDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
         PaymentPosition invalidatedDebtPos = paymentPositionActionsService.invalidate(organizationFiscalCode, iupd, segCodes);

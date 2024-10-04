@@ -3,7 +3,17 @@
     "destination": "console",
     "level": "INFO"
   },
-  "role": {
-    "name": "pagopadebtposition"
+  "sampling": {
+    "requestsPerSecond": 5
+  },
+  "preview": {
+    "sampling": {
+      "overrides": [
+        {
+          "telemetryKind": "exception",
+          "percentage": 100
+        }
+      ]
+    }
   }
 }

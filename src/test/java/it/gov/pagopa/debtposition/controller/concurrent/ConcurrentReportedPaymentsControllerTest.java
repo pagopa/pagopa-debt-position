@@ -43,7 +43,7 @@ class ConcurrentReportedPaymentsControllerTest {
 
 	@BeforeAll
 	void initDebtPosition_for_reporting() throws Exception {
-		log.info("initDebtPosition_for_reporting start => " + Thread.currentThread().getName());
+		log.trace("initDebtPosition_for_reporting start => " + Thread.currentThread().getName());
 		// creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato)
 		mvc.perform(post("/organizations/REPORT_Reported_12345678901/debtpositions?toPublish=true")
 				.content(TestUtil.toJson(DebtPositionMock.getMock8())).contentType(MediaType.APPLICATION_JSON))
@@ -60,7 +60,7 @@ class ConcurrentReportedPaymentsControllerTest {
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(DebtPositionStatus.PAID.toString()));
-		log.info("initDebtPosition_for_reporting end => " + Thread.currentThread().getName());
+		log.trace("initDebtPosition_for_reporting end => " + Thread.currentThread().getName());
 	}
 
 
@@ -68,28 +68,28 @@ class ConcurrentReportedPaymentsControllerTest {
 	@ParameterizedTest
 	@ValueSource(ints = {1, 2, 3})
 	void concurrent_reportedTransfer_id_1_thread(int number) throws Exception {
-		log.info("concurrent_reportedTransfer_id_1_thread for transfers with id 1 - thread("+number+") start => " + Thread.currentThread().getName());
+		log.trace("concurrent_reportedTransfer_id_1_thread for transfers with id 1 - thread("+number+") start => " + Thread.currentThread().getName());
 		// effettuo la rendicontazione per una delle 2 transazioni della PO (si continua ad utilizzare lo IUV e non il NAV)
 		mvc.perform(post("/organizations/REPORT_Reported_12345678901/paymentoptions/123456IUVMULTIPLEMOCK8/transfers/1/report")
 				.contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().is(oneOf(200,409)));
-		log.info("concurrent_reportedTransfer_id_1_thread for transfers with id 1 - thread("+number+") end => " + Thread.currentThread().getName());
+		log.trace("concurrent_reportedTransfer_id_1_thread for transfers with id 1 - thread("+number+") end => " + Thread.currentThread().getName());
 	}
 
 	@ParameterizedTest
 	@ValueSource(ints = {1, 2, 3})
 	void concurrent_reportedTransfer_id_2_thread(int number) throws Exception {
-		log.info("concurrent_reportedTransfer_id_2_thread for transfers with id 2 - thread("+number+") start => " + Thread.currentThread().getName());
+		log.trace("concurrent_reportedTransfer_id_2_thread for transfers with id 2 - thread("+number+") start => " + Thread.currentThread().getName());
 		// effettuo la rendicontazione per una delle 2 transazioni della PO (si continua ad utilizzare lo IUV e non il NAV)
 		mvc.perform(post("/organizations/REPORT_Reported_12345678901/paymentoptions/123456IUVMULTIPLEMOCK8/transfers/2/report")
 				.contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().is(oneOf(200,409)));
-		log.info("concurrent_reportedTransfer_id_2_thread for transfers with id 2 - thread("+number+") end => " + Thread.currentThread().getName());
+		log.trace("concurrent_reportedTransfer_id_2_thread for transfers with id 2 - thread("+number+") end => " + Thread.currentThread().getName());
 	}
 
 	@AfterAll
 	void checkDebtPosition_after_reporting() throws Exception {
-		log.info("checkDebtPosition_after_reporting start => " + Thread.currentThread().getName());
+		log.trace("checkDebtPosition_after_reporting start => " + Thread.currentThread().getName());
 		//recupero la PO e verifico lo stato in PO_PARTIALLY_REPORTED
 		String url = "/organizations/REPORT_Reported_12345678901/paymentoptions/"+auxDigit+"123456IUVMULTIPLEMOCK8";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
@@ -102,6 +102,6 @@ class ConcurrentReportedPaymentsControllerTest {
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andExpect(MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.REPORTED.toString()));
-		log.info("checkDebtPosition_after_reporting end => " + Thread.currentThread().getName());
+		log.trace("checkDebtPosition_after_reporting end => " + Thread.currentThread().getName());
 	}
 }

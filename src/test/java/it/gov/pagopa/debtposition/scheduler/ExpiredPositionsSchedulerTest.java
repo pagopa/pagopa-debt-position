@@ -29,10 +29,10 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 @SpringBootTest(classes = DebtPositionApplication.class)
 @SpringJUnitConfig(SchedulerConfig.class)
 @AutoConfigureMockMvc
-class SchedulerTest {
+class ExpiredPositionsSchedulerTest {
 
-	@Autowired 
-	Scheduler scheduler;
+	@Autowired
+	ExpiredPositionsScheduler expiredPositionsScheduler;
 
 	@Autowired
 	private MockMvc mvc;
@@ -63,13 +63,13 @@ class SchedulerTest {
 		Awaitility.await().until(() -> LocalDateTime.now(ZoneOffset.UTC).isAfter(currentDatePlusSeconds));
 
 		// lancio il batch per consentire il passaggio di stato
-		scheduler.changeDebtPositionStatusToValid();
+		expiredPositionsScheduler.changeDebtPositionStatusToValid();
 
 		// attendo che il thread asincrono sia attivo
 		Awaitility.await()
 		.atMost(3, TimeUnit.SECONDS)
 		.pollInterval(15, TimeUnit.MILLISECONDS)
-		.until(() -> scheduler.getThreadOfExecution() != null);
+		.until(() -> expiredPositionsScheduler.getThreadOfExecution() != null);
 
 		// dopo che il batch ha terminato verifico che lo stato sia effettivamente passato a VALID
 		mvc.perform(get("/organizations/SCHEDULEVALID_12345678901/debtpositions/12345678901IUPDMOCK3")
@@ -105,12 +105,12 @@ class SchedulerTest {
 		Awaitility.await().until(() -> LocalDateTime.now(ZoneOffset.UTC).isAfter(currentDatePlusSeconds));
 
 		// lancio il batch per consentire il passaggio di stato
-		scheduler.changeDebtPositionStatusToValid();
+		expiredPositionsScheduler.changeDebtPositionStatusToValid();
 
 		Awaitility.await()
 		.atMost(3, TimeUnit.SECONDS)
 		.pollInterval(15, TimeUnit.MILLISECONDS)
-		.until(() -> scheduler.getThreadOfExecution() != null);
+		.until(() -> expiredPositionsScheduler.getThreadOfExecution() != null);
 
 		// dopo che il batch ha terminato verifico che lo stato sia effettivamente passato a VALID
 		mvc.perform(get("/organizations/SCHEDULEVALIDAFTERDUEDATE_12345678901/debtpositions/12345678901IUPDMOCK3")
@@ -124,13 +124,13 @@ class SchedulerTest {
 		Awaitility.await().until(() -> LocalDateTime.now(ZoneOffset.UTC).isAfter(newCurrentDatePlusSeconds));
 
 		// lancio il batch per consentire il passaggio di stato
-		scheduler.changeDebtPositionStatusToExpired();
+		expiredPositionsScheduler.changeDebtPositionStatusToExpired();
 
 		// attendo che il thread asincrono sia attivo
 		Awaitility.await()
 		.atMost(3, TimeUnit.SECONDS)
 		.pollInterval(15, TimeUnit.MILLISECONDS)
-		.until(() -> scheduler.getThreadOfExecution() != null);
+		.until(() -> expiredPositionsScheduler.getThreadOfExecution() != null);
 
 		// verifico che lo stato sia rimasto a VALID anche se now > due_date 
 		mvc.perform(get("/organizations/SCHEDULEVALIDAFTERDUEDATE_12345678901/debtpositions/12345678901IUPDMOCK3")
@@ -166,12 +166,12 @@ class SchedulerTest {
 		Awaitility.await().until(() -> LocalDateTime.now(ZoneOffset.UTC).isAfter(currentDatePlusSeconds));
 
 		// lancio il batch per consentire il passaggio di stato
-		scheduler.changeDebtPositionStatusToValid();
+		expiredPositionsScheduler.changeDebtPositionStatusToValid();
 
 		Awaitility.await()
 		.atMost(3, TimeUnit.SECONDS)
 		.pollInterval(15, TimeUnit.MILLISECONDS)
-		.until(() -> scheduler.getThreadOfExecution() != null);
+		.until(() -> expiredPositionsScheduler.getThreadOfExecution() != null);
 
 		// dopo che il batch ha terminato verifico che lo stato sia effettivamente passato a VALID
 		mvc.perform(get("/organizations/SCHEDULEEXP_12345678901/debtpositions/12345678901IUPDMOCK3")
@@ -185,13 +185,13 @@ class SchedulerTest {
 		Awaitility.await().until(() -> LocalDateTime.now(ZoneOffset.UTC).isAfter(newCurrentDatePlusSeconds));
 
 		// lancio il batch per consentire il passaggio di stato
-		scheduler.changeDebtPositionStatusToExpired();
+		expiredPositionsScheduler.changeDebtPositionStatusToExpired();
 
 		// attendo che il thread asincrono sia attivo
 		Awaitility.await()
 		.atMost(3, TimeUnit.SECONDS)
 		.pollInterval(15, TimeUnit.MILLISECONDS)
-		.until(() -> scheduler.getThreadOfExecution() != null);
+		.until(() -> expiredPositionsScheduler.getThreadOfExecution() != null);
 
 		// verifico che lo stato sia passato ad EXPIRED
 		mvc.perform(get("/organizations/SCHEDULEEXP_12345678901/debtpositions/12345678901IUPDMOCK3")

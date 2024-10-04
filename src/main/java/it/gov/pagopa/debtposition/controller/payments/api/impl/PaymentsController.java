@@ -39,7 +39,7 @@ public class PaymentsController implements IPaymentsController {
     @Override
     public ResponseEntity<PaymentOptionWithDebtorInfoModelResponse> getOrganizationPaymentOptionByNAV(
             @Pattern(regexp = "\\d{1,30}") String organizationFiscalCode, @Pattern(regexp = "^\\d{1,30}$") String nav) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationPaymentOptionByNAV", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, nav)));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationPaymentOptionByNAV", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, nav)));
 
         // flip entity to model
         PaymentOptionWithDebtorInfoModelResponse paymentOptionResponse = modelMapper.map(
@@ -52,7 +52,7 @@ public class PaymentsController implements IPaymentsController {
     @Override
     public ResponseEntity<PaymentOptionModelResponse> payPaymentOption(String organizationFiscalCode, String nav,
                                                                        @Valid PaymentOptionModel paymentOptionModel) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "payPaymentOption", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, nav)));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "POST", "payPaymentOption", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, nav)));
 
         PaymentOption paidPaymentOption = paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
 
@@ -67,7 +67,7 @@ public class PaymentsController implements IPaymentsController {
     @Override
     public ResponseEntity<TransferModelResponse> reportTransfer(String organizationFiscalCode, String iuv,
                                                                 String transferId) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "reportTransfer", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv) + "; transferId=" + transferId));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "POST", "reportTransfer", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv) + "; transferId=" + transferId));
         Transfer reportedTransfer = paymentsService.report(organizationFiscalCode, iuv, transferId);
         if (null != reportedTransfer) {
             return new ResponseEntity<>(ObjectMapperUtils.map(reportedTransfer, TransferModelResponse.class), HttpStatus.OK);
@@ -79,7 +79,7 @@ public class PaymentsController implements IPaymentsController {
     public ResponseEntity<PaymentOptionModelResponse> updateNotificationFee(String organizationFiscalCode, String iuv,
                                                                       NotificationFeeUpdateModel notificationFeeUpdateModel) {
         Long notificationFee = notificationFeeUpdateModel.getNotificationFee();
-        log.info(String.format(LOG_BASE_HEADER_INFO, "PUT", "updateNotificationFee", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv) + "; notificationFee=" + notificationFee));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "PUT", "updateNotificationFee", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv) + "; notificationFee=" + notificationFee));
         PaymentOption updatedPaymentOption = paymentsService.updateNotificationFee(organizationFiscalCode, iuv, notificationFee);
         if (updatedPaymentOption != null) {
         	ResponseEntity.status(Boolean.FALSE.equals(updatedPaymentOption.isPaymentInProgress())?HttpStatus.OK.value():CustomHttpStatus.IN_PROGRESS.value());
