@@ -78,6 +78,32 @@ class DebtPositionControllerTest {
 	}
 
 	@Test
+	void createDebtPosition_blank_input_201() throws Exception {
+		PaymentPositionDTO mock1 = DebtPositionMock.getMock1();
+		mock1.setFullName(" ");
+		mock1.setFiscalCode(" ");
+		mvc.perform(post("/organizations/12345678901/debtpositions")
+						.content(TestUtil.toJson(mock1)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].iuv")
+						.value("123456IUVMOCK1"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+						.value(auxDigit+"123456IUVMOCK1"));
+	}
+
+	@Test
+	void createDebtPosition_null_input_400() throws Exception {
+		PaymentPositionDTO mock1 = DebtPositionMock.getMock1();
+		mock1.setFullName(null);
+		mock1.setFiscalCode(null);
+		mvc.perform(post("/organizations/12345678901/debtpositions")
+						.content(TestUtil.toJson(mock1)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON));
+	}
+
+	@Test
 	void createDebtPositionWithStamp_201() throws Exception {
 		PaymentPositionDTO pp = DebtPositionMock.getMock1();
 		TransferDTO t = new TransferDTO(pp.getOrganizationFiscalCode(), "1", pp.getPaymentOption().get(0).getAmount(), "info", "0", "", "",
