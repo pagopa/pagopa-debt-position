@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.11.46"
+    tag: "0.11.46-1-PAGOPA-2154-dismissione-wisp-richieste-con-anagrafica-pagatore-blank"
     pullPolicy: Always
   livenessProbe:
     httpGet:
