@@ -36,9 +36,9 @@ public class PaymentPositionModel implements Serializable {
     private boolean payStandIn;
     @Schema(description = "feature flag to enable the debt position retrieval in pull mode", example = "true", defaultValue = "true")
     private boolean pull;
-    @NotBlank(message = "fiscal code is required")
+    @NotNull(message = "fiscal code is required")
     private String fiscalCode;
-    @NotBlank(message = "full name is required")
+    @NotNull(message = "full name is required")
     @ToString.Exclude
     private String fullName;
     private String streetName;
