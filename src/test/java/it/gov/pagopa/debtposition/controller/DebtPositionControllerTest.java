@@ -82,7 +82,7 @@ class DebtPositionControllerTest {
 		PaymentPositionDTO mock1 = DebtPositionMock.getMock1();
 		mock1.setFullName(" ");
 		mock1.setFiscalCode(" ");
-		mvc.perform(post("/organizations/12345678901/debtpositions")
+		mvc.perform(post("/organizations/blank_12345678901/debtpositions")
 						.content(TestUtil.toJson(mock1)).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
