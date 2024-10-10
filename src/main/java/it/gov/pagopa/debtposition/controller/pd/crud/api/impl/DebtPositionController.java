@@ -102,10 +102,10 @@ public class DebtPositionController implements IDebtPositionController {
                 .build();
 
         Page<PaymentPosition> pagePP = paymentPositionService.getOrganizationDebtPositions(limit, page, filterOrder);
-
+ 
         // flip entity to model
         List<PaymentPositionModelBaseResponse> ppResponseList = ObjectMapperUtils.mapAll(
-                pagePP.toList(),
+                pagePP.toList().stream().distinct().toList(),
                 PaymentPositionModelBaseResponse.class);
 
         return new ResponseEntity<>(PaymentPositionsInfo.builder()
