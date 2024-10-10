@@ -22,7 +22,7 @@
         <springProperty name="ECS_SERVICE_VERSION" source="info.application.version"/>
         <appender name="ECS_JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder class="co.elastic.logging.logback.EcsEncoder">
-                <serviceName>${OTEL_SERVICE_NAME}</serviceName>
+                <serviceName>${SERVICE_NAME}</serviceName>
                 <serviceVersion>${ECS_SERVICE_VERSION}</serviceVersion>
                 <serviceEnvironment>${ENV}</serviceEnvironment>
             </encoder>

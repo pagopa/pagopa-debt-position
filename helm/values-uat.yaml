@@ -115,15 +115,10 @@ microservice-chart:
     SQL_LOG_LEVEL: "INFO"
     SQL_BINDER_LOG_LEVEL: "INFO"
     MAX_DEBT_POSITIONS: "100"
-    OTEL_SERVICE_NAME: "pagopa-gpd-core"
-    OTEL_RESOURCE_ATTRIBUTES: "service.name=pagopa-gpd-core,deployment.environment=uat"
-    OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
-    OTEL_LOGS_EXPORTER: none
-    OTEL_TRACES_SAMPLER: "always_on"
+    SERVICE_NAME: "pagopa-gpd-core"
   envSecret:
     # required
     APPLICATIONINSIGHTS_CONNECTION_STRING: 'ai-u-connection-string'
-    OTEL_EXPORTER_OTLP_HEADERS: elastic-apm-secret-token
     SPRING_DATASOURCE_PASSWORD: "db-apd-user-password"
     SPRING_DATASOURCE_USERNAME: "db-apd-user-name"
     NODE_SUBSCRIPTION_KEY: "gpd-u-node-subscription-key"
