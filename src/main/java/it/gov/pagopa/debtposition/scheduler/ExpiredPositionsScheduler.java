@@ -34,10 +34,10 @@ public class ExpiredPositionsScheduler {
     @Async
     @Transactional
     public void changeDebtPositionStatusToValid() {
-        log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "changeDebtPositionStatusToValid", "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "changeDebtPositionStatusToValid", "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
         LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
         int numAffectedRows = paymentPositionRepository.updatePaymentPositionStatusToValid(currentDate, DebtPositionStatus.VALID);
-        log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "changeDebtPositionStatusToValid", "Number of updated rows " + numAffectedRows));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "changeDebtPositionStatusToValid", "Number of updated rows " + numAffectedRows));
         this.threadOfExecution = Thread.currentThread();
     }
 
@@ -48,10 +48,10 @@ public class ExpiredPositionsScheduler {
     public void changeDebtPositionStatusToExpired() {
         updateMDCForStartExecution("changeDebtPositionStatusToExpired", "");
         try {
-            log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "changeDebtPositionStatusToExpired", "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
+            log.debug(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "changeDebtPositionStatusToExpired", "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
             LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
             int numAffectedRows = paymentPositionRepository.updatePaymentPositionStatusToExpired(currentDate, DebtPositionStatus.EXPIRED);
-            log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "changeDebtPositionStatusToExpired", "Number of updated rows " + numAffectedRows));
+            log.debug(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "changeDebtPositionStatusToExpired", "Number of updated rows " + numAffectedRows));
             this.threadOfExecution = Thread.currentThread();
             updateMDCForEndExecution();
         } catch (Exception e) {
