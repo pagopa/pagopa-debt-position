@@ -90,7 +90,7 @@ public class HistoricizationScheduler {
     public void manageDebtPositionsToHistoricize() throws JsonProcessingException, InvalidKeyException, URISyntaxException {
         updateMDCForStartExecution("manageDebtPositionsToHistoricize", "");
         try {
-            log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
+            log.debug(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "Running at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
             EntityManager em = this.getEntityManager();
             LocalDateTime ldt = LocalDateTime.now().minusDays(extractionInterval);
             List<PaymentPosition> ppList;
@@ -99,7 +99,7 @@ public class HistoricizationScheduler {
                 int numOfPages = (int) Math.ceil((float) countResult / pageSize);
                 for (int pageNumber = 0; pageNumber < numOfPages; pageNumber++) {
                     ppList = em.createQuery(extractionQuery, PaymentPosition.class).setParameter(1, ldt).setFirstResult((pageNumber) * pageSize).setMaxResults(pageSize).getResultList();
-                    log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD,
+                    log.debug(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD,
                             "Paginated historical extraction info: Found n. " + countResult + " debt positions to archive splitted on n. " + numOfPages + " of pages. " +
                                     System.lineSeparator() +
                                     "Page number " + pageNumber + " has been extracted and contains " + ppList.size() + " occurrences"));
@@ -107,10 +107,10 @@ public class HistoricizationScheduler {
                 }
             } else {
                 ppList = em.createQuery(extractionQuery, PaymentPosition.class).setParameter(1, ldt).getResultList();
-                log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "Total entries historical extraction info: Number of extracted rows to historicize: " + ppList.size()));
+                log.debug(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "Total entries historical extraction info: Number of extracted rows to historicize: " + ppList.size()));
                 this.archiveAndDeleteDebtPositions(ppList);
             }
-            log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "Finished at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
+            log.debug(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, METHOD, "Finished at " + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
             updateMDCForEndExecution();
         } catch (Exception e) {
             updateMDCError(e, "Historicize Scheduler Error");
@@ -162,7 +162,7 @@ public class HistoricizationScheduler {
                         tableEntity.setProperties(properties);
                         transactionActions.add(new TableTransactionAction(TableTransactionActionType.UPSERT_MERGE, tableEntity));
                         tc.submitTransaction(transactionActions);
-                        log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "upsertPPTable",
+                        log.debug(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "upsertPPTable",
                                 "block of n. " + transactionActions.size() + " items are upserted to a total of " + organizationPpList.size() + " for the organization fiscal code " + pp.getOrganizationFiscalCode()));
                         // reset for a new bulk operation
                         transactionActions = new ArrayList<TableTransactionAction>();
@@ -185,7 +185,7 @@ public class HistoricizationScheduler {
         this.archivesDebtPositions(ppList);
         // archived debt positions are removed
         paymentPositionRepository.deleteAll(ppList);
-        log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "archiveAndDeleteDebtPositions", "deleted n. " + ppList.size() + " archived debt positions"));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "archiveAndDeleteDebtPositions", "deleted n. " + ppList.size() + " archived debt positions"));
     }
 
     private void archivesDebtPositions(List<PaymentPosition> ppList) throws JsonProcessingException, InvalidKeyException, URISyntaxException {
@@ -198,7 +198,7 @@ public class HistoricizationScheduler {
         for (Entry<String, List<PaymentPosition>> entry : ppListByOrganizationFiscalCode.entrySet()) {
             List<PaymentPosition> organizationPpList = ppListByOrganizationFiscalCode.get(entry.getKey());
             this.upsertPPTable(organizationPpList, objectMapper);
-            log.info(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "archivesDebtPositions", "historicized n. " + organizationPpList.size() + " debt positions for the organization fiscal code: " + entry.getKey()));
+            log.debug(String.format(LOG_BASE_HEADER_INFO, CRON_JOB, "archivesDebtPositions", "historicized n. " + organizationPpList.size() + " debt positions for the organization fiscal code: " + entry.getKey()));
         }
     }
 }
