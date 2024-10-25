@@ -26,7 +26,6 @@ public class ConvertPPModelToPPEntityForUpdate implements Converter<PaymentPosit
         PaymentPositionModel source = context.getSource();
         PaymentPosition destination = context.getDestination() != null ? context.getDestination() : new PaymentPosition();
 
-        destination.setPull(source.isPull());
         destination.setPayStandIn(source.isPayStandIn());
         destination.setCity(source.getCity());
         destination.setCivicNumber(source.getCivicNumber());
