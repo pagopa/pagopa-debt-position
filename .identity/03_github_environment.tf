@@ -27,8 +27,7 @@ locals {
     "API_SUBSCRIPTION_KEY" : data.azurerm_key_vault_secret.key_vault_integration_test_subkey.value,
     "DATASOURCE_USERNAME": data.azurerm_key_vault_secret.key_vault_datasource_username.value,
     "DATASOURCE_PASSWORD": data.azurerm_key_vault_secret.key_vault_datasource_password.value,
-    "DATASOURCE_URL": data.azurerm_key_vault_secret.key_vault_datasource_url.value,
-    "DATASOURCE_URL_FLEX": var.env_short == "d" ? data.azurerm_key_vault_secret.key_vault_datasource_url_dev_flex[0].value : "-"
+    "DATASOURCE_URL": data.azurerm_key_vault_secret.key_vault_datasource_url.value
   }
   env_variables = {
     "CONTAINER_APP_ENVIRONMENT_NAME" : local.container_app_environment.name,

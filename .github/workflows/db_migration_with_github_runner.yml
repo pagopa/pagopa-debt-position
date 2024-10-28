@@ -88,15 +88,6 @@ jobs:
           export GPD_SCHEMA_NAME='${{ secrets.APD_SCHEMA_NAME }}'
           mvn clean flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
 
-      - name: Run flyway::migrate FLEX DEV
-        shell: bash
-        run: |
-          export SPRING_DATASOURCE_URL='${{ secrets.DATASOURCE_URL_FLEX }}'
-          export SPRING_DATASOURCE_USERNAME='${{ secrets.DATASOURCE_USERNAME }}'
-          export SPRING_DATASOURCE_PASSWORD='${{ secrets.DATASOURCE_PASSWORD }}'
-          export GPD_SCHEMA_NAME='${{ secrets.APD_SCHEMA_NAME }}'
-          mvn clean flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
-
   cleanup_runner:
     name: Cleanup Runner
     needs: [ create_runner, db_migration ]
