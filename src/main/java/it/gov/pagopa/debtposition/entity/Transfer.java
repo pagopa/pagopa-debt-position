@@ -95,6 +95,9 @@ public class Transfer implements Serializable {
 
     @Column(name = "provincial_residence")
     private String provincialResidence;
+    
+    @Column(name = "company_name")
+    private String companyName;
 
     @NotNull
     @Column(name = "inserted_date")

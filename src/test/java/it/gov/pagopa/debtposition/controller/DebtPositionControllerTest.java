@@ -74,7 +74,9 @@ class DebtPositionControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].iuv")
 				.value("123456IUVMOCK1"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-				.value(auxDigit+"123456IUVMOCK1"));
+				.value(auxDigit+"123456IUVMOCK1"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].companyName")
+				.value("mock company name"));
 	}
 
 	@Test
@@ -497,7 +499,9 @@ class DebtPositionControllerTest {
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-								   .value(auxDigit+"123456IUVMOCK1"));
+								   .value(auxDigit+"123456IUVMOCK1"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].companyName")
+						.value("mock company name"));
 	}
 
 	@Test

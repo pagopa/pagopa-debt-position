@@ -21,6 +21,7 @@ public class TransferDTO implements Serializable {
     private static final long serialVersionUID = 7001055971430256321L;
     
     private String organizationFiscalCode;
+    private String companyName;
     private String idTransfer;
     private long amount;
     private String remittanceInformation; // causale

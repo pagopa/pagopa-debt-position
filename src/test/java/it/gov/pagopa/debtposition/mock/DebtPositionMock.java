@@ -869,6 +869,7 @@ public class DebtPositionMock {
 	public static TransferDTO createTransfersMock1() {
 		TransferDTO tMock = new TransferDTO();
 		tMock.setIdTransfer("1");
+		tMock.setCompanyName("mock company name");
 		tMock.setIban("IT75I0306902887100000300015");
 		tMock.setAmount(1000);
 		tMock.setRemittanceInformation("causale mock 1");

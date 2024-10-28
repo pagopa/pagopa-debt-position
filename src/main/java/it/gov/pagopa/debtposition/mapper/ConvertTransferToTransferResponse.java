@@ -12,6 +12,7 @@ public class ConvertTransferToTransferResponse {
         TransferModelResponse destination = new TransferModelResponse();
 
         destination.setOrganizationFiscalCode(t.getOrganizationFiscalCode());
+        destination.setCompanyName(t.getCompanyName());
         destination.setIdTransfer(t.getIdTransfer());
         destination.setAmount(t.getAmount());
         destination.setRemittanceInformation(t.getRemittanceInformation());
