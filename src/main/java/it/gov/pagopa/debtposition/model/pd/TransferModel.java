@@ -48,6 +48,9 @@ public class TransferModel implements Serializable {
     @Valid
     private Stamp stamp;
     
+    @Size(max = 140)
+    private String companyName;
+    
     @Valid
     @Size(min=0, max=10)
     @Schema(description = "it can added a maximum of 10 key-value pairs for metadata")
