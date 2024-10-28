@@ -85,8 +85,9 @@ microservice-chart:
   envConfig:
     WEBSITE_SITE_NAME: 'pagopa-d-gpd-core-service'
     ENV: 'dev'
-    SPRING_DATASOURCE_URL: "jdbc:postgresql://pagopa-d-gpd-postgresql.postgres.database.azure.com:5432/apd?sslmode=require&tcpKeepAlive=true"
-    SPRING_DATASOURCE_TYPE: "com.zaxxer.hikari.HikariDataSource"
+    SPRING_DATASOURCE_URL: "jdbc:postgresql://pagopa-d-gpd-pgflex.postgres.database.azure.com:6432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true"
+    SPRING_DATASOURCE_TYPE: "org.springframework.jdbc.datasource.SimpleDriverDataSource"
+    # SPRING_DATASOURCE_TYPE: "com.zaxxer.hikari.HikariDataSource"
     SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
     SPRING_JPA_HIBERNATE_SHOW_SQL: "false"
     SCHEMA_NAME: "apd"
