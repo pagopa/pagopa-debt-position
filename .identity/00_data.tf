@@ -42,6 +42,7 @@ data "azurerm_key_vault_secret" "key_vault_integration_test_subkey" {
   key_vault_id = data.azurerm_key_vault.key_vault.id
 }
 
+## NOTE FLEX on all ENVs
 data "azurerm_key_vault_secret" "key_vault_datasource_username" {
   name         = "db-apd-user-name"
   key_vault_id = data.azurerm_key_vault.domain_key_vault.id
@@ -54,5 +55,14 @@ data "azurerm_key_vault_secret" "key_vault_datasource_password" {
 
 data "azurerm_key_vault_secret" "key_vault_datasource_url" {
   name         = "db-url"
+  key_vault_id = data.azurerm_key_vault.domain_key_vault.id
+}
+
+# FLEX - temp only DEV
+
+data "azurerm_key_vault_secret" "key_vault_datasource_url_dev_flex" {
+  count        = var.env_short == "d" ? 1 : 0
+
+  name         = "db-url-dev-flex"
   key_vault_id = data.azurerm_key_vault.domain_key_vault.id
 }
