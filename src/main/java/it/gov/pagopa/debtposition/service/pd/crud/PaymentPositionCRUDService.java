@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.SerializationUtils;
 import org.hibernate.exception.ConstraintViolationException;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.PropertyMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -283,8 +284,15 @@ public class PaymentPositionCRUDService {
                     throw new AppException(AppError.DEBT_POSITION_NOT_UPDATABLE, organizationFiscalCode, inputPaymentPosition.getIupd());
                 }
 
-                // flip model to entity
+                // 
                 updatePaymentPosition.getPaymentOption().clear();
+                // flip model to entity - the serviceType field must not be overwritten
+                modelMapper.addMappings(new PropertyMap<PaymentPosition, PaymentPosition>() {
+                    @Override
+                    protected void configure() {
+                        skip(destination.getServiceType());
+                    }
+                });
                 modelMapper.map(inputPaymentPosition, updatePaymentPosition);
 
                 // migrate the notification fee value (if defined) and update the amounts
@@ -389,6 +397,7 @@ public class PaymentPositionCRUDService {
 		pp.setPublishDate(null);
 		pp.setOrganizationFiscalCode(organizationFiscalCode);
 		pp.setStatus(DebtPositionStatus.DRAFT);
+		pp.setServiceType(pp.getServiceType());
 
 		for (PaymentOption po : pp.getPaymentOption()) {
 		    po.setOrganizationFiscalCode(organizationFiscalCode);
