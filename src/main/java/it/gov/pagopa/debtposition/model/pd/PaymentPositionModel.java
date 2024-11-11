@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -57,6 +58,8 @@ public class PaymentPositionModel implements Serializable {
     @Schema(description = "feature flag to enable the debt position to expire after the due date", example = "false", defaultValue = "false")
     @NotNull(message = "switch to expired value is required")
     private Boolean switchToExpired;
+    
+    private ServiceType serviceType;
 
     // Payment Position properties
     @NotBlank(message = "company name is required")

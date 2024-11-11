@@ -42,6 +42,7 @@ import it.gov.pagopa.debtposition.model.checkposition.NodeCheckPositionModel;
 import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPositionResponse;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 
 @SpringBootTest(classes = DebtPositionApplication.class)
 @AutoConfigureMockMvc
@@ -85,6 +86,21 @@ class DebtPositionControllerTest {
 		mock1.setFullName(" ");
 		mock1.setFiscalCode(" ");
 		mvc.perform(post("/organizations/blank_12345678901/debtpositions")
+						.content(TestUtil.toJson(mock1)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].iuv")
+						.value("123456IUVMOCK1"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+						.value(auxDigit+"123456IUVMOCK1"));
+	}
+	
+	@Test
+	void createDebtPosition_type_ACA_201() throws Exception {
+		PaymentPositionDTO mock1 = DebtPositionMock.getMock1();
+		mock1.setServiceType(ServiceType.ACA);
+		
+		mvc.perform(post("/organizations/aca_12345678901/debtpositions")
 						.content(TestUtil.toJson(mock1)).contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
