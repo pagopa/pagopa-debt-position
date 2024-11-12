@@ -283,9 +283,8 @@ public class PaymentPositionCRUDService {
                     throw new AppException(AppError.DEBT_POSITION_NOT_UPDATABLE, organizationFiscalCode, inputPaymentPosition.getIupd());
                 }
 
-                // 
-                updatePaymentPosition.getPaymentOption().clear();
                 // flip model to entity
+                updatePaymentPosition.getPaymentOption().clear();
                 modelMapper.map(inputPaymentPosition, updatePaymentPosition);
 
                 // migrate the notification fee value (if defined) and update the amounts
