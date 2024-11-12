@@ -23,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.SerializationUtils;
 import org.hibernate.exception.ConstraintViolationException;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.PropertyMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -286,13 +285,7 @@ public class PaymentPositionCRUDService {
 
                 // 
                 updatePaymentPosition.getPaymentOption().clear();
-                // flip model to entity - the serviceType field must not be overwritten
-                modelMapper.addMappings(new PropertyMap<PaymentPosition, PaymentPosition>() {
-                    @Override
-                    protected void configure() {
-                        skip(destination.getServiceType());
-                    }
-                });
+                // flip model to entity
                 modelMapper.map(inputPaymentPosition, updatePaymentPosition);
 
                 // migrate the notification fee value (if defined) and update the amounts
