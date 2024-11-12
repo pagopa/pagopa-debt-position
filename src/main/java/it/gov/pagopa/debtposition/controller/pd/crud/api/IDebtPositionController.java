@@ -57,7 +57,7 @@ public interface IDebtPositionController {
             @RequestParam(required = false, defaultValue = "false") boolean toPublish,
             @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
             @RequestParam(required = false) String segregationCodes,
-            @RequestParam(required = false) ServiceType serviceType);
+            @RequestParam(required = false, defaultValue = "GPD") ServiceType serviceType);
     
     @Operation(summary = "The Organization creates multiple debt positions.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "createMultiplePositions")
     @ApiResponses(value = {
@@ -76,7 +76,7 @@ public interface IDebtPositionController {
             @RequestParam(required = false, defaultValue = "false") boolean toPublish,
             @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
             @RequestParam(required = false) String segregationCodes,
-            @RequestParam(required = false) ServiceType serviceType);
+            @RequestParam(required = false, defaultValue = "GPD") ServiceType serviceType);
 
     @Operation(summary = "Return the list of the organization debt positions. " +
                                  "The due dates interval is mutually exclusive with the payment dates interval.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizationDebtPositions")
