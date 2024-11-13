@@ -54,7 +54,6 @@ class OpenApiGenerationTest {
                             
                             // removing unwanted fields
                             if (namesToRemove != null && pathList != null && pathList.length > 0 && namesToRemove.length > 0) {
-                            	// start iterating from the first element
                             	removeField(swagger, pathList, namesToRemove);
                             }
                             
@@ -69,18 +68,18 @@ class OpenApiGenerationTest {
     private void removeField(Object obj, String[][] pathList, String[] namesToRemove) throws Exception {
         for (String[] pathNames : pathList) {
             for (String nameToRemove : namesToRemove) {
+            	// start iterating from the first element
                 removeFieldRecursive(obj, pathNames, nameToRemove, 0);
             }
         }
     }
     
     private void removeFieldRecursive(Object obj, String[] pathNames, String nameToRemove, int index) throws Exception {
-        // Verifica che l'oggetto non sia nullo e che l'indice sia valido
         if (obj == null || index >= pathNames.length) {
             return;
         }
 
-        String fieldName = pathNames[index];
+        String fieldPathName = pathNames[index];
 
         if (obj instanceof Map) {
             // If the object is a map (JSON structure)
@@ -89,10 +88,10 @@ class OpenApiGenerationTest {
 
             // If is the last level, remove the field
             if (index == pathNames.length - 1) {
-                Object param = map.get(fieldName);
+                Object param = map.get(fieldPathName);
                 if (param instanceof List) {
                     List<?> list = (List<?>) param;
-                    // remove the objects that have the "name" field equal to nameToRemove (ex. serviceType)
+                    // remove the blocks that have the "name" field equal to nameToRemove (ex. serviceType)
                     list.removeIf(item -> {
                         if (item instanceof Map) {
                             @SuppressWarnings("unchecked")
@@ -103,7 +102,7 @@ class OpenApiGenerationTest {
                     });
                 }
             } else {
-                Object nextObj = map.get(fieldName);
+                Object nextObj = map.get(fieldPathName);
                 removeFieldRecursive(nextObj, pathNames, nameToRemove, index + 1);
             }
         } else if (obj instanceof List) {
