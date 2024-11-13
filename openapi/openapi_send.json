@@ -47,19 +47,8 @@
           "required" : true
         },
         "responses" : {
-          "401" : {
-            "description" : "Wrong or missing function key.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Service unavailable.",
+          "404" : {
+            "description" : "No payment option found.",
             "headers" : {
               "X-Request-Id" : {
                 "description" : "This header identifies the call",
@@ -76,8 +65,19 @@
               }
             }
           },
-          "422" : {
-            "description" : "Unprocessable payment option.",
+          "401" : {
+            "description" : "Wrong or missing function key.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Service unavailable.",
             "headers" : {
               "X-Request-Id" : {
                 "description" : "This header identifies the call",
@@ -130,8 +130,8 @@
               }
             }
           },
-          "404" : {
-            "description" : "No payment option found.",
+          "400" : {
+            "description" : "Malformed request.",
             "headers" : {
               "X-Request-Id" : {
                 "description" : "This header identifies the call",
@@ -148,8 +148,8 @@
               }
             }
           },
-          "400" : {
-            "description" : "Malformed request.",
+          "422" : {
+            "description" : "Unprocessable payment option.",
             "headers" : {
               "X-Request-Id" : {
                 "description" : "This header identifies the call",
@@ -207,19 +207,8 @@
           }
         } ],
         "responses" : {
-          "401" : {
-            "description" : "Wrong or missing function key.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
-          },
-          "200" : {
-            "description" : "Obtained payment option details.",
+          "404" : {
+            "description" : "No payment option found.",
             "headers" : {
               "X-Request-Id" : {
                 "description" : "This header identifies the call",
@@ -231,7 +220,18 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaymentsWithDebtorInfoModelResponse"
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Wrong or missing function key.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
                 }
               }
             }
@@ -254,8 +254,8 @@
               }
             }
           },
-          "404" : {
-            "description" : "No payment option found.",
+          "200" : {
+            "description" : "Obtained payment option details.",
             "headers" : {
               "X-Request-Id" : {
                 "description" : "This header identifies the call",
@@ -267,7 +267,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ProblemJson"
+                  "$ref" : "#/components/schemas/PaymentsWithDebtorInfoModelResponse"
                 }
               }
             }
@@ -305,17 +305,6 @@
               }
             }
           },
-          "403" : {
-            "description" : "Forbidden.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
-          },
           "500" : {
             "description" : "Service unavailable.",
             "headers" : {
@@ -330,6 +319,17 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
                 }
               }
             }

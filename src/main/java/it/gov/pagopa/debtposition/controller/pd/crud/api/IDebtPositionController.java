@@ -57,7 +57,7 @@ public interface IDebtPositionController {
             @RequestParam(required = false, defaultValue = "false") boolean toPublish,
             @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
             @RequestParam(required = false) String segregationCodes,
-            @Parameter(hidden = true) @RequestParam(required = false, defaultValue = "GPD") ServiceType serviceType);
+            @Parameter(hidden = false, description="The field must not be considered as its value is set via the API Management (APIM) policy") @RequestParam(required = false, defaultValue = "GPD") ServiceType serviceType);
     
     @Operation(summary = "The Organization creates multiple debt positions.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "createMultiplePositions")
     @ApiResponses(value = {
