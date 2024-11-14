@@ -4,8 +4,6 @@ if [[ "$(pwd)" =~ .*"openapi".* ]]; then
     cd ..
 fi
 
-mvn test -Dtest=OpenApiGenerationTest
-
 # internal openapi
 # v2: changing single to massive create operation
 jq 'del( .paths["/organizations/{organizationfiscalcode}/debtpositions"] | .post ) | .paths["/organizations/{organizationfiscalcode}/debtpositions"].post = .paths["/organizations/{organizationfiscalcode}/debtpositions/bulk"].post | del( .paths["/organizations/{organizationfiscalcode}/debtpositions/bulk"] )' ./openapi/openapi_internal.json > ./openapi/openapi_internal_massive.json
