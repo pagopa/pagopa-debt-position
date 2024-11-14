@@ -92,17 +92,6 @@
               }
             }
           },
-          "401": {
-            "description": "Wrong or missing function key.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
           "200": {
             "description": "Debt Positions updated.",
             "headers": {
@@ -128,6 +117,17 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Wrong or missing function key.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -185,8 +185,8 @@
               "application/json": {}
             }
           },
-          "500": {
-            "description": "Service unavailable.",
+          "404": {
+            "description": "Payment Position not found.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -217,8 +217,8 @@
               }
             }
           },
-          "404": {
-            "description": "Payment Position not found.",
+          "500": {
+            "description": "Service unavailable.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -286,6 +286,21 @@
               "type": "boolean",
               "default": false
             }
+          },
+          {
+            "name": "serviceType",
+            "in": "query",
+            "description": "The field must not be considered as its value is set via the API Management (APIM) policy",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "GPD",
+              "enum": [
+                "ACA",
+                "WISP",
+                "GPD"
+              ]
+            }
           }
         ],
         "requestBody": {
@@ -299,6 +314,24 @@
           "required": true
         },
         "responses": {
+          "500": {
+            "description": "Service unavailable.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
           "409": {
             "description": "Conflict: duplicate debt position found.",
             "headers": {
@@ -328,8 +361,8 @@
               }
             }
           },
-          "500": {
-            "description": "Service unavailable.",
+          "400": {
+            "description": "Malformed request.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -356,24 +389,6 @@
                 }
               }
             }
-          },
-          "400": {
-            "description": "Malformed request.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
-                }
-              }
-            }
           }
         },
         "security": [
@@ -394,24 +409,6 @@
         "summary": "Return OK if application is started",
         "operationId": "healthCheck",
         "responses": {
-          "200": {
-            "description": "OK.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AppInfo"
-                }
-              }
-            }
-          },
           "403": {
             "description": "Forbidden.",
             "headers": {
@@ -437,6 +434,24 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppInfo"
                 }
               }
             }
