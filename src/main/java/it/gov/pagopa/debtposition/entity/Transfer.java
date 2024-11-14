@@ -49,8 +49,8 @@ import lombok.Setter;
 @Table(name = "transfer",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "UniqueTransfer",
-                        columnNames = {"iuv", "organization_fiscal_code", "transfer_id"})
+                        name = "unique_transfer",
+                        columnNames = {"iuv", "organization_fiscal_code", "transfer_id", "payment_option_id"})
         },
         indexes = @Index(name = "transfer_payment_option_id_idx", columnList = "payment_option_id"))
 @JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="@transferId")
