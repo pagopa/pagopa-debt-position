@@ -11,7 +11,7 @@ mvn test -Dtest=OpenApiGenerationTest
 jq 'del( .paths["/organizations/{organizationfiscalcode}/debtpositions"] | .post ) | .paths["/organizations/{organizationfiscalcode}/debtpositions"].post = .paths["/organizations/{organizationfiscalcode}/debtpositions/bulk"].post | del( .paths["/organizations/{organizationfiscalcode}/debtpositions/bulk"] )' ./openapi/openapi_internal.json > ./openapi/openapi_internal_massive.json
 
 # v1
-jq 'del( .paths["/organizations/{organizationfiscalcode}/debtpositions"] | .put, .delete ) | .paths["/organizations/{organizationfiscalcode}/debtpositions"].post = .paths["/organizations/{organizationfiscalcode}/debtpositions/bulk"].post | del( .paths["/organizations/{organizationfiscalcode}/debtpositions/bulk"] )' ./openapi/openapi_internal.json > ./openapi/openapi_internal.json.temp && mv ./openapi/openapi_internal.json.temp ./openapi/openapi_internal.json
+jq 'del( .paths["/organizations/{organizationfiscalcode}/debtpositions"] | .put, .delete ) | del( .paths["/organizations/{organizationfiscalcode}/debtpositions/bulk"] )' ./openapi/openapi_internal.json > ./openapi/openapi_internal.json.temp && mv ./openapi/openapi_internal.json.temp ./openapi/openapi_internal.json
 
 
 # external openapi
