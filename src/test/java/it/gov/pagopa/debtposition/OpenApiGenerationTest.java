@@ -148,20 +148,16 @@ class OpenApiGenerationTest {
     private static void executeScript(String os, String scriptPath, String...command) throws IOException, InterruptedException {
 
     	if (os.contains("win")) {
-    		String commandToExec = command[0] + " " + command[1] + " " +scriptPath;
-    		Process dos2unixProcess = Runtime.getRuntime().exec(commandToExec);
+    		Process dos2unixProcess = Runtime.getRuntime().exec(new String[] {command[0],command[1],scriptPath});
     		int dos2unixExitCode = dos2unixProcess.waitFor();
     		assertEquals(0, dos2unixExitCode);
     		if (dos2unixExitCode == 0) {
-    			commandToExec = command[0] + " " + command[2] + " " +scriptPath;
-    			Process bashProcess = Runtime.getRuntime().exec(commandToExec);
+    			Process bashProcess = Runtime.getRuntime().exec(new String[] {command[0],command[2],scriptPath});
     			int bashExitCode = bashProcess.waitFor();
     			assertEquals(0, bashExitCode);
     		}
-
     	} else {
-    		String commandToExec = command[0] + " " +scriptPath;
-    		Process bashProcess = Runtime.getRuntime().exec(commandToExec);
+    		Process bashProcess = Runtime.getRuntime().exec(new String[] {command[0],scriptPath});
     		int bashExitCode = bashProcess.waitFor();
     		assertEquals(0, bashExitCode);
     	}
