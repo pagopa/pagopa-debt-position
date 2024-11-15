@@ -74,7 +74,9 @@ class DebtPositionControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].iuv")
 				.value("123456IUVMOCK1"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-				.value(auxDigit+"123456IUVMOCK1"));
+				.value(auxDigit+"123456IUVMOCK1"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].companyName")
+				.value("mock company name"));
 	}
 
 	@Test
@@ -90,6 +92,20 @@ class DebtPositionControllerTest {
 						.value("123456IUVMOCK1"))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
 						.value(auxDigit+"123456IUVMOCK1"));
+	}
+	
+	@Test
+	void createDebtPosition_type_ACA_201() throws Exception {	
+		mvc.perform(post("/organizations/aca_12345678901/debtpositions?serviceType=ACA")
+						.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].iuv")
+						.value("123456IUVMOCK1"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+						.value(auxDigit+"123456IUVMOCK1"))
+				// il serviceType non deve essere restituito nella risposta
+				.andExpect(MockMvcResultMatchers.jsonPath("$.serviceType").doesNotExist());
 	}
 
 	@Test
@@ -497,7 +513,9 @@ class DebtPositionControllerTest {
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-								   .value(auxDigit+"123456IUVMOCK1"));
+								   .value(auxDigit+"123456IUVMOCK1"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].companyName")
+						.value("mock company name"));
 	}
 
 	@Test

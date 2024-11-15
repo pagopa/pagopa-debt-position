@@ -1,6 +1,7 @@
 package it.gov.pagopa.debtposition.entity;
 
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import lombok.*;
 
@@ -90,6 +91,10 @@ public class PaymentPosition implements Serializable {
     private String email;
     @ToString.Exclude
     private String phone;
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "service_type")
+    private ServiceType serviceType = ServiceType.GPD;
 
     // Payment Position properties
     @NotNull

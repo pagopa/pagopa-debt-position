@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(classes = DebtPositionApplication.class)
 @AutoConfigureMockMvc
-public class DebtPositionControllerBulkTest {
+class DebtPositionControllerBulkTest {
     @Autowired
     private MockMvc mvc;
 
@@ -51,6 +51,13 @@ public class DebtPositionControllerBulkTest {
     @Test
     void createMultipleDebtPositions_201() throws Exception {
         mvc.perform(post("/organizations/12345678901_multiple/debtpositions/bulk")
+                            .content(TestUtil.toJson(DebtPositionMock.getMultipleDebtPositions_Mock1())).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+    }
+    
+    @Test
+    void createMultipleDebtPositions_type_ACA_201() throws Exception {
+        mvc.perform(post("/organizations/12345678901_multiple/debtpositions/bulk?serviceType=ACA")
                             .content(TestUtil.toJson(DebtPositionMock.getMultipleDebtPositions_Mock1())).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
     }

@@ -91,6 +91,7 @@ public class ConvertPPModelToPPEntityForUpdate implements Converter<PaymentPosit
         Transfer t = new Transfer();
         t.setAmount(tm.getAmount());
         t.setOrganizationFiscalCode(tm.getOrganizationFiscalCode());
+        t.setCompanyName(tm.getCompanyName());
         t.setCategory(tm.getCategory());
         t.setIban(tm.getIban());
         t.setIdTransfer(tm.getIdTransfer());

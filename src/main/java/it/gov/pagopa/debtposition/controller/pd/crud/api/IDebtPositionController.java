@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.gov.pagopa.debtposition.model.ProblemJson;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
 import it.gov.pagopa.debtposition.model.pd.MultipleIUPDModel;
 import it.gov.pagopa.debtposition.model.pd.MultiplePaymentPositionModel;
@@ -55,7 +56,8 @@ public interface IDebtPositionController {
             @Valid @RequestBody PaymentPositionModel paymentPositionModel,
             @RequestParam(required = false, defaultValue = "false") boolean toPublish,
             @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
-            @RequestParam(required = false) String segregationCodes);
+            @RequestParam(required = false) String segregationCodes,
+            @Parameter(hidden = false, description="The field must not be considered as its value is set via the API Management (APIM) policy") @RequestParam(required = false, defaultValue = "GPD") ServiceType serviceType);
     
     @Operation(summary = "The Organization creates multiple debt positions.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "createMultiplePositions")
     @ApiResponses(value = {
@@ -73,7 +75,8 @@ public interface IDebtPositionController {
             @Valid @RequestBody MultiplePaymentPositionModel multiplePaymentPositionModel,
             @RequestParam(required = false, defaultValue = "false") boolean toPublish,
             @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
-            @RequestParam(required = false) String segregationCodes);
+            @RequestParam(required = false) String segregationCodes,
+            @Parameter(hidden = false, description="The field must not be considered as its value is set via the API Management (APIM) policy") @RequestParam(required = false, defaultValue = "GPD") ServiceType serviceType);
 
     @Operation(summary = "Return the list of the organization debt positions. " +
                                  "The due dates interval is mutually exclusive with the payment dates interval.", security = {@SecurityRequirement(name = "ApiKey"), @SecurityRequirement(name = "Authorization")}, operationId = "getOrganizationDebtPositions")

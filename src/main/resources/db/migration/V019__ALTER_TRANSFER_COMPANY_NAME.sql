@@ -1,0 +1,1 @@
+ALTER TABLE transfer ADD COLUMN company_name varchar(255);
