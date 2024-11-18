@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX CONCURRENTLY unique_transfer ON apd.transfer (iuv, organization_fiscal_code, transfer_id, payment_option_id);
