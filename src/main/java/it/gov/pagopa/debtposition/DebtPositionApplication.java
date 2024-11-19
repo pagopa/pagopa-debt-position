@@ -8,6 +8,7 @@ import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebto
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.PropertyMap;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -28,6 +29,12 @@ public class DebtPositionApplication {
     public ModelMapper modelMapper() {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        modelMapper.addMappings(new PropertyMap<PaymentPosition, PaymentPosition>() {
+            @Override
+            protected void configure() {
+                skip(destination.getServiceType()); // Skip mapping of the serviceType field
+            }
+        });
 
         Converter<PaymentPositionModel, PaymentPosition> convertPPModelToPPEntity = new ConvertPPModelToPPEntityForUpdate();
         Converter<PaymentOption, PaymentOptionWithDebtorInfoModelResponse> convertPOEntityToPOWithDebtor = new ConvertPOEntityToPOWithDebtor();

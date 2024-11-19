@@ -389,6 +389,7 @@ public class PaymentPositionCRUDService {
 		pp.setPublishDate(null);
 		pp.setOrganizationFiscalCode(organizationFiscalCode);
 		pp.setStatus(DebtPositionStatus.DRAFT);
+		pp.setServiceType(pp.getServiceType());
 
 		for (PaymentOption po : pp.getPaymentOption()) {
 		    po.setOrganizationFiscalCode(organizationFiscalCode);
@@ -402,6 +403,7 @@ public class PaymentPositionCRUDService {
 		    for (Transfer t : po.getTransfer()) {
 		        t.setIuv(po.getIuv());
 		        t.setOrganizationFiscalCode(Objects.requireNonNullElse(t.getOrganizationFiscalCode(), organizationFiscalCode));
+		        t.setCompanyName(t.getCompanyName());
 		        t.setInsertedDate(Objects.requireNonNullElse(pp.getInsertedDate(), currentDate));
 		        t.setLastUpdatedDate(currentDate);
 		        t.setStatus(TransferStatus.T_UNREPORTED);

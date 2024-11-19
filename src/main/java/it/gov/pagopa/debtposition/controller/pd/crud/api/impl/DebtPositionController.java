@@ -26,6 +26,7 @@ import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.filterandorder.Filter;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
@@ -56,11 +57,13 @@ public class DebtPositionController implements IDebtPositionController {
     @Override
     public ResponseEntity<PaymentPositionModel> createDebtPosition(String organizationFiscalCode,
                                                                    PaymentPositionModel paymentPositionModel,
-                                                                   boolean toPublish, String segregationCodes) {
+                                                                   boolean toPublish, String segregationCodes,
+                                                                   ServiceType serviceType) {
         log.debug(String.format(LOG_BASE_HEADER_INFO, "POST", "createDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, paymentPositionModel.getIupd())));
 
         // flip model to entity
         PaymentPosition debtPosition = modelMapper.map(paymentPositionModel, PaymentPosition.class);
+        debtPosition.setServiceType(serviceType);
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
         PaymentPosition createdDebtPos = paymentPositionService.create(debtPosition, organizationFiscalCode, toPublish, segCodes);
@@ -173,12 +176,17 @@ public class DebtPositionController implements IDebtPositionController {
 	@Override
 	public ResponseEntity<Void> createMultipleDebtPositions(String organizationFiscalCode,
 			@Valid MultiplePaymentPositionModel multiplePaymentPositionModel, boolean toPublish,
-			@Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
+			@Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes,
+			ServiceType serviceType) {
 		log.debug(String.format(LOG_BASE_HEADER_INFO, "POST", "createMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
 
 		// flip model to entity
-        List<PaymentPosition> debtPositions = multiplePaymentPositionModel.getPaymentPositions()
-                .stream().map( ppModel -> modelMapper.map(ppModel, PaymentPosition.class))
+		List<PaymentPosition> debtPositions = multiplePaymentPositionModel.getPaymentPositions().stream()
+				.map(ppModel -> modelMapper.map(ppModel, PaymentPosition.class))
+				.map(ppMappedModel -> {
+			        ppMappedModel.setServiceType(serviceType);
+			        return ppMappedModel;
+			    })
                 .collect(Collectors.toList());
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
