@@ -33,7 +33,7 @@ public class PaymentPositionModel implements Serializable {
     @NotNull(message = "type is required")
     private Type type;
     @Schema(description = "feature flag to enable a debt position in stand-in mode", example = "true", defaultValue = "true")
-    private boolean payStandIn;
+    private boolean payStandIn = true;
     @NotNull(message = "fiscal code is required")
     private String fiscalCode;
     @NotNull(message = "full name is required")
