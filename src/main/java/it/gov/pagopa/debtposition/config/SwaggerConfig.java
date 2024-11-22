@@ -8,12 +8,14 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springdoc.core.GroupedOpenApi;
 import org.springdoc.core.customizers.OpenApiCustomiser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.List;
 import java.util.Map;
 
 import static it.gov.pagopa.debtposition.util.Constants.HEADER_REQUEST_ID;
@@ -23,6 +25,21 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI customOpenAPI(@Value("${info.application.description}") String appDescription, @Value("${info.application.version}") String appVersion) {
+        // GPD servers
+        Server GPD_UAT = new Server();
+        GPD_UAT.setUrl("https://api.uat.platform.pagopa.it/gpd/debt-positions-service/v1/");
+        GPD_UAT.setDescription("GPD Test environment");
+        Server GPD_PROD = new Server();
+        GPD_PROD.setUrl("GPD Production environment");
+        GPD_PROD.setDescription("https://api.platform.pagopa.it/gpd/debt-positions-service/v1/");
+        // ACA servers
+        Server ACA_UAT = new Server();
+        ACA_UAT.setUrl("https://api.uat.platform.pagopa.it/aca/debt-positions-service/v1/");
+        ACA_UAT.setDescription("ACA Test environment");
+        Server ACA_PROD = new Server();
+        ACA_PROD.setUrl("https://api.platform.pagopa.it/aca/debt-positions-service/v1/");
+        ACA_PROD.setDescription("ACA Production environment");
+
         return new OpenAPI()
                 .components(new Components()
                         .addSecuritySchemes("ApiKey", new SecurityScheme()
@@ -43,8 +60,8 @@ public class SwaggerConfig {
                         .title("PagoPA API Debt Position")
                         .version(appVersion)
                         .description(appDescription)
-                        .termsOfService("https://www.pagopa.gov.it/"));
-
+                        .termsOfService("https://www.pagopa.gov.it/"))
+                .servers(List.of(GPD_UAT, GPD_PROD, ACA_UAT, ACA_PROD));
     }
 
     @Bean
