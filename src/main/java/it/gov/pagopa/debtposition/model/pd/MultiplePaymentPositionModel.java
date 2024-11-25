@@ -21,7 +21,6 @@ public class MultiplePaymentPositionModel implements Serializable{
 	
 	@Valid
 	@NotEmpty
-	@ValidDebtPositionsSize
+	@ValidDebtPositionsSize(max = 20)
 	private List<PaymentPositionModel> paymentPositions;
-
 }

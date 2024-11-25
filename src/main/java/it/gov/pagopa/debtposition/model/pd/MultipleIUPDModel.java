@@ -13,7 +13,7 @@ import java.util.List;
 public class MultipleIUPDModel {
 
     @NotEmpty
-    @Size(max = 100)
+    @Size(max = 20)
     @NotNull
     private List<String> paymentPositionIUPDs;
 }
