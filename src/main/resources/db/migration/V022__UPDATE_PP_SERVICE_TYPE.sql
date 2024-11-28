@@ -2,7 +2,7 @@
 DO $$
 BEGIN
     -- Aggiornamento per 'WISP'
-    UPDATE apd.payment_position
+    UPDATE payment_position
     SET service_type = 'WISP'
     WHERE iupd ILIKE 'wisp_%';
 
@@ -18,7 +18,7 @@ $$;
 DO $$
 BEGIN
     -- Aggiornamento per 'ACA'
-    UPDATE apd.payment_position
+    UPDATE payment_position
     SET service_type = 'ACA'
     WHERE iupd ILIKE 'aca_%';
 
