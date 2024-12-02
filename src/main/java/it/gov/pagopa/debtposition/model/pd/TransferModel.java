@@ -33,6 +33,8 @@ public class TransferModel implements Serializable {
     private String organizationFiscalCode;
 
     @NotBlank(message = "remittance information is required")
+    @Size(max = 140, message = "remittance information must be compliant to EACT FORMATTING RULES, up to 140 chars")
+    // https://docs.pagopa.it/saci/specifiche-attuative-dei-codici-identificativi-di-versamento-riversamento-e-rendicontazione/operazione-di-trasferimento-fondi
     private String remittanceInformation; // causale
 
     @NotBlank(message = "category is required")
