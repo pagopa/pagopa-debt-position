@@ -1,5 +1,6 @@
 package it.gov.pagopa.debtposition.model.enumeration;
 
+import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 
 import java.time.LocalDateTime;
@@ -42,14 +43,40 @@ public enum DebtPositionStatus {
         return EnumSet.of(DRAFT, PUBLISHED, VALID, INVALID, EXPIRED, REPORTED);
     }
 
-    public static PaymentPosition updatePaymentPositionStatus(PaymentPosition pp) {
+    public static PaymentPosition validityCheckAndUpdate(PaymentPosition pp) {
         LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
         // Validity check on the fly
         if(pp.getStatus().equals(DebtPositionStatus.PUBLISHED) && null != pp.getValidityDate() && currentDate.isAfter(pp.getValidityDate())) {
             pp.setStatus(DebtPositionStatus.VALID);
         }
+        return pp;
+    }
+
+    public static PaymentPosition expirationCheckAndUpdate(PaymentPosition pp) {
+        LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
         // Expiration check on the fly
-        if(Boolean.TRUE.equals(pp.getSwitchToExpired() && pp.getStatus().equals(DebtPositionStatus.VALID))
+        if(pp.getSwitchToExpired() && pp.getStatus().equals(DebtPositionStatus.VALID)
+                && null != pp.getMaxDueDate() && currentDate.isAfter(pp.getMaxDueDate())) {
+            pp.setStatus(DebtPositionStatus.EXPIRED);
+        }
+        return pp;
+    }
+
+    public static PaymentPosition validityCheckAndUpdate(PaymentOption po) {
+        LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+        PaymentPosition pp = po.getPaymentPosition();
+        // Validity check on the fly
+        if(pp.getStatus().equals(DebtPositionStatus.PUBLISHED) && null != pp.getValidityDate() && currentDate.isAfter(pp.getValidityDate())) {
+            pp.setStatus(DebtPositionStatus.VALID);
+        }
+        return pp;
+    }
+
+    public static PaymentPosition expirationCheckAndUpdate(PaymentOption po) {
+        LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+        // Expiration check on the fly
+        PaymentPosition pp = po.getPaymentPosition();
+        if(pp.getSwitchToExpired() && pp.getStatus().equals(DebtPositionStatus.VALID)
                 && null != pp.getMaxDueDate() && currentDate.isAfter(pp.getMaxDueDate())) {
             pp.setStatus(DebtPositionStatus.EXPIRED);
         }
