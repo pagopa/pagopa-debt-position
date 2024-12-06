@@ -4,7 +4,10 @@ PagoPA service to manage EC debtor positions
 ## Api Documentation 📖
 ### GPD
 See the internal swagger [OpenApi 3 here.](https://editor.swagger.io/?url=https://raw.githubusercontent.com/pagopa/pagopa-debt-position/main/openapi/openapi_internal.json)
+
 See the external swagger [OpenApi 3 here.](https://editor.swagger.io/?url=https://raw.githubusercontent.com/pagopa/pagopa-debt-position/main/openapi/openapi_external.json)
+
+See the external swagger _Options and Installment manager_ [OpenApi 3 here.](https://editor.swagger.io/?url=https://raw.githubusercontent.com/pagopa/pagopa-debt-position/main/openapi/openapi_external.json)
 
 In local env typing following url on browser for ui interface: 
 ```

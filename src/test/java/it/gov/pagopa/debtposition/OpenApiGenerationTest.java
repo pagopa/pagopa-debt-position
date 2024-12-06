@@ -39,12 +39,12 @@ class OpenApiGenerationTest {
     void swaggerSpringPlugin() throws Exception {
     	// Each block of {} represents a json path. For example 'paths/.../post/paramenters'
     	String[][] pathList = {{"paths","/organizations/{organizationfiscalcode}/debtpositions","post","parameters"}}; 
-//        saveOpenAPI("/v3/api-docs", "openapi_internal.json", new String[0][0], new String[0]);
-//        saveOpenAPI("/v3/api-docs/external", "openapi_external.json", pathList, "serviceType");
+        saveOpenAPI("/v3/api-docs", "openapi_internal.json", new String[0][0], new String[0]);
+        saveOpenAPI("/v3/api-docs/external", "openapi_external.json", pathList, "serviceType");
         saveOpenAPI("/v3/api-docs/external_odp", "openapi_external_odp.json",  pathList, "serviceType");
-//        saveOpenAPI("/v3/api-docs/send", "openapi_send.json", new String[0][0], new String[0]);
-//        saveOpenAPI("/v3/api-docs/external_massive", "openapi_external_massive.json", pathList, "serviceType");
-//        saveOpenApiInternalMassive("generate_openapi.sh");
+        saveOpenAPI("/v3/api-docs/send", "openapi_send.json", new String[0][0], new String[0]);
+        saveOpenAPI("/v3/api-docs/external_massive", "openapi_external_massive.json", pathList, "serviceType");
+        saveOpenApiInternalMassive("generate_openapi.sh");
     }
 
     private void saveOpenAPI(String fromUri, String toFile, String[][] pathList, String...namesToRemove  ) throws Exception {
