@@ -376,7 +376,7 @@ public class PaymentPositionCRUDService {
 		}
 		
 		// verifico la correttezza dei dati in input
-		DebtPositionValidation.checkPaymentPositionInputDataAccuracy(pp);
+		DebtPositionValidation.checkPaymentPositionInputDataAccuracy(pp, "create");
 
 		// predispongo i dati ad uso interno prima dell'aggiornamento
 		LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);

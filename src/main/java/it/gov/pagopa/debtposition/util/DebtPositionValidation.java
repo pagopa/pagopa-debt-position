@@ -10,6 +10,8 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.util.Strings;
 
 import java.time.Duration;
@@ -36,9 +38,10 @@ public class DebtPositionValidation {
     private DebtPositionValidation() {
         super();
     }
-
-    public static void checkPaymentPositionInputDataAccuracy(PaymentPosition pp) {
-        checkPaymentPositionContentCongruency(pp);
+    
+    // PAGOPA-2459 - optional action parameter to specify checks based on create or update mode.
+    public static void checkPaymentPositionInputDataAccuracy(PaymentPosition pp, String... action) {
+        checkPaymentPositionContentCongruency(pp, action);
     }
 
     public static void checkPaymentPositionPayability(PaymentPosition ppToPay, String nav) {
@@ -80,13 +83,13 @@ public class DebtPositionValidation {
         return Arrays.asList(from, to);
     }
 
-    private static void checkPaymentPositionContentCongruency(final PaymentPosition pp) {
+    private static void checkPaymentPositionContentCongruency(final PaymentPosition pp, String... action) {
 
         LocalDateTime today = LocalDateTime.now(ZoneOffset.UTC);
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
 
-        // Regola 1 - must be validity_date ≥ current time
-        if (null != pp.getValidityDate() && pp.getValidityDate().compareTo(today) < 0) {
+        // Regola 1 - must be validity_date ≥ current time (applied only at creation stage)
+        if (!ArrayUtils.isEmpty(action) && action[0].equalsIgnoreCase("create") && null != pp.getValidityDate() && pp.getValidityDate().compareTo(today) < 0) {
             throw new ValidationException(
                     String.format(VALIDITY_DATE_VALIDATION_ERROR,
                             dateFormatter.format(pp.getValidityDate()),
