@@ -122,12 +122,12 @@ public interface IDebtPositionControllerOdp {
     @PutMapping(value = "/organizations/{organizationfiscalcode}/debtpositions/{iupd}",
             produces = {"application/json"},
             consumes = {"application/json"})
-    ResponseEntity<PaymentOptionModelOdp> updateDebtPosition(
+    ResponseEntity<PaymentPositionModelOdp> updateDebtPosition(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
             @Parameter(description = "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.", required = true)
             @PathVariable("iupd") String iupd,
-            @Valid @RequestBody PaymentOptionModelOdp paymentPositionModel,
+            @Valid @RequestBody PaymentPositionModelOdp paymentPositionModel,
             @RequestParam(required = false, defaultValue = "false") boolean toPublish,
             @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
             @RequestParam(required = false) String segregationCodes);

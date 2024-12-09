@@ -38,10 +38,7 @@ public class DebtPositionControllerOdp implements IDebtPositionControllerOdp {
     }
 
     @Override
-    public ResponseEntity<PaymentOptionModelOdp> updateDebtPosition(String organizationFiscalCode,
-                                                                    String iupd,
-                                                                    PaymentOptionModelOdp paymentPositionModel,
-                                                                    boolean toPublish, String segregationCodes) {
+    public ResponseEntity<PaymentPositionModelOdp> updateDebtPosition(String organizationFiscalCode, String iupd, PaymentPositionModelOdp paymentPositionModel, boolean toPublish, String segregationCodes) {
         return null;
     }
 }
