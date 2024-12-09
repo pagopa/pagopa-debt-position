@@ -53,7 +53,7 @@ public interface IDebtPositionControllerOdp {
     ResponseEntity<PaymentPositionModelOdp> createDebtPosition(
             @Parameter(description = "Organization fiscal code, the fiscal code of the Organization.", required = true)
             @PathVariable("organizationfiscalcode") String organizationFiscalCode,
-            @Valid @RequestBody PaymentOptionModelOdp paymentPositionModel,
+            @Valid @RequestBody PaymentPositionModelOdp paymentPositionModel,
             @RequestParam(required = false, defaultValue = "false") boolean toPublish,
             @Valid @Parameter(description = "Segregation codes for which broker is authorized", hidden = true) @Pattern(regexp = "\\d{2}(,\\d{2})*")
             @RequestParam(required = false) String segregationCodes,

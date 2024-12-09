@@ -20,10 +20,7 @@ import java.time.LocalDate;
 public class DebtPositionControllerOdp implements IDebtPositionControllerOdp {
 
     @Override
-    public ResponseEntity<PaymentPositionModelOdp> createDebtPosition(String organizationFiscalCode,
-                                                                      PaymentOptionModelOdp paymentPositionModel,
-                                                                      boolean toPublish, String segregationCodes,
-                                                                      ServiceType serviceType) {
+    public ResponseEntity<PaymentPositionModelOdp> createDebtPosition(String organizationFiscalCode, PaymentPositionModelOdp paymentPositionModel, boolean toPublish, String segregationCodes, ServiceType serviceType) {
         return null;
     }
 

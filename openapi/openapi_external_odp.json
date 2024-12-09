@@ -48,24 +48,6 @@
           }
         } ],
         "responses" : {
-          "200" : {
-            "description" : "Obtained debt position details.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            },
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/PaymentPositionModelResponseOdp"
-                }
-              }
-            }
-          },
           "404" : {
             "description" : "No debt position found.",
             "headers" : {
@@ -109,6 +91,24 @@
                 "description" : "This header identifies the call",
                 "schema" : {
                   "type" : "string"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Obtained debt position details.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaymentPositionModelResponseOdp"
                 }
               }
             }
@@ -397,17 +397,6 @@
               }
             }
           },
-          "429" : {
-            "description" : "Too many requests.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
-          },
           "500" : {
             "description" : "Service unavailable.",
             "headers" : {
@@ -426,17 +415,6 @@
               }
             }
           },
-          "401" : {
-            "description" : "Wrong or missing function key.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
-          },
           "200" : {
             "description" : "Obtained all organization payment positions.",
             "headers" : {
@@ -451,6 +429,28 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/PaymentPositionsInfoOdp"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Wrong or missing function key.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Too many requests.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
                 }
               }
             }
@@ -497,7 +497,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PaymentOptionModelOdp"
+                "$ref" : "#/components/schemas/PaymentPositionModelOdp"
               }
             }
           },
@@ -506,6 +506,24 @@
         "responses" : {
           "400" : {
             "description" : "Malformed request.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Conflict: duplicate debt position found.",
             "headers" : {
               "X-Request-Id" : {
                 "description" : "This header identifies the call",
@@ -540,6 +558,17 @@
               }
             }
           },
+          "401" : {
+            "description" : "Wrong or missing function key.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
           "201" : {
             "description" : "Request created.",
             "headers" : {
@@ -554,35 +583,6 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/PaymentPositionModelOdp"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Wrong or missing function key.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Conflict: duplicate debt position found.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            },
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemJson"
                 }
               }
             }
