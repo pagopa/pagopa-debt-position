@@ -60,14 +60,14 @@ public class PaymentPositionCRUDService {
     private String auxDigit;
 
 
-    public PaymentPosition create(@NotNull PaymentPosition debtPosition, @NotBlank String organizationFiscalCode, boolean toPublish, List<String> segCodes) {
+    public PaymentPosition create(@NotNull PaymentPosition debtPosition, @NotBlank String organizationFiscalCode, boolean toPublish, List<String> segCodes, String... action) {
 
         final String ERROR_CREATION_LOG_MSG = "Error during debt position creation: %s";
 
         try {
             //Inserisce (ed eventualmente porta in stato pubblicato) la posizione debitoria
             return paymentPositionRepository.saveAndFlush(
-            		this.checkAndBuildDebtPositionToSave(debtPosition, organizationFiscalCode, toPublish, segCodes));
+            		this.checkAndBuildDebtPositionToSave(debtPosition, organizationFiscalCode, toPublish, segCodes, action));
         } catch (DataIntegrityViolationException e) {
             log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
             if (e.getCause() instanceof ConstraintViolationException constraintviolationexception) {
@@ -189,7 +189,7 @@ public class PaymentPositionCRUDService {
 
     @Transactional
     public PaymentPosition update(@NotNull @Valid PaymentPositionModel paymentPositionModel, @NotBlank String organizationFiscalCode, boolean toPublish,
-                                  List<String> segregationCodes) {
+                                  List<String> segregationCodes, String...action) {
 
         final String ERROR_UPDATE_LOG_MSG = "Error during debt position update: %s";
 
@@ -206,17 +206,17 @@ public class PaymentPositionCRUDService {
             modelMapper.map(paymentPositionModel, ppToUpdate);
 
             // migrate the notification fee value (if defined) and update the amounts
-            ppToUpdate = setOldNotificationFee(oldPaymentOptions, organizationFiscalCode, ppToUpdate);
+            setOldNotificationFee(oldPaymentOptions, organizationFiscalCode, ppToUpdate);
 
             // check the input data
-            DebtPositionValidation.checkPaymentPositionInputDataAccuracy(ppToUpdate);
+            DebtPositionValidation.checkPaymentPositionInputDataAccuracy(ppToUpdate, action);
             
             paymentPositionRepository.delete(ppToUpdate);
             paymentPositionRepository.flush();
             // the version is increased at each change
             ppToUpdate.setVersion(ppToUpdate.getVersion()+1);
 
-            return this.create(ppToUpdate, organizationFiscalCode, toPublish, segregationCodes);
+            return this.create(ppToUpdate, organizationFiscalCode, toPublish, segregationCodes, action);
         } catch (ValidationException e) {
             throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
         } catch (AppException e) {
@@ -231,7 +231,7 @@ public class PaymentPositionCRUDService {
     }
     
     public List<PaymentPosition> createMultipleDebtPositions(@Valid List<PaymentPosition> debtPositions,
-			String organizationFiscalCode, boolean toPublish, List<String> segCodes) {
+			String organizationFiscalCode, boolean toPublish, List<String> segCodes, String... action) {
     	
     	final String ERROR_CREATION_LOG_MSG = "Error during debt position creation: %s";
     	
@@ -240,7 +240,7 @@ public class PaymentPositionCRUDService {
         try {
         	
         	for (PaymentPosition debtPosition: debtPositions) {
-        		ppToSaveList.add(this.checkAndBuildDebtPositionToSave(debtPosition, organizationFiscalCode, toPublish, segCodes));
+        		ppToSaveList.add(this.checkAndBuildDebtPositionToSave(debtPosition, organizationFiscalCode, toPublish, segCodes, action));
         	}
       
             //Inserisce il blocco di posizioni debitorie
@@ -267,7 +267,7 @@ public class PaymentPositionCRUDService {
 
     @Transactional
     public List<PaymentPosition> updateMultipleDebtPositions(@Valid List<PaymentPosition> inputPaymentPositions,
-                                                             String organizationFiscalCode, boolean toPublish, List<String> segCodes) {
+                                                             String organizationFiscalCode, boolean toPublish, List<String> segCodes, String... action) {
         final String ERROR_UPDATE_LOG_MSG = "Error during debt positions update: %s";
         List<PaymentPosition> updatePositions = new ArrayList<>();
         Map<String, PaymentPosition> inPositionsMap = new HashMap<>();
@@ -290,7 +290,7 @@ public class PaymentPositionCRUDService {
                 // migrate the notification fee value (if defined) and update the amounts
                 updatePaymentPosition = setOldNotificationFee(updatePaymentPosition.getPaymentOption(), organizationFiscalCode, updatePaymentPosition);
                 // check the input data
-                DebtPositionValidation.checkPaymentPositionInputDataAccuracy(updatePaymentPosition);
+                DebtPositionValidation.checkPaymentPositionInputDataAccuracy(updatePaymentPosition, action);
                 // the version is increased at each change
                 updatePaymentPosition.setVersion(updatePaymentPosition.getVersion()+1);
 
@@ -299,7 +299,7 @@ public class PaymentPositionCRUDService {
 
             paymentPositionRepository.deleteAll(readPositions);
             paymentPositionRepository.flush();
-            this.createMultipleDebtPositions(updatePositions, organizationFiscalCode, toPublish, segCodes);
+            this.createMultipleDebtPositions(updatePositions, organizationFiscalCode, toPublish, segCodes, action);
 
             return updatePositions;
         } catch (ValidationException e) {
@@ -367,7 +367,7 @@ public class PaymentPositionCRUDService {
     }
     
     private PaymentPosition checkAndBuildDebtPositionToSave(PaymentPosition debtPosition, String organizationFiscalCode, boolean toPublish,
-			List<String> segCodes) {
+			List<String> segCodes, String... action) {
     	
     	PaymentPosition pp = SerializationUtils.clone(debtPosition);
     	
@@ -376,7 +376,7 @@ public class PaymentPositionCRUDService {
 		}
 		
 		// verifico la correttezza dei dati in input
-		DebtPositionValidation.checkPaymentPositionInputDataAccuracy(pp, "create");
+		DebtPositionValidation.checkPaymentPositionInputDataAccuracy(pp, action);
 
 		// predispongo i dati ad uso interno prima dell'aggiornamento
 		LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
@@ -414,7 +414,7 @@ public class PaymentPositionCRUDService {
 
 		//Se la pubblicazione immediata è richiesta, si procede
 		if(toPublish){
-		    PublishPaymentUtil.publishProcess(pp);
+		    PublishPaymentUtil.publishProcess(pp, action);
 		}
 		
 		return pp;

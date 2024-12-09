@@ -20,6 +20,7 @@ import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.Matchers;
+import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -67,6 +68,7 @@ class DebtPositionControllerTest {
 	 */
 	@Test
 	void createDebtPosition_201() throws Exception {
+		// a debtor position is created with null validationDate and without forcing toPublish
 		mvc.perform(post("/organizations/12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated())
@@ -76,7 +78,10 @@ class DebtPositionControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
 				.value(auxDigit+"123456IUVMOCK1"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].companyName")
-				.value("mock company name"));
+				.value("mock company name"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.DRAFT.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.nullValue()));
 	}
 
 	@Test
@@ -309,7 +314,8 @@ class DebtPositionControllerTest {
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 						.value(DebtPositionStatus.VALID.toString()))
-				.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty());
+				.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.notNullValue()));
 
 		// provo a fare una nuova pubblicazione su una posizione debitoria con uno stato non più idoneo
 		mvc.perform(post("/organizations/CRTPUB_12345678901/debtpositions/12345678901IUPDMOCK1/publish")
@@ -1024,13 +1030,16 @@ class DebtPositionControllerTest {
 	 */
 	@Test
 	void updateDebtPosition_200() throws Exception {
-		// creo una posizione debitoria 
+		// creo una posizione debitoria con validatyDate a null e senza forzare il toPublish
 		mvc.perform(post("/organizations/UPD_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-				.value(auxDigit+"123456IUVMOCK1"));
+				.value(auxDigit+"123456IUVMOCK1"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.DRAFT.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.nullValue()));
 
 		// recupero la posizione debitoria e verifico il contenuto
 		mvc.perform(get("/organizations/UPD_12345678901/debtpositions/12345678901IUPDMOCK1")
@@ -1045,7 +1054,10 @@ class DebtPositionControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].amount")
 				.value(1000))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-				.value(auxDigit+"123456IUVMOCK1"));
+				.value(auxDigit+"123456IUVMOCK1"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.DRAFT.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.nullValue()));
 
 		// aggiorno la posizione debitoria
 		mvc.perform(put("/organizations/UPD_12345678901/debtpositions/12345678901IUPDMOCK1")
@@ -1071,7 +1083,10 @@ class DebtPositionControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
 				.value(auxDigit+"123456IUVMULTIPLEMOCK1"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[1].nav")
-				.value(auxDigit+"123456IUVMULTIPLEMOCK2"));
+				.value(auxDigit+"123456IUVMULTIPLEMOCK2"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.DRAFT.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.nullValue()));
 	}
 	
 	@Test
@@ -1341,7 +1356,7 @@ class DebtPositionControllerTest {
 				.value(DebtPositionStatus.VALID.toString()))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty());
 		
-		// aggiorno la posizione debitoria
+		// aggiorno la posizione debitoria con toPublish = false
 		mvc.perform(put("/organizations/UPD_PBH_12345678901/debtpositions/12345678901IUPDMOCK1")
 				.content(TestUtil.toJson(DebtPositionMock.getMock4()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
@@ -1368,20 +1383,60 @@ class DebtPositionControllerTest {
 						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.status")
-						.value(DebtPositionStatus.VALID.toString()));
+						.value(DebtPositionStatus.VALID.toString()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.notNullValue()));
 
-		// aggiorno la posizione debitoria
+		// aggiorno la posizione debitoria con un body che non contiene la 'validity date'
 		mvc.perform(put("/organizations/MRDPLL54H17D542L/debtpositions/12345678901IUPDMOCK1")
 				.content(TestUtil.toJson(DebtPositionMock.getMock4()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
-		// recupero la posizione debitoria e verifico che lo stato sia tornato in draft
+		// recupero la posizione debitoria e verifico che lo stato sia rimasto in DRAFT
 		mvc.perform(get("/organizations/MRDPLL54H17D542L/debtpositions/12345678901IUPDMOCK1")
 						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 						.value(DebtPositionStatus.DRAFT.toString()))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isEmpty());
+
+	}
+	
+	@Test
+	void updateDebtPosition_CreateValidAndUpdate_200() throws Exception {
+		// creo una posizione debitoria (con 'validity date' impostata)
+		LocalDateTime vd = LocalDateTime.now(ZoneOffset.UTC).plus(5, ChronoUnit.SECONDS).truncatedTo(ChronoUnit.SECONDS);
+		PaymentPositionDTO ppDto1 = DebtPositionMock.getMock1();
+		ppDto1.setValidityDate(vd);
+		mvc.perform(post("/organizations/CREATE_UPD_12345678901/debtpositions?toPublish=True")
+						.content(TestUtil.toJson(ppDto1)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+
+		// recupero la posizione debitoria e verifico lo stato in published
+		mvc.perform(get("/organizations/CREATE_UPD_12345678901/debtpositions/12345678901IUPDMOCK1")
+						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+						.value(DebtPositionStatus.PUBLISHED.toString()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(vd.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))));
+
+		// aggiorno la posizione debitoria con un body che contiene la 'validity date'
+		PaymentPositionDTO ppDto4 = DebtPositionMock.getMock4();
+		ppDto4.setValidityDate(vd);
+		mvc.perform(put("/organizations/CREATE_UPD_12345678901/debtpositions/12345678901IUPDMOCK1?toPublish=True")
+				.content(TestUtil.toJson(ppDto4))
+				.contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isOk())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.PUBLISHED.toString()));
+
+		// recupero la posizione debitoria e verifico che lo stato sia in PUBLISHED
+		mvc.perform(get("/organizations/CREATE_UPD_12345678901/debtpositions/12345678901IUPDMOCK1")
+						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+						.value(DebtPositionStatus.PUBLISHED.toString()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(vd.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty());
 
 	}
 	
@@ -1398,7 +1453,8 @@ class DebtPositionControllerTest {
 	  .andExpect(content().contentType(MediaType.APPLICATION_JSON))
 	  .andExpect(MockMvcResultMatchers.jsonPath("$.status")
 	      .value(DebtPositionStatus.DRAFT.toString()))
-	  .andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isEmpty());
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isEmpty())
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.nullValue()));
 
 	  // aggiorno e porto direttamente in pubblicata la posizione debitoria
 	  mvc.perform(put("/organizations/UPDANDPBH_12345678901/debtpositions/12345678901IUPDMOCK1?toPublish=true")
@@ -1411,7 +1467,8 @@ class DebtPositionControllerTest {
 	  .andExpect(content().contentType(MediaType.APPLICATION_JSON))
 	  .andExpect(MockMvcResultMatchers.jsonPath("$.status")
 	      .value(DebtPositionStatus.VALID.toString()))
-	  .andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty());
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty())
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.notNullValue()));
 
 	  // provo a fare una nuova pubblicazione su una posizione debitoria con uno stato non più idoneo
 	  mvc.perform(post("/organizations/UPDANDPBH_12345678901/debtpositions/12345678901IUPDMOCK1/publish")
