@@ -22,9 +22,6 @@ public class PaymentPositionModelOdp implements Serializable {
     private String iupd;
     @Schema(description = "feature flag to enable a debt position in stand-in mode", example = "true", defaultValue = "true")
     private boolean payStandIn = true;
-    @Schema(description = "feature flag to enable the debt position to expire after the due date", example = "false", defaultValue = "false")
-    @NotNull(message = "switch to expired value is required")
-    private Boolean switchToExpired;
     @NotBlank(message = "company name is required")
     @Size(max = 140) // compliant to paForNode.xsd
     private String companyName; // es. Comune di Roma

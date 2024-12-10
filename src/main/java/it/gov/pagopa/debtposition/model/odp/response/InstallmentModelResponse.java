@@ -1,6 +1,6 @@
 package it.gov.pagopa.debtposition.model.odp.response;
 
-import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,7 +28,7 @@ public class InstallmentModelResponse implements Serializable {
     private long notificationFee;
     private String idReceipt;
     private String idFlowReporting;
-    private PaymentOptionStatus status;
+    private InstallmentStatus status;
     private LocalDateTime lastUpdatedDate;
 
     private List<InstallmentMetadataModelResponse> installmentMetadata = new ArrayList<>();

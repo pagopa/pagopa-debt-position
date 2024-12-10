@@ -11,6 +11,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,8 @@ public class InstallmentModel implements Serializable {
     @NotBlank(message = "payment option description is required")
     @Size(max = 140) // compliant to paForNode.xsd
     private String description;
+    @NotNull(message = "due date is required")
+    private LocalDateTime dueDate;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private long fee;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
