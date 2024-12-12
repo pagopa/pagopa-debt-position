@@ -40,6 +40,8 @@ import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.Constants;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import lombok.extern.slf4j.Slf4j;
+import static it.gov.pagopa.debtposition.util.Constants.CREATE_ACTION;
+import static it.gov.pagopa.debtposition.util.Constants.UPDATE_ACTION;
 
 
 @Controller
@@ -66,7 +68,7 @@ public class DebtPositionController implements IDebtPositionController {
         debtPosition.setServiceType(serviceType);
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
-        PaymentPosition createdDebtPos = paymentPositionService.create(debtPosition, organizationFiscalCode, toPublish, segCodes, "create");
+        PaymentPosition createdDebtPos = paymentPositionService.create(debtPosition, organizationFiscalCode, toPublish, segCodes, CREATE_ACTION);
 
         if (null != createdDebtPos) {
         	PaymentPositionModel paymentPosition = ObjectMapperUtils.map(createdDebtPos, PaymentPositionModel.class);
@@ -163,7 +165,7 @@ public class DebtPositionController implements IDebtPositionController {
         }
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
-        PaymentPosition updatedDebtPos = paymentPositionService.update(paymentPositionModel, organizationFiscalCode, toPublish, segCodes, "update");
+        PaymentPosition updatedDebtPos = paymentPositionService.update(paymentPositionModel, organizationFiscalCode, toPublish, segCodes, UPDATE_ACTION);
 
         if (null != updatedDebtPos) {
         	PaymentPositionModel paymentPosition = ObjectMapperUtils.map(updatedDebtPos, PaymentPositionModel.class);
@@ -190,7 +192,7 @@ public class DebtPositionController implements IDebtPositionController {
                 .collect(Collectors.toList());
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
-        List<PaymentPosition> createdDebtPosList = paymentPositionService.createMultipleDebtPositions(debtPositions, organizationFiscalCode, toPublish, segCodes, "create");
+        List<PaymentPosition> createdDebtPosList = paymentPositionService.createMultipleDebtPositions(debtPositions, organizationFiscalCode, toPublish, segCodes, CREATE_ACTION);
 
         if (!CollectionUtils.isEmpty(createdDebtPosList)) {
         	return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -211,7 +213,7 @@ public class DebtPositionController implements IDebtPositionController {
                                                       .collect(Collectors.toList());
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
-        List<PaymentPosition> updatedDebtPosList = paymentPositionService.updateMultipleDebtPositions(debtPositions, organizationFiscalCode, toPublish, segCodes, "update");
+        List<PaymentPosition> updatedDebtPosList = paymentPositionService.updateMultipleDebtPositions(debtPositions, organizationFiscalCode, toPublish, segCodes, UPDATE_ACTION);
 
         if (!CollectionUtils.isEmpty(updatedDebtPosList)) {
             return ResponseEntity.status(HttpStatus.OK).build();

@@ -7,6 +7,8 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
+import static it.gov.pagopa.debtposition.util.Constants.UPDATE_ACTION;
+
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
@@ -37,7 +39,7 @@ public class PublishPaymentUtil {
         }
         // Regola 2 - se era stata prevista una data di inizio validità e la richiesta di pubblicazione viene fatta successivamente a tale data viene rilanciato un errore
         // (PAGOPA-2459 - controllo applicato solo se non è un'operazione di update)
-        else if ((ArrayUtils.isEmpty(action) || !ArrayUtils.isEmpty(action) && !action[0].equalsIgnoreCase("update")) && ppToPublish.getValidityDate().isBefore(currentDate)) {
+        else if ((ArrayUtils.isEmpty(action) || !ArrayUtils.isEmpty(action) && !UPDATE_ACTION.equalsIgnoreCase(action[0])) && ppToPublish.getValidityDate().isBefore(currentDate)) {
             log.error("Publish request occurred after the validity date has expired - "
                     + "[organizationFiscalCode= " + ppToPublish.getOrganizationFiscalCode() + "; "
                     + "iupd= " + ppToPublish.getIupd() + "; "
