@@ -53,6 +53,7 @@ data "azurerm_key_vault_secret" "key_vault_datasource_password" {
 }
 
 data "azurerm_key_vault_secret" "key_vault_datasource_url" {
-  name         = "db-url"
+  # name         = "db-url"
+  name         = "db-url-weu-new"
   key_vault_id = data.azurerm_key_vault.domain_key_vault.id
 }
