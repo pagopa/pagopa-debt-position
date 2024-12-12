@@ -100,8 +100,16 @@ public class DebtPositionValidation {
 
         for (PaymentOption po : pp.getPaymentOption()) {
             // Regola 4 - must be due_date ≥ validity_date || due_date ≥ current time
-            if (null != pp.getValidityDate() && po.getDueDate().compareTo(pp.getValidityDate()) < 0 ||
-                    null == pp.getValidityDate() && po.getDueDate().compareTo(today) < 0) {
+        	if (
+           		 // Case 1: validity_date is not null and due_date < validity_date
+           	    (pp.getValidityDate() != null && po.getDueDate().compareTo(pp.getValidityDate()) < 0) ||
+           	    
+           	    // Case 2: validity_date is null and due_date < current time
+           	    (pp.getValidityDate() == null && po.getDueDate().compareTo(today) < 0) ||
+           	    
+           	    // Case 3: Action is "update" and due_date < current time
+           	    (!ArrayUtils.isEmpty(action) && "update".equalsIgnoreCase(action[0]) && po.getDueDate().compareTo(today) < 0)
+           	){
                 throw new ValidationException(
                         String.format(DUE_DATE_VALIDATION_ERROR,
                                 dateFormatter.format(po.getDueDate()),

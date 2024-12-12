@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Random;
 
 import it.gov.pagopa.debtposition.dto.*;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
@@ -294,7 +295,7 @@ class DebtPositionControllerTest {
 		
 		// provo a creare una seconda posizione debitoria per la stessa organizzazione, cambiando lo IUPD e lo IUV ma non il NAV 
 	    // => la chiamata deve andare in errore con codice 409 (violazione unique constraint)
-		ppNav.setIupd((int)(Math.random()*100)+"_"+ppNav.getIupd());
+		ppNav.setIupd((int)(new Random().nextInt(100))+"_"+ppNav.getIupd());
 		ppNav.getPaymentOption().forEach(po -> po.setIuv((int)(Math.random()*100)+"_"+po.getIuv()));
 		mvc.perform(post("/organizations/409_12345678901_NAV/debtpositions")
 				.content(TestUtil.toJson(ppNav)).contentType(MediaType.APPLICATION_JSON))
