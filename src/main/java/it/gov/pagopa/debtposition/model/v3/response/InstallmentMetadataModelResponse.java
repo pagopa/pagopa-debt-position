@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.model.odp.response;
+package it.gov.pagopa.debtposition.model.v3.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

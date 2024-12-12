@@ -1,5 +1,6 @@
-package it.gov.pagopa.debtposition.model.odp.response;
+package it.gov.pagopa.debtposition.model.v3.response;
 
+import it.gov.pagopa.debtposition.model.pd.DebtorModel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,11 +11,12 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class PaymentOptionModelResponseOdp implements Serializable {
+public class PaymentOptionModelResponseV3 implements Serializable {
 
     private LocalDateTime retentionDate;
     private LocalDateTime insertedDate;
     private Boolean switchToExpired;
-
+    private DebtorModel debtor;
+    private LocalDateTime validityDate;
     private List<InstallmentModelResponse> installments = new ArrayList<>();
 }

@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.model.odp.response;
+package it.gov.pagopa.debtposition.model.v3.response;
 
 import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;

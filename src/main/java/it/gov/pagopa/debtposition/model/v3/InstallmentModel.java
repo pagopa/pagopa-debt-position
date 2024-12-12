@@ -1,7 +1,8 @@
-package it.gov.pagopa.debtposition.model.odp;
+package it.gov.pagopa.debtposition.model.v3;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -34,6 +35,8 @@ public class InstallmentModel implements Serializable {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     private long notificationFee;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private InstallmentStatus status;
 
     @Valid
     private List<TransferModel> transfer = new ArrayList<>();

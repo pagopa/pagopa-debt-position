@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.model.odp;
+package it.gov.pagopa.debtposition.model.v3;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import it.gov.pagopa.debtposition.model.pd.DebtorModel;
@@ -15,7 +15,7 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class PaymentOptionModelOdp implements Serializable {
+public class PaymentOptionModelV3 implements Serializable {
 
     @Size(max = 140) // todo use this field: is used that at the installment level
     private String description;

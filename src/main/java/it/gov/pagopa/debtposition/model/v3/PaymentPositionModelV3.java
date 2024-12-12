@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.model.odp;
+package it.gov.pagopa.debtposition.model.v3;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
@@ -16,7 +16,7 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class PaymentPositionModelOdp implements Serializable {
+public class PaymentPositionModelV3 implements Serializable {
 
     @NotBlank(message = "iupd is required")
     private String iupd;
@@ -33,13 +33,13 @@ public class PaymentPositionModelOdp implements Serializable {
     private DebtPositionStatus status;
 
     @Valid
-    private List<@Valid PaymentOptionModelOdp> paymentOption = new ArrayList<>();
+    private List<@Valid PaymentOptionModelV3> paymentOption = new ArrayList<>();
 
-    public void addPaymentOptions(PaymentOptionModelOdp paymentOpt) {
+    public void addPaymentOptions(PaymentOptionModelV3 paymentOpt) {
         paymentOption.add(paymentOpt);
     }
 
-    public void removePaymentOptions(PaymentOptionModelOdp paymentOpt) {
+    public void removePaymentOptions(PaymentOptionModelV3 paymentOpt) {
         paymentOption.remove(paymentOpt);
     }
 }

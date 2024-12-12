@@ -7,23 +7,16 @@
     "version" : "0.11.62"
   },
   "servers" : [ {
-    "url" : "https://api.uat.platform.pagopa.it/gpd/debt-positions-service/v1/",
+    "url" : "https://api.uat.platform.pagopa.it/gpd/debt-positions-service/v3",
     "description" : "GPD Test environment"
-  }, {
-    "url" : "GPD Production environment",
-    "description" : "https://api.platform.pagopa.it/gpd/debt-positions-service/v1/"
-  }, {
-    "url" : "https://api.uat.platform.pagopa.it/aca/debt-positions-service/v1/",
-    "description" : "ACA Test environment"
-  }, {
-    "url" : "https://api.platform.pagopa.it/aca/debt-positions-service/v1/",
-    "description" : "ACA Production environment"
   } ],
   "tags" : [ {
     "name" : "Debt Positions API: Installments and Payment Options Manager"
+  }, {
+    "name" : "Debt Position Actions API"
   } ],
   "paths" : {
-    "/options/organizations/{organizationfiscalcode}/debtpositions/{iupd}" : {
+    "/organizations/{organizationfiscalcode}/debtpositions/{iupd}" : {
       "get" : {
         "tags" : [ "Debt Positions API: Installments and Payment Options Manager" ],
         "summary" : "Return the details of a specific debt position.",
@@ -48,17 +41,6 @@
           }
         } ],
         "responses" : {
-          "401" : {
-            "description" : "Wrong or missing function key.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
-          },
           "500" : {
             "description" : "Service unavailable.",
             "headers" : {
@@ -90,7 +72,18 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaymentPositionModelResponseOdp"
+                  "$ref" : "#/components/schemas/PaymentPositionModelResponseV3"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Wrong or missing function key.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
                 }
               }
             }
@@ -116,8 +109,6 @@
         },
         "security" : [ {
           "ApiKey" : [ ]
-        }, {
-          "Authorization" : [ ]
         } ]
       },
       "put" : {
@@ -153,15 +144,15 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PaymentPositionModelOdp"
+                "$ref" : "#/components/schemas/PaymentPositionModelV3"
               }
             }
           },
           "required" : true
         },
         "responses" : {
-          "401" : {
-            "description" : "Wrong or missing function key.",
+          "500" : {
+            "description" : "Service unavailable.",
             "headers" : {
               "X-Request-Id" : {
                 "description" : "This header identifies the call",
@@ -169,10 +160,17 @@
                   "type" : "string"
                 }
               }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
             }
           },
-          "500" : {
-            "description" : "Service unavailable.",
+          "400" : {
+            "description" : "Malformed request.",
             "headers" : {
               "X-Request-Id" : {
                 "description" : "This header identifies the call",
@@ -202,25 +200,18 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaymentPositionModelOdp"
+                  "$ref" : "#/components/schemas/PaymentPositionModelV3"
                 }
               }
             }
           },
-          "400" : {
-            "description" : "Malformed request.",
+          "401" : {
+            "description" : "Wrong or missing function key.",
             "headers" : {
               "X-Request-Id" : {
                 "description" : "This header identifies the call",
                 "schema" : {
                   "type" : "string"
-                }
-              }
-            },
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -264,8 +255,118 @@
         },
         "security" : [ {
           "ApiKey" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Debt Positions API: Installments and Payment Options Manager" ],
+        "summary" : "The Organization deletes a debt position",
+        "operationId" : "deletePosition",
+        "parameters" : [ {
+          "name" : "organizationfiscalcode",
+          "in" : "path",
+          "description" : "Organization fiscal code, the fiscal code of the Organization.",
+          "required" : true,
+          "schema" : {
+            "pattern" : "[\\w*\\h-]+",
+            "type" : "string"
+          }
         }, {
-          "Authorization" : [ ]
+          "name" : "iupd",
+          "in" : "path",
+          "description" : "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.",
+          "required" : true,
+          "schema" : {
+            "pattern" : "[\\w*\\h-]+",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Operation completed successfully.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Service unavailable.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "No debt position position found.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Wrong or missing function key.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Conflict: existing related payment found.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "ApiKey" : [ ]
         } ]
       },
       "parameters" : [ {
@@ -277,7 +378,7 @@
         }
       } ]
     },
-    "/options/organizations/{organizationfiscalcode}/debtpositions" : {
+    "/organizations/{organizationfiscalcode}/debtpositions" : {
       "get" : {
         "tags" : [ "Debt Positions API: Installments and Payment Options Manager" ],
         "summary" : "Return the list of the organization debt positions. The due dates interval is mutually exclusive with the payment dates interval.",
@@ -355,7 +456,7 @@
           "required" : false,
           "schema" : {
             "type" : "string",
-            "enum" : [ "DRAFT", "PUBLISHED", "VALID", "INVALID", "EXPIRED", "PARTIALLY_PAID", "PAID", "REPORTED" ]
+            "enum" : [ "DRAFT", "PUBLISHED", "VALID", "UNPAYABLE", "PARTIALLY_PAID", "PAID" ]
           }
         }, {
           "name" : "orderby",
@@ -379,35 +480,6 @@
           }
         } ],
         "responses" : {
-          "200" : {
-            "description" : "Obtained all organization payment positions.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            },
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/PaymentPositionsInfoOdp"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Wrong or missing function key.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
-          },
           "500" : {
             "description" : "Service unavailable.",
             "headers" : {
@@ -426,13 +498,20 @@
               }
             }
           },
-          "429" : {
-            "description" : "Too many requests.",
+          "200" : {
+            "description" : "Obtained all organization payment positions.",
             "headers" : {
               "X-Request-Id" : {
                 "description" : "This header identifies the call",
                 "schema" : {
                   "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaymentPositionsInfoV3"
                 }
               }
             }
@@ -454,12 +533,32 @@
                 }
               }
             }
+          },
+          "401" : {
+            "description" : "Wrong or missing function key.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Too many requests.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
           }
         },
         "security" : [ {
           "ApiKey" : [ ]
-        }, {
-          "Authorization" : [ ]
         } ]
       },
       "post" : {
@@ -497,62 +596,15 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PaymentPositionModelOdp"
+                "$ref" : "#/components/schemas/PaymentPositionModelV3"
               }
             }
           },
           "required" : true
         },
         "responses" : {
-          "401" : {
-            "description" : "Wrong or missing function key.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
-          },
           "500" : {
             "description" : "Service unavailable.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            },
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemJson"
-                }
-              }
-            }
-          },
-          "201" : {
-            "description" : "Request created.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            },
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/PaymentPositionModelOdp"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Conflict: duplicate debt position found.",
             "headers" : {
               "X-Request-Id" : {
                 "description" : "This header identifies the call",
@@ -586,12 +638,177 @@
                 }
               }
             }
+          },
+          "401" : {
+            "description" : "Wrong or missing function key.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "201" : {
+            "description" : "Request created.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaymentPositionModelV3"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Conflict: duplicate debt position found.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
           }
         },
         "security" : [ {
           "ApiKey" : [ ]
+        } ]
+      },
+      "parameters" : [ {
+        "name" : "X-Request-Id",
+        "in" : "header",
+        "description" : "This header identifies the call, if not passed it is self-generated. This ID is returned in the response.",
+        "schema" : {
+          "type" : "string"
+        }
+      } ]
+    },
+    "/organizations/{organizationfiscalcode}/debtpositions/{iupd}/publish" : {
+      "post" : {
+        "tags" : [ "Debt Position Actions API" ],
+        "summary" : "The Organization publish a debt Position.",
+        "operationId" : "publishPosition",
+        "parameters" : [ {
+          "name" : "organizationfiscalcode",
+          "in" : "path",
+          "description" : "Organization fiscal code, the fiscal code of the Organization.",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
         }, {
-          "Authorization" : [ ]
+          "name" : "iupd",
+          "in" : "path",
+          "description" : "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "500" : {
+            "description" : "Service unavailable.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Wrong or missing function key.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "No debt position found.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Request published.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaymentPositionModelV3"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Conflict: debt position is not in publishable state.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "ApiKey" : [ ]
         } ]
       },
       "parameters" : [ {
@@ -653,7 +870,16 @@
         }
       },
       "InstallmentMetadataModel" : {
+        "required" : [ "key" ],
         "type" : "object",
+        "properties" : {
+          "key" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "string"
+          }
+        },
         "description" : "it can added a maximum of 10 key-value pairs for metadata"
       },
       "InstallmentModel" : {
@@ -689,6 +915,11 @@
             "format" : "int64",
             "readOnly" : true
           },
+          "status" : {
+            "type" : "string",
+            "readOnly" : true,
+            "enum" : [ "UNPAID", "PAID", "PARTIALLY_REPORTED", "REPORTED", "UNPAYABLE", "EXPIRED" ]
+          },
           "transfer" : {
             "type" : "array",
             "items" : {
@@ -706,7 +937,7 @@
           }
         }
       },
-      "PaymentOptionModelOdp" : {
+      "PaymentOptionModelV3" : {
         "required" : [ "switchToExpired" ],
         "type" : "object",
         "properties" : {
@@ -740,7 +971,7 @@
           }
         }
       },
-      "PaymentPositionModelOdp" : {
+      "PaymentPositionModelV3" : {
         "required" : [ "companyName", "iupd" ],
         "type" : "object",
         "properties" : {
@@ -776,7 +1007,7 @@
           "paymentOption" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/PaymentOptionModelOdp"
+              "$ref" : "#/components/schemas/PaymentOptionModelV3"
             }
           }
         }
@@ -958,7 +1189,7 @@
           },
           "status" : {
             "type" : "string",
-            "enum" : [ "UNPAID", "PAID", "PARTIALLY_REPORTED", "REPORTED" ]
+            "enum" : [ "UNPAID", "PAID", "PARTIALLY_REPORTED", "REPORTED", "UNPAYABLE", "EXPIRED" ]
           },
           "lastUpdatedDate" : {
             "type" : "string",
@@ -1004,7 +1235,7 @@
           }
         }
       },
-      "PaymentOptionModelResponseOdp" : {
+      "PaymentOptionModelResponseV3" : {
         "type" : "object",
         "properties" : {
           "retentionDate" : {
@@ -1018,6 +1249,13 @@
           "switchToExpired" : {
             "type" : "boolean"
           },
+          "debtor" : {
+            "$ref" : "#/components/schemas/DebtorModel"
+          },
+          "validityDate" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
           "installments" : {
             "type" : "array",
             "items" : {
@@ -1026,7 +1264,7 @@
           }
         }
       },
-      "PaymentPositionModelResponseOdp" : {
+      "PaymentPositionModelResponseV3" : {
         "type" : "object",
         "properties" : {
           "iupd" : {
@@ -1049,10 +1287,6 @@
             "type" : "string",
             "format" : "date-time"
           },
-          "validityDate" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
           "paymentDate" : {
             "type" : "string",
             "format" : "date-time"
@@ -1068,19 +1302,19 @@
           "paymentOption" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/PaymentOptionModelResponseOdp"
+              "$ref" : "#/components/schemas/PaymentOptionModelResponseV3"
             }
           }
         }
       },
-      "PaymentPositionsInfoOdp" : {
+      "PaymentPositionsInfoV3" : {
         "required" : [ "page_info", "payment_position_list" ],
         "type" : "object",
         "properties" : {
           "payment_position_list" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/PaymentPositionModelResponseOdp"
+              "$ref" : "#/components/schemas/PaymentPositionModelResponseV3"
             }
           },
           "page_info" : {
@@ -1157,12 +1391,6 @@
         "description" : "The API key to access this function app.",
         "name" : "Ocp-Apim-Subscription-Key",
         "in" : "header"
-      },
-      "Authorization" : {
-        "type" : "http",
-        "description" : "JWT token get after Azure Login",
-        "scheme" : "bearer",
-        "bearerFormat" : "JWT"
       }
     }
   }
