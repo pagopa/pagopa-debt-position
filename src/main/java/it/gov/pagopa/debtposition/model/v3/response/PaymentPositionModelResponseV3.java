@@ -1,6 +1,6 @@
 package it.gov.pagopa.debtposition.model.v3.response;
 
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatusV3;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -20,7 +20,7 @@ public class PaymentPositionModelResponseV3 implements Serializable {
     private LocalDateTime insertedDate;
     private LocalDateTime publishDate;
     private LocalDateTime paymentDate;
-    private DebtPositionStatus status;
+    private DebtPositionStatusV3 status;
     private LocalDateTime lastUpdatedDate;
 
     private List<PaymentOptionModelResponseV3> paymentOption = new ArrayList<>();

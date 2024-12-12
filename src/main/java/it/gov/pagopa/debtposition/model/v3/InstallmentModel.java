@@ -31,11 +31,13 @@ public class InstallmentModel implements Serializable {
     @NotNull(message = "due date is required")
     private LocalDateTime dueDate;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     private long fee;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     private long notificationFee;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     private InstallmentStatus status;
 
     @Valid

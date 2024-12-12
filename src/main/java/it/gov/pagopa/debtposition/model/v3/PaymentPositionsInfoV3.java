@@ -33,5 +33,4 @@ public class PaymentPositionsInfoV3 {
     @NotNull
     @Valid
     private PageInfo pageInfo;
-
 }
