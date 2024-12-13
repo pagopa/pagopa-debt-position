@@ -31,9 +31,9 @@ public class PublishPaymentUtil {
         // Regola 5 - se la richiesta di pubblicazione è avvenuta dopo che una una delle opzioni di pagamento è scaduta (currentDate > min_due_date) viene rilanciato un errore
         else if (null == ppToPublish.getValidityDate() && ppToPublish.getMinDueDate().isBefore(currentDate)) {
             log.error("Publish request occurred after the due date of a payment options has expired - "
-                    + "[organizationFiscalCode= " + ppToPublish.getOrganizationFiscalCode() + "; "
-                    + "iupd= " + ppToPublish.getIupd() + "; "
-                    + "minDueDate= " + ppToPublish.getMinDueDate() + "; "
+                    + "[organizationFiscalCode= " + CommonUtil.sanitize(ppToPublish.getOrganizationFiscalCode()) + "; "
+                    + "iupd= " + CommonUtil.sanitize(ppToPublish.getIupd()) + "; "
+                    + "minDueDate= " + CommonUtil.sanitize(ppToPublish.getMinDueDate().toString()) + "; "
                     + "request publish date= " + currentDate
                     + "]");
             throw new AppException(AppError.DEBT_POSITION_PUBLISH_DUE_DATE_MISMATCH, ppToPublish.getOrganizationFiscalCode(), ppToPublish.getIupd());
