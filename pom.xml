@@ -11,7 +11,7 @@
     </parent>
     <groupId>it.gov.pagopa.debtposition</groupId>
     <artifactId>gpd</artifactId>
-    <version>0.11.62-2-PAGOPA-2459-Expired-update</version>
+    <version>0.11.62-3-PAGOPA-2459-Expired-update</version>
     <name>Gestione Posizioni Debitorie</name>
     <description>Progetto Gestione Posizioni Debitorie</description>
     <properties>
