@@ -46,8 +46,9 @@ public class PublishPaymentUtil {
             boolean isUpdateAction = !ArrayUtils.isEmpty(action) && UPDATE_ACTION.equalsIgnoreCase(action[0]);
             
             if (!isUpdateAction && ppToPublish.getValidityDate().isBefore(currentDate)) {
+                String sanitizedOrgFiscalCode = ppToPublish.getOrganizationFiscalCode().replace("\n", "").replace("\r", "");
                 log.error("Publish request occurred after the validity date expired - [orgFiscalCode={}, iupd={}, validityDate={}, requestPublishDate={}]",
-                        ppToPublish.getOrganizationFiscalCode(),
+                        sanitizedOrgFiscalCode,
                         ppToPublish.getIupd(),
                         ppToPublish.getValidityDate(),
                         currentDate
