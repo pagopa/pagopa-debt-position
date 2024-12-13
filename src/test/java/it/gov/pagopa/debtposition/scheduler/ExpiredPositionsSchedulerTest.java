@@ -209,9 +209,11 @@ class ExpiredPositionsSchedulerTest {
 	void manualChangeDebtPositionStatusToExpiredAndUpdateAllowed() 
 			throws Exception {
 
+		PaymentPositionDTO pp7 = DebtPositionMock.getMock7();
+		
 		// creo una posizione debitoria (con 'validity date') valorizzando il campo switchToExpired a true -> Lo stato deve passare ad EXPIRED passata la due_date
 		mvc.perform(post("/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions")
-				.content(TestUtil.toJson(DebtPositionMock.getMock7())).contentType(MediaType.APPLICATION_JSON))
+				.content(TestUtil.toJson(pp7)).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
 
 		// porto in pubblicata lo stato della posizione debitoria
@@ -264,11 +266,30 @@ class ExpiredPositionsSchedulerTest {
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(DebtPositionStatus.EXPIRED.toString()));
+
+		// aggiorno la posizione debitoria (stato atteso DRAFT)
+		pp7.setCompanyName("Comune di Napoli");
+		pp7.getPaymentOption().get(0).setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.SECONDS));
+		mvc.perform(put("/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions/12345678901IUPDMOCK3")
+				.content(TestUtil.toJson(pp7))
+				.contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isOk())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.DRAFT.toString()));
 		
-		// aggiorno la posizione debitoria con un body che non contiene la 'validity date' e ne richiedo la pubblicazione
-		PaymentPositionDTO pp7 = DebtPositionMock.getMock7();
-		pp7.setValidityDate(null);
+		// aggiorno la posizione debitoria e ne richiedo la pubblicazione (stato atteso PUBLISHED)
+		pp7.setCompanyName("Comune di Milano");
+		pp7.getPaymentOption().get(0).setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.SECONDS));
+		mvc.perform(put("/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions/12345678901IUPDMOCK3?toPublish=True")
+				.content(TestUtil.toJson(pp7))
+				.contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isOk())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.PUBLISHED.toString()));
+		
+		// aggiorno la posizione debitoria con un body che non contiene la 'validity date' e ne richiedo la pubblicazione (stato atteso VALID)
 		pp7.setCompanyName("Comune di Latina");
+		pp7.setValidityDate(null);
 		mvc.perform(put("/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions/12345678901IUPDMOCK3?toPublish=True")
 				.content(TestUtil.toJson(pp7))
 				.contentType(MediaType.APPLICATION_JSON))
@@ -276,7 +297,7 @@ class ExpiredPositionsSchedulerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(DebtPositionStatus.VALID.toString()));
 		
-		// recupero la posizione debitoria e verifico che lo stato sia in VALID e il dato aggiornato
+		// recupero la posizione debitoria e verifico che lo stato sia in VALID e il dato sia aggiornato all'ultimo valore
 		mvc.perform(get("/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions/12345678901IUPDMOCK3")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
