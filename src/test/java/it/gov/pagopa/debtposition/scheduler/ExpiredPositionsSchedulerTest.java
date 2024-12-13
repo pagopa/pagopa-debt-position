@@ -42,7 +42,7 @@ class ExpiredPositionsSchedulerTest {
 
 	@Test
 	void manualChangeDebtPositionStatusToValid() 
-			throws InterruptedException, Exception {
+			throws Exception {
 
 		// creo una posizione debitoria (con 'validity date')
 		mvc.perform(post("/organizations/SCHEDULEVALID_12345678901/debtpositions")
@@ -84,7 +84,7 @@ class ExpiredPositionsSchedulerTest {
 
 	@Test
 	void manualChangeDebtPositionStatusToValidAfterDueDate() 
-			throws InterruptedException, Exception {
+			throws Exception {
 
 		// creo una posizione debitoria (con 'validity date') senza valorizzare il campo switchToExpired (quindi per default verrà messo a false) -> Lo stato deve rimanere VALID passata la due_date
 		mvc.perform(post("/organizations/SCHEDULEVALIDAFTERDUEDATE_12345678901/debtpositions")
@@ -145,7 +145,7 @@ class ExpiredPositionsSchedulerTest {
 	
 	@Test
 	void manualChangeDebtPositionStatusToExpiredAfterDueDate() 
-			throws InterruptedException, Exception {
+			throws Exception {
 
 		// creo una posizione debitoria (con 'validity date') valorizzando il campo switchToExpired a true -> Lo stato deve passare ad EXPIRED passata la due_date
 		mvc.perform(post("/organizations/SCHEDULEEXP_12345678901/debtpositions")
@@ -207,7 +207,7 @@ class ExpiredPositionsSchedulerTest {
 	
 	@Test
 	void manualChangeDebtPositionStatusToExpiredAndUpdateAllowed() 
-			throws InterruptedException, Exception {
+			throws Exception {
 
 		// creo una posizione debitoria (con 'validity date') valorizzando il campo switchToExpired a true -> Lo stato deve passare ad EXPIRED passata la due_date
 		mvc.perform(post("/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions")
