@@ -37,16 +37,29 @@ public class PublishPaymentUtil {
                     + "]");
             throw new AppException(AppError.DEBT_POSITION_PUBLISH_DUE_DATE_MISMATCH, ppToPublish.getOrganizationFiscalCode(), ppToPublish.getIupd());
         }
-        // Regola 2 - se era stata prevista una data di inizio validità e la richiesta di pubblicazione viene fatta successivamente a tale data viene rilanciato un errore
-        // (PAGOPA-2459 - controllo applicato solo se non è un'operazione di update)
-        else if ((ArrayUtils.isEmpty(action) || !ArrayUtils.isEmpty(action) && !UPDATE_ACTION.equalsIgnoreCase(action[0])) && ppToPublish.getValidityDate().isBefore(currentDate)) {
-            log.error("Publish request occurred after the validity date has expired - "
-                    + "[organizationFiscalCode= " + ppToPublish.getOrganizationFiscalCode() + "; "
-                    + "iupd= " + ppToPublish.getIupd() + "; "
-                    + "validityDate= " + ppToPublish.getValidityDate() + "; "
-                    + "request publish date= " + currentDate
-                    + "]");
-            throw new AppException(AppError.DEBT_POSITION_PUBLISH_VALIDITY_DATE_MISMATCH, ppToPublish.getOrganizationFiscalCode(), ppToPublish.getIupd());
+        
+        /* (PAGOPA-2459) Regola 2 e 2.bis - se è presente una validityDate:
+        *  - Regola 2: NON è un operazione di UPDATE e la richiesta di pubblicazione è successiva alla validityDate --> errore
+        *  - Regola 2.bis: è un operazione di UPDATE e la richiesta di pubblicazione è successiva alla validityDate --> stato VALID
+        */
+        else if (ppToPublish.getValidityDate() != null) {
+            boolean isUpdateAction = !ArrayUtils.isEmpty(action) && UPDATE_ACTION.equalsIgnoreCase(action[0]);
+            
+            if (!isUpdateAction && ppToPublish.getValidityDate().isBefore(currentDate)) {
+                log.error("Publish request occurred after the validity date expired - [orgFiscalCode={}, iupd={}, validityDate={}, requestPublishDate={}]",
+                        ppToPublish.getOrganizationFiscalCode(),
+                        ppToPublish.getIupd(),
+                        ppToPublish.getValidityDate(),
+                        currentDate
+                );
+                throw new AppException(AppError.DEBT_POSITION_PUBLISH_VALIDITY_DATE_MISMATCH,
+                        ppToPublish.getOrganizationFiscalCode(),
+                        ppToPublish.getIupd());
+            }
+
+            if (isUpdateAction && ppToPublish.getValidityDate().isBefore(currentDate)) {
+                ppToPublish.setStatus(DebtPositionStatus.VALID);
+            }
         }
     }
 }

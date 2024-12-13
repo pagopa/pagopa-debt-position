@@ -216,7 +216,7 @@ class ExpiredPositionsSchedulerTest {
 				.content(TestUtil.toJson(pp7)).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated());
 
-		// porto in pubblicata lo stato della posizione debitoria
+		// porto in PUBLISHED lo stato della posizione debitoria
 		mvc.perform(post("/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions/12345678901IUPDMOCK3/publish")
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
@@ -277,8 +277,19 @@ class ExpiredPositionsSchedulerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 				.value(DebtPositionStatus.DRAFT.toString()));
 		
-		// aggiorno la posizione debitoria e ne richiedo la pubblicazione (stato atteso PUBLISHED)
+		// aggiorno la posizione debitoria e ne richiedo la pubblicazione (stato atteso VALID)
 		pp7.setCompanyName("Comune di Milano");
+		pp7.getPaymentOption().get(0).setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.SECONDS));
+		mvc.perform(put("/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions/12345678901IUPDMOCK3?toPublish=True")
+				.content(TestUtil.toJson(pp7))
+				.contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isOk())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.VALID.toString()));
+		
+		// aggiorno la posizione debitoria, sposto nel futuro la validity date e richiedo la pubblicazione (stato atteso PUBLISHED)
+		pp7.setCompanyName("Comune di Palermo");
+		pp7.setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plus(5, ChronoUnit.SECONDS));
 		pp7.getPaymentOption().get(0).setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.SECONDS));
 		mvc.perform(put("/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions/12345678901IUPDMOCK3?toPublish=True")
 				.content(TestUtil.toJson(pp7))
