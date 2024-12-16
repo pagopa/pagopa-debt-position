@@ -10,6 +10,8 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.util.Strings;
 
 import java.time.Duration;
@@ -20,6 +22,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
+
+import static it.gov.pagopa.debtposition.util.Constants.CREATE_ACTION;
+import static it.gov.pagopa.debtposition.util.Constants.UPDATE_ACTION;
 
 @Slf4j
 public class DebtPositionValidation {
@@ -36,9 +41,10 @@ public class DebtPositionValidation {
     private DebtPositionValidation() {
         super();
     }
-
-    public static void checkPaymentPositionInputDataAccuracy(PaymentPosition pp) {
-        checkPaymentPositionContentCongruency(pp);
+    
+    // PAGOPA-2459 - optional action parameter to specify checks based on create or update mode.
+    public static void checkPaymentPositionInputDataAccuracy(PaymentPosition pp, String... action) {
+        checkPaymentPositionContentCongruency(pp, action);
     }
 
     public static void checkPaymentPositionPayability(PaymentPosition ppToPay, String nav) {
@@ -80,13 +86,13 @@ public class DebtPositionValidation {
         return Arrays.asList(from, to);
     }
 
-    private static void checkPaymentPositionContentCongruency(final PaymentPosition pp) {
+    private static void checkPaymentPositionContentCongruency(final PaymentPosition pp, String... action) {
 
         LocalDateTime today = LocalDateTime.now(ZoneOffset.UTC);
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
 
-        // Regola 1 - must be validity_date ≥ current time
-        if (null != pp.getValidityDate() && pp.getValidityDate().compareTo(today) < 0) {
+        // Regola 1 - must be validity_date ≥ current time (applied only at creation stage)
+        if (!ArrayUtils.isEmpty(action) && action[0].equalsIgnoreCase(CREATE_ACTION) && null != pp.getValidityDate() && pp.getValidityDate().compareTo(today) < 0) {
             throw new ValidationException(
                     String.format(VALIDITY_DATE_VALIDATION_ERROR,
                             dateFormatter.format(pp.getValidityDate()),
@@ -97,8 +103,16 @@ public class DebtPositionValidation {
 
         for (PaymentOption po : pp.getPaymentOption()) {
             // Regola 4 - must be due_date ≥ validity_date || due_date ≥ current time
-            if (null != pp.getValidityDate() && po.getDueDate().compareTo(pp.getValidityDate()) < 0 ||
-                    null == pp.getValidityDate() && po.getDueDate().compareTo(today) < 0) {
+        	if (
+           		 // Case 1: validity_date is not null and due_date < validity_date
+           	    (pp.getValidityDate() != null && po.getDueDate().compareTo(pp.getValidityDate()) < 0) ||
+           	    
+           	    // Case 2: validity_date is null and due_date < current time
+           	    (pp.getValidityDate() == null && po.getDueDate().compareTo(today) < 0) ||
+           	    
+           	    // Case 3: Action is "update" and due_date < current time
+           	    (!ArrayUtils.isEmpty(action) && UPDATE_ACTION.equalsIgnoreCase(action[0]) && po.getDueDate().compareTo(today) < 0)
+           	){
                 throw new ValidationException(
                         String.format(DUE_DATE_VALIDATION_ERROR,
                                 dateFormatter.format(po.getDueDate()),
