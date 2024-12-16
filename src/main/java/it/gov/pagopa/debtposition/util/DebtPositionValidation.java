@@ -23,6 +23,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 
+import static it.gov.pagopa.debtposition.util.Constants.CREATE_ACTION;
+import static it.gov.pagopa.debtposition.util.Constants.UPDATE_ACTION;
+
 @Slf4j
 public class DebtPositionValidation {
 
@@ -89,7 +92,7 @@ public class DebtPositionValidation {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
 
         // Regola 1 - must be validity_date ≥ current time (applied only at creation stage)
-        if (!ArrayUtils.isEmpty(action) && action[0].equalsIgnoreCase("create") && null != pp.getValidityDate() && pp.getValidityDate().compareTo(today) < 0) {
+        if (!ArrayUtils.isEmpty(action) && action[0].equalsIgnoreCase(CREATE_ACTION) && null != pp.getValidityDate() && pp.getValidityDate().compareTo(today) < 0) {
             throw new ValidationException(
                     String.format(VALIDITY_DATE_VALIDATION_ERROR,
                             dateFormatter.format(pp.getValidityDate()),
@@ -108,7 +111,7 @@ public class DebtPositionValidation {
            	    (pp.getValidityDate() == null && po.getDueDate().compareTo(today) < 0) ||
            	    
            	    // Case 3: Action is "update" and due_date < current time
-           	    (!ArrayUtils.isEmpty(action) && "update".equalsIgnoreCase(action[0]) && po.getDueDate().compareTo(today) < 0)
+           	    (!ArrayUtils.isEmpty(action) && UPDATE_ACTION.equalsIgnoreCase(action[0]) && po.getDueDate().compareTo(today) < 0)
            	){
                 throw new ValidationException(
                         String.format(DUE_DATE_VALIDATION_ERROR,
