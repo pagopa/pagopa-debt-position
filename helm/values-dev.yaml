@@ -86,7 +86,6 @@ microservice-chart:
     WEBSITE_SITE_NAME: 'pagopa-d-gpd-core-service'
     ENV: 'dev'
     SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.d.internal.postgresql.pagopa.it:6432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true"
-    FLYWAY_DATASOURCE_URL: "jdbc:postgresql://gpd-db.d.internal.postgresql.pagopa.it:6432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true&lock_timeout=30000"
     SPRING_DATASOURCE_TYPE: "org.springframework.jdbc.datasource.SimpleDriverDataSource"
     # SPRING_DATASOURCE_TYPE: "com.zaxxer.hikari.HikariDataSource"
     SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
