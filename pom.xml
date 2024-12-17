@@ -134,6 +134,12 @@
             <artifactId>flyway-core</artifactId>
             <version>${flyway-version}</version>
         </dependency>
+        <!-- overriding to use last version -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>5.1.0</version>
+        </dependency>
         <!-- Feign -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
