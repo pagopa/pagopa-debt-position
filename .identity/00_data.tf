@@ -56,3 +56,8 @@ data "azurerm_key_vault_secret" "key_vault_datasource_url" {
   name         = "db-url"
   key_vault_id = data.azurerm_key_vault.domain_key_vault.id
 }
+
+data "azurerm_key_vault_secret" "key_vault_flyway_datasource_url" {
+  name         = "flyway_db_url"
+  key_vault_id = data.azurerm_key_vault.domain_key_vault.id
+}
