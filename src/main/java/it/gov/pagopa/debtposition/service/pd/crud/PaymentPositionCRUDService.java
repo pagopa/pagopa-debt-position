@@ -56,22 +56,22 @@ public class PaymentPositionCRUDService {
     private PaymentOptionRepository paymentOptionRepository;
     @Autowired
     private ModelMapper modelMapper;
+    @Value("${nav.aux.digit}")
+    private String auxDigit;
 
 
-    public PaymentPosition create(@NotNull PaymentPosition debtPosition, @NotBlank String organizationFiscalCode, boolean toPublish, List<String> segCodes) {
+    public PaymentPosition create(@NotNull PaymentPosition debtPosition, @NotBlank String organizationFiscalCode, boolean toPublish, List<String> segCodes, String... action) {
 
         final String ERROR_CREATION_LOG_MSG = "Error during debt position creation: %s";
 
         try {
-      
             //Inserisce (ed eventualmente porta in stato pubblicato) la posizione debitoria
             return paymentPositionRepository.saveAndFlush(
-            		this.checkAndBuildDebtPositionToSave(debtPosition, organizationFiscalCode, toPublish, segCodes));
-
+            		this.checkAndBuildDebtPositionToSave(debtPosition, organizationFiscalCode, toPublish, segCodes, action));
         } catch (DataIntegrityViolationException e) {
             log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
-            if (e.getCause() instanceof ConstraintViolationException) {
-                String sqlState = ((ConstraintViolationException) e.getCause()).getSQLState();
+            if (e.getCause() instanceof ConstraintViolationException constraintviolationexception) {
+                String sqlState = constraintviolationexception.getSQLState();
                 if (sqlState.equals(UNIQUE_KEY_VIOLATION)) {
                     throw new AppException(AppError.DEBT_POSITION_UNIQUE_VIOLATION, organizationFiscalCode);
                 }
@@ -104,6 +104,43 @@ public class PaymentPositionCRUDService {
         }
 
         return pp.get();
+    }
+
+    public PaymentPosition getDebtPositionByIUV(String organizationFiscalCode,
+                                                 String iuv, List<String> segCodes) {
+        if(segCodes != null && !isAuthorizedBySegregationCode(iuv, segCodes)) {
+            throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, iuv);
+        }
+
+        Optional<PaymentOption> po = paymentOptionRepository.findByOrganizationFiscalCodeAndIuv(organizationFiscalCode, iuv);
+
+        if (po.isEmpty()) {
+            throw new AppException(AppError.PAYMENT_OPTION_IUV_NOT_FOUND, organizationFiscalCode, iuv);
+        }
+
+        return po.get().getPaymentPosition();
+    }
+
+    public List<PaymentPosition>  getDebtPositionsByIUPDs(String organizationFiscalCode, List<String> iupdList, List<String> segCodes) {
+        // findAll query by IUPD list
+        PaymentPositionByIUPDList spec = new PaymentPositionByIUPDList(iupdList);
+        Specification<PaymentPosition> specPP = Specification.where(spec);
+        Pageable pageable = PageRequest.of(0, iupdList.size());
+        Page<PaymentPosition> result = paymentPositionRepository.findAll(specPP, pageable);
+        List<PaymentPosition> paymentPositions = result.getContent();
+
+        if (paymentPositions.isEmpty() || paymentPositions.size() != iupdList.size()) {
+            throw new AppException(AppError.DEBT_POSITION_NOT_FOUND, organizationFiscalCode, iupdList);
+        }
+
+        // verify that caller is authorized to read payment positions
+        paymentPositions.forEach(pp -> {
+            if(segCodes != null && !isAuthorizedBySegregationCode(pp, segCodes)) {
+                throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, pp.getIupd());
+            }
+        });
+
+        return paymentPositions;
     }
 
     public Page<PaymentPosition> getOrganizationDebtPositions(@Positive Integer limit, @Positive Integer pageNum, FilterAndOrder filterAndOrder) {
@@ -152,7 +189,7 @@ public class PaymentPositionCRUDService {
 
     @Transactional
     public PaymentPosition update(@NotNull @Valid PaymentPositionModel paymentPositionModel, @NotBlank String organizationFiscalCode, boolean toPublish,
-                                  List<String> segregationCodes) {
+                                  List<String> segregationCodes, String...action) {
 
         final String ERROR_UPDATE_LOG_MSG = "Error during debt position update: %s";
 
@@ -169,17 +206,17 @@ public class PaymentPositionCRUDService {
             modelMapper.map(paymentPositionModel, ppToUpdate);
 
             // migrate the notification fee value (if defined) and update the amounts
-            ppToUpdate = setOldNotificationFee(oldPaymentOptions, organizationFiscalCode, ppToUpdate);
-            
+            setOldNotificationFee(oldPaymentOptions, organizationFiscalCode, ppToUpdate);
+
             // check the input data
-            DebtPositionValidation.checkPaymentPositionInputDataAccurancy(ppToUpdate);
+            DebtPositionValidation.checkPaymentPositionInputDataAccuracy(ppToUpdate, action);
             
             paymentPositionRepository.delete(ppToUpdate);
             paymentPositionRepository.flush();
             // the version is increased at each change
             ppToUpdate.setVersion(ppToUpdate.getVersion()+1);
-            return this.create(ppToUpdate, organizationFiscalCode, toPublish, segregationCodes);
-        	
+
+            return this.create(ppToUpdate, organizationFiscalCode, toPublish, segregationCodes, action);
         } catch (ValidationException e) {
             throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
         } catch (AppException e) {
@@ -194,7 +231,7 @@ public class PaymentPositionCRUDService {
     }
     
     public List<PaymentPosition> createMultipleDebtPositions(@Valid List<PaymentPosition> debtPositions,
-			String organizationFiscalCode, boolean toPublish, List<String> segCodes) {
+			String organizationFiscalCode, boolean toPublish, List<String> segCodes, String... action) {
     	
     	final String ERROR_CREATION_LOG_MSG = "Error during debt position creation: %s";
     	
@@ -203,7 +240,7 @@ public class PaymentPositionCRUDService {
         try {
         	
         	for (PaymentPosition debtPosition: debtPositions) {
-        		ppToSaveList.add(this.checkAndBuildDebtPositionToSave(debtPosition, organizationFiscalCode, toPublish, segCodes));
+        		ppToSaveList.add(this.checkAndBuildDebtPositionToSave(debtPosition, organizationFiscalCode, toPublish, segCodes, action));
         	}
       
             //Inserisce il blocco di posizioni debitorie
@@ -211,8 +248,8 @@ public class PaymentPositionCRUDService {
 
         } catch (DataIntegrityViolationException e) {
             log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
-            if (e.getCause() instanceof ConstraintViolationException) {
-                String sqlState = ((ConstraintViolationException) e.getCause()).getSQLState();
+            if (e.getCause() instanceof ConstraintViolationException constraintviolationexception) {
+                String sqlState = constraintviolationexception.getSQLState();
                 if (sqlState.equals(UNIQUE_KEY_VIOLATION)) {
                     throw new AppException(AppError.DEBT_POSITION_UNIQUE_VIOLATION, organizationFiscalCode);
                 }
@@ -227,6 +264,80 @@ public class PaymentPositionCRUDService {
             throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
         }
 	}
+
+    @Transactional
+    public List<PaymentPosition> updateMultipleDebtPositions(@Valid List<PaymentPosition> inputPaymentPositions,
+                                                             String organizationFiscalCode, boolean toPublish, List<String> segCodes, String... action) {
+        final String ERROR_UPDATE_LOG_MSG = "Error during debt positions update: %s";
+        List<PaymentPosition> updatePositions = new ArrayList<>();
+        Map<String, PaymentPosition> inPositionsMap = new HashMap<>();
+        inputPaymentPositions.forEach(pp -> inPositionsMap.put(pp.getIupd(), pp));
+        List<PaymentPosition> readPositions = getDebtPositionsByIUPDs(organizationFiscalCode, inPositionsMap.keySet().stream().toList(), segCodes);
+
+        try {
+            for (PaymentPosition paymentPosition : readPositions) {
+                PaymentPosition inputPaymentPosition = inPositionsMap.get(paymentPosition.getIupd());
+                PaymentPosition updatePaymentPosition = paymentPosition.deepClone();
+
+                if (DebtPositionStatus.getPaymentPosNotUpdatableStatus().contains(paymentPosition.getStatus())) {
+                    throw new AppException(AppError.DEBT_POSITION_NOT_UPDATABLE, organizationFiscalCode, inputPaymentPosition.getIupd());
+                }
+
+                // flip model to entity
+                updatePaymentPosition.getPaymentOption().clear();
+                modelMapper.map(inputPaymentPosition, updatePaymentPosition);
+
+                // migrate the notification fee value (if defined) and update the amounts
+                updatePaymentPosition = setOldNotificationFee(updatePaymentPosition.getPaymentOption(), organizationFiscalCode, updatePaymentPosition);
+                // check the input data
+                DebtPositionValidation.checkPaymentPositionInputDataAccuracy(updatePaymentPosition, action);
+                // the version is increased at each change
+                updatePaymentPosition.setVersion(updatePaymentPosition.getVersion()+1);
+
+                updatePositions.add(updatePaymentPosition);
+            }
+
+            paymentPositionRepository.deleteAll(readPositions);
+            paymentPositionRepository.flush();
+            this.createMultipleDebtPositions(updatePositions, organizationFiscalCode, toPublish, segCodes, action);
+
+            return updatePositions;
+        } catch (ValidationException e) {
+            throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
+        } catch (AppException e) {
+            if (AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_TRANSFER_NOT_FOUND.title.equals(e.getTitle())) {
+                throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED_NO_TRANSFER_FOR_NOTIFICATION_FEE, organizationFiscalCode, e.getMessage());
+            }
+            throw e;
+        } catch (Exception e) {
+            log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
+            throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
+        }
+    }
+
+    @Transactional
+    public void deleteMultipleDebtPositions(@Valid List<String> multipleIUPDs,
+                                            String organizationFiscalCode, List<String> segCodes) {
+        final String ERROR_UPDATE_LOG_MSG = "Error during debt positions delete: %s";
+
+        List<PaymentPosition> readPositions = getDebtPositionsByIUPDs(organizationFiscalCode, multipleIUPDs, segCodes);
+
+        readPositions.forEach(ppToRemove -> {
+            if (DebtPositionStatus.getPaymentPosAlreadyPaidStatus().contains(ppToRemove.getStatus())) {
+                throw new AppException(AppError.DEBT_POSITION_PAYMENT_FOUND, organizationFiscalCode, ppToRemove.getIupd());
+            }
+        });
+
+        try {
+            paymentPositionRepository.deleteAll(readPositions);
+            paymentPositionRepository.flush();
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
+            throw new AppException(AppError.DEBT_POSITION_DELETE_FAILED, organizationFiscalCode);
+        }
+    }
 
     private PaymentPosition setOldNotificationFee(List<PaymentOption> oldPaymentOptions, String organizationFiscalCode, PaymentPosition paymentPosition) {
         Map<String, Long> oldPONotificationFeeMapping = oldPaymentOptions.stream().collect(Collectors.toMap(PaymentOption::getIuv, PaymentOption::getNotificationFee));
@@ -256,7 +367,7 @@ public class PaymentPositionCRUDService {
     }
     
     private PaymentPosition checkAndBuildDebtPositionToSave(PaymentPosition debtPosition, String organizationFiscalCode, boolean toPublish,
-			List<String> segCodes) {
+			List<String> segCodes, String... action) {
     	
     	PaymentPosition pp = SerializationUtils.clone(debtPosition);
     	
@@ -265,7 +376,7 @@ public class PaymentPositionCRUDService {
 		}
 		
 		// verifico la correttezza dei dati in input
-		DebtPositionValidation.checkPaymentPositionInputDataAccurancy(pp);
+		DebtPositionValidation.checkPaymentPositionInputDataAccuracy(pp, action);
 
 		// predispongo i dati ad uso interno prima dell'aggiornamento
 		LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
@@ -278,6 +389,7 @@ public class PaymentPositionCRUDService {
 		pp.setPublishDate(null);
 		pp.setOrganizationFiscalCode(organizationFiscalCode);
 		pp.setStatus(DebtPositionStatus.DRAFT);
+		pp.setServiceType(pp.getServiceType());
 
 		for (PaymentOption po : pp.getPaymentOption()) {
 		    po.setOrganizationFiscalCode(organizationFiscalCode);
@@ -286,10 +398,12 @@ public class PaymentPositionCRUDService {
 		    po.setStatus(PaymentOptionStatus.PO_UNPAID);
 		    po.setPaymentPosition(pp);
 		    po.getPaymentOptionMetadata().forEach(pom -> pom.setPaymentOption(po));
+		    po.setNav(Optional.ofNullable(po.getNav()).orElse(auxDigit+po.getIuv()));
 
 		    for (Transfer t : po.getTransfer()) {
 		        t.setIuv(po.getIuv());
 		        t.setOrganizationFiscalCode(Objects.requireNonNullElse(t.getOrganizationFiscalCode(), organizationFiscalCode));
+		        t.setCompanyName(t.getCompanyName());
 		        t.setInsertedDate(Objects.requireNonNullElse(pp.getInsertedDate(), currentDate));
 		        t.setLastUpdatedDate(currentDate);
 		        t.setStatus(TransferStatus.T_UNREPORTED);
@@ -300,7 +414,7 @@ public class PaymentPositionCRUDService {
 
 		//Se la pubblicazione immediata è richiesta, si procede
 		if(toPublish){
-		    PublishPaymentUtil.publishProcess(pp);
+		    PublishPaymentUtil.publishProcess(pp, action);
 		}
 		
 		return pp;
@@ -312,5 +426,9 @@ public class PaymentPositionCRUDService {
         return segregationCodes.contains(paymentPositionSegregationCode);
     }
 
-	
+    private boolean isAuthorizedBySegregationCode(String iuv, List<String> segregationCodes) {
+        // It is enough to check only one IUV of the payment position. Here it is assumed that they all have the same segregation code.
+        String paymentPositionSegregationCode = iuv.substring(0,2);
+        return segregationCodes.contains(paymentPositionSegregationCode);
+    }
 }

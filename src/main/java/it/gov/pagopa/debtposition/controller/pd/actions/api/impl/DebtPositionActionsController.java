@@ -6,10 +6,10 @@ import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.service.pd.actions.PaymentPositionActionsService;
+import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -28,21 +28,17 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
     private ModelMapper modelMapper;
     @Autowired
     private PaymentPositionActionsService paymentPositionActionsService;
-    
-    @Value("${nav.aux.digit}")
-    private String auxDigit;
+  
 
     @Override
     public ResponseEntity<PaymentPositionModel> publishDebtPosition(String organizationFiscalCode, String iupd, String segregationCodes) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "publishDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "POST", "publishDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
         PaymentPosition publishedDebtPos = paymentPositionActionsService.publish(organizationFiscalCode, iupd, segCodes);
         if (null != publishedDebtPos) {
-        	PaymentPositionModel paymentPosition = modelMapper.map(publishedDebtPos, PaymentPositionModel.class);
-        	//PAGOPA-1155: add nav info to PO
-        	paymentPosition.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv()));
-            return new ResponseEntity<>(paymentPosition, HttpStatus.OK);
+        	PaymentPositionModel paymentPositionModel = ObjectMapperUtils.map(publishedDebtPos, PaymentPositionModel.class);
+            return new ResponseEntity<>(paymentPositionModel, HttpStatus.OK);
         }
 
         throw new AppException(AppError.DEBT_POSITION_PUBLISH_FAILED, organizationFiscalCode);
@@ -50,15 +46,13 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
 
     @Override
     public ResponseEntity<PaymentPositionModel> invalidateDebtPosition(String organizationFiscalCode, String iupd, String segregationCodes) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "invalidateDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "POST", "invalidateDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
         PaymentPosition invalidatedDebtPos = paymentPositionActionsService.invalidate(organizationFiscalCode, iupd, segCodes);
         if (null != invalidatedDebtPos) {
-        	PaymentPositionModel paymentPosition = modelMapper.map(invalidatedDebtPos, PaymentPositionModel.class);
-        	//PAGOPA-1155: add nav info to PO
-        	paymentPosition.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv()));
-            return new ResponseEntity<>(paymentPosition, HttpStatus.OK);
+        	PaymentPositionModel paymentPositionModel = ObjectMapperUtils.map(invalidatedDebtPos, PaymentPositionModel.class);
+            return new ResponseEntity<>(paymentPositionModel, HttpStatus.OK);
         }
 
         throw new AppException(AppError.DEBT_POSITION_INVALIDATE_FAILED, organizationFiscalCode);

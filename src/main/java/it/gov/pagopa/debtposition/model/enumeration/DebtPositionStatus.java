@@ -1,5 +1,9 @@
 package it.gov.pagopa.debtposition.model.enumeration;
 
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
+
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -13,16 +17,16 @@ public enum DebtPositionStatus {
     public static Set<DebtPositionStatus> getPaymentPosAlreadyPaidStatus() {
         return EnumSet.complementOf((EnumSet<DebtPositionStatus>) getPaymentPosNotYetPaidStatus());
     }
-
+    // PAGOPA-2459 - removed EXPIRED as non-updatable final state.
     public static Set<DebtPositionStatus> getPaymentPosNotUpdatableStatus() {
-        return EnumSet.of(INVALID, EXPIRED, PARTIALLY_PAID, PAID, REPORTED);
+        return EnumSet.of(INVALID, PARTIALLY_PAID, PAID, REPORTED);
     }
 
     public static Set<DebtPositionStatus> getPaymentPosNotPublishableStatus() {
         return EnumSet.of(PUBLISHED, VALID, INVALID, EXPIRED, PARTIALLY_PAID, PAID, REPORTED);
     }
 
-    public static Set<DebtPositionStatus> getPaymentPosNotIvalidableStatus() {
+    public static Set<DebtPositionStatus> getPaymentPosNotInvalidableStatus() {
         return EnumSet.of(DRAFT, INVALID, EXPIRED, PARTIALLY_PAID, PAID, REPORTED);
     }
 
@@ -36,5 +40,19 @@ public enum DebtPositionStatus {
 
     public static Set<DebtPositionStatus> getPaymentPosNotAccountableStatus() {
         return EnumSet.of(DRAFT, PUBLISHED, VALID, INVALID, EXPIRED, REPORTED);
+    }
+
+    public static PaymentPosition updatePaymentPositionStatus(PaymentPosition pp) {
+        LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+        // Validity check on the fly
+        if(pp.getStatus().equals(DebtPositionStatus.PUBLISHED) && null != pp.getValidityDate() && currentDate.isAfter(pp.getValidityDate())) {
+            pp.setStatus(DebtPositionStatus.VALID);
+        }
+        // Expiration check on the fly
+        if(Boolean.TRUE.equals(pp.getSwitchToExpired() && pp.getStatus().equals(DebtPositionStatus.VALID))
+                && null != pp.getMaxDueDate() && currentDate.isAfter(pp.getMaxDueDate())) {
+            pp.setStatus(DebtPositionStatus.EXPIRED);
+        }
+        return pp;
     }
 }

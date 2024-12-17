@@ -10,6 +10,8 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.util.Strings;
 
 import java.time.Duration;
@@ -20,6 +22,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
+
+import static it.gov.pagopa.debtposition.util.Constants.CREATE_ACTION;
+import static it.gov.pagopa.debtposition.util.Constants.UPDATE_ACTION;
 
 @Slf4j
 public class DebtPositionValidation {
@@ -36,23 +41,24 @@ public class DebtPositionValidation {
     private DebtPositionValidation() {
         super();
     }
-
-    public static void checkPaymentPositionInputDataAccurancy(PaymentPosition pp) {
-        checkPaymentPositionContentCongruency(pp);
+    
+    // PAGOPA-2459 - optional action parameter to specify checks based on create or update mode.
+    public static void checkPaymentPositionInputDataAccuracy(PaymentPosition pp, String... action) {
+        checkPaymentPositionContentCongruency(pp, action);
     }
 
-    public static void checkPaymentPositionPayability(PaymentPosition ppToPay, String iuv) {
+    public static void checkPaymentPositionPayability(PaymentPosition ppToPay, String nav) {
         // Verifico se la posizione debitoria è in uno stato idoneo al pagamento
         if (DebtPositionStatus.getPaymentPosNotPayableStatus().contains(ppToPay.getStatus())) {
-            throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, ppToPay.getOrganizationFiscalCode(), iuv);
+            throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, ppToPay.getOrganizationFiscalCode(), nav);
         }
         if (DebtPositionStatus.getPaymentPosFullyPaidStatus().contains(ppToPay.getStatus())) {
-            throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, ppToPay.getOrganizationFiscalCode(), iuv);
+            throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, ppToPay.getOrganizationFiscalCode(), nav);
         }
         // Verifico se la posizione debitoria è ancora aperta
-        checkPaymentPositionOpen(ppToPay, iuv);
+        checkPaymentPositionOpen(ppToPay, nav);
         // Verifico se l'opzione di pagamento è pagabile
-        checkPaymentOptionPayable(ppToPay, iuv);
+        checkPaymentOptionPayable(ppToPay, nav);
     }
 
     public static void checkPaymentPositionAccountability(PaymentPosition ppToReport, String iuv, String transferId) {
@@ -80,13 +86,13 @@ public class DebtPositionValidation {
         return Arrays.asList(from, to);
     }
 
-    private static void checkPaymentPositionContentCongruency(final PaymentPosition pp) {
+    private static void checkPaymentPositionContentCongruency(final PaymentPosition pp, String... action) {
 
         LocalDateTime today = LocalDateTime.now(ZoneOffset.UTC);
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
 
-        // Regola 1 - must be validity_date ≥ current time
-        if (null != pp.getValidityDate() && pp.getValidityDate().compareTo(today) < 0) {
+        // Regola 1 - must be validity_date ≥ current time (applied only at creation stage)
+        if (!ArrayUtils.isEmpty(action) && action[0].equalsIgnoreCase(CREATE_ACTION) && null != pp.getValidityDate() && pp.getValidityDate().compareTo(today) < 0) {
             throw new ValidationException(
                     String.format(VALIDITY_DATE_VALIDATION_ERROR,
                             dateFormatter.format(pp.getValidityDate()),
@@ -97,8 +103,16 @@ public class DebtPositionValidation {
 
         for (PaymentOption po : pp.getPaymentOption()) {
             // Regola 4 - must be due_date ≥ validity_date || due_date ≥ current time
-            if (null != pp.getValidityDate() && po.getDueDate().compareTo(pp.getValidityDate()) < 0 ||
-                    null == pp.getValidityDate() && po.getDueDate().compareTo(today) < 0) {
+        	if (
+           		 // Case 1: validity_date is not null and due_date < validity_date
+           	    (pp.getValidityDate() != null && po.getDueDate().compareTo(pp.getValidityDate()) < 0) ||
+           	    
+           	    // Case 2: validity_date is null and due_date < current time
+           	    (pp.getValidityDate() == null && po.getDueDate().compareTo(today) < 0) ||
+           	    
+           	    // Case 3: Action is "update" and due_date < current time
+           	    (!ArrayUtils.isEmpty(action) && UPDATE_ACTION.equalsIgnoreCase(action[0]) && po.getDueDate().compareTo(today) < 0)
+           	){
                 throw new ValidationException(
                         String.format(DUE_DATE_VALIDATION_ERROR,
                                 dateFormatter.format(po.getDueDate()),
@@ -198,34 +212,35 @@ public class DebtPositionValidation {
         t.getIban();
     }
 
-    private static void checkPaymentPositionOpen(PaymentPosition ppToPay, String iuv) {
+    private static void checkPaymentPositionOpen(PaymentPosition ppToPay, String nav) {
         for (PaymentOption po : ppToPay.getPaymentOption()) {
             if (isPaid(po)) {
-                throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, po.getOrganizationFiscalCode(), iuv);
+                throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, po.getOrganizationFiscalCode(), nav);
             }
         }
     }
 
-    private static void checkPaymentOptionPayable(PaymentPosition ppToPay, String iuv) {
-        PaymentOption poToPay = ppToPay.getPaymentOption().stream().filter(po -> po.getIuv().equals(iuv)).findFirst()
+    private static void checkPaymentOptionPayable(PaymentPosition ppToPay, String nav) {
+    	// TODO #naviuv: temporary regression management --> remove "|| po.getIuv().equals(nav)" when only nav managment is enabled
+        PaymentOption poToPay = ppToPay.getPaymentOption().stream().filter(po -> po.getNav().equals(nav) || po.getIuv().equals(nav)).findFirst()
                 .orElseThrow(() -> {
                     log.error("Obtained unexpected empty payment option - ["
                             + String.format(LOG_BASE_PARAMS_DETAIL,
                             ppToPay.getOrganizationFiscalCode(),
                             ppToPay.getIupd(),
-                            iuv
+                            nav
                     )
                             + "]");
-                    throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, ppToPay.getOrganizationFiscalCode(), iuv);
+                    throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, ppToPay.getOrganizationFiscalCode(), nav);
                 });
 
         if (!poToPay.getStatus().equals(PaymentOptionStatus.PO_UNPAID)) {
-            throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, poToPay.getOrganizationFiscalCode(), iuv);
+            throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, poToPay.getOrganizationFiscalCode(), nav);
         }
 
         // La posizione debitoria è già in PARTIALLY_PAID ed arriva una richiesta di pagamento su una payment option non rateizzata (isPartialPayment = false) => errore
         if (ppToPay.getStatus().equals(DebtPositionStatus.PARTIALLY_PAID) && Boolean.FALSE.equals(poToPay.getIsPartialPayment())) {
-            throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, poToPay.getOrganizationFiscalCode(), iuv);
+            throw new AppException(AppError.PAYMENT_OPTION_ALREADY_PAID, poToPay.getOrganizationFiscalCode(), nav);
         }
 
     }
@@ -245,7 +260,7 @@ public class DebtPositionValidation {
                             iuv
                     )
                             + "]");
-                    throw new AppException(AppError.TRANSFER_REPORTING_FAILED, ppToReport.getOrganizationFiscalCode(), iuv, transferId);
+                    return new AppException(AppError.TRANSFER_REPORTING_FAILED, ppToReport.getOrganizationFiscalCode(), iuv, transferId);
                 });
 
         if (!poToReport.getStatus().equals(PaymentOptionStatus.PO_PAID) && !poToReport.getStatus().equals(PaymentOptionStatus.PO_PARTIALLY_REPORTED)) {

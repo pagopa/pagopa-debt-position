@@ -1,9 +1,0 @@
-{
-  "selfDiagnostics": {
-    "destination": "console",
-    "level": "INFO"
-  },
-  "role": {
-    "name": "pagopadebtposition"
-  }
-}

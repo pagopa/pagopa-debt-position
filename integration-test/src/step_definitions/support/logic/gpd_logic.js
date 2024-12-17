@@ -12,7 +12,8 @@ const {
     updateAndPublishDebtPosition,
     getPaymentOptionByIuv,
     invalidateDebtPosition,
-    createMassiveDebtPositions
+    createMassiveDebtPositions,
+    getDebtPositionByIUV
 } = require("../clients/gpd_client");
 
 const {
@@ -24,9 +25,9 @@ const {
     buildCreateMassiveDebtPositionRequest
 } = require("../utility/request_builders");
 
-async function executeDebtPositionCreation(bundle, idOrg, iupd) {
+async function executeDebtPositionCreation(bundle, idOrg, iupd, iuv) {
     bundle.organizationCode = idOrg;
-    bundle.debtPosition = buildDebtPositionDynamicData(bundle, iupd);
+    bundle.debtPosition = buildDebtPositionDynamicData(bundle, iupd, iuv);
     let response = await createDebtPosition(bundle.organizationCode, buildCreateDebtPositionRequest(bundle.debtPosition, bundle.payer));
     bundle.responseToCheck = response;
     bundle.createdDebtPosition = bundle.responseToCheck.data;
@@ -124,6 +125,12 @@ async function executeDebtPositionGet(bundle, idOrg, iupd) {
     bundle.responseToCheck = response;
 }
 
+async function executeDebtPositionGetByIuv(bundle, idOrg, iuv) {
+    let response = await getDebtPositionByIUV(idOrg, iuv);
+    bundle.payer.companyName = response.data.companyName;
+    bundle.responseToCheck = response;
+}
+
 async function executeDebtPositionGetWithSegregationCodes(bundle, idOrg, iupd) {
 	let segCodes = bundle.debtPosition.iuv1.slice(0, 2)
     let response = await getDebtPosition(idOrg, iupd, segCodes);
@@ -198,6 +205,7 @@ module.exports = {
     executeDebtPositionUpdate,
     executeDebtPositionNotificationFeeUpdate,
     executeDebtPositionGet,
+    executeDebtPositionGetByIuv,
     executeDebtPositionPublish,
     executePaymentOptionPay,
     executeReportTransfer,

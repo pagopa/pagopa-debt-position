@@ -1,61 +1,39 @@
 name: Open a PR in Infra repository
 
 on:
-  pull_request:
-    branches:
-      - main
-    types: [ closed ]
-    paths:
-      - 'openapi/*'
+#  pull_request:
+#    branches:
+#      - main
+#    types: [ closed ]
+#    paths:
+#      - 'openapi/*'
 
-
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
   pull-request:
-    if: ${{ github.event.pull_request.merged }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-
-      # set repo
-      - name: Set GPD repo
-        run: |
-          echo "REPO=gpd" >> $GITHUB_ENV
-          echo "FOLDER=v1" >> $GITHUB_ENV
-        if: ${{ contains(github.event.pull_request.labels.*.name, 'gpd') }}
-
-      - name: Set Payments repo
-        run: |
-          echo "REPO=payments" >> $GITHUB_ENV
-          echo "FOLDER=payments/v1" >> $GITHUB_ENV
-        if: ${{ contains(github.event.pull_request.labels.*.name, 'payments') }}
-
-      - name: Set Reporting Analysis repo
-        run: |
-          echo "REPO=reporting-analysis" >> $GITHUB_ENV
-          echo "FOLDER=reporting-analysis/v1" >> $GITHUB_ENV
-        if: ${{ contains(github.event.pull_request.labels.*.name, 'reporting-analysis') }}
-
+        uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
 
       # prepare openapi template for infra repo
       - run: |
           mkdir -p "${GITHUB_WORKSPACE}/infra"
-          jq  '."servers"[0]."url" |= "${host}"' "${GITHUB_WORKSPACE}/${{env.REPO}}/openapi/openapi.json" > "${GITHUB_WORKSPACE}/infra/_openapi.json.tpl"
+          jq  '."servers"[0]."url" |= "${host}"' "${GITHUB_WORKSPACE}/openapi/openapi_external.json" > "${GITHUB_WORKSPACE}/infra/_openapi.json.tpl"
 
       # open a PR on infra repo
       - name: Create pull request
         uses: jacopocarlini/action-pull-request-another-repo@main
-        if: ${{ env.REPO != '' }}
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
         with:
           source_folder: 'infra'
           destination_repo: 'pagopa/pagopa-infra'
-          destination_folder: 'src/api/gpd_api/${{env.FOLDER}}'
+          destination_folder: 'src/domains/gps-app/api/gpd_api/debt-position-services/v1'
           destination_base_branch: 'main'
-          destination_head_branch: 'DebtPosition-swagger-update'
+          destination_head_branch: 'gpd-core-swagger-update'
           user_email: 'github-bot@pagopa.it'
           user_name: 'pagopa-github-bot'
           allow_force_push: 'true'

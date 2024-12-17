@@ -1,11 +1,32 @@
 package it.gov.pagopa.debtposition.controller.pd.crud.api.impl;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.validation.Valid;
+import javax.validation.constraints.Pattern;
+
+import it.gov.pagopa.debtposition.model.pd.MultipleIUPDModel;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.CollectionUtils;
+
 import it.gov.pagopa.debtposition.config.ExclusiveParamGroup;
 import it.gov.pagopa.debtposition.controller.pd.crud.api.IDebtPositionController;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.filterandorder.Filter;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
@@ -19,25 +40,8 @@ import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.Constants;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Sort.Direction;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.util.CollectionUtils;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.validation.Valid;
-import javax.validation.constraints.Pattern;
+import static it.gov.pagopa.debtposition.util.Constants.CREATE_ACTION;
+import static it.gov.pagopa.debtposition.util.Constants.UPDATE_ACTION;
 
 
 @Controller
@@ -50,27 +54,24 @@ public class DebtPositionController implements IDebtPositionController {
     private ModelMapper modelMapper;
     @Autowired
     private PaymentPositionCRUDService paymentPositionService;
-    
-    @Value("${nav.aux.digit}")
-    private String auxDigit;
    
 
     @Override
     public ResponseEntity<PaymentPositionModel> createDebtPosition(String organizationFiscalCode,
                                                                    PaymentPositionModel paymentPositionModel,
-                                                                   boolean toPublish, String segregationCodes) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "createDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, paymentPositionModel.getIupd())));
+                                                                   boolean toPublish, String segregationCodes,
+                                                                   ServiceType serviceType) {
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "POST", "createDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, paymentPositionModel.getIupd())));
 
         // flip model to entity
         PaymentPosition debtPosition = modelMapper.map(paymentPositionModel, PaymentPosition.class);
+        debtPosition.setServiceType(serviceType);
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
-        PaymentPosition createdDebtPos = paymentPositionService.create(debtPosition, organizationFiscalCode, toPublish, segCodes);
+        PaymentPosition createdDebtPos = paymentPositionService.create(debtPosition, organizationFiscalCode, toPublish, segCodes, CREATE_ACTION);
 
         if (null != createdDebtPos) {
-        	PaymentPositionModel paymentPosition = modelMapper.map(createdDebtPos, PaymentPositionModel.class);
-        	//PAGOPA-1155: add nav info to PO
-        	paymentPosition.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv()));
+        	PaymentPositionModel paymentPosition = ObjectMapperUtils.map(createdDebtPos, PaymentPositionModel.class);
             return new ResponseEntity<>(paymentPosition, HttpStatus.CREATED);
         }
 
@@ -84,7 +85,7 @@ public class DebtPositionController implements IDebtPositionController {
                                                                              LocalDate dueDateTo, LocalDate paymentDateFrom, LocalDate paymentDateTo,
                                                                              DebtPositionStatus status, PaymentPositionOrder orderBy, Direction ordering,
                                                                              String segregationCodes) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
 
         ArrayList<String> segCodesList = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
 
@@ -111,9 +112,6 @@ public class DebtPositionController implements IDebtPositionController {
         List<PaymentPositionModelBaseResponse> ppResponseList = ObjectMapperUtils.mapAll(
                 pagePP.toList(),
                 PaymentPositionModelBaseResponse.class);
-        
-        //PAGOPA-1155: add nav info to PO
-        ppResponseList.forEach(pp -> pp.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv())));
 
         return new ResponseEntity<>(PaymentPositionsInfo.builder()
                 .ppBaseResponseList(ppResponseList)
@@ -123,23 +121,27 @@ public class DebtPositionController implements IDebtPositionController {
     }
 
     @Override
-    public ResponseEntity<PaymentPositionModelBaseResponse> getOrganizationDebtPositionByIUPD(String organizationFiscalCode, String iupd, String segregationCodes) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationDebtPositionByIUPD", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
+    public ResponseEntity<PaymentPositionModelBaseResponse> getOrganizationDebtPositionByIUPD(
+            @Pattern(regexp = "[\\w*\\h-]+") String organizationFiscalCode,
+            @Pattern(regexp = "[\\w*\\h-]+") String iupd,
+            @Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "GET", "getOrganizationDebtPositionByIUPD", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
         // flip entity to model
         PaymentPositionModelBaseResponse paymentPositionResponse = ObjectMapperUtils.map(
                 paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segCodes),
                 PaymentPositionModelBaseResponse.class);
-        //PAGOPA-1155: add nav info to PO
-        paymentPositionResponse.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv()));
 
         return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<String> deleteDebtPosition(String organizationFiscalCode, String iupd, String segregationCodes) {
-        log.info(String.format(LOG_BASE_HEADER_INFO, "DELETE", "deleteDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
+    public ResponseEntity<String> deleteDebtPosition(
+            @Pattern(regexp = "[\\w*\\h-]+") String organizationFiscalCode,
+            @Pattern(regexp = "[\\w*\\h-]+") String iupd,
+            @Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "DELETE", "deleteDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
         paymentPositionService.delete(organizationFiscalCode, iupd, segCodes);
@@ -147,12 +149,13 @@ public class DebtPositionController implements IDebtPositionController {
     }
 
     @Override
-    public ResponseEntity<PaymentPositionModel> updateDebtPosition(String organizationFiscalCode, String iupd,
+    public ResponseEntity<PaymentPositionModel> updateDebtPosition(String organizationFiscalCode,
+                                                                   String iupd,
                                                                    PaymentPositionModel paymentPositionModel,
                                                                    boolean toPublish, String segregationCodes) {
         final String IUPD_VALIDATION_ERROR = "IUPD mistmatch error: path variable IUPD [%s] and request body IUPD [%s] must be the same";
 
-        log.info(String.format(LOG_BASE_HEADER_INFO, "PUT", "updateDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "PUT", "updateDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
         // verifico la congruenza di dati tra lo iupd path variable e lo iupd nel request body
         if (!paymentPositionModel.getIupd().equals(iupd)) {
             log.error(String.format(LOG_BASE_HEADER_INFO, "PUT", "updateDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)) +
@@ -162,37 +165,88 @@ public class DebtPositionController implements IDebtPositionController {
         }
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
-        PaymentPosition updatedDebtPos = paymentPositionService.update(paymentPositionModel, organizationFiscalCode, toPublish, segCodes);
+        PaymentPosition updatedDebtPos = paymentPositionService.update(paymentPositionModel, organizationFiscalCode, toPublish, segCodes, UPDATE_ACTION);
 
         if (null != updatedDebtPos) {
-        	PaymentPositionModel paymentPosition = modelMapper.map(updatedDebtPos, PaymentPositionModel.class);
-        	//PAGOPA-1155: add nav info to PO
-        	paymentPosition.getPaymentOption().forEach(po -> po.setNav(auxDigit+po.getIuv()));
+        	PaymentPositionModel paymentPosition = ObjectMapperUtils.map(updatedDebtPos, PaymentPositionModel.class);
             return new ResponseEntity<>(paymentPosition, HttpStatus.OK);
         }
 
         throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
-
     }
 
 	@Override
 	public ResponseEntity<Void> createMultipleDebtPositions(String organizationFiscalCode,
 			@Valid MultiplePaymentPositionModel multiplePaymentPositionModel, boolean toPublish,
-			@Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
-		log.info(String.format(LOG_BASE_HEADER_INFO, "POST", "createMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
-		
+			@Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes,
+			ServiceType serviceType) {
+		log.debug(String.format(LOG_BASE_HEADER_INFO, "POST", "createMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
+
 		// flip model to entity
-        List<PaymentPosition> debtPositions = multiplePaymentPositionModel.getPaymentPositions()
-                .stream().map( dp -> modelMapper.map(dp, PaymentPosition.class))
+		List<PaymentPosition> debtPositions = multiplePaymentPositionModel.getPaymentPositions().stream()
+				.map(ppModel -> modelMapper.map(ppModel, PaymentPosition.class))
+				.map(ppMappedModel -> {
+			        ppMappedModel.setServiceType(serviceType);
+			        return ppMappedModel;
+			    })
                 .collect(Collectors.toList());
 
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
-        List<PaymentPosition> createdDebtPosList = paymentPositionService.createMultipleDebtPositions(debtPositions, organizationFiscalCode, toPublish, segCodes);
-        
+        List<PaymentPosition> createdDebtPosList = paymentPositionService.createMultipleDebtPositions(debtPositions, organizationFiscalCode, toPublish, segCodes, CREATE_ACTION);
+
         if (!CollectionUtils.isEmpty(createdDebtPosList)) {
         	return ResponseEntity.status(HttpStatus.CREATED).build();
         }
 
         throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
 	}
+
+    @Override
+    public ResponseEntity<Void> updateMultipleDebtPositions(String organizationFiscalCode,
+                                                            @Valid MultiplePaymentPositionModel multiplePaymentPositionModel, boolean toPublish,
+                                                            @Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "PUT", "updateMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
+
+        // flip model to entity
+        List<PaymentPosition> debtPositions = multiplePaymentPositionModel.getPaymentPositions()
+                                                      .stream().map( ppModel -> modelMapper.map(ppModel, PaymentPosition.class))
+                                                      .collect(Collectors.toList());
+
+        ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
+        List<PaymentPosition> updatedDebtPosList = paymentPositionService.updateMultipleDebtPositions(debtPositions, organizationFiscalCode, toPublish, segCodes, UPDATE_ACTION);
+
+        if (!CollectionUtils.isEmpty(updatedDebtPosList)) {
+            return ResponseEntity.status(HttpStatus.OK).build();
+        }
+
+        throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
+    }
+
+    @Override
+    public ResponseEntity<String> deleteMultipleDebtPositions(
+            @Pattern(regexp = "\\b\\w{11}\\b") String organizationFiscalCode, @Valid MultipleIUPDModel multipleIUPDModel,
+                                                            @Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "DELETE", "deleteMultipleDebtPositions", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
+
+        ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
+        paymentPositionService.deleteMultipleDebtPositions(multipleIUPDModel.getPaymentPositionIUPDs(), organizationFiscalCode, segCodes);
+
+        return new ResponseEntity<>(Constants.DEBT_POSITION_DELETED, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<PaymentPositionModelBaseResponse> getDebtPositionByIUV(
+            @Pattern(regexp = "\\d{11}") String organizationFiscalCode,
+            @Pattern(regexp = "\\b\\w{0,35}\\b") String iuv,
+            @Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
+        log.debug(String.format(LOG_BASE_HEADER_INFO, "GET", "getDebtPositionByIUV", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv)));
+
+        ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
+        // flip entity to model
+        PaymentPositionModelBaseResponse paymentPositionResponse = ObjectMapperUtils.map(
+                paymentPositionService.getDebtPositionByIUV(organizationFiscalCode, iuv, segCodes),
+                PaymentPositionModelBaseResponse.class);
+
+        return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
+    }
 }

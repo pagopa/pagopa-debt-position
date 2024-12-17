@@ -32,7 +32,7 @@ public class PaymentPositionActionsService {
         long t1 = System.currentTimeMillis();
         PaymentPosition ppToPublish = paymentPositionCRUDService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segregationCodes);
         long getTime = System.currentTimeMillis() - t1;
-        log.info("getDebtPositionByIUPD elapsed time: " + getTime);
+        log.debug("getDebtPositionByIUPD elapsed time: " + getTime);
 
         if (DebtPositionStatus.getPaymentPosNotPublishableStatus().contains(ppToPublish.getStatus())) {
             throw new AppException(AppError.DEBT_POSITION_NOT_PUBLISHABLE, organizationFiscalCode, iupd);
@@ -45,7 +45,8 @@ public class PaymentPositionActionsService {
     @Transactional
     public PaymentPosition invalidate(@NotBlank String organizationFiscalCode, @NotBlank String iupd, List<String> segregationCodes) {
         PaymentPosition ppToInvalidate = paymentPositionCRUDService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segregationCodes);
-        if (DebtPositionStatus.getPaymentPosNotIvalidableStatus().contains(ppToInvalidate.getStatus())) {
+        DebtPositionStatus.updatePaymentPositionStatus(ppToInvalidate);
+        if (DebtPositionStatus.getPaymentPosNotInvalidableStatus().contains(ppToInvalidate.getStatus())) {
             throw new AppException(AppError.DEBT_POSITION_NOT_INVALIDABLE, organizationFiscalCode, iupd);
         }
         LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);

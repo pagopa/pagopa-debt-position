@@ -1,18 +1,16 @@
 package it.gov.pagopa.debtposition.entity;
 
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -34,7 +32,10 @@ import java.util.List;
 @Table(name = "payment_position", uniqueConstraints = {
         @UniqueConstraint(name = "UniquePaymentPos", columnNames = {"iupd", "organization_fiscal_code"})
         },
-        indexes = @Index(name = "payment_position_status_validity_date_idx", columnList = "status, validity_date")
+        indexes = {
+            @Index(name = "payment_position_status_validity_date_idx", columnList = "status, validity_date"),
+            @Index(name = "idx_fiscal_code", columnList = "fiscal_code")
+        }
 )
 @JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="@paymentPositionId")
 public class PaymentPosition implements Serializable {
@@ -57,6 +58,14 @@ public class PaymentPosition implements Serializable {
     @Column(name = "organization_fiscal_code")
     private String organizationFiscalCode;
 
+    @Builder.Default
+    @Column(name = "pull", columnDefinition = "boolean DEFAULT true")
+    private Boolean pull = true;
+
+    @Builder.Default
+    @Column(name = "pay_stand_in", columnDefinition = "boolean DEFAULT true")
+    private Boolean payStandIn = true;
+
     // Debtor properties
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -66,6 +75,7 @@ public class PaymentPosition implements Serializable {
     private String fiscalCode;
     @NotNull
     @Column(name = "full_name")
+    @ToString.Exclude
     private String fullName;
     @Column(name = "street_name")
     private String streetName;
@@ -77,8 +87,14 @@ public class PaymentPosition implements Serializable {
     private String province;
     private String region;
     private String country;
+    @ToString.Exclude
     private String email;
+    @ToString.Exclude
     private String phone;
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "service_type")
+    private ServiceType serviceType = ServiceType.GPD;
 
     // Payment Position properties
     @NotNull
@@ -129,5 +145,14 @@ public class PaymentPosition implements Serializable {
     public void removePaymentOption(PaymentOption paymentOpt) {
         paymentOption.remove(paymentOpt);
         paymentOpt.setPaymentPosition(null);
+    }
+
+    public PaymentPosition deepClone() {
+        PaymentPosition clone = SerializationUtils.clone(this);
+        List<PaymentOption> clonedPaymentOptions = new ArrayList<>();
+        paymentOption.forEach(po -> clonedPaymentOptions.add(SerializationUtils.clone(po)));
+        clone.setPaymentOption(clonedPaymentOptions);
+
+        return clone;
     }
 }

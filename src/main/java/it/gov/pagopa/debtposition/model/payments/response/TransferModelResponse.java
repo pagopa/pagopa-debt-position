@@ -23,6 +23,7 @@ public class TransferModelResponse implements Serializable {
     private static final long serialVersionUID = -8466280136220999882L;
 
     private String organizationFiscalCode;
+    private String companyName;
     private String idTransfer;
     private long amount;
     private String remittanceInformation; // causale

@@ -25,12 +25,13 @@ public class PaymentOptionModel implements Serializable {
      */
     private static final long serialVersionUID = -8328320637402363721L;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String nav;
     @NotBlank(message = "iuv is required")
     private String iuv;
     @NotNull(message = "amount is required")
     private Long amount;
+    @NotBlank(message = "payment option description is required")
+    @Size(max = 140) // compliant to paForNode.xsd
     private String description;
     @NotNull(message = "is partial payment is required")
     private Boolean isPartialPayment;

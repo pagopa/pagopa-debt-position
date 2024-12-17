@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.11.5-4-PAGOPA-1527-gpd-core-qos"
+    tag: "0.11.63"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -84,15 +84,15 @@ microservice-chart:
                 periodSeconds: 20
   envConfig:
     WEBSITE_SITE_NAME: 'pagopa-p-gpd-core-service'
-    ENV: 'Azure Kubernetes'
+    ENV: 'prod'
     SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.p.internal.postgresql.pagopa.it:5432/apd?sslmode=require&prepareThreshold=0"
     SPRING_DATASOURCE_TYPE: "com.zaxxer.hikari.HikariDataSource"
     SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
     SPRING_JPA_HIBERNATE_SHOW_SQL: "false"
     SCHEMA_NAME: "apd"
     CRON_JOB_SCHEDULE_ENABLED: "true"
-    CRON_JOB_SCHEDULE_EXPRESSION_TO_VALID: "0 */30 * * * *"
-    CRON_JOB_SCHEDULE_EXPRESSION_TO_EXPIRED: "0 */40 * * * *"
+    CRON_JOB_SCHEDULE_EXPRESSION_TO_VALID: "0 0 11,21 * * *" # 11, 21 (UTC+00) o'clock of every day.
+    CRON_JOB_SCHEDULE_EXPRESSION_TO_EXPIRED: "0 30 11,21 * * *" # 11:30, 21:30 (UTC+00) o'clock of every day.
     CRON_JOB_SCHEDULE_HISTORY_ENABLED: "false"
     CRON_JOB_SCHEDULE_HISTORY_TRIGGER: "0 0 1 * * *"
     CRON_JOB_SCHEDULE_HISTORY_QUERY: "SELECT pp FROM PaymentPosition pp WHERE pp.status IN ('PAID', 'REPORTED', 'INVALID', 'EXPIRED') AND pp.lastUpdatedDate < ?1"
@@ -115,6 +115,7 @@ microservice-chart:
     SQL_LOG_LEVEL: "INFO"
     SQL_BINDER_LOG_LEVEL: "INFO"
     MAX_DEBT_POSITIONS: "100"
+    SERVICE_NAME: "pagopa-gpd-core"
   envSecret:
     # required
     APPLICATIONINSIGHTS_CONNECTION_STRING: 'ai-p-connection-string'

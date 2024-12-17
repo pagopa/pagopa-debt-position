@@ -1,23 +1,24 @@
+#
+# Build
+#
 FROM maven:3.9.3-amazoncorretto-17@sha256:4ab7db7bd5f95e58b0ba1346ff29d6abdd9b73e5fd89c5140edead8b037386ff AS buildtime
-
 WORKDIR /build
 COPY . .
+RUN mvn clean package -Dmaven.test.skip=true
 
-RUN mvn clean package -DskipTests
+#
+# Package stage
+#
+FROM --platform=linux/amd64 amazoncorretto:17.0.9-alpine3.18@sha256:df48bf2e183230040890460ddb4359a10aa6c7aad24bd88899482c52053c7e17 as builder
+COPY --from=buildtime /build/target/*.jar application.jar
+RUN java -Djarmode=layertools -jar application.jar extract
 
-FROM amazoncorretto:17.0.8-alpine3.18@sha256:0c61f12abfb091be48474e836e6802ff3a93e8e038e0460af8c7f447ccbd3901 AS runtime
+FROM ghcr.io/pagopa/docker-base-springboot-openjdk17:v2.2.0@sha256:b866656c31f2c6ebe6e78b9437ce930d6c94c0b4bfc8e9ecc1076a780b9dfb18
 
-VOLUME /tmp
-WORKDIR /app
+COPY --chown=spring:spring  --from=builder dependencies/ ./
+COPY --chown=spring:spring  --from=builder snapshot-dependencies/ ./
 
-COPY --from=buildtime /build/target/*.jar /app/app.jar
-# The agent is enabled at runtime via JAVA_TOOL_OPTIONS.
-ADD https://github.com/microsoft/ApplicationInsights-Java/releases/download/3.4.15/applicationinsights-agent-3.4.15.jar /app/applicationinsights-agent.jar
-
-RUN chown -R nobody:nobody /app
-
-EXPOSE 8080
-
-# USER 65534
-
-ENTRYPOINT [ "java","-jar","/app/app.jar" ]
+# https://github.com/moby/moby/issues/37965#issuecomment-426853382
+RUN true
+COPY --chown=spring:spring  --from=builder spring-boot-loader/ ./
+COPY --chown=spring:spring  --from=builder application/ ./

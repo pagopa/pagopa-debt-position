@@ -7,6 +7,7 @@ import it.gov.pagopa.debtposition.model.filterandorder.OrderType;
 import lombok.experimental.UtilityClass;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -80,5 +81,16 @@ public class CommonUtil {
         return segregationCode.substring(0, length) + (char) nextChar;
     }
 
+    /**
+     * @param value value to deNullify.
+     * @return return empty string if value is null
+     */
+    public static String deNull(Object value) {
+        return Optional.ofNullable(value).orElse("").toString();
+    }
+    
+    public static String sanitize(String input) {
+        return input == null ? null : input.replaceAll("[\\n\\r\\t]", "_");
+    }
 
 }

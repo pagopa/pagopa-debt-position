@@ -26,7 +26,7 @@ public class ConvertPPModelToPPEntityForUpdate implements Converter<PaymentPosit
         PaymentPositionModel source = context.getSource();
         PaymentPosition destination = context.getDestination() != null ? context.getDestination() : new PaymentPosition();
 
-
+        destination.setPayStandIn(source.isPayStandIn());
         destination.setCity(source.getCity());
         destination.setCivicNumber(source.getCivicNumber());
         destination.setCompanyName(source.getCompanyName());
@@ -64,6 +64,7 @@ public class ConvertPPModelToPPEntityForUpdate implements Converter<PaymentPosit
         po.setFee(pom.getFee());
         po.setIsPartialPayment(pom.getIsPartialPayment());
         po.setIuv(pom.getIuv());
+        po.setNav(pom.getNav());
         po.setRetentionDate(pom.getRetentionDate());
         po.setNotificationFee(pom.getNotificationFee());
 
@@ -90,6 +91,7 @@ public class ConvertPPModelToPPEntityForUpdate implements Converter<PaymentPosit
         Transfer t = new Transfer();
         t.setAmount(tm.getAmount());
         t.setOrganizationFiscalCode(tm.getOrganizationFiscalCode());
+        t.setCompanyName(tm.getCompanyName());
         t.setCategory(tm.getCategory());
         t.setIban(tm.getIban());
         t.setIdTransfer(tm.getIdTransfer());

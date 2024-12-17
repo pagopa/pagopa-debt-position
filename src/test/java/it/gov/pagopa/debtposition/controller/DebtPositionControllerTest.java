@@ -14,13 +14,20 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Random;
 
+import it.gov.pagopa.debtposition.dto.*;
+import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
+import it.gov.pagopa.debtposition.model.pd.Stamp;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.Matchers;
+import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -32,10 +39,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
 import it.gov.pagopa.debtposition.client.NodeClient;
-import it.gov.pagopa.debtposition.dto.PaymentOptionDTO;
-import it.gov.pagopa.debtposition.dto.PaymentOptionMetadataDTO;
-import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
-import it.gov.pagopa.debtposition.dto.TransferMetadataDTO;
 import it.gov.pagopa.debtposition.mock.DebtPositionMock;
 import it.gov.pagopa.debtposition.model.checkposition.NodeCheckPositionModel;
 import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPositionResponse;
@@ -53,6 +56,9 @@ class DebtPositionControllerTest {
 	private ModelMapper modelMapperMock;
 	
 	@MockBean private NodeClient nodeClient;
+	
+	@Value("${nav.aux.digit}")
+    private String auxDigit;
 
 	@BeforeEach
 	void setUp() {
@@ -63,12 +69,80 @@ class DebtPositionControllerTest {
 	 */
 	@Test
 	void createDebtPosition_201() throws Exception {
+		// a debtor position is created with null validationDate and without forcing toPublish
 		mvc.perform(post("/organizations/12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].iuv")
+				.value("123456IUVMOCK1"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-				.value("3123456IUVMOCK1"));
+				.value(auxDigit+"123456IUVMOCK1"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].companyName")
+				.value("mock company name"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.DRAFT.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.nullValue()));
+	}
+
+	@Test
+	void createDebtPosition_blank_input_201() throws Exception {
+		PaymentPositionDTO mock1 = DebtPositionMock.getMock1();
+		mock1.setFullName(" ");
+		mock1.setFiscalCode(" ");
+		mvc.perform(post("/organizations/blank_12345678901/debtpositions")
+						.content(TestUtil.toJson(mock1)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].iuv")
+						.value("123456IUVMOCK1"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+						.value(auxDigit+"123456IUVMOCK1"));
+	}
+	
+	@Test
+	void createDebtPosition_type_ACA_201() throws Exception {	
+		mvc.perform(post("/organizations/aca_12345678901/debtpositions?serviceType=ACA")
+						.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].iuv")
+						.value("123456IUVMOCK1"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+						.value(auxDigit+"123456IUVMOCK1"))
+				// il serviceType non deve essere restituito nella risposta
+				.andExpect(MockMvcResultMatchers.jsonPath("$.serviceType").doesNotExist());
+	}
+
+	@Test
+	void createDebtPosition_null_input_400() throws Exception {
+		PaymentPositionDTO mock1 = DebtPositionMock.getMock1();
+		mock1.setFullName(null);
+		mock1.setFiscalCode(null);
+		mvc.perform(post("/organizations/12345678901/debtpositions")
+						.content(TestUtil.toJson(mock1)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON));
+	}
+
+	@Test
+	void createDebtPositionWithStamp_201() throws Exception {
+		PaymentPositionDTO pp = DebtPositionMock.getMock1();
+		TransferDTO t = new TransferDTO(pp.getOrganizationFiscalCode(), "1", pp.getPaymentOption().get(0).getAmount(), "info", "0", "", "",
+				new Stamp("hash1", "01", "ML"), TransferStatus.T_UNREPORTED);
+		pp.getPaymentOption().get(0).getTransfer().set(0, t);
+		pp.setIupd(RandomStringUtils.randomNumeric(20));
+		pp.getPaymentOption().get(0).setIuv(RandomStringUtils.randomNumeric(17));
+		mvc.perform(post("/organizations/12345678901/debtpositions")
+							.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].stamp.hashDocument")
+								   .value(t.getStamp().getHashDocument()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].stamp.stampType")
+								   .value(t.getStamp().getStampType()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].stamp.provincialResidence")
+									.value(t.getStamp().getProvincialResidence()));
 	}
 
 	@Test
@@ -93,6 +167,19 @@ class DebtPositionControllerTest {
 				.value("3123456IUVMULTIPLEMOCK4"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[2].nav")
 				.value("3123456IUVMULTIPLEMOCK5"));
+	}
+	
+	@Test
+	void createDebtPosition_Custom_NAV_201() throws Exception {
+		PaymentPositionDTO pp = DebtPositionMock.getMock1();
+		pp.getPaymentOption().forEach(po -> po.setNav("CUSTOM_"+auxDigit+po.getIuv()));
+		
+		mvc.perform(post("/organizations/12345678901_NAV/debtpositions")
+				.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value("CUSTOM_"+auxDigit+"123456IUVMOCK1"));
 	}
 
 	@Test
@@ -193,6 +280,27 @@ class DebtPositionControllerTest {
 				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isConflict()).andExpect(content().contentType(MediaType.APPLICATION_JSON));
 	}
+	
+	@Test
+	void createDebtPosition_Custom_NAV_409() throws Exception {
+		PaymentPositionDTO ppNav = DebtPositionMock.getMock1();
+		ppNav.getPaymentOption().forEach(po -> po.setNav("CUSTOM_"+auxDigit+po.getIuv()));
+		
+		mvc.perform(post("/organizations/409_12345678901_NAV/debtpositions")
+				.content(TestUtil.toJson(ppNav)).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value("CUSTOM_"+auxDigit+"123456IUVMOCK1"));
+		
+		// provo a creare una seconda posizione debitoria per la stessa organizzazione, cambiando lo IUPD e lo IUV ma non il NAV 
+	    // => la chiamata deve andare in errore con codice 409 (violazione unique constraint)
+		ppNav.setIupd((int)(new Random().nextInt(100))+"_"+ppNav.getIupd());
+		ppNav.getPaymentOption().forEach(po -> po.setIuv((int)(Math.random()*100)+"_"+po.getIuv()));
+		mvc.perform(post("/organizations/409_12345678901_NAV/debtpositions")
+				.content(TestUtil.toJson(ppNav)).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isConflict()).andExpect(content().contentType(MediaType.APPLICATION_JSON));
+	}
 
 	@Test
 	void createAndPublishDebtPosition_201() throws Exception {
@@ -207,7 +315,8 @@ class DebtPositionControllerTest {
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 						.value(DebtPositionStatus.VALID.toString()))
-				.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty());
+				.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.notNullValue()));
 
 		// provo a fare una nuova pubblicazione su una posizione debitoria con uno stato non più idoneo
 		mvc.perform(post("/organizations/CRTPUB_12345678901/debtpositions/12345678901IUPDMOCK1/publish")
@@ -267,6 +376,137 @@ class DebtPositionControllerTest {
 	}
 
 	/**
+	 *  GET DEBT POSITION BY IUV
+	 */
+	@Test
+	void getDebtPositionByIUV_200() throws Exception {
+		PaymentPositionDTO pp = DebtPositionMock.getMock1();
+		pp.setIupd(RandomStringUtils.randomNumeric(20));
+		String iuv = RandomStringUtils.randomNumeric(17);
+		pp.getPaymentOption().get(0).setIuv(iuv);
+		mvc.perform(post("/organizations/20077777771/debtpositions")
+						.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+
+		String url = "/organizations/20077777771/paymentoptions/" + iuv + "/debtposition";
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+						.value(auxDigit+iuv));
+	}
+
+	@Test
+	void getDebtPositionWithStampByIUV_200() throws Exception {
+		PaymentPositionDTO pp = DebtPositionMock.getMock1();
+		TransferDTO t = new TransferDTO(pp.getOrganizationFiscalCode(), "1", pp.getPaymentOption().get(0).getAmount(), "info", "0", "", "",
+				new Stamp("hash1", "01", "ML"), TransferStatus.T_UNREPORTED);
+		pp.getPaymentOption().get(0).getTransfer().set(0, t);
+		String iuv = RandomStringUtils.randomNumeric(17);
+		pp.getPaymentOption().get(0).setIuv(iuv);
+		pp.setIupd(RandomStringUtils.randomNumeric(20));
+		mvc.perform(post("/organizations/20077777771/debtpositions")
+							.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+		String url = "/organizations/20077777771/paymentoptions/" + iuv + "/debtposition";
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].stamp.hashDocument")
+								   .value(t.getStamp().getHashDocument()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].stamp.stampType")
+								   .value(t.getStamp().getStampType()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].stamp.provincialResidence")
+								   .value(t.getStamp().getProvincialResidence()));
+	}
+
+	@Test
+	void getDebtPositionByIUV_WithMetadata_200() throws Exception {
+		// Creo una posizione debitoria con metadati su PO e transfer, la recupero e verifico siano presenti i metadati inseriti
+		PaymentPositionDTO pp = DebtPositionMock.getMetadataMock8();
+		String iuv = "47999999999999999";
+		pp.getPaymentOption().get(0).setIuv(iuv);
+		mvc.perform(post("/organizations/20077777772/debtpositions")
+						.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value(auxDigit+iuv))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata").isArray())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata[0].key")
+						.value("keypometadatamock9"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].transferMetadata[0].key")
+						.value("keytransfermetadatamock3"));
+
+		String url = "/organizations/20077777772/paymentoptions/" + iuv + "/debtposition";
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value(auxDigit+iuv))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata").isArray())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata[0].key")
+						.value("keypometadatamock9"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].transferMetadata[0].key")
+						.value("keytransfermetadatamock3"));
+	}
+
+	@Test
+	void getDebtPositionByIUV_Custom_NAV_200() throws Exception {
+		PaymentPositionDTO pp = DebtPositionMock.getMock1();
+		String iuv = "47999999999999999";
+		pp.getPaymentOption().get(0).setIuv(iuv);
+		pp.getPaymentOption().forEach(po -> po.setNav("9"+auxDigit+po.getIuv()));
+
+		// Creo una posizione debitoria settando il NAV e la recupero
+		mvc.perform(post("/organizations/20077777773/debtpositions")
+						.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+						.value("9"+auxDigit+iuv));
+		String url = "/organizations/20077777773/paymentoptions/" + iuv + "/debtposition";
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+						.value("9"+auxDigit+iuv));
+	}
+
+	@Test
+	void getDebtPositionByIUV_SegregationCodeAuthorized_200() throws Exception {
+		PaymentPositionDTO pp = DebtPositionMock.getMock1();
+		String iuv = "47999999999999999";
+		pp.getPaymentOption().get(0).setIuv(iuv);
+		String validSegregationCode = pp.getPaymentOption().get(0).getIuv().substring(0,2);
+		String anotherSegregationCode = "99";
+		// creo una posizione debitoria e la recupero
+		mvc.perform(post("/organizations/20077777774/debtpositions")
+						.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+
+		String url = "/organizations/20077777774/paymentoptions/" + iuv + "/debtposition?segregationCodes=" + validSegregationCode + "," + anotherSegregationCode;
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+						.value(auxDigit+iuv));
+	}
+
+	@Test
+	void getDebtPositionByIUV_SegregationCodeForbidden_403() throws Exception {
+		PaymentPositionDTO pp = DebtPositionMock.getMock1();
+		String iuv = "47999999999999999";
+		pp.getPaymentOption().get(0).setIuv(iuv);
+		String notSufficientSegregationCode = "99";
+		mvc.perform(post("/organizations/40377777771/debtpositions")
+						.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+		String url = "/organizations/40377777771/paymentoptions/" + iuv + "/debtposition?segregationCodes=" + notSufficientSegregationCode;
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isForbidden());
+	}
+
+	@Test
+	void getDebtPositionByIUV_404() throws Exception {
+		String NOT_EXISTENT_IUV = "00999999999999999";
+		String url = "/organizations/40377777771/paymentoptions/" + NOT_EXISTENT_IUV + "/debtposition";
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON));
+	}
+
+	/**
 	 *  GET DEBT POSITION BY IUPD
 	 */
 	@Test
@@ -280,7 +520,30 @@ class DebtPositionControllerTest {
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-								   .value("3123456IUVMOCK1"));
+								   .value(auxDigit+"123456IUVMOCK1"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].companyName")
+						.value("mock company name"));
+	}
+
+	@Test
+	void getDebtPositionWithStampByIUPD_200() throws Exception {
+		PaymentPositionDTO pp = DebtPositionMock.getMock1();
+		TransferDTO t = new TransferDTO(pp.getOrganizationFiscalCode(), "1", pp.getPaymentOption().get(0).getAmount(), "info", "0", "", "",
+				new Stamp("hash1", "01", "ML"), TransferStatus.T_UNREPORTED);
+		pp.getPaymentOption().get(0).getTransfer().set(0, t);
+		mvc.perform(post("/organizations/20077777771/debtpositions")
+							.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+
+		String url = "/organizations/20077777771/debtpositions/" + pp.getIupd();
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].stamp.hashDocument")
+								   .value(t.getStamp().getHashDocument()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].stamp.stampType")
+								   .value(t.getStamp().getStampType()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].stamp.provincialResidence")
+								   .value(t.getStamp().getProvincialResidence()));
 	}
 	
 	@Test
@@ -306,12 +569,25 @@ class DebtPositionControllerTest {
 				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].transferMetadata[0].key")
 						.value("keytransfermetadatamock3"));
 	}
-
+	
 	@Test
-	void getDebtPositionByIUPD_404() throws Exception {
-		String url = "/organizations/200_12345678901/debtpositions/12345678901IUPDNOTEXIST";
-		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound())
-		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
+	void getDebtPositionByIUPD_Custom_NAV_200() throws Exception {
+		PaymentPositionDTO pp = DebtPositionMock.getMock1();
+		pp.getPaymentOption().forEach(po -> po.setNav("CUSTOM_"+auxDigit+po.getIuv()));
+		
+		// creo una posizione debitoria settando il NAV e la recupero
+		mvc.perform(post("/organizations/200_12345678901_NAV/debtpositions")
+				.content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value("CUSTOM_"+auxDigit+"123456IUVMOCK1"));
+		
+		String url = "/organizations/200_12345678901_NAV/debtpositions/12345678901IUPDMOCK1";
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+								   .value("CUSTOM_"+auxDigit+"123456IUVMOCK1"));
 	}
 
 	@Test
@@ -341,6 +617,13 @@ class DebtPositionControllerTest {
 
 		String url = "/organizations/200_SC_12345678901/debtpositions/12345678901IUPDMOCK1?segregationCodes=" + notSufficientSegregationCode;
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isForbidden());
+	}
+	
+	@Test
+	void getDebtPositionByIUPD_404() throws Exception {
+		String url = "/organizations/200_12345678901/debtpositions/12345678901IUPDNOTEXIST";
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
 	}
 
 	/**
@@ -379,6 +662,46 @@ class DebtPositionControllerTest {
 				.value("3123456IUVMULTIPLEMOCK4"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[2].nav")
 				.value("3123456IUVMULTIPLEMOCK5"));
+	}
+	
+	@Test
+	void getDebtPositionList_NAV() throws Exception {
+		
+		// creo due posizioni debitorie di cui una con il NAV settato in fase di creazione e l'altra con il default <AUX_DIGIT>+IUV
+		PaymentPositionDTO ppNav = DebtPositionMock.getMock2();
+		ppNav.getPaymentOption().forEach(po -> po.setNav("CUSTOM_"+auxDigit+po.getIuv()));
+		mvc.perform(post("/organizations/LIST_NAV_12345678901/debtpositions")
+				.content(TestUtil.toJson(ppNav)).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated());
+
+		mvc.perform(post("/organizations/LIST_NAV_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated());
+
+		DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		String url = "/organizations/LIST_NAV_12345678901/debtpositions?page=0" + "&due_date_from="
+				+ df.format(LocalDateTime.now(ZoneOffset.UTC)) + "&due_date_to="
+				+ df.format(LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS))
+				+ "&orderby=IUPD&ordering=ASC";
+		
+		// recupero le payment_option di entrambe e verifico che una abbia il NAV custom e l'altra in NAV di default
+		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(2)))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[*].iuv")
+				.value(Matchers.hasSize(2)))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[*].iuv")
+				.value(Matchers.hasSize(3)))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[0].nav")
+				.value("CUSTOM_"+auxDigit+"123456IUVMULTIPLEMOCK1"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[1].nav")
+				.value("CUSTOM_"+auxDigit+"123456IUVMULTIPLEMOCK2"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[0].nav")
+				.value(auxDigit+"123456IUVMULTIPLEMOCK3"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[1].nav")
+				.value(auxDigit+"123456IUVMULTIPLEMOCK4"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[2].nav")
+				.value(auxDigit+"123456IUVMULTIPLEMOCK5"));
 	}
 
 	@Test
@@ -422,7 +745,7 @@ class DebtPositionControllerTest {
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
 		// effettuo la notifica di pagamento
-		mvc.perform(post("/organizations/LIST_12345678902/paymentoptions/123456IUVMOCK1/pay")
+		mvc.perform(post("/organizations/LIST_12345678902/paymentoptions/"+auxDigit+"123456IUVMOCK1/pay")
 							.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON));
@@ -455,7 +778,7 @@ class DebtPositionControllerTest {
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
 		// effettuo la notifica di pagamento
-		mvc.perform(post("/organizations/LIST_12345678903/paymentoptions/123456IUVMOCK1/pay")
+		mvc.perform(post("/organizations/LIST_12345678903/paymentoptions/"+auxDigit+"123456IUVMOCK1/pay")
 							.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
@@ -512,7 +835,7 @@ class DebtPositionControllerTest {
 		String url = "/organizations/DUEDATEBETWEEN_12345678901/debtpositions?page=0" + "&due_date_from="
 				+ df.format(LocalDateTime.now(ZoneOffset.UTC)) + "&due_date_to="
 				+ df.format(LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.DAYS))
-				+ "&orderby=IUPD&ordering=ASC";;
+				+ "&orderby=IUPD&ordering=ASC";
 		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(2)))
@@ -522,51 +845,7 @@ class DebtPositionControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[*].iuv")
 				.value(Matchers.hasSize(3)));
 	}
-/*
-	@Test
-	void getDebtPositionListDueDateGreaterThanOrEqual() throws Exception {
-		// creo due posizioni debitorie ed estraggo quelle con due_date >= due_date_from
-		mvc.perform(post("/organizations/DUEDATEGREATER_12345678901/debtpositions")
-				.content(TestUtil.toJson(DebtPositionMock.getMock2())).contentType(MediaType.APPLICATION_JSON))
-		.andExpect(status().isCreated());
 
-		mvc.perform(post("/organizations/DUEDATEGREATER_12345678901/debtpositions")
-				.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
-		.andExpect(status().isCreated());
-
-		DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-		String url = "/organizations/DUEDATEGREATER_12345678901/debtpositions?page=0" + "&due_date_from="
-				+ df.format(LocalDateTime.now(ZoneOffset.UTC).plus(3, ChronoUnit.DAYS));
-		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(1)))
-		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[*].iuv")
-				.value(Matchers.hasSize(1)));
-	}
-
-	@Test
-	void getDebtPositionListDueDateLessThanOrEqual() throws Exception {
-		// creo due posizioni debitorie ed estraggo quelle con due_date <= due_date_to
-		mvc.perform(post("/organizations/DUEDATELESS_12345678901/debtpositions")
-				.content(TestUtil.toJson(DebtPositionMock.getMock2())).contentType(MediaType.APPLICATION_JSON))
-		.andExpect(status().isCreated());
-
-		mvc.perform(post("/organizations/DUEDATELESS_12345678901/debtpositions")
-				.content(TestUtil.toJson(DebtPositionMock.getMock3())).contentType(MediaType.APPLICATION_JSON))
-		.andExpect(status().isCreated());
-
-		DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-		String url = "/organizations/DUEDATELESS_12345678901/debtpositions?page=0" + "&due_date_to="
-				+ df.format(LocalDateTime.now(ZoneOffset.UTC).plus(3, ChronoUnit.DAYS));
-		mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd").value(Matchers.hasSize(2)))
-		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[*].iuv")
-				.value(Matchers.hasSize(1)))
-		.andExpect(MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[*].iuv")
-				.value(Matchers.hasSize(3)));
-	}
-*/
 	@Test
 	void getDebtPositionList_404() throws Exception {
 		// provo a recuperare una posizione debitoria con una url sbagliata
@@ -700,7 +979,7 @@ class DebtPositionControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
 		// effettuo la notifica di pagamento e verifico lo stato in paid
-		mvc.perform(post("/organizations/DEL_409_12345678901/paymentoptions/123456IUVMOCK1/pay")
+		mvc.perform(post("/organizations/DEL_409_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -752,13 +1031,16 @@ class DebtPositionControllerTest {
 	 */
 	@Test
 	void updateDebtPosition_200() throws Exception {
-		// creo una posizione debitoria 
+		// creo una posizione debitoria con validatyDate a null e senza forzare il toPublish
 		mvc.perform(post("/organizations/UPD_12345678901/debtpositions")
 				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
 		.andExpect(status().isCreated())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-				.value("3123456IUVMOCK1"));
+				.value(auxDigit+"123456IUVMOCK1"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.DRAFT.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.nullValue()));
 
 		// recupero la posizione debitoria e verifico il contenuto
 		mvc.perform(get("/organizations/UPD_12345678901/debtpositions/12345678901IUPDMOCK1")
@@ -773,7 +1055,10 @@ class DebtPositionControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].amount")
 				.value(1000))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-				.value("3123456IUVMOCK1"));
+				.value(auxDigit+"123456IUVMOCK1"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.DRAFT.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.nullValue()));
 
 		// aggiorno la posizione debitoria
 		mvc.perform(put("/organizations/UPD_12345678901/debtpositions/12345678901IUPDMOCK1")
@@ -797,9 +1082,12 @@ class DebtPositionControllerTest {
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[1].transfer[0].amount")
 				.value(500))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-				.value("3123456IUVMULTIPLEMOCK1"))
+				.value(auxDigit+"123456IUVMULTIPLEMOCK1"))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[1].nav")
-				.value("3123456IUVMULTIPLEMOCK2"));
+				.value(auxDigit+"123456IUVMULTIPLEMOCK2"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.DRAFT.toString()))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.nullValue()));
 	}
 	
 	@Test
@@ -901,24 +1189,53 @@ class DebtPositionControllerTest {
 				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[1].nav")
 								   .value("3123456IUVMULTIPLEMOCK2"));
 	}
-
+	
 	@Test
-	void updateDebtPosition_SegregationCode_403() throws Exception {
-		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock1();
-		String iupd = paymentPositionDTO.getIupd();
-		String iuv = paymentPositionDTO.getPaymentOption().get(0).getIuv();
-		String notSufficientSegregationCode = "99";
-		mvc.perform(post("/organizations/UPD_403_SC_12345678901/debtpositions")
-							.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isCreated())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-								   .value('3'+iuv));
+	void updateDebtPosition_NAV_200() throws Exception {
+		// creo una posizione debitoria con un default NAV <AUX_DIGIT>+IUV
+		mvc.perform(post("/organizations/UPD_NAV_12345678901/debtpositions")
+				.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isCreated())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value(auxDigit+"123456IUVMOCK1"));
 
-		mvc.perform(put("/organizations/UPD_403_SC_12345678901/debtpositions/" + iupd
-								+ "?segregationCodes=" + notSufficientSegregationCode)
-							.content(TestUtil.toJson(DebtPositionMock.getMock4()))
-							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isForbidden());
+		// recupero la posizione debitoria e verifico il contenuto
+		mvc.perform(get("/organizations/UPD_NAV_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.companyName")
+				.value("Comune di Firenze"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[*].iuv")
+				.value(Matchers.hasSize(1)))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].amount")
+				.value(1000))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].amount")
+				.value(1000))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value(auxDigit+"123456IUVMOCK1"));
+
+		// aggiorno la posizione debitoria con un custom NAV
+		PaymentPositionDTO ppNav = DebtPositionMock.getMock1();
+		ppNav.getPaymentOption().forEach(po -> po.setNav("CUSTOM_"+auxDigit+po.getIuv()));
+		mvc.perform(put("/organizations/UPD_NAV_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.content(TestUtil.toJson(ppNav))
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+
+		// verifico che il nuovo contenuto 
+		mvc.perform(get("/organizations/UPD_NAV_12345678901/debtpositions/12345678901IUPDMOCK1")
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.companyName")
+				.value("Comune di Firenze"))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[*].iuv")
+				.value(Matchers.hasSize(1)))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].amount")
+				.value(1000))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].amount")
+				.value(1000))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+				.value("CUSTOM_"+auxDigit+"123456IUVMOCK1"));
 	}
 	
 	@Test
@@ -1040,7 +1357,7 @@ class DebtPositionControllerTest {
 				.value(DebtPositionStatus.VALID.toString()))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty());
 		
-		// aggiorno la posizione debitoria
+		// aggiorno la posizione debitoria con toPublish = false
 		mvc.perform(put("/organizations/UPD_PBH_12345678901/debtpositions/12345678901IUPDMOCK1")
 				.content(TestUtil.toJson(DebtPositionMock.getMock4()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
@@ -1067,20 +1384,60 @@ class DebtPositionControllerTest {
 						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.status")
-						.value(DebtPositionStatus.VALID.toString()));
+						.value(DebtPositionStatus.VALID.toString()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.notNullValue()));
 
-		// aggiorno la posizione debitoria
+		// aggiorno la posizione debitoria con un body che non contiene la 'validity date'
 		mvc.perform(put("/organizations/MRDPLL54H17D542L/debtpositions/12345678901IUPDMOCK1")
 				.content(TestUtil.toJson(DebtPositionMock.getMock4()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
-		// recupero la posizione debitoria e verifico che lo stato sia tornato in draft
+		// recupero la posizione debitoria e verifico che lo stato sia rimasto in DRAFT
 		mvc.perform(get("/organizations/MRDPLL54H17D542L/debtpositions/12345678901IUPDMOCK1")
 						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.status")
 						.value(DebtPositionStatus.DRAFT.toString()))
 				.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isEmpty());
+
+	}
+	
+	@Test
+	void updateDebtPosition_CreateValidAndUpdate_200() throws Exception {
+		// creo una posizione debitoria (con 'validity date' impostata)
+		LocalDateTime vd = LocalDateTime.now(ZoneOffset.UTC).plus(5, ChronoUnit.SECONDS).truncatedTo(ChronoUnit.SECONDS);
+		PaymentPositionDTO ppDto1 = DebtPositionMock.getMock1();
+		ppDto1.setValidityDate(vd);
+		mvc.perform(post("/organizations/CREATE_UPD_12345678901/debtpositions?toPublish=True")
+						.content(TestUtil.toJson(ppDto1)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+
+		// recupero la posizione debitoria e verifico lo stato in published
+		mvc.perform(get("/organizations/CREATE_UPD_12345678901/debtpositions/12345678901IUPDMOCK1")
+						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+						.value(DebtPositionStatus.PUBLISHED.toString()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(vd.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))));
+
+		// aggiorno la posizione debitoria con un body che contiene la 'validity date'
+		PaymentPositionDTO ppDto4 = DebtPositionMock.getMock4();
+		ppDto4.setValidityDate(vd);
+		mvc.perform(put("/organizations/CREATE_UPD_12345678901/debtpositions/12345678901IUPDMOCK1?toPublish=True")
+				.content(TestUtil.toJson(ppDto4))
+				.contentType(MediaType.APPLICATION_JSON))
+		.andExpect(status().isOk())
+		.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+				.value(DebtPositionStatus.PUBLISHED.toString()));
+
+		// recupero la posizione debitoria e verifico che lo stato sia in PUBLISHED
+		mvc.perform(get("/organizations/CREATE_UPD_12345678901/debtpositions/12345678901IUPDMOCK1")
+						.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.status")
+						.value(DebtPositionStatus.PUBLISHED.toString()))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(vd.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty());
 
 	}
 	
@@ -1097,7 +1454,8 @@ class DebtPositionControllerTest {
 	  .andExpect(content().contentType(MediaType.APPLICATION_JSON))
 	  .andExpect(MockMvcResultMatchers.jsonPath("$.status")
 	      .value(DebtPositionStatus.DRAFT.toString()))
-	  .andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isEmpty());
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isEmpty())
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.nullValue()));
 
 	  // aggiorno e porto direttamente in pubblicata la posizione debitoria
 	  mvc.perform(put("/organizations/UPDANDPBH_12345678901/debtpositions/12345678901IUPDMOCK1?toPublish=true")
@@ -1110,11 +1468,31 @@ class DebtPositionControllerTest {
 	  .andExpect(content().contentType(MediaType.APPLICATION_JSON))
 	  .andExpect(MockMvcResultMatchers.jsonPath("$.status")
 	      .value(DebtPositionStatus.VALID.toString()))
-	  .andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty());
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty())
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.notNullValue()));
 
 	  // provo a fare una nuova pubblicazione su una posizione debitoria con uno stato non più idoneo
 	  mvc.perform(post("/organizations/UPDANDPBH_12345678901/debtpositions/12345678901IUPDMOCK1/publish")
 	      .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isConflict());
+	}
+	
+	@Test
+	void updateDebtPosition_SegregationCode_403() throws Exception {
+		PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock1();
+		String iupd = paymentPositionDTO.getIupd();
+		String iuv = paymentPositionDTO.getPaymentOption().get(0).getIuv();
+		String notSufficientSegregationCode = "99";
+		mvc.perform(post("/organizations/UPD_403_SC_12345678901/debtpositions")
+							.content(TestUtil.toJson(DebtPositionMock.getMock1())).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
+								   .value(auxDigit+iuv));
+
+		mvc.perform(put("/organizations/UPD_403_SC_12345678901/debtpositions/" + iupd
+								+ "?segregationCodes=" + notSufficientSegregationCode)
+							.content(TestUtil.toJson(DebtPositionMock.getMock4()))
+							.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isForbidden());
 	}
 
 	@Test
@@ -1206,7 +1584,7 @@ class DebtPositionControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
 		// effettuo la notifica di pagamento e verifico lo stato in paid
-		mvc.perform(post("/organizations/UPD409_PAID_12345678901/paymentoptions/123456IUVMOCK1/pay")
+		mvc.perform(post("/organizations/UPD409_PAID_12345678901/paymentoptions/"+auxDigit+"123456IUVMOCK1/pay")
 				.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 		.andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -1240,7 +1618,7 @@ class DebtPositionControllerTest {
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
 
-		// effettuo un aggiornamento della notification fee
+		// effettuo un aggiornamento della notification fee (si continua ad utilizzare lo IUV e non il NAV)
 		mvc.perform(MockMvcRequestBuilders.put("/organizations/UPD422_novalidtransfer_12345678901/paymentoptions/123456IUVMOCK1/notificationfee")
 				.content(TestUtil.toJson(DebtPositionMock.createNotificationFeeMock(150L)))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
@@ -1250,23 +1628,5 @@ class DebtPositionControllerTest {
 		mvc.perform(MockMvcRequestBuilders.put("/organizations/UPD422_novalidtransfer_12345678901/debtpositions/12345678901IUPDMOCK1")
 				.content(TestUtil.toJson(paymentPositionDTO))
 				.contentType(MediaType.APPLICATION_JSON)).andExpect(status().isUnprocessableEntity());
-	}
-	
-	/**
-	 * CREATE MULTIPLE DEBT POSITIONS
-	 */
-	@Test
-	void createMultipleDebtPositions_201() throws Exception {
-		mvc.perform(post("/organizations/12345678901_multiple/debtpositions/bulk")
-				.content(TestUtil.toJson(DebtPositionMock.getMultipleDebtPositions_Mock())).contentType(MediaType.APPLICATION_JSON))
-		.andExpect(status().isCreated());
-	}
-	
-	@Test
-	void createMultipleDebtPositions_400() throws Exception {
-		mvc.perform(post("/organizations/12345678901_multiple/debtpositions/bulk")
-				.content(TestUtil.toJson(DebtPositionMock.getMultipleDebtPositions_400_Mock())).contentType(MediaType.APPLICATION_JSON))
-		.andExpect(status().isBadRequest())
-		.andExpect(content().contentType(MediaType.APPLICATION_JSON));
 	}
 }

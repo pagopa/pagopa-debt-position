@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -45,6 +46,7 @@ public class PaymentPositionDTO implements Serializable {
     private Boolean switchToExpired = false;
     private DebtPositionStatus status;
     private LocalDateTime paymentDate;
+    private ServiceType serviceType;
 
     private List<PaymentOptionDTO> paymentOption = new ArrayList<>();
     

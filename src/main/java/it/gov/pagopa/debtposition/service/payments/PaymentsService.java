@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import feign.FeignException;
 import it.gov.pagopa.debtposition.client.NodeClient;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
@@ -53,13 +54,14 @@ public class PaymentsService {
     @Value("${nav.aux.digit}")
     private String auxDigit;
 
-    public PaymentOption getPaymentOptionByIUV(@NotBlank String organizationFiscalCode,
-                                               @NotBlank String iuv) {
+    //TODO #naviuv: temporary regression management --> the nav variable can also be evaluated with iuv. Remove the comment when only nav managment is enabled
+    public PaymentOption getPaymentOptionByNAV(@NotBlank String organizationFiscalCode,
+                                               @NotBlank String nav) {
 
-        Optional<PaymentOption> po = paymentOptionRepository.findByOrganizationFiscalCodeAndIuv(organizationFiscalCode, iuv);
+        Optional<PaymentOption> po = paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(organizationFiscalCode, nav, organizationFiscalCode, nav);
 
         if (po.isEmpty()) {
-            throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, iuv);
+            throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav);
         }
 
         return po.get();
@@ -68,18 +70,18 @@ public class PaymentsService {
 
     @Transactional
     public PaymentOption pay(@NotBlank String organizationFiscalCode,
-                             @NotBlank String iuv, @NotNull @Valid PaymentOptionModel paymentOptionModel) {
-
-
-        Optional<PaymentPosition> ppToPay = paymentPositionRepository.findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuv(organizationFiscalCode, iuv);
+                             @NotBlank String nav, @NotNull @Valid PaymentOptionModel paymentOptionModel) {
+        Optional<PaymentPosition> ppToPay = paymentPositionRepository.
+        		findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvOrPaymentOptionOrganizationFiscalCodeAndPaymentOptionNav(organizationFiscalCode, nav, organizationFiscalCode, nav);
 
         if (ppToPay.isEmpty()) {
-            throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, iuv);
+            throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav);
         }
 
-        DebtPositionValidation.checkPaymentPositionPayability(ppToPay.get(), iuv);
+        DebtPositionStatus.updatePaymentPositionStatus(ppToPay.get());
+        DebtPositionValidation.checkPaymentPositionPayability(ppToPay.get(), nav);
 
-        return this.updatePaymentStatus(ppToPay.get(), iuv, paymentOptionModel);
+        return this.updatePaymentStatus(ppToPay.get(), nav, paymentOptionModel);
     }
 
 
@@ -95,23 +97,25 @@ public class PaymentsService {
             throw new AppException(AppError.TRANSFER_NOT_FOUND, organizationFiscalCode, iuv, transferId);
         }
 
+        DebtPositionStatus.updatePaymentPositionStatus(ppToReport.get());
         DebtPositionValidation.checkPaymentPositionAccountability(ppToReport.get(), iuv, transferId);
 
         return this.updateTransferStatus(ppToReport.get(), iuv, transferId);
     }
 
     @Transactional
-    public PaymentOption updateNotificationFee(@NotBlank String organizationFiscalCode, @NotBlank String iuv, Long notificationFeeAmount) {
+    public PaymentOption updateNotificationFee(@NotBlank String organizationFiscalCode, @NotBlank String nav, Long notificationFeeAmount) {
 
         // Check if exists a payment option with the passed IUV related to the organization
-        Optional<PaymentOption> paymentOptionOpt = paymentOptionRepository.findByOrganizationFiscalCodeAndIuv(organizationFiscalCode, iuv);
+    	// TODO #naviuv: temporary regression management: search by nav or iuv
+        Optional<PaymentOption> paymentOptionOpt = paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(organizationFiscalCode, nav, organizationFiscalCode, nav);
         if (paymentOptionOpt.isEmpty()) {
-            throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, iuv);
+            throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav);
         }
         // Check if the retrieved payment option was not already paid and/or reported
         PaymentOption paymentOption = paymentOptionOpt.get();
         if (!PaymentOptionStatus.PO_UNPAID.equals(paymentOption.getStatus())) {
-            throw new AppException(AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_NOT_UPDATABLE, organizationFiscalCode, iuv);
+            throw new AppException(AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_NOT_UPDATABLE, organizationFiscalCode, nav);
         }
         
         // Executing the amount updating with the inserted notification fee
@@ -119,12 +123,27 @@ public class PaymentsService {
         
         // Executes a call to the node's checkPosition API to see if there is a payment in progress
         try {
-        	NodePosition position = NodePosition.builder().fiscalCode(organizationFiscalCode).noticeNumber(auxDigit+iuv).build();
+        	// TODO #naviuv: temporary regression management: search by nav or iuv --> possible double call to the node
+            // 1. first call attempt is with the nav variable valued as iuv (auxDigit added)
+        	NodePosition position = NodePosition.builder().fiscalCode(organizationFiscalCode).noticeNumber(auxDigit+nav).build();
         	NodeCheckPositionResponse chkPositionRes = 
         			nodeClient.getCheckPosition(NodeCheckPositionModel.builder().positionslist(Collections.singletonList(position)).build());
         	paymentOption.setPaymentInProgress("OK".equalsIgnoreCase(chkPositionRes.getOutcome())?Boolean.FALSE:Boolean.TRUE);
-        } catch (Exception e) {
-            log.error("Error checking the position on the node for PO with fiscalCode " + organizationFiscalCode + " and noticeNumber " + auxDigit+iuv, e);
+        } catch (FeignException.BadRequest e) {
+        	// 2. if the first call fails with a bad request error --> try with a nav call
+        	NodePosition position = NodePosition.builder().fiscalCode(organizationFiscalCode).noticeNumber(nav).build();
+        	try {
+	        	NodeCheckPositionResponse chkPositionRes = 
+	        			nodeClient.getCheckPosition(NodeCheckPositionModel.builder().positionslist(Collections.singletonList(position)).build());
+	        	paymentOption.setPaymentInProgress("OK".equalsIgnoreCase(chkPositionRes.getOutcome())?Boolean.FALSE:Boolean.TRUE);
+        	} catch (Exception ex) {
+                log.error("Error checking the position on the node for PO with fiscalCode " + organizationFiscalCode + " and noticeNumber " + "("+auxDigit+")"+nav, ex);
+                // By business rules it is expected to treat the error as if the node had responded KO
+                paymentOption.setPaymentInProgress(Boolean.TRUE);
+            }
+        }
+        catch (Exception e) {
+            log.error("Error checking the position on the node for PO with fiscalCode " + organizationFiscalCode + " and noticeNumber " + "("+auxDigit+")"+nav, e);
             // By business rules it is expected to treat the error as if the node had responded KO
             paymentOption.setPaymentInProgress(Boolean.TRUE);
         }
@@ -173,7 +192,7 @@ public class PaymentsService {
         return Collections.emptyList();
     }
 
-    private PaymentOption updatePaymentStatus(PaymentPosition pp, String iuv, PaymentOptionModel paymentOptionModel) {
+    private PaymentOption updatePaymentStatus(PaymentPosition pp, String nav, PaymentOptionModel paymentOptionModel) {
 
         LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
         PaymentOption poToPay = null;
@@ -189,7 +208,8 @@ public class PaymentsService {
             }
 
             // aggiorno le proprietà per la payment option oggetto dell'attuale pagamento
-            if (po.getIuv().equals(iuv)) {
+            // TODO #naviuv: temporary regression management --> remove "|| po.getIuv().equals(nav)" when only nav managment is enabled
+            if (po.getNav().equals(nav) || po.getIuv().equals(nav)) {
                 po.setLastUpdatedDate(currentDate);
                 po.setPaymentDate(paymentOptionModel.getPaymentDate());
                 po.setPaymentMethod(paymentOptionModel.getPaymentMethod());
@@ -281,7 +301,7 @@ public class PaymentsService {
         //numero delle PO rateizzate in stato PO_REPORTED
         long numberPOReportedPartial = pp.getPaymentOption().stream().filter(po -> (po.getStatus().equals(PaymentOptionStatus.PO_REPORTED) && Boolean.TRUE.equals(po.getIsPartialPayment()))).count();
 
-        if (numberPOReportedNoPartial > 0 || totalNumberPartialPO == numberPOReportedPartial) {
+        if (numberPOReportedNoPartial > 0 || (totalNumberPartialPO > 0 && totalNumberPartialPO == numberPOReportedPartial)) {
             pp.setStatus(DebtPositionStatus.REPORTED);
         }
 
