@@ -147,7 +147,7 @@ microservice-chart:
             namespaces: ["gps"]
             topologyKey: topology.kubernetes.io/zone
   canaryDelivery:
-    create: false
+    create: true
     ingress:
       type: header
       headerName: X-Canary
@@ -161,3 +161,6 @@ microservice-chart:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.p.internal.postgresql.pagopa.it:5432/apd?sslmode=require&prepareThreshold=0"
       SPRING_DATASOURCE_TYPE: "com.zaxxer.hikari.HikariDataSource"
     envSecret: {}
+    deployment:
+      image:
+        tag: 0.11.63-6-PAGOPA-2502-gpd-upgrade-and-release-canary-version-with-hikari
