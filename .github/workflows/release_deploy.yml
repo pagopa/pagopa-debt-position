@@ -16,21 +16,21 @@ on:
           - dev
           - uat
           - prod
-      db_migration:
-        required: false
-        type: boolean
-        description: run DB migration
-        default: false
-      suffix_app_name:
-        required: false
-        type: string
-        description: 'add a suffix to deploy a parallel version on AKS (eg. beta)'
-        default: ''
       skip_release:
         required: false
         type: boolean
-        description: skip the release. Only deploy
+        description: 'Skip the release. Only deploy'
         default: false
+      db_migration:
+        required: false
+        type: boolean
+        description: 'Run DB migration'
+        default: false
+      is_canary:
+        type: boolean
+        description: To deploy a canary version on AKS
+        default: false
+
 
 
 permissions:
@@ -102,7 +102,7 @@ jobs:
         with:
           semver: ${{ needs.setup.outputs.semver }}
           github_token: ${{ secrets.BOT_TOKEN_GITHUB }}
-          beta: false
+          beta: ${{ inputs.is_canary }}
           skip_ci: false
 
   db_migration:
@@ -140,7 +140,7 @@ jobs:
     uses: ./.github/workflows/deploy_with_github_runner.yml
     with:
       environment: ${{ needs.setup.outputs.environment }}
-      suffix_name: ${{ inputs.suffix_app_name != '' && format('-{0}', inputs.suffix_app_name) || '' }}
+      suffix_name: ${{ inputs.is_canary && '-canary' || '' }}
     secrets: inherit
 
   notify:

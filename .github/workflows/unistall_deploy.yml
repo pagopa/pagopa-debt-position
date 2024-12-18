@@ -16,11 +16,10 @@ on:
           - dev
           - uat
           - prod
-      suffix_app_name:
-        required: false
-        type: string
-        description: 'the suffix of the app name on AKS (eg. beta)'
-        default: ''
+      is_canary:
+        type: boolean
+        description: To deploy a canary version on AKS
+        default: false
 
 
 permissions:
@@ -84,7 +83,7 @@ jobs:
     uses: ./.github/workflows/deploy_with_github_runner.yml
     with:
       environment: ${{ needs.setup.outputs.environment }}
-      suffix_name: ${{ inputs.suffix_app_name != '' && format('-{0}', inputs.suffix_app_name) || '' }}
+      suffix_name: ${{ inputs.is_canary && '-canary' || '' }}
       uninstall: true
     secrets: inherit
 
