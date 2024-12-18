@@ -16,21 +16,11 @@ on:
           - dev
           - uat
           - prod
-      db_migration:
-        required: false
-        type: boolean
-        description: run DB migration
-        default: false
       suffix_app_name:
         required: false
         type: string
-        description: 'add a suffix to deploy a parallel version on AKS (eg. beta)'
+        description: 'the suffix of the app name on AKS (eg. beta)'
         default: ''
-      skip_release:
-        required: false
-        type: boolean
-        description: skip the release. Only deploy
-        default: false
 
 
 permissions:
@@ -88,63 +78,18 @@ jobs:
         name: Set Output
         run: echo "environment=${{env.ENVIRNOMENT}}" >> $GITHUB_OUTPUT
 
-
-  release:
-    name: Create a New Release
-    runs-on: ubuntu-latest
-    needs: [setup]
-    outputs:
-      version: ${{ steps.release.outputs.version }}
-    steps:
-      - name: Make Release
-        id: release
-        uses: pagopa/github-actions-template/maven-release@d91a1fd0b913c9830589be5d86cdb71c90813fae # v1.5.4
-        with:
-          semver: ${{ needs.setup.outputs.semver }}
-          github_token: ${{ secrets.BOT_TOKEN_GITHUB }}
-          beta: false
-          skip_ci: false
-
-  db_migration:
-    name: DB migration
-    needs: [ setup, release ]
-    if: ${{ always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && inputs.db_migration }}
-    strategy:
-      matrix:
-        environment: [ dev, uat, prod ]
-    uses: ./.github/workflows/db_migration_with_github_runner.yml
-    with:
-      environment: ${{ matrix.environment }}
-      target: ${{ needs.setup.outputs.environment }}
-    secrets: inherit
-
-
-  image:
-    needs: [ setup, release ]
-    name: Build and Push Docker Image
-    runs-on: ubuntu-latest
-    if: ${{ inputs.semver != 'skip' }}
-    steps:
-      - name: Build and Push
-        id: semver
-        uses: pagopa/github-actions-template/ghcr-build-push@d91a1fd0b913c9830589be5d86cdb71c90813fae # v1.5.4
-        with:
-          branch: ${{ github.ref_name}}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ needs.release.outputs.version }}
-
   deploy_aks:
     name: Deploy on AKS
-    needs: [ setup, release, image, db_migration ]
-    if: ${{ always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
+    needs: [ setup ]
     uses: ./.github/workflows/deploy_with_github_runner.yml
     with:
       environment: ${{ needs.setup.outputs.environment }}
       suffix_name: ${{ inputs.suffix_app_name != '' && format('-{0}', inputs.suffix_app_name) || '' }}
+      uninstall: true
     secrets: inherit
 
   notify:
-    needs: [ setup, release, deploy_aks ]
+    needs: [ setup, deploy_aks ]
     runs-on: ubuntu-latest
     name: Notify
     if: always()
@@ -155,9 +100,9 @@ jobs:
         with:
           status: ${{ needs.deploy_aks.result }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          notification_title: 'New Release on Production ${{ needs.release.outputs.version }} has {status_message}'
+          notification_title: 'Delete Release on Production ${{ needs.release.outputs.version }} has {status_message}'
           message_format: '{emoji} <{run_url}|{workflow}> {status_message} in <{repo_url}|{repo}>'
           footer: 'Linked to <{workflow_url}| workflow file>'
-          icon_success: ':white_check_mark:'
+          icon_success: ':wastebasket:'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
