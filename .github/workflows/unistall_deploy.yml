@@ -1,10 +1,7 @@
-name: Release And Deploy
+name: Uninstall Deploy
 
 # Controls when the workflow will run
 on:
-  pull_request:
-    types: [ closed ]
-
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
