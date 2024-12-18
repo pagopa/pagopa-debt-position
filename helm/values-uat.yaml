@@ -152,3 +152,6 @@ microservice-chart:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.u.internal.postgresql.pagopa.it:5432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true"
       SPRING_DATASOURCE_TYPE: "com.zaxxer.hikari.HikariDataSource"
     envSecret: {}
+    deployment:
+      image:
+        tag: 0.11.63-4-PAGOPA-2502-gpd-upgrade-and-release-canary-version-with-hikari
