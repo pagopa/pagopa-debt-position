@@ -4,22 +4,22 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.11.63"
+    tag: "0.11.63-7-PAGOPA-2502-gpd-upgrade-and-release-canary-version-with-hikari" # don't bump
     pullPolicy: Always
   livenessProbe:
     httpGet:
       path: /actuator/health/liveness
       port: 8080
-    initialDelaySeconds: 15
+    initialDelaySeconds: 60
     failureThreshold: 10
-    periodSeconds: 5
+    periodSeconds: 10
   readinessProbe:
     httpGet:
       path: /actuator/health/readiness
       port: 8080
-    initialDelaySeconds: 15
+    initialDelaySeconds: 60
     failureThreshold: 10
-    periodSeconds: 5
+    periodSeconds: 10
   deployment:
     create: true
   service:
@@ -149,19 +149,18 @@ microservice-chart:
   canaryDelivery:
     create: false
     ingress:
-      create: true
-      canary:
-        type: header
-        headerName: X-Canary
-        headerValue: canary
-        weightPercent: 0
-    service:
-      create: true
+      type: header
+      headerName: X-Canary
+      headerValue: canary
+      weightPercent: 0
+    image:
+      repository: ghcr.io/pagopa/pagopa-debt-position
+      tag: "0.11.63-3-hikari"
+      pullPolicy: Always
+    envConfig:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.p.internal.postgresql.pagopa.it:5432/apd?sslmode=require&prepareThreshold=0"
+      SPRING_DATASOURCE_TYPE: "com.zaxxer.hikari.HikariDataSource"
+    envSecret: {}
     deployment:
-      create: true
       image:
-        repository: ghcr.io/pagopa/pagopa-debt-position
-        tag: "0.9.0"
-        pullPolicy: Always
-      envConfig: {}
-      envSecret: {}
+        tag: 0.11.63-6-PAGOPA-2502-gpd-upgrade-and-release-canary-version-with-hikari
