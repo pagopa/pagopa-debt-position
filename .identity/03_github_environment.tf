@@ -28,6 +28,7 @@ locals {
     "DATASOURCE_USERNAME": data.azurerm_key_vault_secret.key_vault_datasource_username.value,
     "DATASOURCE_PASSWORD": data.azurerm_key_vault_secret.key_vault_datasource_password.value,
     "DATASOURCE_URL": data.azurerm_key_vault_secret.key_vault_datasource_url.value,
+    "FLYWAY_DATASOURCE_URL": data.azurerm_key_vault_secret.key_vault_flyway_datasource_url.value,
   }
   env_variables = {
     "CONTAINER_APP_ENVIRONMENT_NAME" : local.container_app_environment.name,
