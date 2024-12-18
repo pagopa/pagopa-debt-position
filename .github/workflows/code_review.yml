@@ -70,7 +70,7 @@ jobs:
         run: |
           cd ./docker
           chmod +x ./run_docker.sh
-          ./run_docker.sh local
+          ./run_docker_smoke.sh
 
       - name: Run Integration Tests
         shell: bash

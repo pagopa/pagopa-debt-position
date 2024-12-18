@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.11.64" # don't bump
+    tag: "0.11.60" # don't bump
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -161,6 +161,3 @@ microservice-chart:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.p.internal.postgresql.pagopa.it:5432/apd?sslmode=require&prepareThreshold=0"
       SPRING_DATASOURCE_TYPE: "com.zaxxer.hikari.HikariDataSource"
     envSecret: {}
-    deployment:
-      image:
-        tag: 0.11.63-6-PAGOPA-2502-gpd-upgrade-and-release-canary-version-with-hikari

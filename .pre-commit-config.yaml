@@ -9,3 +9,7 @@ repos:
       - id: ggshield
         language_version: python3
         stages: [ commit ]
+  - repo: https://github.com/pagopa/google-style-precommit-hook
+    rev: be92ca3b151dda05fb027ee738509ebf68786bc1
+    hooks:
+      - id: google-style-java
