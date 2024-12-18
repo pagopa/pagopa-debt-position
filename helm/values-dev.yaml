@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.11.63-1-hikari"
+    tag: "0.11.63"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -141,19 +141,14 @@ microservice-chart:
   canaryDelivery:
     create: true
     ingress:
-      create: true
-      canary:
         type: header
         headerName: X-Canary
         headerValue: canary
         weightPercent: 0
-    service:
-      create: true
-    deployment:
-      create: true
-      image:
-        repository: ghcr.io/pagopa/pagopa-debt-position
-        tag: "0.11.63-3-hikari"
-        pullPolicy: Always
-      envConfig: {}
-      envSecret: {}
+    image:
+      repository: ghcr.io/pagopa/pagopa-debt-position
+      tag: "0.11.63-3-hikari"
+      pullPolicy: Always
+    envConfig:
+      SPRING_DATASOURCE_TYPE: "com.zaxxer.hikari.HikariDataSource"
+    envSecret: {}
