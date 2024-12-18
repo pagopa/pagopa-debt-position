@@ -16,21 +16,26 @@ on:
           - dev
           - uat
           - prod
+      skip_release:
+        required: false
+        type: boolean
+        description: 'Skip the release. Only deploy'
+        default: false
       db_migration:
         required: false
         type: boolean
-        description: run DB migration
+        description: 'Run DB migration'
+        default: false
+      is_canary:
+        type: boolean
+        description: To deploy a canary version on AKS
         default: false
       suffix_app_name:
         required: false
         type: string
-        description: 'add a suffix to deploy a parallel version on AKS (eg. beta)'
+        description: 'Add a suffix to deploy a parallel version on AKS (eg. v2)'
         default: ''
-      skip_release:
-        required: false
-        type: boolean
-        description: skip the release. Only deploy
-        default: false
+
 
 
 permissions:
@@ -102,7 +107,7 @@ jobs:
         with:
           semver: ${{ needs.setup.outputs.semver }}
           github_token: ${{ secrets.BOT_TOKEN_GITHUB }}
-          beta: false
+          beta: ${{ inputs.is_canary }}
           skip_ci: false
 
   db_migration:
