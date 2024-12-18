@@ -1,5 +1,6 @@
 -- Step 1: Added columns without default to avoid FULL TABLE SCAN
-ALTER TABLE payment_option ADD COLUMN IF NOT exists fiscal_code VARCHAR(255),
+ALTER TABLE payment_option 
+            ADD COLUMN IF NOT exists fiscal_code                VARCHAR(255),
             ADD COLUMN IF NOT EXISTS full_name                  VARCHAR(255),
             ADD COLUMN IF NOT EXISTS "type"                     VARCHAR(255),
             ADD COLUMN IF NOT EXISTS street_name                VARCHAR(255),
@@ -39,10 +40,10 @@ AS
                     pp.email,
                     pp.phone
              FROM   payment_option   AS po
-             join   payment_position AS pp
+             JOIN   payment_position AS pp
              ON     po.payment_position_id = pp.id
              WHERE  po.fiscal_code IS NULL -- To update only the rows not yet processed
-                    limit batch_size )
+             LIMIT  batch_size )
       UPDATE payment_option AS po
       SET    fiscal_code = rows_to_update.fiscal_code,
              full_name = rows_to_update.full_name,
@@ -66,13 +67,14 @@ AS
       -- Notify batch completion
       RAISE notice 'Batch block completed: % updated rows.', rows_updated;
     END LOOP;
-    ALTER TABLE payment_option ALTER COLUMN fiscal_code SET NOT NULL,
+    ALTER TABLE payment_option 
+                ALTER COLUMN fiscal_code SET NOT NULL,
                 ALTER COLUMN full_name SET NOT NULL,
                 ALTER COLUMN "type" SET DEFAULT 'F',
                 ALTER COLUMN "type" SET NOT NULL;
   RAISE NOTICE 'Total rows updated: %', total_rows_updated;
   END $$;
   
-  CALL update_payment_option_batch(1000);
+  CALL update_payment_option_batch(10000);
   
   DROP PROCEDURE IF EXISTS update_payment_option_batch;
