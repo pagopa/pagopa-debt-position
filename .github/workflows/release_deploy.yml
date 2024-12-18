@@ -35,6 +35,8 @@ on:
         description: 'To deploy a canary version on AKS'
         default: false
 
+
+
 permissions:
   packages: write
   contents: write
