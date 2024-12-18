@@ -32,10 +32,13 @@ on:
         default: false
       is_canary:
         type: boolean
-        description: 'To deploy a canary version on AKS'
+        description: 'Mark the release as canary on AKS'
         default: false
-
-
+      traffic_weight:
+        required: false
+        type: number
+        default: 0
+        description: 'The percentage of traffic to be sent to the canary version'
 
 permissions:
   packages: write
@@ -155,6 +158,7 @@ jobs:
     with:
       environment: ${{ needs.setup.outputs.environment }}
       suffix_name: ${{ inputs.is_canary && '-canary' || '' }}
+      traffic_weight: ${{ inputs.traffic_weight }}
     secrets: inherit
 
   notify:
