@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.11.63-7-PAGOPA-2502-gpd-upgrade-and-release-canary-version-with-hikari" # don't bump
+    tag: "0.11.64" # don't bump
     pullPolicy: Always
   livenessProbe:
     httpGet:
