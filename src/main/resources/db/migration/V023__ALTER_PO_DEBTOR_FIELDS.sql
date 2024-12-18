@@ -69,7 +69,9 @@ AS
     END LOOP;
     ALTER TABLE payment_option 
                 ALTER COLUMN fiscal_code SET NOT NULL,
+                ALTER COLUMN fiscal_code SET DEFAULT 'ANONIMO',
                 ALTER COLUMN full_name SET NOT NULL,
+                ALTER COLUMN full_name SET DEFAULT 'ANONIMO',
                 ALTER COLUMN "type" SET DEFAULT 'F',
                 ALTER COLUMN "type" SET NOT NULL;
   RAISE NOTICE 'Total rows updated: %', total_rows_updated;
