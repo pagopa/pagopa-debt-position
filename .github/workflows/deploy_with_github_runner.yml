@@ -94,8 +94,6 @@ jobs:
         run: |
           echo "🚀 Launch helm deploy"
           
-          echo "${{ inputs.uninstall }}"
-          
           helm upgrade --namespace ${{ vars.NAMESPACE }} \
             --install --values ./helm/values-${{ inputs.environment }}.yaml \
             --set microservice-chart.canaryDelivery.ingress.weightPercent=${{ inputs.traffic_weight }} \

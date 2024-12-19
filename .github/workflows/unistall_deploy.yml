@@ -15,8 +15,8 @@ on:
           - prod
       is_canary:
         type: boolean
-        description: To deploy a canary version on AKS
-        default: false
+        description: Uninstall the canary version on AKS
+        default: true
 
 
 permissions:
