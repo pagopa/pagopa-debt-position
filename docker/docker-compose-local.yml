@@ -3,12 +3,13 @@ version: '3.8'
 services:
 
   gpd:
-    env_file: "../.env"
+    env_file:
+      - ./.env
     image: 'gpd:latest'
     build:
       context: ../
     ports:
-      - "8085:8085"
+      - "8080:8080"
     container_name: gpd
     depends_on:
       - postgres
