@@ -158,6 +158,7 @@ jobs:
     with:
       environment: ${{ needs.setup.outputs.environment }}
       suffix_name: ${{ inputs.is_canary && '-canary' || '' }}
+      is_canary: ${{ inputs.is_canary }}
       traffic_weight: ${{ inputs.traffic_weight }}
     secrets: inherit
 

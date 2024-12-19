@@ -25,6 +25,10 @@ on:
         type: string
         default: 0
         description: 'The percentage of traffic to be sent to the canary version'
+      is_canary:
+        type: boolean
+        description: 'Mark the release as canary on AKS'
+        default: false
 
 env:
   APP_NAME: gpd-core
@@ -90,20 +94,21 @@ jobs:
 
       - name: 🚀 Helm Deploy
         shell: bash
-        if: ${{ inputs.uninstall  == 'false' }}
+        if: ${{ inputs.uninstall  == false }}
         run: |
           echo "🚀 Launch helm deploy"
           
           helm upgrade --namespace ${{ vars.NAMESPACE }} \
             --install --values ./helm/values-${{ inputs.environment }}.yaml \
             --set microservice-chart.canaryDelivery.ingress.weightPercent=${{ inputs.traffic_weight }} \
-            --wait --timeout 10m0s \
+            --set microservice-chart.canaryDelivery.create=${{ inputs.is_canary }} \
+            --wait --timeout 10m0s --debug \
             ${{ env.APP_NAME }}${{inputs.suffix_name}} ./helm
 
           echo "✅Helm deployed"
 
       - name: 🗑Remove deployment
-        if: ${{ inputs.uninstall == 'true' }}
+        if: ${{ inputs.uninstall == true }}
         shell: bash
         run: |
           echo "🗑Launch helm uninstall"
