@@ -25,6 +25,10 @@ on:
         type: string
         default: 0
         description: 'The percentage of traffic to be sent to the canary version'
+      is_canary:
+        type: boolean
+        description: 'Mark the release as canary on AKS'
+        default: false
 
 env:
   APP_NAME: gpd-core
@@ -97,6 +101,7 @@ jobs:
           helm upgrade --namespace ${{ vars.NAMESPACE }} \
             --install --values ./helm/values-${{ inputs.environment }}.yaml \
             --set microservice-chart.canaryDelivery.ingress.weightPercent=${{ inputs.traffic_weight }} \
+            --set microservice-chart.canaryDelivery.create=${{ inputs.is_canary }} \
             --wait --timeout 10m0s \
             ${{ env.APP_NAME }}${{inputs.suffix_name}} ./helm
 
