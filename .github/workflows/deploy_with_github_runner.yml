@@ -90,9 +90,11 @@ jobs:
 
       - name: 🚀 Helm Deploy
         shell: bash
-        if: ${{ inputs.uninstall  == 'false' }}
+        if: ${{ inputs.uninstall  == false }}
         run: |
           echo "🚀 Launch helm deploy"
+          
+          echo "${{ inputs.uninstall }}"
           
           helm upgrade --namespace ${{ vars.NAMESPACE }} \
             --install --values ./helm/values-${{ inputs.environment }}.yaml \
@@ -103,7 +105,7 @@ jobs:
           echo "✅Helm deployed"
 
       - name: 🗑Remove deployment
-        if: ${{ inputs.uninstall == 'true' }}
+        if: ${{ inputs.uninstall == true }}
         shell: bash
         run: |
           echo "🗑Launch helm uninstall"
