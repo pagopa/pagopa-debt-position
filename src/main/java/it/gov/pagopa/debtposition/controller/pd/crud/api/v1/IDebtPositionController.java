@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.controller.pd.crud.api;
+package it.gov.pagopa.debtposition.controller.pd.crud.api.v1;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
