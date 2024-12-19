@@ -102,7 +102,7 @@ jobs:
             --install --values ./helm/values-${{ inputs.environment }}.yaml \
             --set microservice-chart.canaryDelivery.ingress.weightPercent=${{ inputs.traffic_weight }} \
             --set microservice-chart.canaryDelivery.create=${{ inputs.is_canary }} \
-            --wait --timeout 10m0s \
+            --wait --timeout 10m0s --debug \
             ${{ env.APP_NAME }}${{inputs.suffix_name}} ./helm
 
           echo "✅Helm deployed"
