@@ -1,4 +1,34 @@
--- Step 1: Added columns without default to avoid FULL TABLE SCAN
+-- Adding new columns with DEFAULT and NOT NULL constraints in a single ALTER TABLE statement:
+-- a. Performance: PostgreSQL optimizes the operation by virtually applying a DEFAULT value to existing rows without physically writing to them, reducing I/O overhead.
+-- b. Better for Large Tables: minimizes the risk of performance degradation: PostgreSQL treats the 
+--    DEFAULT value as a "virtual" value for rows where the column has not been explicitly set.
+--    This significantly reduces the amount of time and resources required to add the column, 
+--    making it more suitable for high-traffic environments or large-scale datasets.
+
+ALTER TABLE payment_option 
+    ADD COLUMN IF NOT EXISTS fiscal_code VARCHAR(255) DEFAULT 'NA' NOT NULL,
+    ADD COLUMN IF NOT EXISTS full_name   VARCHAR(255) DEFAULT 'NA' NOT NULL,
+    ADD COLUMN IF NOT EXISTS "type"      VARCHAR(255) DEFAULT 'F'  NOT NULL,
+    ADD COLUMN IF NOT EXISTS street_name VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS civic_number VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS postal_code VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS city VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS province VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS region VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS country VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS email VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS phone VARCHAR(255);
+
+/*
+
+-- The decision was made not to adopt the script version that used a stored procedure 
+-- to populate the new columns of the 'payment_option' table based on data from the 
+-- 'payment_position' table. This choice was made because, during a transitional period, 
+-- the old APIs will still be used to create debtor positions, leading to data inconsistencies
+-- between 'payment_position' and 'payment_option'.
+
+
+-- Step 1: Added columns
 ALTER TABLE payment_option 
             ADD COLUMN IF NOT exists fiscal_code                VARCHAR(255),
             ADD COLUMN IF NOT EXISTS full_name                  VARCHAR(255),
@@ -69,9 +99,9 @@ AS
     END LOOP;
     ALTER TABLE payment_option 
                 ALTER COLUMN fiscal_code SET NOT NULL,
-                ALTER COLUMN fiscal_code SET DEFAULT 'ANONIMO',
+                ALTER COLUMN fiscal_code SET DEFAULT 'NA',
                 ALTER COLUMN full_name SET NOT NULL,
-                ALTER COLUMN full_name SET DEFAULT 'ANONIMO',
+                ALTER COLUMN full_name SET DEFAULT 'NA',
                 ALTER COLUMN "type" SET DEFAULT 'F',
                 ALTER COLUMN "type" SET NOT NULL;
   RAISE NOTICE 'Total rows updated: %', total_rows_updated;
@@ -80,3 +110,4 @@ AS
   CALL update_payment_option_batch(10000);
   
   DROP PROCEDURE IF EXISTS update_payment_option_batch;
+  */
