@@ -1,6 +1,5 @@
-package it.gov.pagopa.debtposition.controller.pd.actions.api.impl;
+package it.gov.pagopa.debtposition.controller.pd.actions.api.v1;
 
-import it.gov.pagopa.debtposition.controller.pd.actions.api.IDebtPositionActionsController;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
@@ -28,7 +27,7 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
     private ModelMapper modelMapper;
     @Autowired
     private PaymentPositionActionsService paymentPositionActionsService;
-  
+
 
     @Override
     public ResponseEntity<PaymentPositionModel> publishDebtPosition(String organizationFiscalCode, String iupd, String segregationCodes) {
@@ -37,7 +36,7 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
         PaymentPosition publishedDebtPos = paymentPositionActionsService.publish(organizationFiscalCode, iupd, segCodes);
         if (null != publishedDebtPos) {
-        	PaymentPositionModel paymentPositionModel = ObjectMapperUtils.map(publishedDebtPos, PaymentPositionModel.class);
+            PaymentPositionModel paymentPositionModel = ObjectMapperUtils.map(publishedDebtPos, PaymentPositionModel.class);
             return new ResponseEntity<>(paymentPositionModel, HttpStatus.OK);
         }
 
@@ -51,7 +50,7 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
         ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
         PaymentPosition invalidatedDebtPos = paymentPositionActionsService.invalidate(organizationFiscalCode, iupd, segCodes);
         if (null != invalidatedDebtPos) {
-        	PaymentPositionModel paymentPositionModel = ObjectMapperUtils.map(invalidatedDebtPos, PaymentPositionModel.class);
+            PaymentPositionModel paymentPositionModel = ObjectMapperUtils.map(invalidatedDebtPos, PaymentPositionModel.class);
             return new ResponseEntity<>(paymentPositionModel, HttpStatus.OK);
         }
 

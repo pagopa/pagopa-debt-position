@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.controller.pd.crud.api.impl;
+package it.gov.pagopa.debtposition.controller.pd.crud.api.v1;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -21,7 +21,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
 
 import it.gov.pagopa.debtposition.config.ExclusiveParamGroup;
-import it.gov.pagopa.debtposition.controller.pd.crud.api.IDebtPositionController;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;

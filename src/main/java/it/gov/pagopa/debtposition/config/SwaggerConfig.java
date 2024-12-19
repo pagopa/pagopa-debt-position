@@ -32,6 +32,10 @@ public class SwaggerConfig {
         Server GPD_PROD = new Server();
         GPD_PROD.setUrl("GPD Production environment");
         GPD_PROD.setDescription("https://api.platform.pagopa.it/gpd/debt-positions-service/v1/");
+        // GPD servers v3
+        Server GPD_UAT_v3 = new Server();
+        GPD_UAT.setUrl("https://api.uat.platform.pagopa.it/gpd/debt-positions-service/v3");
+        GPD_UAT.setDescription("GPD Test environment");
         // ACA servers
         Server ACA_UAT = new Server();
         ACA_UAT.setUrl("https://api.uat.platform.pagopa.it/aca/debt-positions-service/v1/");
@@ -61,7 +65,7 @@ public class SwaggerConfig {
                         .version(appVersion)
                         .description(appDescription)
                         .termsOfService("https://www.pagopa.gov.it/"))
-                .servers(List.of(GPD_UAT, GPD_PROD, ACA_UAT, ACA_PROD));
+                .servers(List.of(GPD_UAT, GPD_UAT_v3, GPD_PROD, ACA_UAT, ACA_PROD));
     }
 
     @Bean

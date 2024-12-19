@@ -41,6 +41,7 @@ class OpenApiGenerationTest {
     	String[][] pathList = {{"paths","/organizations/{organizationfiscalcode}/debtpositions","post","parameters"}}; 
         saveOpenAPI("/v3/api-docs", "openapi_internal.json", new String[0][0], new String[0]);
         saveOpenAPI("/v3/api-docs/external", "openapi_external.json", pathList, "serviceType");
+        saveOpenAPI("/v3/api-docs/external_v3", "openapi_external_v3.json",  pathList, "serviceType");
         saveOpenAPI("/v3/api-docs/send", "openapi_send.json", new String[0][0], new String[0]);
         saveOpenAPI("/v3/api-docs/external_massive", "openapi_external_massive.json", pathList, "serviceType");
         saveOpenApiInternalMassive("generate_openapi.sh");
