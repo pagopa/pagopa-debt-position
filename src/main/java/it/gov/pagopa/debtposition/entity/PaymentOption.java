@@ -28,11 +28,8 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import it.gov.pagopa.debtposition.model.enumeration.Type;
+import lombok.*;
 
 /**
  * @author aacitelli
@@ -130,6 +127,41 @@ public class PaymentOption implements Serializable {
     
     @Column(name = "last_updated_date_notification_fee")
     private LocalDateTime lastUpdatedDateNotificationFee;
+
+    // Debtor properties
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @ToString.Exclude
+    private Type type;
+    @NotNull
+    @Column(name = "fiscal_code")
+    @ToString.Exclude
+    private String fiscalCode;
+    @NotNull
+    @Column(name = "full_name")
+    @ToString.Exclude
+    private String fullName;
+    @Column(name = "street_name")
+    @ToString.Exclude
+    private String streetName;
+    @Column(name = "civic_number")
+    @ToString.Exclude
+    private String civicNumber;
+    @Column(name = "postal_code")
+    @ToString.Exclude
+    private String postalCode;
+    @ToString.Exclude
+    private String city;
+    @ToString.Exclude
+    private String province;
+    @ToString.Exclude
+    private String region;
+    @ToString.Exclude
+    private String country;
+    @ToString.Exclude
+    private String email;
+    @ToString.Exclude
+    private String phone;
     
     // flag that identifies if the payment option has a payment in progress (false = no payment in progress)
     @Builder.Default

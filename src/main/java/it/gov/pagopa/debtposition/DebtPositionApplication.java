@@ -4,8 +4,10 @@ import it.gov.pagopa.debtposition.mapper.ConvertPOEntityToPOWithDebtor;
 import it.gov.pagopa.debtposition.mapper.ConvertPPModelToPPEntityForUpdate;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.mapper.ConvertPPv3ModelToPPEntity;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
+import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;
@@ -37,9 +39,14 @@ public class DebtPositionApplication {
         });
 
         Converter<PaymentPositionModel, PaymentPosition> convertPPModelToPPEntity = new ConvertPPModelToPPEntityForUpdate();
-        Converter<PaymentOption, PaymentOptionWithDebtorInfoModelResponse> convertPOEntityToPOWithDebtor = new ConvertPOEntityToPOWithDebtor();
         modelMapper.createTypeMap(PaymentPositionModel.class, PaymentPosition.class).setConverter(convertPPModelToPPEntity);
+        Converter<PaymentOption, PaymentOptionWithDebtorInfoModelResponse> convertPOEntityToPOWithDebtor = new ConvertPOEntityToPOWithDebtor();
         modelMapper.createTypeMap(PaymentOption.class, PaymentOptionWithDebtorInfoModelResponse.class).setConverter(convertPOEntityToPOWithDebtor);
+        // GPD version 3 (also known as OdP API) input mapper
+        Converter<PaymentPositionModelV3, PaymentPosition> convertPPV3ModelToPPEntity = new ConvertPPv3ModelToPPEntity();
+        modelMapper.createTypeMap(PaymentPositionModelV3.class, PaymentPosition.class).setConverter(convertPPV3ModelToPPEntity);
+        // GPD version 3 (also known as OdP API) output mapper
+        // todo
 
         return modelMapper;
     }
