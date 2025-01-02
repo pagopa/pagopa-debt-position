@@ -16,23 +16,29 @@ on:
           - dev
           - uat
           - prod
-          - all
+      version:
+        required: false
+        type: choice
+        description: 'Select the version'
+        options:
+          - patch
+          - skip_or_promote
+          - new_release
+          - breaking_change
       db_migration:
         required: false
         type: boolean
-        description: run DB migration
+        description: 'Run DB migration'
         default: false
-      beta:
-        required: false
+      is_canary:
         type: boolean
-        description: deploy beta version on AKS
+        description: 'Mark the release as canary on AKS'
         default: false
-      skip_release:
+      traffic_weight:
         required: false
-        type: boolean
-        description: skip the release. Only deploy
-        default: false
-
+        type: number
+        default: 0
+        description: 'The percentage of traffic to be sent to the canary version'
 
 permissions:
   packages: write
@@ -60,21 +66,30 @@ jobs:
       # Set Semvar
       - run: echo "SEMVER=patch" >> $GITHUB_ENV
 
-      - if: ${{ (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'breaking-change ')) }}
-        run: echo "SEMVER=major" >> $GITHUB_ENV
+      - if: ${{ (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'skip')) }}
+        run: echo "SEMVER=skip" >> $GITHUB_ENV
 
-      - if: ${{ inputs.environment == 'uat' }}
+      - if: ${{ (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'patch')) }}
+        run: echo "SEMVER=patch" >> $GITHUB_ENV
+
+      - if: ${{ (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'minor')) }}
         run: echo "SEMVER=minor" >> $GITHUB_ENV
 
-      - if: ${{ inputs.environment == 'prod' }}
-        run: echo "SEMVER=skip" >> $GITHUB_ENV
+      - if: ${{ (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'major')) }}
+        run: echo "SEMVER=major" >> $GITHUB_ENV
+
+      # force semver if dev, !=main or skip release
+      - if: ${{ inputs.version == 'new_release' }}
+        run: echo "SEMVER=minor" >> $GITHUB_ENV
+
+      - if: ${{ inputs.version == 'breaking_change' }}
+        run: echo "SEMVER=major" >> $GITHUB_ENV
 
       - if: ${{ github.ref_name != 'main' }}
         run: echo "SEMVER=buildNumber" >> $GITHUB_ENV
 
-      - if: ${{ inputs.skip_release }}
+      - if: ${{ inputs.version == 'skip_or_promote' }}
         run: echo "SEMVER=skip" >> $GITHUB_ENV
-
       - id: get_semver
         name: Set Output
         run: echo "semver=${{env.SEMVER}}" >> $GITHUB_OUTPUT
@@ -93,17 +108,18 @@ jobs:
   release:
     name: Create a New Release
     runs-on: ubuntu-latest
-    needs: [setup]
+    needs: [ setup ]
+    if: ${{ needs.setup.outputs.semver != 'skip' }}
     outputs:
       version: ${{ steps.release.outputs.version }}
     steps:
       - name: Make Release
         id: release
-        uses: pagopa/github-actions-template/maven-release@d91a1fd0b913c9830589be5d86cdb71c90813fae # v1.5.4
+        uses: pagopa/github-actions-template/maven-release@ae5e4d205387c6c0bbc10b0a99df18b698e0c60c # v1.20.0
         with:
           semver: ${{ needs.setup.outputs.semver }}
           github_token: ${{ secrets.BOT_TOKEN_GITHUB }}
-          beta: ${{ inputs.beta }}
+          beta: ${{ inputs.is_canary }}
           skip_ci: false
 
   db_migration:
@@ -124,7 +140,7 @@ jobs:
     needs: [ setup, release ]
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
-    if: ${{ inputs.semver != 'skip' }}
+    if: ${{ needs.setup.outputs.semver != 'skip' }}
     steps:
       - name: Build and Push
         id: semver
@@ -138,13 +154,12 @@ jobs:
     name: Deploy on AKS
     needs: [ setup, release, image, db_migration ]
     if: ${{ always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
-    strategy:
-      matrix:
-        environment: [ dev, uat, prod ]
     uses: ./.github/workflows/deploy_with_github_runner.yml
     with:
-      environment: ${{ matrix.environment }}
-      target: ${{ needs.setup.outputs.environment }}
+      environment: ${{ needs.setup.outputs.environment }}
+      suffix_name: ${{ inputs.is_canary && '-canary' || '' }}
+      is_canary: ${{ inputs.is_canary }}
+      traffic_weight: ${{ inputs.traffic_weight }}
     secrets: inherit
 
   notify:
@@ -154,7 +169,7 @@ jobs:
     if: always()
     steps:
       - name: Report Status
-        if: ${{ needs.setup.outputs.environment == 'prod' || needs.setup.outputs.environment == 'all'  }}
+        if: ${{ needs.setup.outputs.environment == 'prod' }}
         uses: ravsamhq/notify-slack-action@be814b201e233b2dc673608aa46e5447c8ab13f2 # v2
         with:
           status: ${{ needs.deploy_aks.result }}
