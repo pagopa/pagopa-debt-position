@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.11.69"
+    tag: "0.11.72"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -138,7 +138,7 @@ microservice-chart:
                 values:
                   - user
   canaryDelivery:
-    create: true
+    create: false
     ingress:
       type: header
       headerName: X-Canary
