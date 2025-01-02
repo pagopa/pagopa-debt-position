@@ -54,7 +54,7 @@ public class ConvertPPv3ModelToPPEntity implements Converter<PaymentPositionMode
             PaymentOptionModelV3 pov3 = paymentOpts.get(0);
             List<InstallmentModel> installments = pov3.getInstallments();
             for (InstallmentModel installmentModel : installments) {
-                PaymentOption po = this.convert(installmentModel);
+                PaymentOption po = this.convert(installmentModel, pov3.getDebtor());
                 po.setIsPartialPayment(isPartialPayment);
                 po.setDueDate(getMaxDueDate(installments));
                 po.setRetentionDate(pov3.getRetentionDate());
@@ -64,7 +64,7 @@ public class ConvertPPv3ModelToPPEntity implements Converter<PaymentPositionMode
             // 2. if (paymentOpts.size() > 1) -> 1 Installment for each PaymentOption
             for (PaymentOptionModelV3 pov3 : paymentOpts) {
                 InstallmentModel inst = pov3.getInstallments().get(0);
-                PaymentOption po = this.convert(inst);
+                PaymentOption po = this.convert(inst, pov3.getDebtor());
                 po.setIsPartialPayment(isPartialPayment);
                 po.setDueDate(inst.getDueDate());
                 po.setRetentionDate(pov3.getRetentionDate());
@@ -103,7 +103,7 @@ public class ConvertPPv3ModelToPPEntity implements Converter<PaymentPositionMode
                 .anyMatch(PaymentOptionModelV3::getSwitchToExpired);
     }
 
-    private PaymentOption convert(InstallmentModel inst) {
+    private PaymentOption convert(InstallmentModel inst, DebtorModel debtor) {
         PaymentOption po = new PaymentOption();
 
         po.setNav(inst.getNav());
@@ -112,6 +112,19 @@ public class ConvertPPv3ModelToPPEntity implements Converter<PaymentPositionMode
         po.setDescription(inst.getDescription());
         po.setFee(inst.getFee());
         po.setNotificationFee(inst.getNotificationFee());
+        // PO debtor fields
+        po.setType(debtor.getType());
+        po.setFiscalCode(debtor.getFiscalCode());
+        po.setFullName(debtor.getFullName());
+        po.setStreetName(debtor.getStreetName());
+        po.setCivicNumber(debtor.getCivicNumber());
+        po.setPostalCode(debtor.getPostalCode());
+        po.setCity(debtor.getCity());
+        po.setProvince(debtor.getProvince());
+        po.setRegion(debtor.getRegion());
+        po.setCountry(debtor.getCountry());
+        po.setEmail(debtor.getEmail());
+        po.setPhone(debtor.getPhone());
 
         List<TransferModel> transfers = inst.getTransfer();
         if (null != transfers && !transfers.isEmpty()) {

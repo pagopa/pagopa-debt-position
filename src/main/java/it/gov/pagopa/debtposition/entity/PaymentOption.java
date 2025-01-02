@@ -129,6 +129,7 @@ public class PaymentOption implements Serializable {
     private LocalDateTime lastUpdatedDateNotificationFee;
 
     // Debtor properties
+    // todo add prefix "debtor" to these fields
     @NotNull
     @Enumerated(EnumType.STRING)
     @ToString.Exclude
