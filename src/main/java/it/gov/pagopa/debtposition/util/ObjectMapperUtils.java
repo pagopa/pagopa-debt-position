@@ -1,9 +1,12 @@
 package it.gov.pagopa.debtposition.util;
 
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.mapper.ConvertPPEntityToPPv3Response;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
+import it.gov.pagopa.debtposition.model.v3.response.PaymentPositionModelResponseV3;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;
@@ -53,6 +56,10 @@ public class ObjectMapperUtils {
                 using(stampConverter).map(source, destination.getStamp());
             }
         });
+
+        // GPD version 3 (also known as OdP API) output mapper
+        Converter<PaymentPosition, PaymentPositionModelResponseV3> convertPPv3EntityToPPv3Response = new ConvertPPEntityToPPv3Response();
+        modelMapper.createTypeMap(PaymentPosition.class, PaymentPositionModelResponseV3.class).setConverter(convertPPv3EntityToPPv3Response);
     }
 
     /**
