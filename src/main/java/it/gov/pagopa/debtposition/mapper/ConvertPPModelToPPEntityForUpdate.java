@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import it.gov.pagopa.debtposition.model.enumeration.Type;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 import org.springframework.util.CollectionUtils;
@@ -20,6 +21,8 @@ import it.gov.pagopa.debtposition.model.pd.TransferMetadataModel;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
 
 public class ConvertPPModelToPPEntityForUpdate implements Converter<PaymentPositionModel, PaymentPosition> {
+
+    private static final String UNDEFINED_DEBTOR = "NA";
 
     @Override
     public PaymentPosition convert(MappingContext<@NotNull PaymentPositionModel, PaymentPosition> context) {
@@ -67,6 +70,10 @@ public class ConvertPPModelToPPEntityForUpdate implements Converter<PaymentPosit
         po.setNav(pom.getNav());
         po.setRetentionDate(pom.getRetentionDate());
         po.setNotificationFee(pom.getNotificationFee());
+        // set debtor fields default values for v1 model
+        po.setType(Type.F);
+        po.setFullName(UNDEFINED_DEBTOR);
+        po.setFiscalCode(UNDEFINED_DEBTOR);
 
         List<TransferModel> transfers = pom.getTransfer();
         if (null != transfers && !transfers.isEmpty()) {

@@ -3,6 +3,7 @@ package it.gov.pagopa.debtposition.model.v3;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import io.swagger.v3.oas.annotations.media.Schema;
+import it.gov.pagopa.debtposition.model.IPaymentPositionModel;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatusV3;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,7 +17,7 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class PaymentPositionModelV3 implements Serializable {
+public class PaymentPositionModelV3 implements Serializable, IPaymentPositionModel {
 
     @NotBlank(message = "iupd is required")
     private String iupd;

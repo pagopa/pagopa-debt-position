@@ -32,10 +32,14 @@ import java.util.Arrays;
 import java.util.List;
 
 import static it.gov.pagopa.debtposition.util.Constants.CREATE_ACTION;
+import static it.gov.pagopa.debtposition.util.Constants.UPDATE_ACTION;
 
 @Controller
 @Slf4j
 public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
+    private static final String LOG_BASE_HEADER_INFO = "[RequestMethod: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
+    private static final String LOG_BASE_PARAMS_DETAIL = "organizationFiscalCode= %s; iupd= %s";
+    private static final String IUPD_VALIDATION_ERROR = "IUPD mistmatch error: path variable IUPD [%s] and request body IUPD [%s] must be the same";
 
     @Autowired
     private ModelMapper modelMapper;
@@ -54,6 +58,7 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
         if (null == created)
             throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
 
+        // todo map ppUpdated to PaymentPositionModelV3 (create converter)
         return new ResponseEntity<>(paymentPositionModelV3, HttpStatus.CREATED);
     }
 
@@ -105,7 +110,20 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
 
     @Override
     public ResponseEntity<PaymentPositionModelV3> updateDebtPosition(String organizationFiscalCode, String iupd, PaymentPositionModelV3 paymentPositionModel, boolean toPublish, String segregationCodes) {
-        return null; // todo refactoring service method -> because update service get in input a v1 model
+        if (!paymentPositionModel.getIupd().equals(iupd)) {
+            log.error("{} : {}", String.format(LOG_BASE_HEADER_INFO, "PUT", "updateDebtPosition", String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)), String.format(IUPD_VALIDATION_ERROR, iupd, paymentPositionModel.getIupd()));
+            throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, String.format(IUPD_VALIDATION_ERROR, iupd, paymentPositionModel.getIupd()));
+        }
+
+        ArrayList<String> segCodes = segregationCodes != null ? new ArrayList<>(Arrays.asList(segregationCodes.split(","))) : null;
+        PaymentPosition ppUpdated = paymentPositionService.update(paymentPositionModel, organizationFiscalCode, toPublish, segCodes, UPDATE_ACTION);
+
+        if (null != ppUpdated) {
+            // todo map ppUpdated to PaymentPositionModelV3 (create converter)
+            return new ResponseEntity<>(paymentPositionModel, HttpStatus.OK);
+        }
+
+        throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
     }
 
     @Override
