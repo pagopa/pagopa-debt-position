@@ -1,6 +1,6 @@
 package it.gov.pagopa.debtposition.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -14,8 +14,11 @@ import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.hamcrest.Matchers;
 import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,6 +42,56 @@ public class DebtPositionControllerV3Test {
 
   @BeforeEach
   void setUp() {}
+
+  @Test
+  void getDebtPositionByIUPD_200() throws Exception {
+    String URI = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
+    PaymentPositionModelV3 paymentPositionV3 = createPaymentPositionV3(1, 1);
+
+    mvc.perform(
+            post(URI)
+                .content(TestUtil.toJson(paymentPositionV3))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    String GET_POSITION_URI =
+        String.format(
+            "/v3/organizations/%s/debtpositions/%s", ORG_FISCAL_CODE, paymentPositionV3.getIupd());
+    mvc.perform(get(GET_POSITION_URI).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+  }
+
+  @Test
+  void getDebtPositionList() throws Exception {
+    String URI = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
+    mvc.perform(
+            post(URI)
+                .content(TestUtil.toJson(createPaymentPositionV3(1, 1)))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    mvc.perform(
+            post(URI)
+                .content(TestUtil.toJson(createPaymentPositionV3(1, 1)))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    String GET_POSITIONS_URI =
+        String.format("/v3/organizations/%s/debtpositions?page=0", ORG_FISCAL_CODE)
+            + "&due_date_from="
+            + df.format(LocalDateTime.now(ZoneOffset.UTC).plusDays(50))
+            + "&due_date_to="
+            + df.format(LocalDateTime.now(ZoneOffset.UTC).plusDays(70))
+            + "&orderby=IUPD&ordering=ASC";
+    mvc.perform(get(GET_POSITIONS_URI).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd")
+                .value(Matchers.hasSize(2)));
+  }
 
   @Test
   void createDebtPosition_201_1() throws Exception {
@@ -93,6 +146,54 @@ public class DebtPositionControllerV3Test {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
   }
+
+  @Test
+  void updateDebtPosition_200_1() throws Exception {
+    String URI = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
+    PaymentPositionModelV3 ppv3 = createPaymentPositionV3(2, 1);
+
+    mvc.perform(post(URI).content(TestUtil.toJson(ppv3)).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    String POSITION_URI =
+        String.format("/v3/organizations/%s/debtpositions/%s", ORG_FISCAL_CODE, ppv3.getIupd());
+    ppv3.setOfficeName("UpdatedOfficeName");
+    mvc.perform(
+            put(POSITION_URI)
+                .content(TestUtil.toJson(ppv3))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void deleteDebtPosition_200_1() throws Exception {
+    String URI = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
+    PaymentPositionModelV3 ppv3 = createPaymentPositionV3(2, 1);
+
+    mvc.perform(post(URI).content(TestUtil.toJson(ppv3)).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    String POSITION_URI =
+        String.format("/v3/organizations/%s/debtpositions/%s", ORG_FISCAL_CODE, ppv3.getIupd());
+    mvc.perform(delete(POSITION_URI).content(TestUtil.toJson(ppv3))).andExpect(status().isOk());
+  }
+
+  @Test
+  void publishDebtPosition_200_1() throws Exception {
+    String URI = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
+    PaymentPositionModelV3 ppv3 = createPaymentPositionV3(2, 1);
+
+    mvc.perform(post(URI).content(TestUtil.toJson(ppv3)).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    String POSITION_URI =
+        String.format(
+            "/v3/organizations/%s/debtpositions/%s/publish", ORG_FISCAL_CODE, ppv3.getIupd());
+    mvc.perform(post(POSITION_URI).content(TestUtil.toJson(ppv3))).andExpect(status().isOk());
+  }
+
+  // ############################################ UTILS
+  // #######################################################
 
   private PaymentPositionModelV3 createPaymentPositionV3(int numberOfPO, int numberOfInstallment) {
     PaymentPositionModelV3 ppV3 = new PaymentPositionModelV3();
