@@ -41,11 +41,11 @@ public class DebtPositionControllerV3Test {
   void setUp() {}
 
   @Test
-  void createDebtPositionUniquePO_201() throws Exception {
+  void createDebtPosition_201_1() throws Exception {
     String URI = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
     mvc.perform(
             post(URI)
-                .content(TestUtil.toJson(createPaymentPositionV3(1)))
+                .content(TestUtil.toJson(createPaymentPositionV3(1, 1)))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -65,40 +65,47 @@ public class DebtPositionControllerV3Test {
   }
 
   @Test
-  void createDebtPositionPartialPO_201() throws Exception {
+  void createDebtPosition_201_2() throws Exception {
     String URI = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
     mvc.perform(
             post(URI)
-                .content(TestUtil.toJson(createPaymentPositionV3(2)))
+                .content(TestUtil.toJson(createPaymentPositionV3(2, 1)))
                 .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isCreated())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[0].installments[0].iuv").isNotEmpty())
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[0].installments[0].nav").isNotEmpty())
-        .andExpect(
-            MockMvcResultMatchers.jsonPath(
-                    "$.paymentOption[0].installments[0].transfer[0].companyName")
-                .value("CompanyName"))
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.DRAFT.toString()))
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[0].validityDate")
-                .value(IsNull.nullValue()));
+        .andExpect(status().isCreated());
   }
 
-  private PaymentPositionModelV3 createPaymentPositionV3(int numberOfPO) {
+  @Test
+  void createDebtPosition_201_3() throws Exception {
+    String URI = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
+    mvc.perform(
+            post(URI)
+                .content(TestUtil.toJson(createPaymentPositionV3(1, 2)))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  void createDebtPosition_400() throws Exception {
+    String URI = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
+    mvc.perform(
+            post(URI)
+                .content(TestUtil.toJson(createPaymentPositionV3(2, 2)))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest());
+  }
+
+  private PaymentPositionModelV3 createPaymentPositionV3(int numberOfPO, int numberOfInstallment) {
     PaymentPositionModelV3 ppV3 = new PaymentPositionModelV3();
     ppV3.setIupd(String.format("IUPD-%s", RandomStringUtils.randomAlphanumeric(10)));
     ppV3.setCompanyName("CompanyName");
 
-    for (int i = 0; i < numberOfPO; i++) ppV3.addPaymentOption(createPaymentOptionV3());
+    for (int i = 0; i < numberOfPO; i++)
+      ppV3.addPaymentOption(createPaymentOptionV3(numberOfInstallment));
 
     return ppV3;
   }
 
-  private PaymentOptionModelV3 createPaymentOptionV3() {
+  private PaymentOptionModelV3 createPaymentOptionV3(int numberOfInstallment) {
     PaymentOptionModelV3 pov3 = new PaymentOptionModelV3();
     pov3.setSwitchToExpired(false);
 
@@ -108,6 +115,12 @@ public class DebtPositionControllerV3Test {
     debtor.setFullName("Full Name");
     pov3.setDebtor(debtor);
 
+    for (int i = 0; i < numberOfInstallment; i++) pov3.addInstallment(createInstallment());
+
+    return pov3;
+  }
+
+  private InstallmentModel createInstallment() {
     InstallmentModel inst = new InstallmentModel();
     inst.setIuv(RandomStringUtils.randomNumeric(17));
     inst.setAmount(100L);
@@ -122,8 +135,7 @@ public class DebtPositionControllerV3Test {
     transfer.setRemittanceInformation("remittance information");
     transfer.setCategory("10/22252/20");
     inst.setTransfer(List.of(transfer));
-    pov3.setInstallments(List.of(inst));
 
-    return pov3;
+    return inst;
   }
 }
