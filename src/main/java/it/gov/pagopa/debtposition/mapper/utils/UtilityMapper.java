@@ -8,6 +8,7 @@ import it.gov.pagopa.debtposition.model.pd.DebtorModel;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
 import it.gov.pagopa.debtposition.model.pd.TransferMetadataModel;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
+import it.gov.pagopa.debtposition.model.pd.response.TransferMetadataModelResponse;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
 import it.gov.pagopa.debtposition.model.v3.InstallmentMetadataModel;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
@@ -34,6 +35,8 @@ public class UtilityMapper {
     return debtor;
   }
 
+  // Transfer entity, model, response converters
+
   public static List<TransferModel> convertTransfers(List<Transfer> transfers) {
     List<TransferModel> transfersModel = new ArrayList<>();
     if (null != transfers && !CollectionUtils.isEmpty(transfers)) {
@@ -58,6 +61,8 @@ public class UtilityMapper {
     return transfers;
   }
 
+  // Payment option metadata to Installment metadata converter
+
   public static List<InstallmentMetadataModel> convert(List<PaymentOptionMetadata> poMetadata) {
     List<InstallmentMetadataModel> installmentsMetadata = new ArrayList<>();
     if (null != poMetadata && !CollectionUtils.isEmpty(poMetadata)) {
@@ -72,6 +77,37 @@ public class UtilityMapper {
               .toList();
     }
     return installmentsMetadata;
+  }
+
+  // Transfer metadata converters
+
+  public static List<TransferMetadataModel> convertTransferMetadata(
+      List<TransferMetadata> transferMetadata) {
+    List<TransferMetadataModel> transferMetadataModels = new ArrayList<>();
+    if (null != transferMetadata && !CollectionUtils.isEmpty(transferMetadata)) {
+      transferMetadataModels =
+          transferMetadata.stream()
+              .map(m -> TransferMetadataModel.builder().key(m.getKey()).value(m.getValue()).build())
+              .toList();
+    }
+    return transferMetadataModels;
+  }
+
+  public static List<TransferMetadataModelResponse> convertTransferMetadataResponse(
+      List<TransferMetadata> transferMetadata) {
+    List<TransferMetadataModelResponse> transferMetadataModelResponses = new ArrayList<>();
+    if (null != transferMetadata && !CollectionUtils.isEmpty(transferMetadata)) {
+      transferMetadataModelResponses =
+          transferMetadata.stream()
+              .map(
+                  m ->
+                      TransferMetadataModelResponse.builder()
+                          .key(m.getKey())
+                          .value(m.getValue())
+                          .build())
+              .toList();
+    }
+    return transferMetadataModelResponses;
   }
 
   // ##################################
@@ -103,6 +139,10 @@ public class UtilityMapper {
 
     destination.setTransferMetadata(
         ObjectMapperUtils.mapAll(t.getTransferMetadata(), TransferMetadataModel.class));
+
+    List<TransferMetadataModel> transferMetadataModelResponses =
+        convertTransferMetadata(t.getTransferMetadata());
+    destination.setTransferMetadata(transferMetadataModelResponses);
 
     return destination;
   }
@@ -162,12 +202,9 @@ public class UtilityMapper {
               .build());
     }
 
-    if (!CollectionUtils.isEmpty(t.getTransferMetadata())) {
-      for (TransferMetadata m : t.getTransferMetadata()) {
-        t.addTransferMetadata(
-            TransferMetadata.builder().key(m.getKey()).value(m.getValue()).build());
-      }
-    }
+    List<TransferMetadataModelResponse> transferMetadataModelResponses =
+        convertTransferMetadataResponse(t.getTransferMetadata());
+    destination.setTransferMetadata(transferMetadataModelResponses);
 
     return destination;
   }
