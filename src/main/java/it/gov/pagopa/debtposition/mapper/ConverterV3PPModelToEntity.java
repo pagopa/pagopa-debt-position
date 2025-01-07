@@ -13,6 +13,7 @@ import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
@@ -91,6 +92,7 @@ public class ConverterV3PPModelToEntity
     Optional<LocalDateTime> minValidityDate =
         paymentOptions.stream()
             .map(PaymentOptionModelV3::getValidityDate)
+            .filter(Objects::nonNull) // Ensure we only deal with non-null values
             .min(Comparator.naturalOrder());
 
     if (minValidityDate.isPresent()) validityDate = minValidityDate.get();
