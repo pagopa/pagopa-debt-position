@@ -1,8 +1,9 @@
 package it.gov.pagopa.debtposition.controller;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
@@ -18,7 +19,6 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.hamcrest.Matchers;
 import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @SpringBootTest(classes = DebtPositionApplication.class)
 @AutoConfigureMockMvc
@@ -65,16 +64,13 @@ public class DebtPositionControllerV3Test {
   @Test
   void getDebtPositionList() throws Exception {
     String URI = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
-    mvc.perform(
-            post(URI)
-                .content(TestUtil.toJson(createPaymentPositionV3(1, 1)))
-                .contentType(MediaType.APPLICATION_JSON))
+    PaymentPositionModelV3 ppv3_1 = createPaymentPositionV3(1, 1);
+    PaymentPositionModelV3 ppv3_2 = createPaymentPositionV3(1, 1);
+
+    mvc.perform(post(URI).content(TestUtil.toJson(ppv3_1)).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
-    mvc.perform(
-            post(URI)
-                .content(TestUtil.toJson(createPaymentPositionV3(1, 1)))
-                .contentType(MediaType.APPLICATION_JSON))
+    mvc.perform(post(URI).content(TestUtil.toJson(ppv3_2)).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
     DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -89,8 +85,9 @@ public class DebtPositionControllerV3Test {
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
-            MockMvcResultMatchers.jsonPath("$.payment_position_list[*].iupd")
-                .value(Matchers.hasSize(2)));
+            jsonPath("$.payment_position_list[*].iupd", hasItem(containsString(ppv3_1.getIupd()))))
+        .andExpect(
+            jsonPath("$.payment_position_list[*].iupd", hasItem(containsString(ppv3_2.getIupd()))));
   }
 
   @Test
@@ -102,19 +99,13 @@ public class DebtPositionControllerV3Test {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.paymentOption[0].installments[0].iuv").isNotEmpty())
+        .andExpect(jsonPath("$.paymentOption[0].installments[0].nav").isNotEmpty())
         .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[0].installments[0].iuv").isNotEmpty())
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[0].installments[0].nav").isNotEmpty())
-        .andExpect(
-            MockMvcResultMatchers.jsonPath(
-                    "$.paymentOption[0].installments[0].transfer[0].companyName")
+            jsonPath("$.paymentOption[0].installments[0].transfer[0].companyName")
                 .value("CompanyName"))
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.DRAFT.toString()))
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[0].validityDate")
-                .value(IsNull.nullValue()));
+        .andExpect(jsonPath("$.status").value(DebtPositionStatus.DRAFT.toString()))
+        .andExpect(jsonPath("$.paymentOption[0].validityDate").value(IsNull.nullValue()));
   }
 
   @Test
