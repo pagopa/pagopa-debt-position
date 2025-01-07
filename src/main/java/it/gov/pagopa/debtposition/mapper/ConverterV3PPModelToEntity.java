@@ -169,16 +169,12 @@ public class ConverterV3PPModelToEntity
           break;
         } // else go to default
       default:
-        if (count > 1) {
-          // BAD_REQUEST
-          throw new AppException(
-              AppError.DEBT_POSITION_REQUEST_DATA_ERROR,
-              "Bad Request",
-              "Multiple Installment plan not available");
-        } else {
-          // UNPROCESSABLE_ENTITY
-          throw new AppException(AppError.UNPROCESSABLE_ENTITY);
-        }
+        // count > 1 -> BAD_REQUEST
+        throw new AppException(
+            AppError.DEBT_POSITION_REQUEST_DATA_ERROR,
+            "Bad Request",
+            "Multiple Installment plan not available");
+        // break
     }
 
     return isPartialPayment;

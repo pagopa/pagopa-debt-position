@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.core.IsNull;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.modelmapper.ModelMapper;
@@ -32,15 +31,12 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest(classes = DebtPositionApplication.class)
 @AutoConfigureMockMvc
-public class DebtPositionControllerV3Test {
+class DebtPositionControllerV3Test {
   @Autowired private MockMvc mvc;
 
   @Mock private ModelMapper modelMapperMock;
 
   private static final String ORG_FISCAL_CODE = "7777777777";
-
-  @BeforeEach
-  void setUp() {}
 
   @Test
   void getDebtPositionByIUPD_200() throws Exception {
@@ -67,10 +63,16 @@ public class DebtPositionControllerV3Test {
     PaymentPositionModelV3 paymentPosition1 = createPaymentPositionV3(1, 1);
     PaymentPositionModelV3 paymentPosition2 = createPaymentPositionV3(1, 1);
 
-    mvc.perform(post(uri).content(TestUtil.toJson(paymentPosition1)).contentType(MediaType.APPLICATION_JSON))
+    mvc.perform(
+            post(uri)
+                .content(TestUtil.toJson(paymentPosition1))
+                .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
-    mvc.perform(post(uri).content(TestUtil.toJson(paymentPosition2)).contentType(MediaType.APPLICATION_JSON))
+    mvc.perform(
+            post(uri)
+                .content(TestUtil.toJson(paymentPosition2))
+                .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
     DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -85,9 +87,13 @@ public class DebtPositionControllerV3Test {
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
-            jsonPath("$.payment_position_list[*].iupd", hasItem(containsString(paymentPosition1.getIupd()))))
+            jsonPath(
+                "$.payment_position_list[*].iupd",
+                hasItem(containsString(paymentPosition1.getIupd()))))
         .andExpect(
-            jsonPath("$.payment_position_list[*].iupd", hasItem(containsString(paymentPosition2.getIupd()))));
+            jsonPath(
+                "$.payment_position_list[*].iupd",
+                hasItem(containsString(paymentPosition2.getIupd()))));
   }
 
   @Test
@@ -150,9 +156,7 @@ public class DebtPositionControllerV3Test {
         String.format("/v3/organizations/%s/debtpositions/%s", ORG_FISCAL_CODE, ppv3.getIupd());
     ppv3.setOfficeName("UpdatedOfficeName");
     mvc.perform(
-            put(positionUri)
-                .content(TestUtil.toJson(ppv3))
-                .contentType(MediaType.APPLICATION_JSON))
+            put(positionUri).content(TestUtil.toJson(ppv3)).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
   }
 

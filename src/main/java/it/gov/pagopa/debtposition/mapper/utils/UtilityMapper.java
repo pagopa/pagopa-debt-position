@@ -8,7 +8,6 @@ import it.gov.pagopa.debtposition.model.pd.DebtorModel;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
 import it.gov.pagopa.debtposition.model.pd.TransferMetadataModel;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
-import it.gov.pagopa.debtposition.model.pd.response.TransferMetadataModelResponse;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
 import it.gov.pagopa.debtposition.model.v3.InstallmentMetadataModel;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
@@ -163,8 +162,12 @@ public class UtilityMapper {
               .build());
     }
 
-    destination.setTransferMetadata(
-        ObjectMapperUtils.mapAll(t.getTransferMetadata(), TransferMetadataModelResponse.class));
+    if (!CollectionUtils.isEmpty(t.getTransferMetadata())) {
+      for (TransferMetadata m : t.getTransferMetadata()) {
+        t.addTransferMetadata(
+            TransferMetadata.builder().key(m.getKey()).value(m.getValue()).build());
+      }
+    }
 
     return destination;
   }
