@@ -39,9 +39,24 @@ class DebtPositionControllerV3Test {
   private static final String ORG_FISCAL_CODE = "7777777777";
 
   @Test
-  void getDebtPositionByIUPD_200() throws Exception {
+  void getDebtPositionByIUPD_200_1() throws Exception {
+    this.getDebtPositionByIUPD_200(1, 1);
+  }
+
+  @Test
+  void getDebtPositionByIUPD_200_2() throws Exception {
+    this.getDebtPositionByIUPD_200(1, 2);
+  }
+
+  @Test
+  void getDebtPositionByIUPD_200_3() throws Exception {
+    this.getDebtPositionByIUPD_200(2, 1);
+  }
+
+  private void getDebtPositionByIUPD_200(int numberOfPO, int numberOfInstallment) throws Exception {
     String uri = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
-    PaymentPositionModelV3 paymentPositionV3 = createPaymentPositionV3(1, 1);
+    PaymentPositionModelV3 paymentPositionV3 =
+        createPaymentPositionV3(numberOfPO, numberOfInstallment);
 
     mvc.perform(
             post(uri)
