@@ -67,8 +67,8 @@ public class ConverterV3PPModelToEntity
     // Covered cases:
     // - 1 Payment Option with [1:N] Installment (ie Opzione Rateale)
     // - [1:N] Payment Option with 1 Installment (ie Opzione Multipla)
-    // - 1 Payment Option with 1 Installment and 1 Payment Option with [1:N] Installment (ie Opzione
-    // Unica + Opzione Rateale)
+    // - [1:N] Payment Option with 1 Installment and 1 Payment Option with [1:N] Installment (ie
+    // Opzione Unica + Opzione Rateale)
     for (PaymentOptionModelV3 pov3 : paymentOpts) {
       int instCount = pov3.getInstallments().size();
       boolean isPartialPayment = instCount > 1;

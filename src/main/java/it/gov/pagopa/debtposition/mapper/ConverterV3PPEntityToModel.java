@@ -10,6 +10,7 @@ import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -43,17 +44,20 @@ public class ConverterV3PPEntityToModel
     // Extracting the partial and unique POs
     List<PaymentOption> partialPO = partitionedPO.get(true);
     List<PaymentOption> uniquePO = partitionedPO.get(false);
+    List<PaymentOptionModelV3> paymentOptionsToAdd = new ArrayList<>();
 
     if (!partialPO.isEmpty()) {
       PaymentOptionModelV3 pov3 = this.convertPartialPO(partialPO, validityDate, switchToExpired);
-      destination.addPaymentOption(pov3);
+      paymentOptionsToAdd.add(pov3);
     }
 
     if (!uniquePO.isEmpty()) {
       List<PaymentOptionModelV3> pov3List =
           uniquePO.stream().map(po -> convertUniquePO(po, validityDate, switchToExpired)).toList();
-      destination.setPaymentOption(pov3List);
+      paymentOptionsToAdd.addAll(pov3List);
     }
+
+    destination.setPaymentOption(paymentOptionsToAdd);
 
     return destination;
   }
