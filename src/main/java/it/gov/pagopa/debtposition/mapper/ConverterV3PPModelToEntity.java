@@ -49,30 +49,38 @@ public class ConverterV3PPModelToEntity
       return destination;
     }
 
-    boolean isPartialPayment = this.isPartialPayment(paymentOpts);
+    // Check installment distribution in payment options by filtering for those with more than 1
+    // installment
+    long count =
+        paymentOpts.stream()
+            .filter(po -> po.getInstallments() != null && po.getInstallments().size() > 1)
+            .count();
 
-    // 2 potential cases
-    if (paymentOpts.size() == 1) {
-      // 1. if (paymentOpts.size() == 1) -> N Installment for 1 PaymentOption
-      PaymentOptionModelV3 pov3 = paymentOpts.get(0);
-      List<InstallmentModel> installments = pov3.getInstallments();
-      for (InstallmentModel installmentModel : installments) {
-        PaymentOption po = this.convert(installmentModel, pov3.getDebtor());
-        po.setIsPartialPayment(isPartialPayment);
-        po.setDueDate(getMaxDueDate(installments));
-        po.setRetentionDate(pov3.getRetentionDate());
-        destination.addPaymentOption(po);
-      }
-    } else {
-      // 2. if (paymentOpts.size() > 1) -> 1 Installment for each PaymentOption
-      for (PaymentOptionModelV3 pov3 : paymentOpts) {
-        InstallmentModel inst = pov3.getInstallments().get(0);
-        PaymentOption po = this.convert(inst, pov3.getDebtor());
-        po.setIsPartialPayment(isPartialPayment);
-        po.setDueDate(inst.getDueDate());
-        po.setRetentionDate(pov3.getRetentionDate());
-        destination.addPaymentOption(po);
-      }
+    // N payment options with N Installment is not possible (ie Opzione Rateale Multipla) ->
+    // BAD_REQUEST
+    if (count > 1)
+      throw new AppException(
+          AppError.DEBT_POSITION_REQUEST_DATA_ERROR,
+          "Bad Request",
+          "Multiple Installment plan not available");
+
+    // Covered cases:
+    // - 1 Payment Option with [1:N] Installment (ie Opzione Rateale)
+    // - [1:N] Payment Option with 1 Installment (ie Opzione Multipla)
+    // - 1 Payment Option with 1 Installment and 1 Payment Option with [1:N] Installment (ie Opzione
+    // Unica + Opzione Rateale)
+    for (PaymentOptionModelV3 pov3 : paymentOpts) {
+      int instCount = pov3.getInstallments().size();
+      boolean isPartialPayment = instCount > 1;
+      pov3.getInstallments()
+          .forEach(
+              inst -> {
+                PaymentOption po = this.convert(inst, pov3.getDebtor());
+                po.setIsPartialPayment(isPartialPayment);
+                po.setDueDate(inst.getDueDate());
+                po.setRetentionDate(pov3.getRetentionDate());
+                destination.addPaymentOption(po);
+              });
     }
 
     return destination;
@@ -154,9 +162,8 @@ public class ConverterV3PPModelToEntity
                 .filter(
                     option ->
                         option.getInstallments() != null && option.getInstallments().size() > 1)
-                // Count the number of elements, and check if there are at least 2
                 .count();
-
+    // Count the number of elements, and check if there are at least 2
     switch (count) {
       case 0:
         // 1 Installment for each PaymentOption
