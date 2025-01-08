@@ -113,6 +113,20 @@ class DebtPositionControllerV3Test {
 
   @Test
   void createDebtPosition_201_1() throws Exception {
+    this.createDebtPosition_201(1, 1);
+  }
+
+  @Test
+  void createDebtPosition_201_2() throws Exception {
+    this.createDebtPosition_201(2, 1);
+  }
+
+  @Test
+  void createDebtPosition_201_3() throws Exception {
+    this.createDebtPosition_201(1, 2);
+  }
+
+  void createDebtPosition_201(int numberOfPO, int numberOfInstallment) throws Exception {
     String uri = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
     mvc.perform(
             post(uri)
@@ -127,26 +141,6 @@ class DebtPositionControllerV3Test {
                 .value("CompanyName"))
         .andExpect(jsonPath("$.status").value(DebtPositionStatus.DRAFT.toString()))
         .andExpect(jsonPath("$.paymentOption[0].validityDate").value(IsNull.nullValue()));
-  }
-
-  @Test
-  void createDebtPosition_201_2() throws Exception {
-    String uri = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
-    mvc.perform(
-            post(uri)
-                .content(TestUtil.toJson(createPaymentPositionV3(2, 1)))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isCreated());
-  }
-
-  @Test
-  void createDebtPosition_201_3() throws Exception {
-    String uri = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
-    mvc.perform(
-            post(uri)
-                .content(TestUtil.toJson(createPaymentPositionV3(1, 2)))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isCreated());
   }
 
   @Test
