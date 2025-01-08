@@ -18,6 +18,8 @@ import org.springframework.util.CollectionUtils;
 
 public class UtilityMapper {
 
+  public static final String UNDEFINED_DEBTOR = "NA";
+
   public static DebtorModel extractDebtor(PaymentOption po) {
     DebtorModel debtor = new DebtorModel();
     debtor.setType(po.getType());

@@ -1,5 +1,7 @@
 package it.gov.pagopa.debtposition.mapper;
 
+import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.UNDEFINED_DEBTOR;
+
 import it.gov.pagopa.debtposition.entity.*;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
@@ -21,8 +23,6 @@ import org.springframework.util.CollectionUtils;
 
 public class ConverterV3PPModelToEntity
     implements Converter<PaymentPositionModelV3, PaymentPosition> {
-
-  private static final String UNDEFINED_DEBTOR = "NA";
 
   @Override
   public PaymentPosition convert(MappingContext<PaymentPositionModelV3, PaymentPosition> context) {

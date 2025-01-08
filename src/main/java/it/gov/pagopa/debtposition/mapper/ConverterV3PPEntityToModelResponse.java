@@ -32,8 +32,16 @@ public class ConverterV3PPEntityToModelResponse
     destination.setPublishDate(source.getPublishDate());
     destination.setPaymentDate(source.getPaymentDate());
     destination.setLastUpdatedDate(source.getLastUpdatedDate());
-    // todo check for status coherence
-    destination.setStatus(DebtPositionStatusV3.valueOf(source.getStatus().name()));
+
+    // check for status coherence and set
+    String status = source.getStatus().name();
+    String targetStatusV3 =
+        switch (status) {
+          case "EXPIRED", "INVALID" -> DebtPositionStatusV3.UNPAYABLE.toString();
+          case "REPORTED" -> DebtPositionStatusV3.PAID.toString();
+          default -> status;
+        };
+    destination.setStatus(DebtPositionStatusV3.valueOf(targetStatusV3));
 
     LocalDateTime validityDate = source.getValidityDate();
     Boolean switchToExpired = source.getSwitchToExpired();

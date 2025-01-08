@@ -1,5 +1,7 @@
 package it.gov.pagopa.debtposition.mapper;
 
+import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.UNDEFINED_DEBTOR;
+
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
@@ -17,8 +19,6 @@ import org.springframework.util.CollectionUtils;
 
 public class ConvertPPModelToPPEntityForUpdate
     implements Converter<PaymentPositionModel, PaymentPosition> {
-
-  private static final String UNDEFINED_DEBTOR = "NA";
 
   @Override
   public PaymentPosition convert(

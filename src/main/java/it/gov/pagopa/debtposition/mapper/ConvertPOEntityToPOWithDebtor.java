@@ -1,5 +1,7 @@
 package it.gov.pagopa.debtposition.mapper;
 
+import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.UNDEFINED_DEBTOR;
+
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
@@ -49,19 +51,34 @@ public class ConvertPOEntityToPOWithDebtor
     destination.setCompanyName(source.getPaymentPosition().getCompanyName());
     destination.setOfficeName(source.getPaymentPosition().getOfficeName());
 
-    // Debtor fields
-    destination.setType(source.getPaymentPosition().getType());
-    destination.setFullName(source.getPaymentPosition().getFullName());
-    destination.setFiscalCode(source.getPaymentPosition().getFiscalCode());
-    destination.setStreetName(source.getPaymentPosition().getStreetName());
-    destination.setCivicNumber(source.getPaymentPosition().getCivicNumber());
-    destination.setCity(source.getPaymentPosition().getCity());
-    destination.setProvince(source.getPaymentPosition().getProvince());
-    destination.setPostalCode(source.getPaymentPosition().getPostalCode());
-    destination.setRegion(source.getPaymentPosition().getRegion());
-    destination.setCountry(source.getPaymentPosition().getCountry());
-    destination.setEmail(source.getPaymentPosition().getEmail());
-    destination.setPhone(source.getPaymentPosition().getPhone());
+    // Get Debtor fields from Payment Position since is UNDEFINED on Payment Option
+    if (source.getFiscalCode().equals(UNDEFINED_DEBTOR)) {
+      destination.setType(source.getPaymentPosition().getType());
+      destination.setFullName(source.getPaymentPosition().getFullName());
+      destination.setFiscalCode(source.getPaymentPosition().getFiscalCode());
+      destination.setStreetName(source.getPaymentPosition().getStreetName());
+      destination.setCivicNumber(source.getPaymentPosition().getCivicNumber());
+      destination.setCity(source.getPaymentPosition().getCity());
+      destination.setProvince(source.getPaymentPosition().getProvince());
+      destination.setPostalCode(source.getPaymentPosition().getPostalCode());
+      destination.setRegion(source.getPaymentPosition().getRegion());
+      destination.setCountry(source.getPaymentPosition().getCountry());
+      destination.setEmail(source.getPaymentPosition().getEmail());
+      destination.setPhone(source.getPaymentPosition().getPhone());
+    } else {
+      destination.setType(source.getType());
+      destination.setFullName(source.getFullName());
+      destination.setFiscalCode(source.getFiscalCode());
+      destination.setStreetName(source.getStreetName());
+      destination.setCivicNumber(source.getCivicNumber());
+      destination.setCity(source.getCity());
+      destination.setProvince(source.getProvince());
+      destination.setPostalCode(source.getPostalCode());
+      destination.setRegion(source.getRegion());
+      destination.setCountry(source.getCountry());
+      destination.setEmail(source.getEmail());
+      destination.setPhone(source.getPhone());
+    }
 
     // transfers response
     destination.setTransfer(UtilityMapper.convertTransfersToResponse(source.getTransfer()));
