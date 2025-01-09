@@ -65,6 +65,8 @@ public class PaymentsService {
         }
 
         PaymentOption paymentOption = po.get();
+        // Update PaymentPosition instance only in memory
+        // PaymentPosition used when converting PaymentOption to POWithDebtor
         DebtPositionStatus.validityCheckAndUpdate(paymentOption);
         DebtPositionStatus.expirationCheckAndUpdate(paymentOption);
 
@@ -82,6 +84,7 @@ public class PaymentsService {
             throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav);
         }
 
+        // Update PaymentPosition instance only in memory
         DebtPositionStatus.validityCheckAndUpdate(ppToPay.get());
         DebtPositionValidation.checkPaymentPositionPayability(ppToPay.get(), nav);
 
