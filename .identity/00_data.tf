@@ -27,9 +27,9 @@ data "azurerm_key_vault_secret" "key_vault_sonar" {
   key_vault_id = data.azurerm_key_vault.key_vault.id
 }
 
-data "azurerm_key_vault_secret" "key_vault_bot_token" {
-  name         = "bot-token-github"
-  key_vault_id = data.azurerm_key_vault.key_vault.id
+data "azurerm_key_vault_secret" "key_vault_bot_cd_token" {
+  name         = "pagopa-platform-domain-github-bot-cd-pat"
+  key_vault_id = data.azurerm_key_vault.domain_key_vault.id
 }
 
 data "azurerm_key_vault_secret" "key_vault_cucumber_token" {
@@ -54,5 +54,10 @@ data "azurerm_key_vault_secret" "key_vault_datasource_password" {
 
 data "azurerm_key_vault_secret" "key_vault_datasource_url" {
   name         = "db-url"
+  key_vault_id = data.azurerm_key_vault.domain_key_vault.id
+}
+
+data "azurerm_key_vault_secret" "key_vault_flyway_datasource_url" {
+  name         = "flyway-db-url"
   key_vault_id = data.azurerm_key_vault.domain_key_vault.id
 }

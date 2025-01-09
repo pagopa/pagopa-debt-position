@@ -28,6 +28,7 @@ locals {
     "DATASOURCE_USERNAME": data.azurerm_key_vault_secret.key_vault_datasource_username.value,
     "DATASOURCE_PASSWORD": data.azurerm_key_vault_secret.key_vault_datasource_password.value,
     "DATASOURCE_URL": data.azurerm_key_vault_secret.key_vault_datasource_url.value,
+    "FLYWAY_DATASOURCE_URL": data.azurerm_key_vault_secret.key_vault_flyway_datasource_url.value,
   }
   env_variables = {
     "CONTAINER_APP_ENVIRONMENT_NAME" : local.container_app_environment.name,
@@ -38,7 +39,7 @@ locals {
   }
   repo_secrets = {
     "SONAR_TOKEN" : data.azurerm_key_vault_secret.key_vault_sonar.value,
-    "BOT_TOKEN_GITHUB" : data.azurerm_key_vault_secret.key_vault_bot_token.value,
+    "BOT_TOKEN_GITHUB" : data.azurerm_key_vault_secret.key_vault_bot_cd_token.value,
     "CUCUMBER_PUBLISH_TOKEN" : data.azurerm_key_vault_secret.key_vault_cucumber_token.value,
   }
 }

@@ -17,9 +17,9 @@ public enum DebtPositionStatus {
     public static Set<DebtPositionStatus> getPaymentPosAlreadyPaidStatus() {
         return EnumSet.complementOf((EnumSet<DebtPositionStatus>) getPaymentPosNotYetPaidStatus());
     }
-
+    // PAGOPA-2459 - removed EXPIRED as non-updatable final state.
     public static Set<DebtPositionStatus> getPaymentPosNotUpdatableStatus() {
-        return EnumSet.of(INVALID, EXPIRED, PARTIALLY_PAID, PAID, REPORTED);
+        return EnumSet.of(INVALID, PARTIALLY_PAID, PAID, REPORTED);
     }
 
     public static Set<DebtPositionStatus> getPaymentPosNotPublishableStatus() {

@@ -11,7 +11,7 @@
     </parent>
     <groupId>it.gov.pagopa.debtposition</groupId>
     <artifactId>gpd</artifactId>
-    <version>0.11.61</version>
+    <version>0.11.74</version>
     <name>Gestione Posizioni Debitorie</name>
     <description>Progetto Gestione Posizioni Debitorie</description>
     <properties>
@@ -19,7 +19,7 @@
         <springdoc-version>1.6.6</springdoc-version>
         <modelmapper-version>3.1.0</modelmapper-version>
         <jackson-datatype-jsr310-version>2.13.1</jackson-datatype-jsr310-version>
-        <flyway-version>8.5.13</flyway-version>
+        <flyway-version>9.22.3</flyway-version>
         <openfeign-version>3.1.8</openfeign-version>
         <azure.data.table.version>12.3.18</azure.data.table.version>
         <azure.core.version>1.45.1</azure.core.version>
@@ -32,22 +32,19 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-bean-validators</artifactId>
-            <version>3.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>3.0.0</version>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <!--  Exclusion of the managed version and manual specification of the desired one -->
+            <exclusions>
+               <exclusion>
+                   <groupId>org.flywaydb</groupId>
+                   <artifactId>flyway-core</artifactId>
+               </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -144,6 +141,12 @@
             <artifactId>flyway-core</artifactId>
             <version>${flyway-version}</version>
         </dependency>
+        <!-- overriding to use last version -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>5.1.0</version>
+        </dependency>
         <!-- Feign -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -204,6 +207,12 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <!--  Exclusion of the managed version and manual specification of the desired one -->
+            <plugin>
+              <groupId>org.flywaydb</groupId>
+              <artifactId>flyway-maven-plugin</artifactId>
+              <version>${flyway-version}</version>
             </plugin>
         </plugins>
     </build>
