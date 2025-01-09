@@ -52,20 +52,4 @@ public class InstallmentModel implements Serializable {
   @Size(min = 0, max = 10)
   @Schema(description = "it can added a maximum of 10 key-value pairs for metadata")
   private List<InstallmentMetadataModel> installmentMetadata = new ArrayList<>();
-
-  public void addTransfers(TransferModel trans) {
-    transfer.add(trans);
-  }
-
-  public void removeTransfers(TransferModel trans) {
-    transfer.remove(trans);
-  }
-
-  public void addInstallmentMetadata(InstallmentMetadataModel metadataModel) {
-    installmentMetadata.add(metadataModel);
-  }
-
-  public void removeInstallmentMetadata(InstallmentMetadataModel metadataModel) {
-    installmentMetadata.remove(metadataModel);
-  }
 }

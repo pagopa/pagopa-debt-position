@@ -24,8 +24,4 @@ public class PaymentPositionModelResponseV3 implements Serializable {
     private LocalDateTime lastUpdatedDate;
 
     private List<PaymentOptionModelResponseV3> paymentOption = new ArrayList<>();
-
-    public void addPaymentOption(PaymentOptionModelResponseV3 po) {
-        paymentOption.add(po);
-    }
 }

@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PaymentPositionModelV3 implements Serializable, IPaymentPositionModel {
 
-  @NotBlank(message = "iupd is required")
+  @NotBlank(message = "IUPD (debt-position identifier) is required")
   private String iupd;
 
   @Schema(
@@ -29,10 +29,10 @@ public class PaymentPositionModelV3 implements Serializable, IPaymentPositionMod
 
   @NotBlank(message = "company name is required")
   @Size(max = 140) // compliant to paForNode.xsd
-  private String companyName; // es. Comune di Roma
+  private String companyName; // e.g. Comune di Roma
 
   @Size(max = 140) // compliant to paForNode.xsd
-  private String officeName; // es. Ufficio Tributi
+  private String officeName; // e.g. Ufficio Tributi
 
   @JsonProperty(access = Access.READ_ONLY)
   @Schema(accessMode = Schema.AccessMode.READ_ONLY)
@@ -42,7 +42,10 @@ public class PaymentPositionModelV3 implements Serializable, IPaymentPositionMod
   @Schema(accessMode = Schema.AccessMode.READ_ONLY)
   private DebtPositionStatusV3 status;
 
-  @Valid private List<@Valid PaymentOptionModelV3> paymentOption = new ArrayList<>();
+  @Valid
+  @NotNull
+  @Size(min = 1, max = 100)
+  private List<@Valid PaymentOptionModelV3> paymentOption = new ArrayList<>();
 
   public void addPaymentOption(PaymentOptionModelV3 paymentOpt) {
     paymentOption.add(paymentOpt);

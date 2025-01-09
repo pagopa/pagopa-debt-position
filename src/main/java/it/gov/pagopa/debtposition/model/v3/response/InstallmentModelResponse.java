@@ -34,8 +34,4 @@ public class InstallmentModelResponse implements Serializable {
   private List<InstallmentMetadataModel> installmentMetadata = new ArrayList<>();
 
   private List<TransferModelResponse> transfer = new ArrayList<>();
-
-  public void addInstallmentMetadata(InstallmentMetadataModel metadata) {
-    installmentMetadata.add(metadata);
-  }
 }

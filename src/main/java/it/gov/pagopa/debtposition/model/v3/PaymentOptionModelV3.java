@@ -26,16 +26,15 @@ public class PaymentOptionModelV3 implements Serializable {
     private Boolean switchToExpired;
 
     @Valid
+    @NotNull
     private DebtorModel debtor;
 
     @Valid
+    @NotNull
+    @Size(min = 1, max = 100)
     private List<InstallmentModel> installments = new ArrayList<>();
 
     public void addInstallment(InstallmentModel inst) {
         installments.add(inst);
-    }
-
-    public void removeTransfers(InstallmentModel inst) {
-        installments.remove(inst);
     }
 }
