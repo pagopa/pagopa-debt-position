@@ -2,7 +2,6 @@ package it.gov.pagopa.debtposition.model.enumeration;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
-
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.EnumSet;
