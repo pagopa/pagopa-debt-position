@@ -88,5 +88,9 @@ public class CommonUtil {
     public static String deNull(Object value) {
         return Optional.ofNullable(value).orElse("").toString();
     }
+    
+    public static String sanitize(String input) {
+        return input == null ? null : input.replaceAll("[\\n\\r\\t]", "_");
+    }
 
 }

@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.11.62"
+    tag: "0.11.74"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -87,7 +87,6 @@ microservice-chart:
     ENV: 'dev'
     SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.d.internal.postgresql.pagopa.it:6432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true"
     SPRING_DATASOURCE_TYPE: "org.springframework.jdbc.datasource.SimpleDriverDataSource"
-    # SPRING_DATASOURCE_TYPE: "com.zaxxer.hikari.HikariDataSource"
     SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
     SPRING_JPA_HIBERNATE_SHOW_SQL: "false"
     SCHEMA_NAME: "apd"
@@ -141,19 +140,15 @@ microservice-chart:
   canaryDelivery:
     create: false
     ingress:
-      create: true
-      canary:
-        type: header
-        headerName: X-Canary
-        headerValue: canary
-        weightPercent: 0
-    service:
-      create: true
-    deployment:
-      create: true
-      image:
-        repository: ghcr.io/pagopa/pagopa-debt-position
-        tag: "0.9.0"
-        pullPolicy: Always
-      envConfig: {}
-      envSecret: {}
+      type: header
+      headerName: X-Canary
+      headerValue: canary
+      weightPercent: 0
+    image:
+      repository: ghcr.io/pagopa/pagopa-debt-position
+      tag: "0.11.73"
+      pullPolicy: Always
+    envConfig:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.d.internal.postgresql.pagopa.it:5432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true"
+      SPRING_DATASOURCE_TYPE: "com.zaxxer.hikari.HikariDataSource"
+    envSecret: {}
