@@ -69,6 +69,12 @@ Given('a random iupd', async function () {
     });
 When(/^the debt position with IUPD (.*) and payment option with IUV (.*) is created$/, (IUPD_input, iuv) => executeDebtPositionCreation(gpdSessionBundle, idOrg, IUPD_input, iuv));
 When('the debt position is created', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd));
+When('the debt position with publish true and validity date in {int} seconds is created', (seconds) =>{
+        const validityDate = new Date();
+        validityDate.setSeconds(now.getSeconds() + seconds);
+        executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, validityDate);
+    }
+);
 Then('the debt position gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
 Then('the organization gets the nav value after creation', () => assertNav(gpdSessionBundle.createdDebtPosition, gpdSessionBundle.responseToCheck.data));
 
@@ -196,7 +202,18 @@ When('the debt position is updated and published', () => executeDebtPositionUpda
     await executeDebtPositionGetListWithSegregationCodes(gpdSessionBundle, idOrg)
     resetParams();});
  Then('the debt positions list size is greater than {int}', (size) => assertMinSize(gpdSessionBundle.responseToCheck.data.payment_position_list, size));
- 
+
+ /*
+ * Utility steps
+ */
+
+ When('system wait {int} seconds', async (seconds) => {
+    await wait(seconds * 1000); // Convert seconds to milliseconds
+});
+
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
  
 function resetParams() {
     dueDateFrom = null;
