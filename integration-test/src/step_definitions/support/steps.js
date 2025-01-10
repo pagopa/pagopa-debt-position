@@ -71,7 +71,7 @@ When(/^the debt position with IUPD (.*) and payment option with IUV (.*) is crea
 When('the debt position is created', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd));
 When('the debt position with publish true and validity date in {int} seconds is created', (seconds) =>{
         const validityDate = new Date();
-        validityDate.setSeconds(now.getSeconds() + seconds);
+        validityDate.setSeconds(validityDate.getSeconds() + seconds);
         executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, validityDate);
     }
 );
