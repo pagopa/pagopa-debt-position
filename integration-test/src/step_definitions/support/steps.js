@@ -29,10 +29,10 @@ const { executeDebtPositionCreation,
 } = require('./logic/gpd_logic');
 const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, assertNotificationFeeUpdatedAmounts, 
 assertStatusString, executeAfterAllStep, randomOrg, randomIupd, assertIupd, assertNav, assertNotificationFeeUpdatedDateNotificationFee, assertSize, assertMinSize,
-    assertIUV
+    assertIUV, assertDebtPositionStatus
 } = require('./logic/common_logic');
 const { gpdSessionBundle, gpdUpdateBundle, gpdPayBundle } = require('./utility/data');
-const { getValidBundle, addDays, format } = require('./utility/helpers');
+const { getValidBundle, addDays, addSeconds, format, makeidNumber} = require('./utility/helpers');
 
 
 
@@ -66,15 +66,12 @@ Given('a random iupd', async function () {
     iupd = randomIupd();
     // precondition -> deletion possible dirty data
     await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd);
-    });
+});
 When(/^the debt position with IUPD (.*) and payment option with IUV (.*) is created$/, (IUPD_input, iuv) => executeDebtPositionCreation(gpdSessionBundle, idOrg, IUPD_input, iuv));
 When('the debt position is created', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd));
-When('the debt position with publish true and validity date in {int} seconds is created', (seconds) =>{
-        const validityDate = new Date();
-        validityDate.setSeconds(validityDate.getSeconds() + seconds);
-        executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, validityDate);
-    }
-);
+When('the debt position with validityDate in {int} seconds is created', async (seconds) => {
+    await executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, iuv = makeidNumber(17), validityDate = addSeconds(seconds), toPublish = true)
+});
 Then('the debt position gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
 Then('the organization gets the nav value after creation', () => assertNav(gpdSessionBundle.createdDebtPosition, gpdSessionBundle.responseToCheck.data));
 
@@ -164,8 +161,8 @@ Then('the organization gets the nav value after publication', () => assertNav(gp
 /*
  *  Paying the payment option
  */
-When('the payment option is paid', () => executePaymentOptionPay(gpdPayBundle, idOrg, gpdSessionBundle.debtPosition.iuv1));
-Then('the payment option gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
+When('the payment option is paid', async () => await executePaymentOptionPay(gpdPayBundle, idOrg, gpdSessionBundle.debtPosition.iuv1));
+Then('the payment option gets the status code {int}', (statusCode) => assertStatusCode(gpdPayBundle, statusCode));
 
 /*
  *  Payment Option get by IUV
@@ -174,6 +171,7 @@ When('we get the payment option by iuv', () => executePaymentOptionGetByIuv(gpdS
 Then('the get payment options returns the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
 Then('the response returns the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
 Then('the iupd is present and valued with the same value as the debt position', () => assertIupd(gpdSessionBundle));
+Then('the debt position is in the status {string}', (status) => assertDebtPositionStatus(gpdSessionBundle.responseToCheck.data, status));
 
 /*
  *  Reporting the transfer

@@ -16,9 +16,10 @@ function gpdHealthCheck() {
     })
 }
 
-function createDebtPosition(orgId, body, segCodes){
+function createDebtPosition(orgId, body, segCodes, toPublish = false){
 	const params = {}
 	if (segCodes) {params.segregationCodes = segCodes}
+    if (toPublish) {params.toPublish = toPublish}
     return post(GPD_HOST + `/organizations/${orgId}/debtpositions`, body, {
         timeout: API_TIMEOUT,
         params,
