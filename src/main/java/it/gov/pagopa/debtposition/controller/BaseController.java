@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import it.gov.pagopa.debtposition.model.AppInfo;
 import it.gov.pagopa.debtposition.model.ProblemJson;
+import org.springframework.web.servlet.view.RedirectView;
 
 @RestController()
 public class BaseController {
@@ -36,7 +37,9 @@ public class BaseController {
     @Hidden
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
-    public void home() {}
+    public RedirectView home() {
+        return new RedirectView("/swagger-ui/index.html");
+    }
 
     /**
      * Health Check

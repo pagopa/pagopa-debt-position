@@ -11,6 +11,8 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.springdoc.core.GroupedOpenApi;
@@ -26,24 +28,6 @@ public class SwaggerConfig {
   public OpenAPI customOpenAPI(
       @Value("${info.application.description}") String appDescription,
       @Value("${info.application.version}") String appVersion) {
-    // GPD servers
-    Server GPD_UAT = new Server();
-    GPD_UAT.setUrl("https://api.uat.platform.pagopa.it/gpd/debt-positions-service/v1/");
-    GPD_UAT.setDescription("GPD Test environment");
-    Server GPD_PROD = new Server();
-    GPD_PROD.setUrl("GPD Production environment");
-    GPD_PROD.setDescription("https://api.platform.pagopa.it/gpd/debt-positions-service/v1/");
-    // GPD servers v3
-    Server GPD_UAT_v3 = new Server();
-    GPD_UAT_v3.setUrl("https://api.uat.platform.pagopa.it/gpd/debt-positions-service/v3");
-    GPD_UAT_v3.setDescription("GPD Test environment");
-    // ACA servers
-    Server ACA_UAT = new Server();
-    ACA_UAT.setUrl("https://api.uat.platform.pagopa.it/aca/debt-positions-service/v1/");
-    ACA_UAT.setDescription("ACA Test environment");
-    Server ACA_PROD = new Server();
-    ACA_PROD.setUrl("https://api.platform.pagopa.it/aca/debt-positions-service/v1/");
-    ACA_PROD.setDescription("ACA Production environment");
 
     return new OpenAPI()
         .components(
@@ -70,7 +54,7 @@ public class SwaggerConfig {
                 .version(appVersion)
                 .description(appDescription)
                 .termsOfService("https://www.pagopa.gov.it/"))
-        .servers(List.of(GPD_UAT, GPD_UAT_v3, GPD_PROD, ACA_UAT, ACA_PROD));
+        .servers(getServerInfo());
   }
 
   @Bean
@@ -131,5 +115,28 @@ public class SwaggerConfig {
                                                   .description(
                                                       "This header identifies the call"))));
                 });
+  }
+
+  private Server createServer(String env, String service, String version, String description) {
+    String baseUrl = "https://api%s.platform.pagopa.it/%s/debt-positions-service/%s/";
+    String url = String.format(baseUrl, env, service, version);
+    Server server = new Server();
+    server.setUrl(url);
+    server.setDescription(description);
+    return server;
+  }
+
+  private List<Server> getServerInfo() {
+    List<Server> serverInfo = new ArrayList<>();
+    // Add GPD servers (v1 and v3)
+    serverInfo.add(createServer(".uat", "gpd", "v1", "GPD Test environment"));
+    serverInfo.add(createServer("", "gpd", "v1", "GPD Production Environment"));
+    serverInfo.add(createServer(".uat", "gpd", "v3", "GPD Test environment"));
+    serverInfo.add(createServer("", "gpd", "v3", "GPD Production Environment"));
+    // Add ACA servers (v1)
+    serverInfo.add(createServer(".uat", "aca", "v1", "ACA Test environment"));
+    serverInfo.add(createServer("", "aca", "v1", "ACA Production environment"));
+
+    return serverInfo;
   }
 }
