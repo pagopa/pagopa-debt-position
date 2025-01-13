@@ -4,6 +4,12 @@ function addDays(days) {
   return date;
 }
 
+function addSeconds(seconds) {
+  var date = new Date();
+  date.setSeconds(date.getSeconds() + seconds); 
+  return date
+}
+
 function format(dateToFormat) {
     let dd, MM, yyyy;
     dd = dateToFormat.getDate().toString().padStart(2, '0');
@@ -40,6 +46,7 @@ function makeidNumber(length) {
 }
 
 module.exports = {
+  addSeconds,
   addDays,
   format,
   buildStringFromDate,
