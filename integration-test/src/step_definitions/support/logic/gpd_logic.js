@@ -25,10 +25,10 @@ const {
     buildCreateMassiveDebtPositionRequest
 } = require("../utility/request_builders");
 
-async function executeDebtPositionCreation(bundle, idOrg, iupd, iuv) {
+async function executeDebtPositionCreation(bundle, idOrg, iupd, iuv, validityDate = null, toPublish = false) {
     bundle.organizationCode = idOrg;
-    bundle.debtPosition = buildDebtPositionDynamicData(bundle, iupd, iuv);
-    let response = await createDebtPosition(bundle.organizationCode, buildCreateDebtPositionRequest(bundle.debtPosition, bundle.payer));
+    bundle.debtPosition = buildDebtPositionDynamicData(bundle, iupd, iuv, validityDate);
+    let response = await createDebtPosition(bundle.organizationCode, buildCreateDebtPositionRequest(bundle.debtPosition, bundle.payer), segCodes = undefined, toPublish = toPublish);
     bundle.responseToCheck = response;
     bundle.createdDebtPosition = bundle.responseToCheck.data;
 }
@@ -177,6 +177,7 @@ async function executeDebtPositionInvalidateWithSegregationCodes(bundle, idOrg, 
 async function executePaymentOptionPay(bundle, idOrg, iuv) {
     bundle.paymentDate = new Date();
     let response = await payPaymentOption(idOrg, iuv, bundle);
+    bundle.responseToCheck = response;
 }
 
 async function executeReportTransfer(bundle, idOrg) {
