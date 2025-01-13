@@ -1,5 +1,6 @@
 package it.gov.pagopa.debtposition.model.v3;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import it.gov.pagopa.debtposition.model.pd.DebtorModel;
 import lombok.Data;
@@ -17,7 +18,8 @@ import java.util.List;
 @NoArgsConstructor
 public class PaymentOptionModelV3 implements Serializable {
 
-    @Size(max = 140) // todo use this field: is used that at the installment level
+    @Size(max = 140) // todo save also this value, the installment property is used
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String description;
     private LocalDateTime validityDate;
     private LocalDateTime retentionDate;

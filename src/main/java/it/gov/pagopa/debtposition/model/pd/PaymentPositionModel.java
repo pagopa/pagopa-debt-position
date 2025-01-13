@@ -37,7 +37,7 @@ public class PaymentPositionModel implements Serializable, IPaymentPositionModel
     private boolean payStandIn = true;
     @NotNull(message = "fiscal code is required")
     private String fiscalCode;
-    @NotNull(message = "full name is required")
+    @NotBlank(message = "full name is required")
     @ToString.Exclude
     private String fullName;
     private String streetName;

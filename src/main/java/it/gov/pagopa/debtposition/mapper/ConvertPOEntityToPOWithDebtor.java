@@ -52,7 +52,7 @@ public class ConvertPOEntityToPOWithDebtor
     destination.setOfficeName(source.getPaymentPosition().getOfficeName());
 
     // Get Debtor fields from Payment Position since is UNDEFINED on Payment Option
-    if (source.getFiscalCode().equals(UNDEFINED_DEBTOR)) {
+    if (source.getFullName().equals(UNDEFINED_DEBTOR) && source.getFiscalCode().equals(UNDEFINED_DEBTOR)) {
       destination.setType(source.getPaymentPosition().getType());
       destination.setFullName(source.getPaymentPosition().getFullName());
       destination.setFiscalCode(source.getPaymentPosition().getFiscalCode());
