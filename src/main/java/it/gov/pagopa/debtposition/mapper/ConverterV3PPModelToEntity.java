@@ -88,14 +88,6 @@ public class ConverterV3PPModelToEntity
     return destination;
   }
 
-  private LocalDateTime getMaxDueDate(List<InstallmentModel> installments) {
-    return installments.stream()
-        .map(InstallmentModel::getDueDate)
-        .max(Comparator.naturalOrder())
-        // Returns null if no maxDueDate was found
-        .orElse(null);
-  }
-
   private LocalDateTime getValidityDate(List<PaymentOptionModelV3> paymentOptions) {
     LocalDateTime validityDate = null;
     // Find the minimum validityDate
@@ -151,41 +143,5 @@ public class ConverterV3PPModelToEntity
     }
 
     return po;
-  }
-
-  private boolean isPartialPayment(List<PaymentOptionModelV3> paymentOptions) {
-    boolean isPartialPayment;
-
-    // check installment distribution in payment options
-    int count =
-        (int)
-            paymentOptions.stream()
-                // Filter for those with more than 1 installment
-                .filter(
-                    option ->
-                        option.getInstallments() != null && option.getInstallments().size() > 1)
-                .count();
-    // Count the number of elements, and check if there are at least 2
-    switch (count) {
-      case 0:
-        // 1 Installment for each PaymentOption
-        isPartialPayment = false;
-        break;
-      case 1:
-        // N Installment for 1 PaymentOption
-        if (paymentOptions.size() == 1) {
-          isPartialPayment = true;
-          break;
-        } // else go to default
-      default:
-        // count > 1 -> BAD_REQUEST
-        throw new AppException(
-            AppError.DEBT_POSITION_REQUEST_DATA_ERROR,
-            "Bad Request",
-            "Multiple Installment plan not available");
-        // break
-    }
-
-    return isPartialPayment;
   }
 }

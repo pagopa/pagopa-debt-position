@@ -22,6 +22,10 @@ import org.springframework.util.CollectionUtils;
 
 public class UtilityMapper {
 
+  private UtilityMapper() {
+    throw new IllegalStateException("Utility class");
+  }
+
   public static final String UNDEFINED_DEBTOR = "NA";
 
   public static DebtorModel extractDebtor(PaymentOption po) {
@@ -64,7 +68,7 @@ public class UtilityMapper {
     if (CollectionUtils.isEmpty(transfersModel)) {
       return Collections.emptyList();
     }
-    return transfersModel.stream().map(UtilityMapper::convert).collect(Collectors.toList());
+    return transfersModel.stream().map(UtilityMapper::convert).toList();
   }
 
   // Payment option metadata to Installment metadata converter
