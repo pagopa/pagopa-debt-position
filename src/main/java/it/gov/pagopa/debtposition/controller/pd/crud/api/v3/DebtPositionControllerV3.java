@@ -42,8 +42,15 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
   private static final String IUPD_VALIDATION_ERROR =
       "IUPD mistmatch error: path variable IUPD [%s] and request body IUPD [%s] must be the same";
 
-  @Autowired private ModelMapper modelMapper;
-  @Autowired private PaymentPositionCRUDService paymentPositionService;
+  private final ModelMapper modelMapper;
+  private final PaymentPositionCRUDService paymentPositionService;
+
+  @Autowired
+  public DebtPositionControllerV3(
+      ModelMapper modelMapper, PaymentPositionCRUDService paymentPositionService) {
+    this.modelMapper = modelMapper;
+    this.paymentPositionService = paymentPositionService;
+  }
 
   @Override
   public ResponseEntity<PaymentPositionModelV3> createDebtPosition(

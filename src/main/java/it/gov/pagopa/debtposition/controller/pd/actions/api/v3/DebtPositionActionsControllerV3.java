@@ -18,8 +18,15 @@ import org.springframework.stereotype.Controller;
 @Slf4j
 public class DebtPositionActionsControllerV3 implements IDebtPositionActionsControllerV3 {
 
-  @Autowired private ModelMapper modelMapper;
-  @Autowired private PaymentPositionActionsService paymentPositionActionsService;
+  private final ModelMapper modelMapper;
+  private final PaymentPositionActionsService paymentPositionActionsService;
+
+  @Autowired
+  public DebtPositionActionsControllerV3(
+      ModelMapper modelMapper, PaymentPositionActionsService paymentPositionActionsService) {
+    this.modelMapper = modelMapper;
+    this.paymentPositionActionsService = paymentPositionActionsService;
+  }
 
   @Override
   public ResponseEntity<PaymentPositionModelV3> publishDebtPosition(

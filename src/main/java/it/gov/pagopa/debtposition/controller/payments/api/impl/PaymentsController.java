@@ -30,9 +30,14 @@ public class PaymentsController implements IPaymentsController {
   private static final String LOG_BASE_HEADER_INFO =
       "[RequestMethod: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
   private static final String LOG_BASE_PARAMS_DETAIL = "organizationFiscalCode= %s; nav= %s";
+  private final ModelMapper modelMapper;
+  private final PaymentsService paymentsService;
 
-  @Autowired private ModelMapper modelMapper;
-  @Autowired private PaymentsService paymentsService;
+  @Autowired
+  public PaymentsController(ModelMapper modelMapper, PaymentsService paymentsService) {
+    this.modelMapper = modelMapper;
+    this.paymentsService = paymentsService;
+  }
 
   @Override
   public ResponseEntity<PaymentOptionWithDebtorInfoModelResponse> getOrganizationPaymentOptionByNAV(
