@@ -70,7 +70,9 @@ public class DebtPositionController implements IDebtPositionController {
             "POST",
             "createDebtPosition",
             String.format(
-                LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, paymentPositionModel.getIupd())));
+                LOG_BASE_PARAMS_DETAIL,
+                CommonUtil.sanitize(organizationFiscalCode),
+                CommonUtil.sanitize(paymentPositionModel.getIupd()))));
 
     // flip model to entity
     PaymentPosition debtPosition = modelMapper.map(paymentPositionModel, PaymentPosition.class);
@@ -114,7 +116,8 @@ public class DebtPositionController implements IDebtPositionController {
             LOG_BASE_HEADER_INFO,
             "GET",
             "getOrganizationDebtPositions",
-            String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
+            String.format(
+                LOG_BASE_PARAMS_DETAIL, CommonUtil.sanitize(organizationFiscalCode), "N/A")));
 
     ArrayList<String> segCodesList =
         segregationCodes != null
@@ -164,7 +167,10 @@ public class DebtPositionController implements IDebtPositionController {
             LOG_BASE_HEADER_INFO,
             "GET",
             "getOrganizationDebtPositionByIUPD",
-            String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
+            String.format(
+                LOG_BASE_PARAMS_DETAIL,
+                CommonUtil.sanitize(organizationFiscalCode),
+                CommonUtil.sanitize(iupd))));
 
     ArrayList<String> segCodes =
         segregationCodes != null
@@ -189,7 +195,10 @@ public class DebtPositionController implements IDebtPositionController {
             LOG_BASE_HEADER_INFO,
             "DELETE",
             "deleteDebtPosition",
-            String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
+            String.format(
+                LOG_BASE_PARAMS_DETAIL,
+                CommonUtil.sanitize(organizationFiscalCode),
+                CommonUtil.sanitize(iupd))));
 
     ArrayList<String> segCodes =
         segregationCodes != null
@@ -214,7 +223,10 @@ public class DebtPositionController implements IDebtPositionController {
             LOG_BASE_HEADER_INFO,
             "PUT",
             "updateDebtPosition",
-            String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
+            String.format(
+                LOG_BASE_PARAMS_DETAIL,
+                CommonUtil.sanitize(organizationFiscalCode),
+                CommonUtil.sanitize(iupd))));
     // verifico la congruenza di dati tra lo iupd path variable e lo iupd nel request body
     if (!paymentPositionModel.getIupd().equals(iupd)) {
       log.error(
@@ -222,7 +234,10 @@ public class DebtPositionController implements IDebtPositionController {
                   LOG_BASE_HEADER_INFO,
                   "PUT",
                   "updateDebtPosition",
-                  String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd))
+                  String.format(
+                      LOG_BASE_PARAMS_DETAIL,
+                      CommonUtil.sanitize(organizationFiscalCode),
+                      CommonUtil.sanitize(iupd)))
               + " : "
               + String.format(IUPD_VALIDATION_ERROR, iupd, paymentPositionModel.getIupd()));
 
@@ -260,7 +275,8 @@ public class DebtPositionController implements IDebtPositionController {
             LOG_BASE_HEADER_INFO,
             "POST",
             "createMultipleDebtPositions",
-            String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
+            String.format(
+                LOG_BASE_PARAMS_DETAIL, CommonUtil.sanitize(organizationFiscalCode), "N/A")));
 
     // flip model to entity
     List<PaymentPosition> debtPositions =
@@ -299,7 +315,8 @@ public class DebtPositionController implements IDebtPositionController {
             LOG_BASE_HEADER_INFO,
             "PUT",
             "updateMultipleDebtPositions",
-            String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
+            String.format(
+                LOG_BASE_PARAMS_DETAIL, CommonUtil.sanitize(organizationFiscalCode), "N/A")));
 
     // flip model to entity
     List<PaymentPosition> debtPositions =
@@ -332,7 +349,8 @@ public class DebtPositionController implements IDebtPositionController {
             LOG_BASE_HEADER_INFO,
             "DELETE",
             "deleteMultipleDebtPositions",
-            String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, "N/A")));
+            String.format(
+                LOG_BASE_PARAMS_DETAIL, CommonUtil.sanitize(organizationFiscalCode), "N/A")));
 
     ArrayList<String> segCodes =
         segregationCodes != null
@@ -354,7 +372,8 @@ public class DebtPositionController implements IDebtPositionController {
             LOG_BASE_HEADER_INFO,
             "GET",
             "getDebtPositionByIUV",
-            String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv)));
+            String.format(
+                LOG_BASE_PARAMS_DETAIL, CommonUtil.sanitize(organizationFiscalCode), iuv)));
 
     ArrayList<String> segCodes =
         segregationCodes != null

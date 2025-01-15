@@ -5,6 +5,7 @@ import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.service.pd.actions.PaymentPositionActionsService;
+import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,7 +41,10 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
             LOG_BASE_HEADER_INFO,
             "POST",
             "publishDebtPosition",
-            String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
+            String.format(
+                LOG_BASE_PARAMS_DETAIL,
+                CommonUtil.sanitize(organizationFiscalCode),
+                CommonUtil.sanitize(iupd))));
 
     ArrayList<String> segCodes =
         segregationCodes != null
@@ -65,7 +69,10 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
             LOG_BASE_HEADER_INFO,
             "POST",
             "invalidateDebtPosition",
-            String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)));
+            String.format(
+                LOG_BASE_PARAMS_DETAIL,
+                CommonUtil.sanitize(organizationFiscalCode),
+                CommonUtil.sanitize(iupd))));
 
     ArrayList<String> segCodes =
         segregationCodes != null
