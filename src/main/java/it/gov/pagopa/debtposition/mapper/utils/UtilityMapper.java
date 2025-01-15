@@ -27,7 +27,7 @@ public class UtilityMapper {
   public static DebtorModel extractDebtor(PaymentOption po) {
     DebtorModel debtor = new DebtorModel();
     // Set default value for Type, FullName and FiscalCode (tax code) if they are null
-    debtor.setType(Optional.ofNullable(po.getType()).orElse(Type.F));
+    debtor.setType(Optional.ofNullable(po.getDebtorType()).orElse(Type.F));
     debtor.setFiscalCode(Optional.ofNullable(po.getFiscalCode()).orElse(UNDEFINED_DEBTOR));
     debtor.setFullName(Optional.ofNullable(po.getFullName()).orElse(UNDEFINED_DEBTOR));
     debtor.setStreetName(po.getStreetName());

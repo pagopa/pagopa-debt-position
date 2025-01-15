@@ -126,7 +126,7 @@ public class ConverterV3PPModelToEntity
     po.setFee(inst.getFee());
     po.setNotificationFee(inst.getNotificationFee());
     // PO debtor fields
-    po.setType(debtor.getType());
+    po.setDebtorType(debtor.getType());
     po.setFiscalCode(debtor.getFiscalCode());
     po.setFullName(debtor.getFullName());
     po.setStreetName(debtor.getStreetName());

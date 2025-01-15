@@ -70,7 +70,7 @@ public class ConvertPPModelToPPEntityForUpdate
     po.setRetentionDate(pom.getRetentionDate());
     po.setNotificationFee(pom.getNotificationFee());
     // set debtor fields default values for v1 model
-    po.setType(Type.F);
+    po.setDebtorType(Type.F);
     po.setFullName(UNDEFINED_DEBTOR);
     po.setFiscalCode(UNDEFINED_DEBTOR);
 

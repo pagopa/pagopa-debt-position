@@ -71,7 +71,7 @@ public class ConvertPOEntityToPOWithDebtor
       destination.setEmail(source.getPaymentPosition().getEmail());
       destination.setPhone(source.getPaymentPosition().getPhone());
     } else {
-      destination.setType(source.getType());
+      destination.setType(source.getDebtorType());
       destination.setFullName(source.getFullName());
       destination.setFiscalCode(source.getFiscalCode());
       destination.setStreetName(source.getStreetName());
