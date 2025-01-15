@@ -6,11 +6,11 @@ import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.exception.ValidationException;
+import it.gov.pagopa.debtposition.model.IPaymentPositionModel;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
-import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.repository.specification.*;
@@ -188,22 +188,22 @@ public class PaymentPositionCRUDService {
     }
 
     @Transactional
-    public PaymentPosition update(@NotNull @Valid PaymentPositionModel paymentPositionModel, @NotBlank String organizationFiscalCode, boolean toPublish,
+    public PaymentPosition update(@NotNull @Valid IPaymentPositionModel ppModel, @NotBlank String organizationFiscalCode, boolean toPublish,
                                   List<String> segregationCodes, String...action) {
 
         final String ERROR_UPDATE_LOG_MSG = "Error during debt position update: %s";
 
-        PaymentPosition ppToUpdate = this.getDebtPositionByIUPD(organizationFiscalCode, paymentPositionModel.getIupd(), segregationCodes);
+        PaymentPosition ppToUpdate = this.getDebtPositionByIUPD(organizationFiscalCode, ppModel.getIupd(), segregationCodes);
 
         if (DebtPositionStatus.getPaymentPosNotUpdatableStatus().contains(ppToUpdate.getStatus())) {
-            throw new AppException(AppError.DEBT_POSITION_NOT_UPDATABLE, organizationFiscalCode, paymentPositionModel.getIupd());
+            throw new AppException(AppError.DEBT_POSITION_NOT_UPDATABLE, organizationFiscalCode, ppModel.getIupd());
         }
 
         try {
         	// flip model to entity
             List<PaymentOption> oldPaymentOptions = new ArrayList<>(ppToUpdate.getPaymentOption());
             ppToUpdate.getPaymentOption().clear();
-            modelMapper.map(paymentPositionModel, ppToUpdate);
+            modelMapper.map(ppModel, ppToUpdate);
 
             // migrate the notification fee value (if defined) and update the amounts
             setOldNotificationFee(oldPaymentOptions, organizationFiscalCode, ppToUpdate);

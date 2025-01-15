@@ -12,11 +12,10 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class PaymentOptionModelResponseV3 implements Serializable {
-
+    private Boolean switchToExpired;
     private LocalDateTime retentionDate;
     private LocalDateTime insertedDate;
-    private Boolean switchToExpired;
-    private DebtorModel debtor;
     private LocalDateTime validityDate;
+    private DebtorModel debtor;
     private List<InstallmentModelResponse> installments = new ArrayList<>();
 }
