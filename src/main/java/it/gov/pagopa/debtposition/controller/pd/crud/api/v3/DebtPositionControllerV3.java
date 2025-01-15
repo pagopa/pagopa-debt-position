@@ -152,8 +152,14 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
               LOG_BASE_HEADER_INFO,
               "PUT",
               "updateDebtPosition",
-              String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iupd)),
-          String.format(IUPD_VALIDATION_ERROR, iupd, paymentPositionModel.getIupd()));
+              String.format(
+                  LOG_BASE_PARAMS_DETAIL,
+                  CommonUtil.sanitize(organizationFiscalCode),
+                  CommonUtil.sanitize(iupd))),
+          String.format(
+              IUPD_VALIDATION_ERROR,
+              CommonUtil.sanitize(iupd),
+              CommonUtil.sanitize(paymentPositionModel.getIupd())));
       throw new AppException(
           AppError.DEBT_POSITION_REQUEST_DATA_ERROR,
           String.format(IUPD_VALIDATION_ERROR, iupd, paymentPositionModel.getIupd()));

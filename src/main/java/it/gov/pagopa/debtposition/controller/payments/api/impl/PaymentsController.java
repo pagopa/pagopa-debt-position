@@ -11,6 +11,7 @@ import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebto
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
 import it.gov.pagopa.debtposition.service.payments.PaymentsService;
+import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.CustomHttpStatus;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import javax.validation.Valid;
@@ -29,6 +30,7 @@ public class PaymentsController implements IPaymentsController {
   private static final String LOG_BASE_HEADER_INFO =
       "[RequestMethod: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
   private static final String LOG_BASE_PARAMS_DETAIL = "organizationFiscalCode= %s; nav= %s";
+
   @Autowired private ModelMapper modelMapper;
   @Autowired private PaymentsService paymentsService;
 
@@ -41,7 +43,10 @@ public class PaymentsController implements IPaymentsController {
             LOG_BASE_HEADER_INFO,
             "GET",
             "getOrganizationPaymentOptionByNAV",
-            String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, nav)));
+            String.format(
+                LOG_BASE_PARAMS_DETAIL,
+                CommonUtil.sanitize(organizationFiscalCode),
+                CommonUtil.sanitize(nav))));
 
     // flip entity to model
     PaymentOptionWithDebtorInfoModelResponse paymentOptionResponse =
@@ -60,7 +65,10 @@ public class PaymentsController implements IPaymentsController {
             LOG_BASE_HEADER_INFO,
             "POST",
             "payPaymentOption",
-            String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, nav)));
+            String.format(
+                LOG_BASE_PARAMS_DETAIL,
+                CommonUtil.sanitize(organizationFiscalCode),
+                CommonUtil.sanitize(nav))));
 
     PaymentOption paidPaymentOption =
         paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
@@ -82,7 +90,10 @@ public class PaymentsController implements IPaymentsController {
             LOG_BASE_HEADER_INFO,
             "POST",
             "reportTransfer",
-            String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv)
+            String.format(
+                    LOG_BASE_PARAMS_DETAIL,
+                    CommonUtil.sanitize(organizationFiscalCode),
+                    CommonUtil.sanitize(iuv))
                 + "; transferId="
                 + transferId));
     Transfer reportedTransfer = paymentsService.report(organizationFiscalCode, iuv, transferId);
@@ -105,7 +116,10 @@ public class PaymentsController implements IPaymentsController {
             LOG_BASE_HEADER_INFO,
             "PUT",
             "updateNotificationFee",
-            String.format(LOG_BASE_PARAMS_DETAIL, organizationFiscalCode, iuv)
+            String.format(
+                    LOG_BASE_PARAMS_DETAIL,
+                    CommonUtil.sanitize(organizationFiscalCode),
+                    CommonUtil.sanitize(iuv))
                 + "; notificationFee="
                 + notificationFee));
     PaymentOption updatedPaymentOption =
