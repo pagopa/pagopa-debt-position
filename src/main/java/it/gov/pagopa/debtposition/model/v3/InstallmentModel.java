@@ -46,7 +46,9 @@ public class InstallmentModel implements Serializable {
   @Schema(accessMode = Schema.AccessMode.READ_ONLY)
   private InstallmentStatus status;
 
-  @Valid private List<TransferModel> transfer = new ArrayList<>();
+  @Valid
+  @Size(min = 1)
+  private List<TransferModel> transfer = new ArrayList<>();
 
   @Valid
   @Size(min = 0, max = 10)

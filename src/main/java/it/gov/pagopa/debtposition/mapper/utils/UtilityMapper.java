@@ -4,6 +4,7 @@ import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.entity.TransferMetadata;
+import it.gov.pagopa.debtposition.model.enumeration.Type;
 import it.gov.pagopa.debtposition.model.pd.DebtorModel;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
 import it.gov.pagopa.debtposition.model.pd.TransferMetadataModel;
@@ -13,7 +14,10 @@ import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
 import it.gov.pagopa.debtposition.model.v3.InstallmentMetadataModel;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.util.CollectionUtils;
 
 public class UtilityMapper {
@@ -22,9 +26,10 @@ public class UtilityMapper {
 
   public static DebtorModel extractDebtor(PaymentOption po) {
     DebtorModel debtor = new DebtorModel();
-    debtor.setType(po.getType());
-    debtor.setFiscalCode(po.getFiscalCode());
-    debtor.setFullName(po.getFullName());
+    // Set default value for Type, FullName and FiscalCode (tax code) if they are null
+    debtor.setType(Optional.ofNullable(po.getType()).orElse(Type.F));
+    debtor.setFiscalCode(Optional.ofNullable(po.getFiscalCode()).orElse(UNDEFINED_DEBTOR));
+    debtor.setFullName(Optional.ofNullable(po.getFullName()).orElse(UNDEFINED_DEBTOR));
     debtor.setStreetName(po.getStreetName());
     debtor.setCivicNumber(po.getCivicNumber());
     debtor.setPostalCode(po.getPostalCode());
@@ -56,11 +61,10 @@ public class UtilityMapper {
   }
 
   public static List<Transfer> convertTransfersModel(List<TransferModel> transfersModel) {
-    List<Transfer> transfers = new ArrayList<>();
-    if (null != transfersModel && !CollectionUtils.isEmpty(transfersModel)) {
-      transfers = transfersModel.stream().map(UtilityMapper::convert).toList();
+    if (CollectionUtils.isEmpty(transfersModel)) {
+      return Collections.emptyList();
     }
-    return transfers;
+    return transfersModel.stream().map(UtilityMapper::convert).collect(Collectors.toList());
   }
 
   // Payment option metadata to Installment metadata converter
@@ -85,14 +89,12 @@ public class UtilityMapper {
 
   public static List<TransferMetadataModel> convertTransferMetadata(
       List<TransferMetadata> transferMetadata) {
-    List<TransferMetadataModel> transferMetadataModels = new ArrayList<>();
-    if (null != transferMetadata && !CollectionUtils.isEmpty(transferMetadata)) {
-      transferMetadataModels =
-          transferMetadata.stream()
-              .map(m -> TransferMetadataModel.builder().key(m.getKey()).value(m.getValue()).build())
-              .toList();
+    if (CollectionUtils.isEmpty(transferMetadata)) {
+      return Collections.emptyList();
     }
-    return transferMetadataModels;
+    return transferMetadata.stream()
+        .map(m -> TransferMetadataModel.builder().key(m.getKey()).value(m.getValue()).build())
+        .collect(Collectors.toList());
   }
 
   public static List<TransferMetadataModelResponse> convertTransferMetadataResponse(
@@ -117,6 +119,8 @@ public class UtilityMapper {
   // ##################################
   private static TransferModel convert(Transfer t) {
     TransferModel destination = new TransferModel();
+
+    if (null == t) return destination;
 
     destination.setOrganizationFiscalCode(t.getOrganizationFiscalCode());
     destination.setCompanyName(t.getCompanyName());

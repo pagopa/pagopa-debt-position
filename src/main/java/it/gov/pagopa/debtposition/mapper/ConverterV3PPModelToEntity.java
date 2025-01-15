@@ -41,13 +41,13 @@ public class ConverterV3PPModelToEntity
     destination.setFullName(UNDEFINED_DEBTOR);
     // all remaining debtor fields are set to null
 
-    destination.setValidityDate(getValidityDate(source.getPaymentOption()));
-    destination.setSwitchToExpired(getSwitchToExpired(source.getPaymentOption()));
-
     List<PaymentOptionModelV3> paymentOpts = source.getPaymentOption();
     if (null == paymentOpts || paymentOpts.isEmpty()) {
       return destination;
     }
+
+    destination.setValidityDate(getValidityDate(paymentOpts));
+    destination.setSwitchToExpired(getSwitchToExpired(paymentOpts));
 
     // Check installment distribution in payment options by filtering for those with more than 1
     // installment
@@ -70,17 +70,19 @@ public class ConverterV3PPModelToEntity
     // - [1:N] Payment Option with 1 Installment and 1 Payment Option with [1:N] Installment (ie
     // Opzione Unica + Opzione Rateale)
     for (PaymentOptionModelV3 pov3 : paymentOpts) {
-      int instCount = pov3.getInstallments().size();
-      boolean isPartialPayment = instCount > 1;
-      pov3.getInstallments()
-          .forEach(
-              inst -> {
-                PaymentOption po = this.convert(inst, pov3.getDebtor());
-                po.setIsPartialPayment(isPartialPayment);
-                po.setDueDate(inst.getDueDate());
-                po.setRetentionDate(pov3.getRetentionDate());
-                destination.addPaymentOption(po);
-              });
+      List<InstallmentModel> installments = pov3.getInstallments();
+      if (installments != null) {
+        int instCount = installments.size();
+        boolean isPartialPayment = instCount > 1;
+        installments.forEach(
+            inst -> {
+              PaymentOption po = this.convert(inst, pov3.getDebtor());
+              po.setIsPartialPayment(isPartialPayment);
+              po.setDueDate(inst.getDueDate());
+              po.setRetentionDate(pov3.getRetentionDate());
+              destination.addPaymentOption(po);
+            });
+      }
     }
 
     return destination;

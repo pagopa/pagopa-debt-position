@@ -47,9 +47,14 @@ public class ConverterV3PPEntityToModelResponse
     LocalDateTime validityDate = source.getValidityDate();
     Boolean switchToExpired = source.getSwitchToExpired();
 
+    List<PaymentOption> paymentOptions = source.getPaymentOption();
+    if (paymentOptions == null || paymentOptions.isEmpty()) {
+      return destination;
+    }
+
     // Partitioning the payment options into partial and unique POs
     Map<Boolean, List<PaymentOption>> partitionedPO =
-        source.getPaymentOption().stream()
+        paymentOptions.stream()
             .collect(Collectors.partitioningBy(PaymentOption::getIsPartialPayment));
 
     // Extracting the partial and unique POs
@@ -57,13 +62,13 @@ public class ConverterV3PPEntityToModelResponse
     List<PaymentOption> uniquePO = partitionedPO.get(false);
     List<PaymentOptionModelResponseV3> paymentOptionsToAdd = new ArrayList<>();
 
-    if (!partialPO.isEmpty()) {
+    if (null != partialPO && !partialPO.isEmpty()) {
       PaymentOptionModelResponseV3 pov3 =
           this.convertPartialPO(partialPO, validityDate, switchToExpired);
       paymentOptionsToAdd.add(pov3);
     }
 
-    if (!uniquePO.isEmpty()) {
+    if (null != uniquePO && !uniquePO.isEmpty()) {
       List<PaymentOptionModelResponseV3> pov3List =
           uniquePO.stream().map(po -> convertUniquePO(po, validityDate, switchToExpired)).toList();
       paymentOptionsToAdd.addAll(pov3List);
@@ -128,7 +133,14 @@ public class ConverterV3PPEntityToModelResponse
     inst.setIdReceipt(po.getIdReceipt());
     inst.setIdFlowReporting(po.getIdFlowReporting());
     // substring to exclude prefix "PO_"
-    inst.setStatus(InstallmentStatus.valueOf(po.getStatus().name().substring(3)));
+    String poStatus = po.getStatus().name();
+    if (poStatus.startsWith("PO_")) {
+      inst.setStatus(InstallmentStatus.valueOf(poStatus.substring(3)));
+    } else {
+      // this branch should never be executed because all payment option states are prefixed with
+      // "PO_"
+      inst.setStatus(InstallmentStatus.valueOf(poStatus));
+    }
     inst.setLastUpdatedDate(po.getLastUpdatedDate());
     // set installment metadata
     inst.setInstallmentMetadata(UtilityMapper.convert(po.getPaymentOptionMetadata()));
