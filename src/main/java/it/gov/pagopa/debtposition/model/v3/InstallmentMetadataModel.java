@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.model.pd;
+package it.gov.pagopa.debtposition.model.v3;
 
 import java.io.Serializable;
 import javax.validation.constraints.NotBlank;
@@ -11,10 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TransferMetadataModel implements Serializable {
-
-  /** generated serialVersionUID */
-  private static final long serialVersionUID = -1509450417943158597L;
+public class InstallmentMetadataModel implements Serializable {
 
   @NotBlank(message = "key is required")
   private String key;
