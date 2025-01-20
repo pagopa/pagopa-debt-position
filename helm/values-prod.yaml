@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.11.79"
+    tag: "0.11.80"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -147,7 +147,7 @@ microservice-chart:
             namespaces: ["gps"]
             topologyKey: topology.kubernetes.io/zone
   canaryDelivery:
-    create: true
+    create: false
     ingress:
       type: header
       headerName: X-Canary
