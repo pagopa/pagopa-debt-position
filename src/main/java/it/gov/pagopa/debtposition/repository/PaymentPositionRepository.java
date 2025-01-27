@@ -58,6 +58,9 @@ public interface PaymentPositionRepository extends JpaRepository<PaymentPosition
     List<OrganizationModelQueryBean> findDistinctOrganizationsByInsertedDate(LocalDateTime fromDate);
     
     Page<PaymentPosition> findAll(Specification<PaymentPosition> spec, Pageable pageable);
+
+    // Derived Query - using method naming convention - get all PaymentPosition by organization_fiscal_code and in the specified statuses
+    List<PaymentPosition> findByOrganizationFiscalCodeAndStatusIn(String organizationFiscalCode, List<DebtPositionStatus> statusList);
     
 }
 
