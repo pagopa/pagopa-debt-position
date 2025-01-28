@@ -12,8 +12,16 @@
       "description": "GPD Test environment"
     },
     {
-      "url": "GPD Production environment",
-      "description": "https://api.platform.pagopa.it/gpd/debt-positions-service/v1/"
+      "url": "https://api.platform.pagopa.it/gpd/debt-positions-service/v1/",
+      "description": "GPD Production Environment"
+    },
+    {
+      "url": "https://api.uat.platform.pagopa.it/gpd/debt-positions-service/v3/",
+      "description": "GPD Test environment"
+    },
+    {
+      "url": "https://api.platform.pagopa.it/gpd/debt-positions-service/v3/",
+      "description": "GPD Production Environment"
     },
     {
       "url": "https://api.uat.platform.pagopa.it/aca/debt-positions-service/v1/",
@@ -104,17 +112,6 @@
               }
             }
           },
-          "401": {
-            "description": "Wrong or missing function key.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
           "400": {
             "description": "Malformed request.",
             "headers": {
@@ -135,6 +132,17 @@
           },
           "200": {
             "description": "Debt Positions updated.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Wrong or missing function key.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -183,8 +191,8 @@
           "required": true
         },
         "responses": {
-          "400": {
-            "description": "Malformed request.",
+          "500": {
+            "description": "Service unavailable.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -197,19 +205,8 @@
               "application/json": {}
             }
           },
-          "401": {
-            "description": "Wrong or missing function key.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Service unavailable.",
+          "404": {
+            "description": "Payment Position not found.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -240,8 +237,8 @@
               }
             }
           },
-          "404": {
-            "description": "Payment Position not found.",
+          "400": {
+            "description": "Malformed request.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -252,6 +249,17 @@
             },
             "content": {
               "application/json": {}
+            }
+          },
+          "401": {
+            "description": "Wrong or missing function key.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
+                }
+              }
             }
           }
         },
@@ -344,17 +352,6 @@
               }
             }
           },
-          "401": {
-            "description": "Wrong or missing function key.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
           "400": {
             "description": "Malformed request.",
             "headers": {
@@ -401,6 +398,17 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Wrong or missing function key.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -439,6 +447,17 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
           "200": {
             "description": "OK.",
             "headers": {
@@ -459,17 +478,6 @@
           },
           "401": {
             "description": "Wrong or missing function key.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -776,6 +784,8 @@
             "example": "00000000000"
           },
           "remittanceInformation": {
+            "maxLength": 140,
+            "minLength": 0,
             "type": "string"
           },
           "category": {
@@ -1130,7 +1140,7 @@
         "type": "object",
         "properties": {
           "paymentPositionIUPDs": {
-            "maxItems": 100,
+            "maxItems": 20,
             "minItems": 0,
             "type": "array",
             "items": {
