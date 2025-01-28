@@ -3,9 +3,7 @@ package it.gov.pagopa.debtposition.controller;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -14,7 +12,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import it.gov.pagopa.debtposition.dto.PaymentOptionDTO;
 import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import it.gov.pagopa.debtposition.dto.TransferDTO;
+import it.gov.pagopa.debtposition.model.payments.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
+import it.gov.pagopa.debtposition.service.payments.PaymentsService;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -62,6 +63,9 @@ class PaymentsControllerTest {
 	private ModelMapper modelMapperMock;
 	
 	@MockBean private NodeClient nodeClient;
+
+	@SpyBean
+	private PaymentsService paymentsService;
 	
 	@Value("${nav.aux.digit}")
     private String auxDigit;
@@ -1479,5 +1483,48 @@ class PaymentsControllerTest {
 			fail("Not the expected exception: "+e.getMessage());
 		}
 	}
-	
+
+	/**
+	 * UPDATE IBAN ON TRANSFERS
+	 */
+
+	@Test
+	void updateTransferIbanMassive_200() throws Exception {
+		UpdateTransferIbanMassiveModel request = UpdateTransferIbanMassiveModel.builder().oldIban("oldIban").newIban("newIban").build();
+
+		doReturn(1).when(paymentsService).updateTransferIbanMassive("77777777777", "oldIban", "newIban");
+
+		mvc.perform(post("/organizations/77777777777/transfers/update/iban")
+						.content(TestUtil.toJson(request)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.TEXT_PLAIN))
+				.andExpect(content().string("Updated IBAN on 1 Transfers"));
+	}
+
+	@Test
+	void updateTransferIbanMassive_404() throws Exception {
+		UpdateTransferIbanMassiveModel request = UpdateTransferIbanMassiveModel.builder().oldIban("oldIban").newIban("newIban").build();
+
+		mvc.perform(post("/organizations/notFoundOrg/transfers/update/iban")
+						.content(TestUtil.toJson(request)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	void updateTransferIbanMassive_400_noOldIban() throws Exception {
+		UpdateTransferIbanMassiveModel request = UpdateTransferIbanMassiveModel.builder().oldIban(null).newIban("newIban").build();
+
+		mvc.perform(post("/organizations/notFoundOrg/transfers/update/iban")
+						.content(TestUtil.toJson(request)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void updateTransferIbanMassive_400_noNewIban() throws Exception {
+		UpdateTransferIbanMassiveModel request = UpdateTransferIbanMassiveModel.builder().oldIban("oldIban").newIban(null).build();
+
+		mvc.perform(post("/organizations/notFoundOrg/transfers/update/iban")
+						.content(TestUtil.toJson(request)).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest());
+	}
 }

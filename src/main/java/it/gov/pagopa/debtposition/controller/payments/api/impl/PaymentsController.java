@@ -155,7 +155,7 @@ public class PaymentsController implements IPaymentsController {
                 String.format(
                         LOG_BASE_HEADER_INFO,
                         "POST",
-                        "updateIbanMassive",
+                        "updateTransferIbanMassive",
                         String.format(
                                 "organizationFiscalCode= %s; oldIban= %s; newIban= %s",
                                 organizationFiscalCode,
