@@ -303,7 +303,7 @@ public interface IPaymentsController {
                                     schema = @Schema(implementation = ProblemJson.class)))
             })
     @PostMapping(
-            value = "/organizations/{organizationfiscalcode}/transfers/iban/update",
+            value = "/organizations/{organizationfiscalcode}/transfers/update/iban",
             produces = {MediaType.TEXT_PLAIN_VALUE},
             consumes = {MediaType.APPLICATION_JSON_VALUE})
     ResponseEntity<String> updateTransferIbanMassive(

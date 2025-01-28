@@ -2,6 +2,7 @@ package it.gov.pagopa.debtposition.repository;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -25,6 +26,6 @@ public interface PaymentOptionRepository extends JpaRepository<PaymentOption, Lo
 	Optional<PaymentOption> findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(String organizationFiscalCodeIuv, String iuv, String organizationFiscalCodeNav, String nav);
 
 	// Derived Query - using method naming convention - get all PaymentOption by payment_position_id and in the specified statuses
-	List<PaymentOption> findByPaymentPositionIdAndStatusIn(Long paymentPositionId, List<PaymentOptionStatus> statusList);
+	List<PaymentOption> findByPaymentPositionInAndStatusIn(List<PaymentPosition> paymentPositionList, List<PaymentOptionStatus> statusList);
 }
 
