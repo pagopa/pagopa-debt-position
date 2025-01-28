@@ -321,27 +321,25 @@ public class PaymentsService {
     }
 
     // Update all Organization's IBANs on Transfer of payable PaymentPosition
-    @Transactional
-    public void updateTransferIbanMassive(String organizationFiscalCode, String oldIban, String newIban) {
+    public int updateTransferIbanMassive(String organizationFiscalCode, String oldIban, String newIban) {
+        int numberOfUpdates = 0;
         // Retrieve all payment_position with organization_fiscal_code AND in status (DRAFT or PUBLISHED or VALID or PARTIALLY_PAID)
         List<PaymentPosition> ppToUpdate = paymentPositionRepository.findByOrganizationFiscalCodeAndStatusIn(organizationFiscalCode, List.of(DebtPositionStatus.DRAFT, DebtPositionStatus.PUBLISHED, DebtPositionStatus.VALID, DebtPositionStatus.PARTIALLY_PAID));
 
+        if (ppToUpdate.isEmpty()) {
+            throw new AppException(AppError.DEBT_POSITION_IN_UPDATABLE_STATE_NOT_FOUND, organizationFiscalCode);
+        }
         for (PaymentPosition pp : ppToUpdate) {
             // Retrieve all payment_option with payment_position_id AND in status PO_UNPAID
             List<PaymentOption> poToUpdate = paymentOptionRepository.findByPaymentPositionIdAndStatusIn(pp.getId(), List.of(PaymentOptionStatus.PO_UNPAID));
 
             for (PaymentOption po : poToUpdate) {
-                // Retrieve all transfer with payment_option_id
-                List<Transfer> transferToUpdate = transferRepository.findByPaymentOptionId(po.getId());
-
-                for (Transfer tr : transferToUpdate) {
-                    // Update transfer iban IF iban equals oldIban
-                    if (tr.getIban().equals(oldIban)) {
-                        transferRepository.updateTransferIban(tr.getId(), newIban, LocalDateTime.now(ZoneOffset.UTC));
-                    }
-                }
+                // Update all Transfers that have the specified payment_option_id and oldIban as IBAN
+                numberOfUpdates += transferRepository.updateTransferIban(po.getId(), oldIban, newIban, LocalDateTime.now(ZoneOffset.UTC));
             }
         }
+
+        return numberOfUpdates;
     }
 
 }

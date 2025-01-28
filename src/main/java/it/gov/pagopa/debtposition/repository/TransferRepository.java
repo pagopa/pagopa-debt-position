@@ -20,6 +20,6 @@ public interface TransferRepository extends JpaRepository<Transfer, Long>,
     List<Transfer> findByPaymentOptionId(Long paymentOptionId);
 
     @Modifying
-    @Query("update Transfer tr set tr.iban = :iban, tr.lastUpdatedDate = :currentDate where tr.id=:id")
-    int updateTransferIban(@Param(value="id") Long id, @Param(value = "iban") String iban, @Param(value = "currentDate") LocalDateTime currentDate);
+    @Query("update Transfer tr set tr.newIban = :newIban, tr.lastUpdatedDate = :currentDate where tr.payment_option_id=:paymentOptionId and tr.iban=:oldIban")
+    int updateTransferIban(@Param(value="paymentOptionId") Long paymentOptionId, @Param(value = "oldIban") String oldIban, @Param(value = "newIban") String newIban, @Param(value = "currentDate") LocalDateTime currentDate);
 }
