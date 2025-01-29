@@ -83,12 +83,14 @@ public class PaymentsController implements IPaymentsController {
 
         if (paidPaymentOption == null) {
 
-        throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, nav);
+            throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, nav);
+        }
+
+        return new ResponseEntity<>(
+                ObjectMapperUtils.map(paidPaymentOption, PaymentOptionModelResponse.class), HttpStatus.OK);
     }
 
-    return new ResponseEntity<>(
-        ObjectMapperUtils.map(paidPaymentOption, PaymentOptionModelResponse.class), HttpStatus.OK);
-  }@Override
+    @Override
     public ResponseEntity<TransferModelResponse> reportTransfer(
             String organizationFiscalCode, String iuv, String transferId) {
         log.debug(
@@ -156,9 +158,9 @@ public class PaymentsController implements IPaymentsController {
                         "updateTransferIbanMassive",
                         String.format(
                                 "organizationFiscalCode= %s; oldIban= %s; newIban= %s",
-                                organizationFiscalCode,
-                                updateTransferIbanMassiveModel.getOldIban(),
-                                updateTransferIbanMassiveModel.getNewIban())));
+                                CommonUtil.sanitize(organizationFiscalCode),
+                                CommonUtil.sanitize(updateTransferIbanMassiveModel.getOldIban()),
+                                CommonUtil.sanitize(updateTransferIbanMassiveModel.getNewIban()))));
 
         int numberOfUpdates = paymentsService.updateTransferIbanMassive(organizationFiscalCode, updateTransferIbanMassiveModel.getOldIban(), updateTransferIbanMassiveModel.getNewIban());
 
