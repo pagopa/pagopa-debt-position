@@ -81,16 +81,14 @@ public class PaymentsController implements IPaymentsController {
         PaymentOption paidPaymentOption =
                 paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
 
-        if (null != paidPaymentOption) {
-            return new ResponseEntity<>(
-                    ObjectMapperUtils.map(paidPaymentOption, PaymentOptionModelResponse.class),
-                    HttpStatus.OK);
-        }
+        if (paidPaymentOption == null) {
 
         throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, nav);
     }
 
-    @Override
+    return new ResponseEntity<>(
+        ObjectMapperUtils.map(paidPaymentOption, PaymentOptionModelResponse.class), HttpStatus.OK);
+  }@Override
     public ResponseEntity<TransferModelResponse> reportTransfer(
             String organizationFiscalCode, String iuv, String transferId) {
         log.debug(
