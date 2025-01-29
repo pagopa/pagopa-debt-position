@@ -34,6 +34,7 @@ assertStatusString, executeAfterAllStep, randomOrg, randomIupd, assertIupd, asse
 } = require('./logic/common_logic');
 const { gpdSessionBundle, gpdUpdateBundle, gpdPayBundle } = require('./utility/data');
 const { getValidBundle, addDays, addSeconds, format, makeidNumber} = require('./utility/helpers');
+const assert = require("assert");
 
 
 
@@ -206,9 +207,9 @@ When('the debt position is updated and published', () => executeDebtPositionUpda
 /*
  * Update IBAN on all Organization's Transfers
  */
-When('the updateTransferIbanMassive is called with oldIban {string} and newIban {string}', (oldIban, newIban) => responseToCheck = executeUpdateTransferIbanMassive(idOrg, oldIban, newIban));
+When('the updateTransferIbanMassive is called with oldIban {string} and newIban {string}', async (oldIban, newIban) => responseToCheck = await executeUpdateTransferIbanMassive(idOrg, oldIban, newIban));
 Then('the updateTransferIbanMassive gets the status code {int}', (statusCode) => assert.strictEqual(responseToCheck.status, statusCode));
-Then('the updateTransferIbanMassive response string includes {string}', (text) => assert.true(responseToCheck.text().includes(text)));
+Then('the updateTransferIbanMassive response string includes {string}', (text) => assert.ok(responseToCheck.data.includes(text)));
 
  /*
  * Utility steps
