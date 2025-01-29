@@ -25,7 +25,8 @@ const { executeDebtPositionCreation,
         executeDebtPositionPublishWithSegregationCodes,
         executeDebtPositionInvalidateWithSegregationCodes,
         executeMassiveDebtPositionsCreation,
-        executeMassiveDebtPositionCreationWithSegregationCodes
+        executeMassiveDebtPositionCreationWithSegregationCodes,
+        executeUpdateTransferIbanMassive
 } = require('./logic/gpd_logic');
 const { assertAmount, assertFaultCode, assertOutcome, assertStatusCode, assertCompanyName, assertNotificationFeeUpdatedAmounts, 
 assertStatusString, executeAfterAllStep, randomOrg, randomIupd, assertIupd, assertNav, assertNotificationFeeUpdatedDateNotificationFee, assertSize, assertMinSize,
@@ -48,6 +49,7 @@ let dueDateFrom;
 let dueDateTo;
 let paymentDateFrom;
 let paymentDateTo;
+let responseToCheck;
 
 BeforeAll(async function() {
     await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupdOK);
@@ -200,6 +202,13 @@ When('the debt position is updated and published', () => executeDebtPositionUpda
     await executeDebtPositionGetListWithSegregationCodes(gpdSessionBundle, idOrg)
     resetParams();});
  Then('the debt positions list size is greater than {int}', (size) => assertMinSize(gpdSessionBundle.responseToCheck.data.payment_position_list, size));
+
+/*
+ * Update IBAN on all Organization's Transfers
+ */
+When('the updateTransferIbanMassive is called with oldIban {string} and newIban {string}', (oldIban, newIban) => responseToCheck = executeUpdateTransferIbanMassive(idOrg, oldIban, newIban));
+Then('the updateTransferIbanMassive gets the status code {int}', (statusCode) => assert.strictEqual(responseToCheck.status, statusCode));
+Then('the updateTransferIbanMassive response string includes {string}', (text) => assert.true(responseToCheck.text().includes(text)));
 
  /*
  * Utility steps
