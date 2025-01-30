@@ -35,9 +35,6 @@ import feign.FeignException;
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
 import it.gov.pagopa.debtposition.client.NodeClient;
-import it.gov.pagopa.debtposition.dto.PaymentOptionDTO;
-import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
-import it.gov.pagopa.debtposition.dto.TransferDTO;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
@@ -48,26 +45,11 @@ import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPosition
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
-import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
 import it.gov.pagopa.debtposition.util.CustomHttpStatus;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @SpringBootTest(classes = DebtPositionApplication.class)
 @AutoConfigureMockMvc

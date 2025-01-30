@@ -53,7 +53,6 @@ class PaymentsServiceTest {
 
     @Test
     void updateTransferIbanMassive_KO_noPaymentPosition() {
-        PaymentPosition pp = PaymentPosition.builder().build();
         doReturn(List.of()).when(paymentPositionRepository).findByOrganizationFiscalCodeAndStatusIn(anyString(), any());
 
         verify(paymentOptionRepository, never()).findByPaymentPositionInAndStatusIn(any(), any());
