@@ -6,6 +6,7 @@ import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.validation.Valid;
@@ -233,7 +234,10 @@ public class PaymentsService {
         }
 
         // aggiorno lo stato della payment position
-        if (countPaidPartialPayment > 0 && countPaidPartialPayment < numberOfPartialPayment) {
+        // PIDM-42 if paying the full amount when there is already a paid partial payment
+        // then update the payment position status to PAID
+        if (countPaidPartialPayment > 0 && countPaidPartialPayment < numberOfPartialPayment
+                && Boolean.TRUE.equals(Objects.requireNonNull(poToPay).getIsPartialPayment())) {
             pp.setStatus(DebtPositionStatus.PARTIALLY_PAID);
         } else {
             pp.setStatus(DebtPositionStatus.PAID);
