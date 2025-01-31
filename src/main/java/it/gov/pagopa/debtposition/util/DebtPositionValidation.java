@@ -268,30 +268,34 @@ public class DebtPositionValidation {
           AppError.PAYMENT_OPTION_ALREADY_PAID, poToPay.getOrganizationFiscalCode(), nav);
     }
 
-        // La posizione debitoria è già in PARTIALLY_PAID ed arriva una richiesta di pagamento su una payment option non rateizzata (isPartialPayment = false) => errore
-        // PIDM-42: if this is a full payment and the position is partially paid then
-        // log this but allow the payment option status to be changed to PO_PAID instead of throwing an error
-        // NOTE: the exception handling has been moved to the get/activate validation (checkAlreadyPaidInstallments)
-        if (ppToPay.getStatus().equals(DebtPositionStatus.PARTIALLY_PAID)
-                && Boolean.FALSE.equals(poToPay.getIsPartialPayment())) {
+    // La posizione debitoria è già in PARTIALLY_PAID ed arriva una richiesta di pagamento su una
+    // payment option non rateizzata (isPartialPayment = false) => errore
+    // PIDM-42: if this is a full payment and the position is partially paid then
+    // log this but allow the payment option status to be changed to PO_PAID instead of throwing an
+    // error
+    // NOTE: the exception handling has been moved to the get/activate validation
+    // (checkAlreadyPaidInstallments)
+    if (ppToPay.getStatus().equals(DebtPositionStatus.PARTIALLY_PAID)
+        && Boolean.FALSE.equals(poToPay.getIsPartialPayment())) {
 
-            // log detailed information about this edge case
-            log.warn("Potential payment state inconsistency detected || " +
-                            "Organization: {} || " +
-                            "IUPD: {} || " +
-                            "NAV: {} || " +
-                            "Position Status: {} || " +
-                            "Payment Option Status: {} || " +
-                            "Is Partial Payment: {} || " +
-                            "Timestamp: {}",
-                    ppToPay.getOrganizationFiscalCode(),
-                    ppToPay.getIupd(),
-                    nav,
-                    ppToPay.getStatus(),
-                    poToPay.getStatus(),
-                    poToPay.getIsPartialPayment(),
-                    LocalDateTime.now());
-        }
+      // log detailed information about this edge case
+      log.warn(
+          "Potential payment state inconsistency detected || "
+              + "Organization: {} || "
+              + "IUPD: {} || "
+              + "NAV: {} || "
+              + "Position Status: {} || "
+              + "Payment Option Status: {} || "
+              + "Is Partial Payment: {} || "
+              + "Timestamp: {}",
+          ppToPay.getOrganizationFiscalCode(),
+          ppToPay.getIupd(),
+          nav,
+          ppToPay.getStatus(),
+          poToPay.getStatus(),
+          poToPay.getIsPartialPayment(),
+          LocalDateTime.now());
+    }
   }
 
   private static boolean isPaid(PaymentOption po) {
