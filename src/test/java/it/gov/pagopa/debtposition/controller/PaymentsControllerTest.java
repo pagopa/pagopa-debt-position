@@ -610,7 +610,7 @@ class PaymentsControllerTest {
   }
 
   @Test
-  void payPaymentOption_Multiple_Partial2_409() throws Exception {
+  void getPaymentOption_Multiple_Partial_409() throws Exception {
     // creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato) con più
     // opzioni di pagamento
     mvc.perform(
@@ -652,13 +652,12 @@ class PaymentsControllerTest {
             MockMvcResultMatchers.jsonPath("$.status")
                 .value(DebtPositionStatus.PARTIALLY_PAID.toString()));
 
-    // effettuo un nuovo pagamento sulla payment option non rateizzabile (isPartialPayment = false)
-    // e ottengo errore
+    // effettuo una GET/ACTIVATE sulla payment option corrispondente alla rata unica/intero importo
+    // e ottengo errore 409
     mvc.perform(
-            post("/organizations/PAY_Multiple_Partial2_409_12345678901/paymentoptions/"
-                    + auxDigit
-                    + "123456IUVMULTIPLEMOCK3/pay")
-                .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
+            get("/organizations/PAY_Multiple_Partial2_409_12345678901/paymentoptions/"
+                + auxDigit
+                + "123456IUVMULTIPLEMOCK3")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isConflict());
   }

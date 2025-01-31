@@ -70,6 +70,7 @@ public class PaymentsService {
         // PaymentPosition used when converting PaymentOption to POWithDebtor
         DebtPositionStatus.validityCheckAndUpdate(paymentOption);
         DebtPositionStatus.expirationCheckAndUpdate(paymentOption);
+        DebtPositionStatus.checkAlreadyPaidInstallments(paymentOption, nav);
 
         return paymentOption;
     }
