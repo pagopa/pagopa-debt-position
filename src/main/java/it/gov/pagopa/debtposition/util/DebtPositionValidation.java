@@ -291,7 +291,7 @@ public class DebtPositionValidation {
                     poToPay.getIsPartialPayment(),
                     LocalDateTime.now());
         }
-    }
+  }
 
   private static boolean isPaid(PaymentOption po) {
     return !po.getStatus().equals(PaymentOptionStatus.PO_UNPAID)
