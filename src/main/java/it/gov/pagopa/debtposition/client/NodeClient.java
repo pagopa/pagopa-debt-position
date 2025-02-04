@@ -1,16 +1,15 @@
 package it.gov.pagopa.debtposition.client;
 
+import feign.FeignException;
+import it.gov.pagopa.debtposition.config.feign.NodeFeignConfig;
+import it.gov.pagopa.debtposition.model.checkposition.NodeCheckPositionModel;
+import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPositionResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
-import feign.FeignException;
-import it.gov.pagopa.debtposition.config.feign.NodeFeignConfig;
-import it.gov.pagopa.debtposition.model.checkposition.NodeCheckPositionModel;
-import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPositionResponse;
 
 @FeignClient(value = "node", url = "${service.node.host}", configuration = NodeFeignConfig.class)
 public interface NodeClient {

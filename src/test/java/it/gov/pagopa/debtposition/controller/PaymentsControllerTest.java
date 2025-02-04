@@ -656,8 +656,8 @@ class PaymentsControllerTest {
     // e ottengo errore 409
     mvc.perform(
             get("/organizations/PAY_Multiple_Partial2_409_12345678901/paymentoptions/"
-                + auxDigit
-                + "123456IUVMULTIPLEMOCK3")
+                    + auxDigit
+                    + "123456IUVMULTIPLEMOCK3")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isConflict());
   }
