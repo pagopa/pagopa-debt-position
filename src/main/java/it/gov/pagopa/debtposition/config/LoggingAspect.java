@@ -1,9 +1,16 @@
 package it.gov.pagopa.debtposition.config;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static it.gov.pagopa.debtposition.util.CommonUtil.deNull;
+
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.model.ProblemJson;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -16,18 +23,6 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.bind.JAXBElement;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-import static it.gov.pagopa.debtposition.util.CommonUtil.deNull;
-
 
 @Aspect
 @Component
@@ -138,7 +133,8 @@ public class LoggingAspect {
     MDC.put(STATUS, "OK");
     MDC.put(CODE, String.valueOf(httpResponse.getStatus()));
     MDC.put(RESPONSE_TIME, getExecutionTime());
-    log.info("Successful API operation {} - result: {}", joinPoint.getSignature().getName(), result);
+    log.info(
+        "Successful API operation {} - result: {}", joinPoint.getSignature().getName(), result);
     MDC.remove(STATUS);
     MDC.remove(CODE);
     MDC.remove(RESPONSE_TIME);

@@ -9,12 +9,31 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import feign.FeignException;
+import it.gov.pagopa.debtposition.DebtPositionApplication;
+import it.gov.pagopa.debtposition.TestUtil;
+import it.gov.pagopa.debtposition.client.NodeClient;
 import it.gov.pagopa.debtposition.dto.PaymentOptionDTO;
 import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import it.gov.pagopa.debtposition.dto.TransferDTO;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.exception.AppException;
+import it.gov.pagopa.debtposition.mock.DebtPositionMock;
+import it.gov.pagopa.debtposition.model.checkposition.NodeCheckPositionModel;
+import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPositionResponse;
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.payments.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
 import it.gov.pagopa.debtposition.service.payments.PaymentsService;
+import it.gov.pagopa.debtposition.util.CustomHttpStatus;
+import it.gov.pagopa.debtposition.util.DebtPositionValidation;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,26 +50,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import feign.FeignException;
-import it.gov.pagopa.debtposition.DebtPositionApplication;
-import it.gov.pagopa.debtposition.TestUtil;
-import it.gov.pagopa.debtposition.client.NodeClient;
-import it.gov.pagopa.debtposition.entity.PaymentOption;
-import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import it.gov.pagopa.debtposition.entity.Transfer;
-import it.gov.pagopa.debtposition.exception.AppException;
-import it.gov.pagopa.debtposition.mock.DebtPositionMock;
-import it.gov.pagopa.debtposition.model.checkposition.NodeCheckPositionModel;
-import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPositionResponse;
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
-import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
-import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
-import it.gov.pagopa.debtposition.util.CustomHttpStatus;
-import it.gov.pagopa.debtposition.util.DebtPositionValidation;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
-
 @SpringBootTest(classes = DebtPositionApplication.class)
 @AutoConfigureMockMvc
 class PaymentsControllerTest {
@@ -61,10 +60,9 @@ class PaymentsControllerTest {
 
   @MockBean private NodeClient nodeClient;
 
-  @SpyBean
-	private PaymentsService paymentsService;
+  @SpyBean private PaymentsService paymentsService;
 
-	@Value("${nav.aux.digit}")
+  @Value("${nav.aux.digit}")
   private String auxDigit;
 
   @BeforeEach
@@ -2019,78 +2017,86 @@ class PaymentsControllerTest {
       localMockPO.setIuv("iuv");
       localMockPP.addPaymentOption(localMockPO);
       DebtPositionValidation.checkPaymentPositionAccountability(localMockPP, "mockIUV", "mockTxID");
-    }catch (AppException e) {
-			assertTrue(true);
-		}
-		catch(Exception e) {
-			fail("Not the expected exception: "+e.getMessage());
-		}
-	}
+    } catch (AppException e) {
+      assertTrue(true);
+    } catch (Exception e) {
+      fail("Not the expected exception: " + e.getMessage());
+    }
+  }
 
-	@Test
-	void ValidationError_checkPaymentPositionAccountability_Transfer() throws Exception {
-		try {
-			PaymentOption localMockPO = new PaymentOption();
-			PaymentPosition localMockPP = new PaymentPosition();
-			Transfer localTransfer = new Transfer();
-			localMockPP.setStatus(DebtPositionStatus.PAID);
-			localMockPO.setStatus(PaymentOptionStatus.PO_PAID);
-			localTransfer.setIdTransfer("1");
-			localMockPO.addTransfer(localTransfer);
-			localMockPO.setIsPartialPayment(false);
-			localMockPO.setIuv("mockIUV");
-			localMockPP.addPaymentOption(localMockPO);
-			DebtPositionValidation.checkPaymentPositionAccountability(localMockPP, "mockIUV","mockTxID");
-		}
-		catch (AppException e) {
-			assertTrue(true);
-		}
-		catch(Exception e) {
-			fail("Not the expected exception: "+e.getMessage());
-		}
-	}
+  @Test
+  void ValidationError_checkPaymentPositionAccountability_Transfer() throws Exception {
+    try {
+      PaymentOption localMockPO = new PaymentOption();
+      PaymentPosition localMockPP = new PaymentPosition();
+      Transfer localTransfer = new Transfer();
+      localMockPP.setStatus(DebtPositionStatus.PAID);
+      localMockPO.setStatus(PaymentOptionStatus.PO_PAID);
+      localTransfer.setIdTransfer("1");
+      localMockPO.addTransfer(localTransfer);
+      localMockPO.setIsPartialPayment(false);
+      localMockPO.setIuv("mockIUV");
+      localMockPP.addPaymentOption(localMockPO);
+      DebtPositionValidation.checkPaymentPositionAccountability(localMockPP, "mockIUV", "mockTxID");
+    } catch (AppException e) {
+      assertTrue(true);
+    } catch (Exception e) {
+      fail("Not the expected exception: " + e.getMessage());
+    }
+  }
 
-	/**
-	 * UPDATE IBAN ON TRANSFERS
-	 */
+  /** UPDATE IBAN ON TRANSFERS */
+  @Test
+  void updateTransferIbanMassive_200() throws Exception {
+    UpdateTransferIbanMassiveModel request =
+        UpdateTransferIbanMassiveModel.builder().oldIban("oldIban").newIban("newIban").build();
 
-	@Test
-	void updateTransferIbanMassive_200() throws Exception {
-		UpdateTransferIbanMassiveModel request = UpdateTransferIbanMassiveModel.builder().oldIban("oldIban").newIban("newIban").build();
+    doReturn(1)
+        .when(paymentsService)
+        .updateTransferIbanMassive("77777777777", "oldIban", "newIban");
 
-		doReturn(1).when(paymentsService).updateTransferIbanMassive("77777777777", "oldIban", "newIban");
+    mvc.perform(
+            post("/organizations/77777777777/transfers/update/iban")
+                .content(TestUtil.toJson(request))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.TEXT_PLAIN))
+        .andExpect(content().string("Updated IBAN on 1 Transfers"));
+  }
 
-		mvc.perform(post("/organizations/77777777777/transfers/update/iban")
-						.content(TestUtil.toJson(request)).contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk())
-				.andExpect(content().contentType(MediaType.TEXT_PLAIN))
-				.andExpect(content().string("Updated IBAN on 1 Transfers"));
-	}
+  @Test
+  void updateTransferIbanMassive_404() throws Exception {
+    UpdateTransferIbanMassiveModel request =
+        UpdateTransferIbanMassiveModel.builder().oldIban("oldIban").newIban("newIban").build();
 
-	@Test
-	void updateTransferIbanMassive_404() throws Exception {
-		UpdateTransferIbanMassiveModel request = UpdateTransferIbanMassiveModel.builder().oldIban("oldIban").newIban("newIban").build();
+    mvc.perform(
+            post("/organizations/notFoundOrg/transfers/update/iban")
+                .content(TestUtil.toJson(request))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isNotFound());
+  }
 
-		mvc.perform(post("/organizations/notFoundOrg/transfers/update/iban")
-						.content(TestUtil.toJson(request)).contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isNotFound());
-	}
+  @Test
+  void updateTransferIbanMassive_400_noOldIban() throws Exception {
+    UpdateTransferIbanMassiveModel request =
+        UpdateTransferIbanMassiveModel.builder().oldIban(null).newIban("newIban").build();
 
-	@Test
-	void updateTransferIbanMassive_400_noOldIban() throws Exception {
-		UpdateTransferIbanMassiveModel request = UpdateTransferIbanMassiveModel.builder().oldIban(null).newIban("newIban").build();
+    mvc.perform(
+            post("/organizations/notFoundOrg/transfers/update/iban")
+                .content(TestUtil.toJson(request))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest());
+  }
 
-		mvc.perform(post("/organizations/notFoundOrg/transfers/update/iban")
-						.content(TestUtil.toJson(request)).contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isBadRequest());
-	}
+  @Test
+  void updateTransferIbanMassive_400_noNewIban() throws Exception {
+    UpdateTransferIbanMassiveModel request =
+        UpdateTransferIbanMassiveModel.builder().oldIban("oldIban").newIban(null).build();
 
-	@Test
-	void updateTransferIbanMassive_400_noNewIban() throws Exception {
-		UpdateTransferIbanMassiveModel request = UpdateTransferIbanMassiveModel.builder().oldIban("oldIban").newIban(null).build();
-
-		mvc.perform(post("/organizations/notFoundOrg/transfers/update/iban")
-						.content(TestUtil.toJson(request)).contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isBadRequest());
-	}
+    mvc.perform(
+            post("/organizations/notFoundOrg/transfers/update/iban")
+                .content(TestUtil.toJson(request))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest());
+  }
 }

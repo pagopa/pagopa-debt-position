@@ -13,18 +13,17 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface ExclusiveParamGroup {
-    /**
-     * Use Request name
-     *
-     * @return permitted request params, mutual exclusive with secondGroup
-     */
-    String[] firstGroup();
+  /**
+   * Use Request name
+   *
+   * @return permitted request params, mutual exclusive with secondGroup
+   */
+  String[] firstGroup();
 
-    /**
-     * Use Request name
-     *
-     * @return permitted request params, mutual exclusive with firstGroup
-     */
-    String[] secondGroup();
-
+  /**
+   * Use Request name
+   *
+   * @return permitted request params, mutual exclusive with firstGroup
+   */
+  String[] secondGroup();
 }
