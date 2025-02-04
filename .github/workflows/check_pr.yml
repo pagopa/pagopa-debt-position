@@ -54,7 +54,7 @@ jobs:
           distribution: 'temurin' # See 'Supported distributions' for available options
           java-version: '21'
       - name: Find incorrectly formatted file
-        uses: axel-op/googlejavaformat-action@v3
+        uses: axel-op/googlejavaformat-action@v3.6.0
         with:
           args: "--replace"
           skip-commit: true
