@@ -6,6 +6,7 @@ import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
+import it.gov.pagopa.debtposition.model.payments.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
@@ -79,6 +81,7 @@ public class PaymentsController implements IPaymentsController {
         paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
 
     if (paidPaymentOption == null) {
+
       throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, nav);
     }
 
@@ -141,5 +144,31 @@ public class PaymentsController implements IPaymentsController {
     }
     throw new AppException(
         AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_FAILED, organizationFiscalCode, iuv);
+  }
+
+  @Override
+  public ResponseEntity<String> updateTransferIbanMassive(
+      String organizationFiscalCode,
+      @Valid UpdateTransferIbanMassiveModel updateTransferIbanMassiveModel) {
+    log.debug(
+        String.format(
+            LOG_BASE_HEADER_INFO,
+            "POST",
+            "updateTransferIbanMassive",
+            String.format(
+                "organizationFiscalCode= %s; oldIban= %s; newIban= %s",
+                CommonUtil.sanitize(organizationFiscalCode),
+                CommonUtil.sanitize(updateTransferIbanMassiveModel.getOldIban()),
+                CommonUtil.sanitize(updateTransferIbanMassiveModel.getNewIban()))));
+
+    int numberOfUpdates =
+        paymentsService.updateTransferIbanMassive(
+            organizationFiscalCode,
+            updateTransferIbanMassiveModel.getOldIban(),
+            updateTransferIbanMassiveModel.getNewIban());
+
+    return ResponseEntity.status(HttpStatus.OK.value())
+        .contentType(MediaType.TEXT_PLAIN)
+        .body(String.format("Updated IBAN on %s Transfers", numberOfUpdates));
   }
 }
