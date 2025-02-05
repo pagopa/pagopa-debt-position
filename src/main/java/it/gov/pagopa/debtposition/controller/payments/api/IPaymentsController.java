@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.gov.pagopa.debtposition.model.ProblemJson;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
+import it.gov.pagopa.debtposition.model.payments.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
@@ -266,4 +267,49 @@ public interface IPaymentsController {
           @PathVariable("nav")
           String nav,
       @Valid @RequestBody NotificationFeeUpdateModel notificationFeeUpdateModel);
+
+  @Operation(
+      summary = "The Organization updates the IBANs of every updatable payment option's transfers",
+      security = {
+        @SecurityRequirement(name = "ApiKey"),
+        @SecurityRequirement(name = "Authorization")
+      },
+      operationId = "updateTransferIbanMassive")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "IBANs updated"),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Malformed request.",
+            content =
+                @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ProblemJson.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Wrong or missing function key.",
+            content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No debt position in updatable state found.",
+            content = @Content(schema = @Schema(implementation = ProblemJson.class))),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Service unavailable.",
+            content =
+                @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ProblemJson.class)))
+      })
+  @PostMapping(
+      value = "/organizations/{organizationfiscalcode}/transfers/update/iban",
+      produces = {MediaType.TEXT_PLAIN_VALUE},
+      consumes = {MediaType.APPLICATION_JSON_VALUE})
+  ResponseEntity<String> updateTransferIbanMassive(
+      @Parameter(
+              description = "Organization fiscal code, the fiscal code of the Organization.",
+              required = true)
+          @PathVariable("organizationfiscalcode")
+          String organizationFiscalCode,
+      @Valid @RequestBody UpdateTransferIbanMassiveModel updateTransferIbanMassiveModel);
 }

@@ -17,6 +17,7 @@ import it.gov.pagopa.debtposition.model.payments.OrganizationModelQueryBean;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
+import it.gov.pagopa.debtposition.repository.TransferRepository;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -38,11 +39,22 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class PaymentsService {
 
-  @Autowired private PaymentOptionRepository paymentOptionRepository;
+  private final PaymentOptionRepository paymentOptionRepository;
+  private final PaymentPositionRepository paymentPositionRepository;
+  private final TransferRepository transferRepository;
+  private final NodeClient nodeClient;
 
-  @Autowired private PaymentPositionRepository paymentPositionRepository;
-
-  @Autowired private NodeClient nodeClient;
+  @Autowired
+  public PaymentsService(
+      PaymentPositionRepository paymentPositionRepository,
+      PaymentOptionRepository paymentOptionRepository,
+      TransferRepository transferRepository,
+      NodeClient nodeClient) {
+    this.paymentPositionRepository = paymentPositionRepository;
+    this.paymentOptionRepository = paymentOptionRepository;
+    this.transferRepository = transferRepository;
+    this.nodeClient = nodeClient;
+  }
 
   @Value("${nav.aux.digit}")
   private String auxDigit;
@@ -392,5 +404,37 @@ public class PaymentsService {
         || (totalNumberPartialPO > 0 && totalNumberPartialPO == numberPOReportedPartial)) {
       pp.setStatus(DebtPositionStatus.REPORTED);
     }
+  }
+
+  // Update all Organization's IBANs on Transfer of payable PaymentPosition
+  @Transactional
+  public int updateTransferIbanMassive(
+      String organizationFiscalCode, String oldIban, String newIban) {
+    int numberOfUpdates = 0;
+    // Retrieve all payment_position with organization_fiscal_code AND in status (DRAFT or PUBLISHED
+    // or VALID or PARTIALLY_PAID)
+    List<PaymentPosition> ppToUpdate =
+        paymentPositionRepository.findByOrganizationFiscalCodeAndStatusIn(
+            organizationFiscalCode,
+            List.of(
+                DebtPositionStatus.DRAFT,
+                DebtPositionStatus.PUBLISHED,
+                DebtPositionStatus.VALID,
+                DebtPositionStatus.PARTIALLY_PAID));
+    if (ppToUpdate.isEmpty()) {
+      throw new AppException(
+          AppError.DEBT_POSITION_IN_UPDATABLE_STATE_NOT_FOUND, organizationFiscalCode);
+    }
+    // Retrieve all payment_option with payment_position_id AND in status PO_UNPAID
+    List<PaymentOption> poToUpdate =
+        paymentOptionRepository.findByPaymentPositionInAndStatusIn(
+            ppToUpdate, List.of(PaymentOptionStatus.PO_UNPAID));
+
+    // Update all Transfers that have the specified payment_option_id and oldIban as IBAN
+    numberOfUpdates +=
+        transferRepository.updateTransferIban(
+            poToUpdate, oldIban, newIban, LocalDateTime.now(ZoneOffset.UTC));
+
+    return numberOfUpdates;
   }
 }
