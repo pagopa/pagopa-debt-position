@@ -1,4 +1,4 @@
-const { get, post, del, put } = require("../utility/axios_common");
+const { get, post, del, put, patch } = require("../utility/axios_common");
 const fs = require("fs");
 
 const GPD_HOST = process.env.gpd_host;
