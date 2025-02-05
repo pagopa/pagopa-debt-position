@@ -1,4 +1,4 @@
-const { get, post, del, put } = require("../utility/axios_common");
+const { get, post, del, put, patch } = require("../utility/axios_common");
 const fs = require("fs");
 
 const GPD_HOST = process.env.gpd_host;
@@ -208,7 +208,7 @@ function updateAndPublishDebtPosition(orgId, iupd, body) {
 }
 
 function updateTransferIbanMassive(orgId, oldIban, newIban) {
-    return post(GPD_HOST + `/organizations/${orgId}/transfers/update/iban`, {oldIban, newIban}, {
+    return patch(GPD_HOST + `/organizations/${orgId}/transfers?oldIban=${oldIban}`, {newIban}, {
         timeout: API_TIMEOUT,
         headers: {
             "Ocp-Apim-Subscription-Key": process.env.API_SUBSCRIPTION_KEY,

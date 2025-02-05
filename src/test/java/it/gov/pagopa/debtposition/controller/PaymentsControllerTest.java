@@ -26,7 +26,6 @@ import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPosition
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
-import it.gov.pagopa.debtposition.model.payments.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
 import it.gov.pagopa.debtposition.service.payments.PaymentsService;
 import it.gov.pagopa.debtposition.util.CustomHttpStatus;
@@ -613,7 +612,7 @@ class PaymentsControllerTest {
   }
 
   @Test
-  void payPaymentOption_Multiple_Partial2_409() throws Exception {
+  void getPaymentOption_Multiple_Partial_409() throws Exception {
     // creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato) con più
     // opzioni di pagamento
     mvc.perform(
@@ -655,13 +654,12 @@ class PaymentsControllerTest {
             MockMvcResultMatchers.jsonPath("$.status")
                 .value(DebtPositionStatus.PARTIALLY_PAID.toString()));
 
-    // effettuo un nuovo pagamento sulla payment option non rateizzabile (isPartialPayment = false)
-    // e ottengo errore
+    // effettuo una GET/ACTIVATE sulla payment option corrispondente alla rata unica/intero importo
+    // e ottengo errore 409
     mvc.perform(
-            post("/organizations/PAY_Multiple_Partial2_409_12345678901/paymentoptions/"
+            get("/organizations/PAY_Multiple_Partial2_409_12345678901/paymentoptions/"
                     + auxDigit
-                    + "123456IUVMULTIPLEMOCK3/pay")
-                .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
+                    + "123456IUVMULTIPLEMOCK3")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isConflict());
   }
@@ -2043,60 +2041,5 @@ class PaymentsControllerTest {
     } catch (Exception e) {
       fail("Not the expected exception: " + e.getMessage());
     }
-  }
-
-  /** UPDATE IBAN ON TRANSFERS */
-  @Test
-  void updateTransferIbanMassive_200() throws Exception {
-    UpdateTransferIbanMassiveModel request =
-        UpdateTransferIbanMassiveModel.builder().oldIban("oldIban").newIban("newIban").build();
-
-    doReturn(1)
-        .when(paymentsService)
-        .updateTransferIbanMassive("77777777777", "oldIban", "newIban");
-
-    mvc.perform(
-            post("/organizations/77777777777/transfers/update/iban")
-                .content(TestUtil.toJson(request))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.TEXT_PLAIN))
-        .andExpect(content().string("Updated IBAN on 1 Transfers"));
-  }
-
-  @Test
-  void updateTransferIbanMassive_404() throws Exception {
-    UpdateTransferIbanMassiveModel request =
-        UpdateTransferIbanMassiveModel.builder().oldIban("oldIban").newIban("newIban").build();
-
-    mvc.perform(
-            post("/organizations/notFoundOrg/transfers/update/iban")
-                .content(TestUtil.toJson(request))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isNotFound());
-  }
-
-  @Test
-  void updateTransferIbanMassive_400_noOldIban() throws Exception {
-    UpdateTransferIbanMassiveModel request =
-        UpdateTransferIbanMassiveModel.builder().oldIban(null).newIban("newIban").build();
-
-    mvc.perform(
-            post("/organizations/notFoundOrg/transfers/update/iban")
-                .content(TestUtil.toJson(request))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isBadRequest());
-  }
-
-  @Test
-  void updateTransferIbanMassive_400_noNewIban() throws Exception {
-    UpdateTransferIbanMassiveModel request =
-        UpdateTransferIbanMassiveModel.builder().oldIban("oldIban").newIban(null).build();
-
-    mvc.perform(
-            post("/organizations/notFoundOrg/transfers/update/iban")
-                .content(TestUtil.toJson(request))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isBadRequest());
   }
 }

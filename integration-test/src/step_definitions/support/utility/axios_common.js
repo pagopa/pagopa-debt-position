@@ -21,6 +21,16 @@ function post(url, body, config) {
         });
 }
 
+function patch(url, body, config) {
+    return axios.patch(url, body, config)
+        .then(res => {
+            return res;
+        })
+        .catch(error => {
+            return error.response;
+        });
+}
+
 function put(url, body, config) {
     return axios.put(url, body, config)
         .then(res => {
@@ -42,4 +52,4 @@ function del(url, config) {
         });
 }
 
-module.exports = {get, post, put, del}
+module.exports = {get, post, patch, put, del}

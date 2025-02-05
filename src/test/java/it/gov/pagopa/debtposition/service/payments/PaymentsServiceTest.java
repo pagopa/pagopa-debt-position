@@ -12,6 +12,7 @@ import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.repository.TransferRepository;
+import it.gov.pagopa.debtposition.service.pd.crud.PaymentPositionCRUDService;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 @SpringBootTest(classes = DebtPositionApplication.class)
 class PaymentsServiceTest {
 
-  @Autowired private PaymentsService paymentsService;
+  @Autowired private PaymentPositionCRUDService paymentsService;
   @MockBean private PaymentPositionRepository paymentPositionRepository;
   @MockBean private PaymentOptionRepository paymentOptionRepository;
   @MockBean private TransferRepository transferRepository;
