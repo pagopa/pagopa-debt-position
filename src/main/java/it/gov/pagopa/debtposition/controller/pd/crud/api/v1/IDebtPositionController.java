@@ -12,6 +12,7 @@ import it.gov.pagopa.debtposition.model.ProblemJson;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
+import it.gov.pagopa.debtposition.model.payments.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.pd.MultipleIUPDModel;
 import it.gov.pagopa.debtposition.model.pd.MultiplePaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
@@ -25,14 +26,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Debt Positions API")
 @Validated
@@ -627,4 +621,50 @@ public interface IDebtPositionController {
           @Pattern(regexp = "\\d{2}(,\\d{2})*")
           @RequestParam(required = false)
           String segregationCodes);
+
+  @Operation(
+      summary = "The Organization updates the IBANs of every updatable payment option's transfers",
+      security = {
+        @SecurityRequirement(name = "ApiKey"),
+        @SecurityRequirement(name = "Authorization")
+      },
+      operationId = "updateTransferIbanMassive")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "IBANs updated"),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Malformed request.",
+            content =
+                @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ProblemJson.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Wrong or missing function key.",
+            content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No debt position in updatable state found.",
+            content = @Content(schema = @Schema(implementation = ProblemJson.class))),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Service unavailable.",
+            content =
+                @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ProblemJson.class)))
+      })
+  @PatchMapping(
+      value = "/organizations/{organizationfiscalcode}/transfers",
+      produces = {MediaType.TEXT_PLAIN_VALUE},
+      consumes = {MediaType.APPLICATION_JSON_VALUE})
+  ResponseEntity<String> updateTransferIbanMassive(
+      @Parameter(
+              description = "Organization fiscal code, the fiscal code of the Organization.",
+              required = true)
+          @PathVariable("organizationfiscalcode")
+          String organizationFiscalCode,
+      @Parameter(description = "The old iban to replace") @RequestParam @NotBlank String oldIban,
+      @Valid @RequestBody UpdateTransferIbanMassiveModel updateTransferIbanMassiveModel);
 }

@@ -13,6 +13,7 @@ import it.gov.pagopa.debtposition.model.filterandorder.Filter;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
 import it.gov.pagopa.debtposition.model.filterandorder.Order.PaymentPositionOrder;
+import it.gov.pagopa.debtposition.model.payments.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.pd.MultipleIUPDModel;
 import it.gov.pagopa.debtposition.model.pd.MultiplePaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
@@ -36,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
@@ -386,5 +388,20 @@ public class DebtPositionController implements IDebtPositionController {
             PaymentPositionModelBaseResponse.class);
 
     return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
+  }
+
+  @Override
+  public ResponseEntity<String> updateTransferIbanMassive(
+      String organizationFiscalCode,
+      String oldIban,
+      UpdateTransferIbanMassiveModel updateTransferIbanMassiveModel) {
+
+    int numberOfUpdates =
+        paymentPositionService.updateTransferIbanMassive(
+            organizationFiscalCode, oldIban, updateTransferIbanMassiveModel.getNewIban());
+
+    return ResponseEntity.status(HttpStatus.OK.value())
+        .contentType(MediaType.TEXT_PLAIN)
+        .body(String.format("Updated IBAN on %s Transfers", numberOfUpdates));
   }
 }

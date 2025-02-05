@@ -12,6 +12,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdateTransferIbanMassiveModel {
 
-  @NotNull private String oldIban;
   @NotNull private String newIban;
 }
