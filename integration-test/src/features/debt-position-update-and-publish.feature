@@ -13,4 +13,4 @@ Feature: Managing a debt position
   Scenario: Update IBAN on all Organization's Transfers of updatable debt position
     When the updateTransferIbanMassive is called with oldIban "testIban" and newIban "testIban"
     Then the updateTransferIbanMassive gets the status code 200
-    And the updateTransferIbanMassive response string includes "Updated IBAN on"
+    And the updateTransferIbanMassive response includes number of updates
