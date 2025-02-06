@@ -38,18 +38,15 @@ public class PaymentsService {
 
   private final PaymentOptionRepository paymentOptionRepository;
   private final PaymentPositionRepository paymentPositionRepository;
-  private final TransferRepository transferRepository;
   private final NodeClient nodeClient;
 
   @Autowired
   public PaymentsService(
       PaymentPositionRepository paymentPositionRepository,
       PaymentOptionRepository paymentOptionRepository,
-      TransferRepository transferRepository,
       NodeClient nodeClient) {
     this.paymentPositionRepository = paymentPositionRepository;
     this.paymentOptionRepository = paymentOptionRepository;
-    this.transferRepository = transferRepository;
     this.nodeClient = nodeClient;
   }
 
