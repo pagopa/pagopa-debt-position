@@ -2180,7 +2180,7 @@ class DebtPositionControllerTest {
             .updateTransferIbanMassive("77777777777", "ABCDE", "XYZ", 10);
 
     mvc.perform(
-                    patch("/organizations/77777777777/transfers?oldIban=ABCDE")
+                    patch("/organizations/77777777777/transfers?oldIban=ABCDE&limit=10")
                             .content(TestUtil.toJson(request))
                             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
