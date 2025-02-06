@@ -13,12 +13,13 @@ import it.gov.pagopa.debtposition.model.filterandorder.Filter;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
 import it.gov.pagopa.debtposition.model.filterandorder.Order.PaymentPositionOrder;
-import it.gov.pagopa.debtposition.model.payments.UpdateTransferIbanMassiveModel;
+import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.pd.MultipleIUPDModel;
 import it.gov.pagopa.debtposition.model.pd.MultiplePaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
+import it.gov.pagopa.debtposition.model.pd.response.UpdateTransferIbanMassiveResponse;
 import it.gov.pagopa.debtposition.service.pd.crud.PaymentPositionCRUDService;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.Constants;
@@ -391,17 +392,23 @@ public class DebtPositionController implements IDebtPositionController {
   }
 
   @Override
-  public ResponseEntity<String> updateTransferIbanMassive(
+  public ResponseEntity<UpdateTransferIbanMassiveResponse> updateTransferIbanMassive(
       String organizationFiscalCode,
       String oldIban,
+      int limit,
       UpdateTransferIbanMassiveModel updateTransferIbanMassiveModel) {
 
     int numberOfUpdates =
         paymentPositionService.updateTransferIbanMassive(
-            organizationFiscalCode, oldIban, updateTransferIbanMassiveModel.getNewIban());
+            organizationFiscalCode, oldIban, updateTransferIbanMassiveModel.getNewIban(), limit);
+
+    UpdateTransferIbanMassiveResponse response = UpdateTransferIbanMassiveResponse.builder()
+            .description(String.format("Updated IBAN on %s Transfers", numberOfUpdates))
+            .updatedTransfers(numberOfUpdates)
+            .build();
 
     return ResponseEntity.status(HttpStatus.OK.value())
-        .contentType(MediaType.TEXT_PLAIN)
-        .body(String.format("Updated IBAN on %s Transfers", numberOfUpdates));
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(response);
   }
 }

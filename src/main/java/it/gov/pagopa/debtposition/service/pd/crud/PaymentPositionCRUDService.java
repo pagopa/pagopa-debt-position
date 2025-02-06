@@ -447,7 +447,7 @@ public class PaymentPositionCRUDService {
     // Update all Organization's IBANs on Transfer of payable PaymentPosition
     @Transactional
     public int updateTransferIbanMassive(
-            String organizationFiscalCode, String oldIban, String newIban) {
+            String organizationFiscalCode, String oldIban, String newIban, int limit) {
         int numberOfUpdates = 0;
 
         // Update all Transfers that have the specified payment_option_id and oldIban as IBAN
@@ -458,7 +458,8 @@ public class PaymentPositionCRUDService {
                         newIban,
                         LocalDateTime.now(ZoneOffset.UTC),
                         List.of(PaymentOptionStatus.PO_UNPAID.name()),
-                        List.of(DebtPositionStatus.DRAFT.name(), DebtPositionStatus.PUBLISHED.name(), DebtPositionStatus.VALID.name(), DebtPositionStatus.PARTIALLY_PAID.name())
+                        List.of(DebtPositionStatus.DRAFT.name(), DebtPositionStatus.PUBLISHED.name(), DebtPositionStatus.VALID.name(), DebtPositionStatus.PARTIALLY_PAID.name()),
+                        limit
                 );
 
         return numberOfUpdates;

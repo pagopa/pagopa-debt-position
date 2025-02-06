@@ -12,7 +12,7 @@ import it.gov.pagopa.debtposition.model.ProblemJson;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
-import it.gov.pagopa.debtposition.model.payments.UpdateTransferIbanMassiveModel;
+import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.pd.MultipleIUPDModel;
 import it.gov.pagopa.debtposition.model.pd.MultiplePaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
@@ -21,6 +21,8 @@ import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResp
 import java.time.LocalDate;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
+
+import it.gov.pagopa.debtposition.model.pd.response.UpdateTransferIbanMassiveResponse;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
@@ -645,7 +647,7 @@ public interface IDebtPositionController {
             content = @Content(schema = @Schema())),
         @ApiResponse(
             responseCode = "404",
-            description = "No debt position in updatable state found.",
+            description = "No updatable transfer found.",
             content = @Content(schema = @Schema(implementation = ProblemJson.class))),
         @ApiResponse(
             responseCode = "500",
@@ -657,14 +659,15 @@ public interface IDebtPositionController {
       })
   @PatchMapping(
       value = "/organizations/{organizationfiscalcode}/transfers",
-      produces = {MediaType.TEXT_PLAIN_VALUE},
+      produces = {MediaType.APPLICATION_JSON_VALUE},
       consumes = {MediaType.APPLICATION_JSON_VALUE})
-  ResponseEntity<String> updateTransferIbanMassive(
+  ResponseEntity<UpdateTransferIbanMassiveResponse> updateTransferIbanMassive(
       @Parameter(
               description = "Organization fiscal code, the fiscal code of the Organization.",
               required = true)
           @PathVariable("organizationfiscalcode")
           String organizationFiscalCode,
       @Parameter(description = "The old iban to replace") @RequestParam @NotBlank String oldIban,
+      @Parameter(description = "Max number of Transfer to updates") @Max(1000) @RequestParam(required = false, defaultValue = "1000") int limit,
       @Valid @RequestBody UpdateTransferIbanMassiveModel updateTransferIbanMassiveModel);
 }

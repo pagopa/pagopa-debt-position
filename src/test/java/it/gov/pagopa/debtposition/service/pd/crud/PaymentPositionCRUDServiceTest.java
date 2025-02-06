@@ -22,12 +22,13 @@ class PaymentPositionCRUDServiceTest {
   @MockBean private TransferRepository transferRepository;
 
   /** UPDATE IBAN ON TRANSFERS */
+  @Test
   void updateTransferIbanMassive_OK() {
     doReturn(1)
         .when(transferRepository)
-            .updateTransferIban(any(), anyString(), anyString(), any(LocalDateTime.class), anyList(), anyList());
+            .updateTransferIban(any(), anyString(), anyString(), any(LocalDateTime.class), anyList(), anyList(), anyInt());
 
-    int response = paymentsService.updateTransferIbanMassive("orgFiscalCode", "oldIban", "newIban");
+    int response = paymentsService.updateTransferIbanMassive("orgFiscalCode", "oldIban", "newIban", 10);
 
     assertEquals(1, response);
   }
@@ -36,9 +37,9 @@ class PaymentPositionCRUDServiceTest {
   void updateTransferIbanMassive_OK_noTransfer() {
     doReturn(0)
         .when(transferRepository)
-        .updateTransferIban(any(), anyString(), anyString(), any(LocalDateTime.class), anyList(), anyList());
+        .updateTransferIban(any(), anyString(), anyString(), any(LocalDateTime.class), anyList(), anyList(), anyInt());
 
-    int response = paymentsService.updateTransferIbanMassive("orgFiscalCode", "oldIban", "newIban");
+    int response = paymentsService.updateTransferIbanMassive("orgFiscalCode", "oldIban", "newIban", 10);
 
     assertEquals(0, response);
   }

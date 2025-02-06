@@ -19,7 +19,7 @@ import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPosition
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
-import it.gov.pagopa.debtposition.model.payments.UpdateTransferIbanMassiveModel;
+import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
 import it.gov.pagopa.debtposition.service.pd.crud.PaymentPositionCRUDService;
 import java.time.LocalDateTime;
@@ -2177,7 +2177,7 @@ class DebtPositionControllerTest {
 
     doReturn(1)
         .when(paymentPositionService)
-        .updateTransferIbanMassive("77777777777", "ABCDE", "XYZ");
+        .updateTransferIbanMassive("77777777777", "ABCDE", "XYZ", 10);
 
     mvc.perform(
             patch("/organizations/77777777777/transfers?oldIban=ABCDE")
@@ -2210,6 +2210,18 @@ class DebtPositionControllerTest {
                 .content(TestUtil.toJson(request))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void updateTransferIbanMassive_400_overMaxLimit() throws Exception {
+    UpdateTransferIbanMassiveModel request =
+            UpdateTransferIbanMassiveModel.builder().newIban("XYZ").build();
+
+    mvc.perform(
+                    patch("/organizations/notFoundOrg/transfers?oldIban=ABCDE&limit=10000")
+                            .content(TestUtil.toJson(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
   }
 
   @Test
