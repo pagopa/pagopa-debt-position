@@ -646,10 +646,6 @@ public interface IDebtPositionController {
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
         @ApiResponse(
-            responseCode = "404",
-            description = "No updatable transfer found.",
-            content = @Content(schema = @Schema(implementation = ProblemJson.class))),
-        @ApiResponse(
             responseCode = "500",
             description = "Service unavailable.",
             content =
@@ -668,6 +664,6 @@ public interface IDebtPositionController {
           @PathVariable("organizationfiscalcode")
           String organizationFiscalCode,
       @Parameter(description = "The old iban to replace") @RequestParam @NotBlank String oldIban,
-      @Parameter(description = "Max number of Transfer to updates") @Max(1000) @RequestParam(required = false, defaultValue = "1000") int limit,
+      @Parameter(description = "Number of Transfer to update, max & default 1000") @Max(1000) @RequestParam(required = false, defaultValue = "1000") int limit,
       @Valid @RequestBody UpdateTransferIbanMassiveModel updateTransferIbanMassiveModel);
 }
