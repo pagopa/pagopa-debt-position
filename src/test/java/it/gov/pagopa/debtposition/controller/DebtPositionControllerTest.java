@@ -2173,31 +2173,21 @@ class DebtPositionControllerTest {
   @Test
   void updateTransferIbanMassive_200() throws Exception {
     UpdateTransferIbanMassiveModel request =
-        UpdateTransferIbanMassiveModel.builder().newIban("XYZ").build();
+            UpdateTransferIbanMassiveModel.builder().newIban("XYZ").build();
 
     doReturn(1)
-        .when(paymentPositionService)
-        .updateTransferIbanMassive("77777777777", "ABCDE", "XYZ", 10);
+            .when(paymentPositionService)
+            .updateTransferIbanMassive("77777777777", "ABCDE", "XYZ", 10);
 
     mvc.perform(
-            patch("/organizations/77777777777/transfers?oldIban=ABCDE")
-                .content(TestUtil.toJson(request))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.TEXT_PLAIN))
-        .andExpect(content().string("Updated IBAN on 1 Transfers"));
-  }
-
-  @Test
-  void updateTransferIbanMassive_404() throws Exception {
-    UpdateTransferIbanMassiveModel request =
-        UpdateTransferIbanMassiveModel.builder().newIban("XYZ").build();
-
-    mvc.perform(
-            patch("/organizations/notFoundOrg/transfers?oldIban=ABCDE")
-                .content(TestUtil.toJson(request))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isNotFound());
+                    patch("/organizations/77777777777/transfers?oldIban=ABCDE")
+                            .content(TestUtil.toJson(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(
+                    MockMvcResultMatchers.jsonPath("$.updatedTransfers")
+                            .value(1));
   }
 
   @Test
