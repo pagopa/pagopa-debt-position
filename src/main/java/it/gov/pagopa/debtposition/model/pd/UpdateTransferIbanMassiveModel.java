@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.model.payments;
+package it.gov.pagopa.debtposition.model.pd;
 
 import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

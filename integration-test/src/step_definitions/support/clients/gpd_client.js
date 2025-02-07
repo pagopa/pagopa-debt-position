@@ -208,7 +208,7 @@ function updateAndPublishDebtPosition(orgId, iupd, body) {
 }
 
 function updateTransferIbanMassive(orgId, oldIban, newIban) {
-    return patch(GPD_HOST + `/organizations/${orgId}/transfers?oldIban=${oldIban}`, {newIban}, {
+    return patch(GPD_HOST + `/organizations/${orgId}/debtpositions/transfers?oldIban=${oldIban}&limit=10`, {newIban}, {
         timeout: API_TIMEOUT,
         headers: {
             "Ocp-Apim-Subscription-Key": process.env.API_SUBSCRIPTION_KEY,

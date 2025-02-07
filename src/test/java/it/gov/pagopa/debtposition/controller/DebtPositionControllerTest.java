@@ -19,7 +19,7 @@ import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPosition
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
-import it.gov.pagopa.debtposition.model.payments.UpdateTransferIbanMassiveModel;
+import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
 import it.gov.pagopa.debtposition.service.pd.crud.PaymentPositionCRUDService;
 import java.time.LocalDateTime;
@@ -2173,31 +2173,21 @@ class DebtPositionControllerTest {
   @Test
   void updateTransferIbanMassive_200() throws Exception {
     UpdateTransferIbanMassiveModel request =
-        UpdateTransferIbanMassiveModel.builder().newIban("XYZ").build();
+            UpdateTransferIbanMassiveModel.builder().newIban("XYZ").build();
 
     doReturn(1)
-        .when(paymentPositionService)
-        .updateTransferIbanMassive("77777777777", "ABCDE", "XYZ");
+            .when(paymentPositionService)
+            .updateTransferIbanMassive("77777777777", "ABCDE", "XYZ", 10);
 
     mvc.perform(
-            patch("/organizations/77777777777/transfers?oldIban=ABCDE")
-                .content(TestUtil.toJson(request))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.TEXT_PLAIN))
-        .andExpect(content().string("Updated IBAN on 1 Transfers"));
-  }
-
-  @Test
-  void updateTransferIbanMassive_404() throws Exception {
-    UpdateTransferIbanMassiveModel request =
-        UpdateTransferIbanMassiveModel.builder().newIban("XYZ").build();
-
-    mvc.perform(
-            patch("/organizations/notFoundOrg/transfers?oldIban=ABCDE")
-                .content(TestUtil.toJson(request))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isNotFound());
+                    patch("/organizations/77777777777/debtpositions/transfers?oldIban=ABCDE&limit=10")
+                            .content(TestUtil.toJson(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(
+                    MockMvcResultMatchers.jsonPath("$.updatedTransfers")
+                            .value(1));
   }
 
   @Test
@@ -2206,10 +2196,22 @@ class DebtPositionControllerTest {
         UpdateTransferIbanMassiveModel.builder().newIban("XYZ").build();
 
     mvc.perform(
-            patch("/organizations/notFoundOrg/transfers")
+            patch("/organizations/notFoundOrg/debtpositions/transfers")
                 .content(TestUtil.toJson(request))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void updateTransferIbanMassive_400_overMaxLimit() throws Exception {
+    UpdateTransferIbanMassiveModel request =
+            UpdateTransferIbanMassiveModel.builder().newIban("XYZ").build();
+
+    mvc.perform(
+                    patch("/organizations/notFoundOrg/debtpositions/transfers?oldIban=ABCDE&limit=10000")
+                            .content(TestUtil.toJson(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
   }
 
   @Test
@@ -2218,7 +2220,7 @@ class DebtPositionControllerTest {
         UpdateTransferIbanMassiveModel.builder().newIban(null).build();
 
     mvc.perform(
-            patch("/organizations/notFoundOrg/transfers?oldIban=ABCDE")
+            patch("/organizations/notFoundOrg/debtpositions/transfers?oldIban=ABCDE")
                 .content(TestUtil.toJson(request))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
