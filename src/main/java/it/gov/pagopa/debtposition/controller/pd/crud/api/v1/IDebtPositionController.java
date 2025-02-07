@@ -664,6 +664,6 @@ public interface IDebtPositionController {
           @PathVariable("organizationfiscalcode")
           String organizationFiscalCode,
       @Parameter(description = "The old iban to replace") @RequestParam @NotBlank String oldIban,
-      @Parameter(description = "Number of Transfer to update, max & default 1000") @Max(1000) @RequestParam(required = false, defaultValue = "1000") int limit,
+      @Parameter(description = "Number of Transfer to update (max = 1000, default = 1000)") @Max(1000) @RequestParam(required = false, defaultValue = "1000") int limit,
       @Valid @RequestBody UpdateTransferIbanMassiveModel updateTransferIbanMassiveModel);
 }
