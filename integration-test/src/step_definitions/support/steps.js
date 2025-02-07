@@ -209,7 +209,7 @@ When('the debt position is updated and published', () => executeDebtPositionUpda
  */
 When('the updateTransferIbanMassive is called with oldIban {string} and newIban {string}', async (oldIban, newIban) => responseToCheck = await executeUpdateTransferIbanMassive(idOrg, oldIban, newIban));
 Then('the updateTransferIbanMassive gets the status code {int}', (statusCode) => assert.strictEqual(responseToCheck.status, statusCode));
-Then('the updateTransferIbanMassive response includes number of updates', (text) => assert.ok(responseToCheck.data.updatedTransfers >= 0));
+Then('the updateTransferIbanMassive response includes number of updates', () => assert.ok(responseToCheck.data.updatedTransfers >= 0));
 
  /*
  * Utility steps
