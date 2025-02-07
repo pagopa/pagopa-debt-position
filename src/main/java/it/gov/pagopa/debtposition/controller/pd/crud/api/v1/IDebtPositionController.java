@@ -654,7 +654,7 @@ public interface IDebtPositionController {
                     schema = @Schema(implementation = ProblemJson.class)))
       })
   @PatchMapping(
-      value = "/organizations/{organizationfiscalcode}/transfers",
+      value = "/organizations/{organizationfiscalcode}/debtpositions/transfers",
       produces = {MediaType.APPLICATION_JSON_VALUE},
       consumes = {MediaType.APPLICATION_JSON_VALUE})
   ResponseEntity<UpdateTransferIbanMassiveResponse> updateTransferIbanMassive(
