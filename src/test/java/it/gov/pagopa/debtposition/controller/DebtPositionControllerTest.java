@@ -2180,7 +2180,7 @@ class DebtPositionControllerTest {
             .updateTransferIbanMassive("77777777777", "ABCDE", "XYZ", 10);
 
     mvc.perform(
-                    patch("/organizations/77777777777/transfers?oldIban=ABCDE&limit=10")
+                    patch("/organizations/77777777777/debtpositions/transfers?oldIban=ABCDE&limit=10")
                             .content(TestUtil.toJson(request))
                             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
@@ -2196,7 +2196,7 @@ class DebtPositionControllerTest {
         UpdateTransferIbanMassiveModel.builder().newIban("XYZ").build();
 
     mvc.perform(
-            patch("/organizations/notFoundOrg/transfers")
+            patch("/organizations/notFoundOrg/debtpositions/transfers")
                 .content(TestUtil.toJson(request))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
@@ -2208,7 +2208,7 @@ class DebtPositionControllerTest {
             UpdateTransferIbanMassiveModel.builder().newIban("XYZ").build();
 
     mvc.perform(
-                    patch("/organizations/notFoundOrg/transfers?oldIban=ABCDE&limit=10000")
+                    patch("/organizations/notFoundOrg/debtpositions/transfers?oldIban=ABCDE&limit=10000")
                             .content(TestUtil.toJson(request))
                             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
@@ -2220,7 +2220,7 @@ class DebtPositionControllerTest {
         UpdateTransferIbanMassiveModel.builder().newIban(null).build();
 
     mvc.perform(
-            patch("/organizations/notFoundOrg/transfers?oldIban=ABCDE")
+            patch("/organizations/notFoundOrg/debtpositions/transfers?oldIban=ABCDE")
                 .content(TestUtil.toJson(request))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
