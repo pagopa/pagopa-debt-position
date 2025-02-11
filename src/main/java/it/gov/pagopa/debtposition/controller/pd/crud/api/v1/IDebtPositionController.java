@@ -12,17 +12,17 @@ import it.gov.pagopa.debtposition.model.ProblemJson;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
-import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.pd.MultipleIUPDModel;
 import it.gov.pagopa.debtposition.model.pd.MultiplePaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
+import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
+import it.gov.pagopa.debtposition.model.pd.response.UpdateTransferIbanMassiveResponse;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
-
-import it.gov.pagopa.debtposition.model.pd.response.UpdateTransferIbanMassiveResponse;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
@@ -254,6 +254,22 @@ public interface IDebtPositionController {
           @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
           @RequestParam(value = "payment_date_to", required = false)
           LocalDate paymentDateTo,
+      @Valid
+          @Parameter(
+              description =
+                  "Filter from payment_datetime (format: yyyy-MM-ddTHH:mm:ss.SSS). If not"
+                      + " provided payment_date_from will be used.")
+          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+          @RequestParam(value = "payment_datetime_from", required = false)
+          LocalDateTime paymentDateTimeFrom,
+      @Valid
+          @Parameter(
+              description =
+                  "Filter to payment_datetime (format: yyyy-MM-ddTHH:mm:ss.SSS). If not"
+                      + " provided payment_date_to will be used.")
+          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+          @RequestParam(value = "payment_datetime_to", required = false)
+          LocalDateTime paymentDateTimeTo,
       @Valid
           @Parameter(description = "Filter by debt position status")
           @RequestParam(value = "status", required = false)
@@ -664,6 +680,9 @@ public interface IDebtPositionController {
           @PathVariable("organizationfiscalcode")
           String organizationFiscalCode,
       @Parameter(description = "The old iban to replace") @RequestParam @NotBlank String oldIban,
-      @Parameter(description = "Number of Transfer to update (max = 1000, default = 1000)") @Max(1000) @RequestParam(required = false, defaultValue = "1000") int limit,
+      @Parameter(description = "Number of Transfer to update (max = 1000, default = 1000)")
+          @Max(1000)
+          @RequestParam(required = false, defaultValue = "1000")
+          int limit,
       @Valid @RequestBody UpdateTransferIbanMassiveModel updateTransferIbanMassiveModel);
 }
