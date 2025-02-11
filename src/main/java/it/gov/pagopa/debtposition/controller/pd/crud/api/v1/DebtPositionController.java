@@ -13,11 +13,11 @@ import it.gov.pagopa.debtposition.model.filterandorder.Filter;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
 import it.gov.pagopa.debtposition.model.filterandorder.Order.PaymentPositionOrder;
-import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.pd.MultipleIUPDModel;
 import it.gov.pagopa.debtposition.model.pd.MultiplePaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
+import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
 import it.gov.pagopa.debtposition.model.pd.response.UpdateTransferIbanMassiveResponse;
 import it.gov.pagopa.debtposition.service.pd.crud.PaymentPositionCRUDService;
@@ -25,6 +25,7 @@ import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.Constants;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -110,6 +111,8 @@ public class DebtPositionController implements IDebtPositionController {
       LocalDate dueDateTo,
       LocalDate paymentDateFrom,
       LocalDate paymentDateTo,
+      LocalDateTime paymentDateTimeFrom,
+      LocalDateTime paymentDateTimeTo,
       DebtPositionStatus status,
       PaymentPositionOrder orderBy,
       Direction ordering,
@@ -127,6 +130,15 @@ public class DebtPositionController implements IDebtPositionController {
             ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
             : null;
 
+    LocalDateTime pDateTimeFrom =
+        paymentDateTimeFrom != null
+            ? paymentDateTimeFrom
+            : (paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : null);
+    LocalDateTime pDateTimeTo =
+        paymentDateTimeTo != null
+            ? paymentDateTimeTo
+            : (paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : null);
+
     // Create filter and order object
     FilterAndOrder filterOrder =
         FilterAndOrder.builder()
@@ -135,10 +147,8 @@ public class DebtPositionController implements IDebtPositionController {
                     .organizationFiscalCode(organizationFiscalCode)
                     .dueDateFrom(dueDateFrom != null ? dueDateFrom.atStartOfDay() : null)
                     .dueDateTo(dueDateTo != null ? dueDateTo.atTime(LocalTime.MAX) : null)
-                    .paymentDateFrom(
-                        paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : null)
-                    .paymentDateTo(
-                        paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : null)
+                    .paymentDateFrom(pDateTimeFrom)
+                    .paymentDateTo(pDateTimeTo)
                     .status(status)
                     .segregationCodes(segCodesList)
                     .build())
@@ -402,7 +412,8 @@ public class DebtPositionController implements IDebtPositionController {
         paymentPositionService.updateTransferIbanMassive(
             organizationFiscalCode, oldIban, updateTransferIbanMassiveModel.getNewIban(), limit);
 
-    UpdateTransferIbanMassiveResponse response = UpdateTransferIbanMassiveResponse.builder()
+    UpdateTransferIbanMassiveResponse response =
+        UpdateTransferIbanMassiveResponse.builder()
             .description(String.format("Updated IBAN on %s Transfers", numberOfUpdates))
             .updatedTransfers(numberOfUpdates)
             .build();

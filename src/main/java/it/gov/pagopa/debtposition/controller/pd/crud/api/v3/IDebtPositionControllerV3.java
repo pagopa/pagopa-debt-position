@@ -16,6 +16,7 @@ import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionsInfoV3;
 import it.gov.pagopa.debtposition.model.v3.response.PaymentPositionModelResponseV3;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
 import org.springframework.data.domain.Sort;
@@ -186,6 +187,22 @@ public interface IDebtPositionControllerV3 {
           @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
           @RequestParam(value = "payment_date_to", required = false)
           LocalDate paymentDateTo,
+      @Valid
+          @Parameter(
+              description =
+                  "Filter from payment_datetime (format: yyyy-MM-ddTHH:mm:ss.SSS). If not"
+                      + " provided payment_date_from will be used.")
+          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+          @RequestParam(value = "payment_datetime_from", required = false)
+          LocalDateTime paymentDateTimeFrom,
+      @Valid
+          @Parameter(
+              description =
+                  "Filter to payment_datetime (format: yyyy-MM-ddTHH:mm:ss.SSS). If not"
+                      + " provided payment_date_to will be used.")
+          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+          @RequestParam(value = "payment_datetime_to", required = false)
+          LocalDateTime paymentDateTimeTo,
       @Valid
           @Parameter(description = "Filter by debt position status")
           @RequestParam(value = "status", required = false)
