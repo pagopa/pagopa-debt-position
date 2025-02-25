@@ -3,6 +3,7 @@ package it.gov.pagopa.debtposition.controller.pd.crud.api.v1;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -60,6 +61,13 @@ public interface IDebtPositionController {
             responseCode = "401",
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "403",
+            content = @Content(schema = @Schema(), examples = {@ExampleObject(name = "forbidden", value = """
+                {
+                    "statusCode": 403,
+                    "message": "You are not allowed to access this resource."
+                }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "409",
             description = "Conflict: duplicate debt position found.",
@@ -123,6 +131,13 @@ public interface IDebtPositionController {
             responseCode = "401",
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "403",
+            content = @Content(schema = @Schema(), examples = {@ExampleObject(name = "forbidden", value = """
+                {
+                    "statusCode": 403,
+                    "message": "You are not allowed to access this resource."
+                }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "409",
             description = "Conflict: duplicate debt position found.",
@@ -190,6 +205,14 @@ public interface IDebtPositionController {
                 @Content(
                     mediaType = MediaType.APPLICATION_JSON_VALUE,
                     schema = @Schema(implementation = ProblemJson.class))),
+        @ApiResponse(
+            responseCode = "403",
+            content =
+                @Content(schema = @Schema(), examples = {@ExampleObject(name = "forbidden", value = """
+                    {
+                        "statusCode": 403,
+                        "message": "You are not allowed to access this resource."
+                    }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "401",
             description = "Wrong or missing function key.",
@@ -300,6 +323,13 @@ public interface IDebtPositionController {
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
         @ApiResponse(
+            responseCode = "403",
+            content = @Content(schema = @Schema(), examples = {@ExampleObject(name = "forbidden", value = """
+                {
+                    "statusCode": 403,
+                    "message": "You are not allowed to access this resource."
+                }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
+        @ApiResponse(
             responseCode = "404",
             description = "No debt position found.",
             content = @Content(schema = @Schema(implementation = ProblemJson.class))),
@@ -354,6 +384,14 @@ public interface IDebtPositionController {
             responseCode = "401",
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "403",
+            content =
+                @Content(schema = @Schema(), examples = {@ExampleObject(name = "forbidden", value = """
+                    {
+                      "statusCode": 403,
+                      "message": "You are not allowed to access this resource."
+                    }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "404",
             description = "No debt position position found.",
@@ -423,6 +461,14 @@ public interface IDebtPositionController {
             responseCode = "401",
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "403",
+            content =
+                @Content(schema = @Schema(), examples = {@ExampleObject(name = "forbidden", value = """
+                      {
+                        "statusCode": 403,
+                        "message": "You are not allowed to access this resource."
+                      }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "404",
             description = "No debt position found.",
@@ -494,6 +540,14 @@ public interface IDebtPositionController {
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
         @ApiResponse(
+            responseCode = "403",
+            content =
+                @Content(schema = @Schema(), examples = {@ExampleObject(name = "forbidden", value = """
+                    {
+                        "statusCode": 403,
+                        "message": "You are not allowed to access this resource."
+                    }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
+        @ApiResponse(
             responseCode = "409",
             description = "Conflict: existing related payment found.",
             content =
@@ -547,6 +601,14 @@ public interface IDebtPositionController {
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
         @ApiResponse(
+            responseCode = "403",
+            content =
+                @Content(schema = @Schema(), examples = {@ExampleObject(name = "forbidden", value = """
+                    {
+                        "statusCode": 403,
+                        "message": "You are not allowed to access this resource."
+                    }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
+        @ApiResponse(
             responseCode = "404",
             description = "Payment Position not found.",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)),
@@ -593,6 +655,14 @@ public interface IDebtPositionController {
             responseCode = "401",
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "403",
+            content =
+                @Content(schema = @Schema(), examples = {@ExampleObject(name = "forbidden", value = """
+                    {
+                        "statusCode": 403,
+                        "message": "You are not allowed to access this resource."
+                    }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "404",
             description = "Payment Position not found.",
