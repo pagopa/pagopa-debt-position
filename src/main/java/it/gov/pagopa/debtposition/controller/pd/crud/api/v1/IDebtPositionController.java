@@ -59,7 +59,7 @@ public interface IDebtPositionController {
             content = @Content(schema = @Schema())),
         @ApiResponse(
             responseCode = "403",
-            content = @Content(schema = @Schema(), examples = {@ExampleObject(name = "forbidden", value = """
+            content = @Content(schema = @Schema(), examples = {@ExampleObject(value = """
                 {
                     "statusCode": 403,
                     "message": "You are not allowed to access this resource."
@@ -129,7 +129,7 @@ public interface IDebtPositionController {
             content = @Content(schema = @Schema())),
         @ApiResponse(
             responseCode = "403",
-            content = @Content(schema = @Schema(), examples = {@ExampleObject(name = "forbidden", value = """
+            content = @Content(schema = @Schema(), examples = {@ExampleObject(value = """
                 {
                     "statusCode": 403,
                     "message": "You are not allowed to access this resource."
@@ -204,7 +204,7 @@ public interface IDebtPositionController {
         @ApiResponse(
             responseCode = "403",
             content =
-                @Content(schema = @Schema(), examples = {@ExampleObject(name = "forbidden", value = """
+                @Content(schema = @Schema(), examples = {@ExampleObject(value = """
                     {
                         "statusCode": 403,
                         "message": "You are not allowed to access this resource."
@@ -320,7 +320,7 @@ public interface IDebtPositionController {
             content = @Content(schema = @Schema())),
         @ApiResponse(
             responseCode = "403",
-            content = @Content(schema = @Schema(), examples = {@ExampleObject(name = "forbidden", value = """
+            content = @Content(schema = @Schema(), examples = {@ExampleObject(value = """
                 {
                     "statusCode": 403,
                     "message": "You are not allowed to access this resource."
@@ -383,7 +383,7 @@ public interface IDebtPositionController {
         @ApiResponse(
             responseCode = "403",
             content =
-                @Content(schema = @Schema(), examples = {@ExampleObject(name = "forbidden", value = """
+                @Content(schema = @Schema(), examples = {@ExampleObject(value = """
                     {
                       "statusCode": 403,
                       "message": "You are not allowed to access this resource."
@@ -460,7 +460,7 @@ public interface IDebtPositionController {
         @ApiResponse(
             responseCode = "403",
             content =
-                @Content(schema = @Schema(), examples = {@ExampleObject(name = "forbidden", value = """
+                @Content(schema = @Schema(), examples = {@ExampleObject(value = """
                       {
                         "statusCode": 403,
                         "message": "You are not allowed to access this resource."
@@ -538,7 +538,7 @@ public interface IDebtPositionController {
         @ApiResponse(
             responseCode = "403",
             content =
-                @Content(schema = @Schema(), examples = {@ExampleObject(name = "forbidden", value = """
+                @Content(schema = @Schema(), examples = {@ExampleObject(value = """
                     {
                         "statusCode": 403,
                         "message": "You are not allowed to access this resource."
@@ -599,7 +599,7 @@ public interface IDebtPositionController {
         @ApiResponse(
             responseCode = "403",
             content =
-                @Content(schema = @Schema(), examples = {@ExampleObject(name = "forbidden", value = """
+                @Content(schema = @Schema(), examples = {@ExampleObject(value = """
                     {
                         "statusCode": 403,
                         "message": "You are not allowed to access this resource."
@@ -654,7 +654,7 @@ public interface IDebtPositionController {
         @ApiResponse(
             responseCode = "403",
             content =
-                @Content(schema = @Schema(), examples = {@ExampleObject(name = "forbidden", value = """
+                @Content(schema = @Schema(), examples = {@ExampleObject(value = """
                     {
                         "statusCode": 403,
                         "message": "You are not allowed to access this resource."
@@ -715,6 +715,14 @@ public interface IDebtPositionController {
             responseCode = "401",
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "403",
+            content =
+            @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                {
+                    "statusCode": 403,
+                    "message": "You are not allowed to access this resource."
+                }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "500",
             description = "Service unavailable.",
