@@ -4,7 +4,7 @@
     "title": "PagoPA API Debt Position",
     "description": "Progetto Gestione Posizioni Debitorie",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "0.11.82"
+    "version": "0.13.1"
   },
   "servers": [
     {
@@ -646,6 +646,20 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Malformed request.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {}
+            }
           }
         },
         "security": [
@@ -807,6 +821,121 @@
                 }
               }
             }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "Authorization": []
+          }
+        ]
+      }
+    },
+    "/organizations/{organizationfiscalcode}/debtpositions/transfers": {
+      "patch": {
+        "tags": [
+          "Debt Positions API"
+        ],
+        "summary": "The Organization updates the IBANs of every updatable payment option's transfers",
+        "operationId": "updateTransferIbanMassive",
+        "parameters": [
+          {
+            "name": "organizationfiscalcode",
+            "in": "path",
+            "description": "Organization fiscal code, the fiscal code of the Organization.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "oldIban",
+            "in": "query",
+            "description": "The old iban to replace",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of Transfer to update (max = 1000, default = 1000)",
+            "required": false,
+            "schema": {
+              "maximum": 1000,
+              "type": "integer",
+              "format": "int32",
+              "default": 1000
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTransferIbanMassiveModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Malformed request.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service unavailable.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "IBANs updated",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateTransferIbanMassiveResponse"
+                }
+              }
+            }
           },
           "401": {
             "description": "Wrong or missing function key.",
@@ -828,7 +957,17 @@
             "Authorization": []
           }
         ]
-      }
+      },
+      "parameters": [
+        {
+          "name": "X-Request-Id",
+          "in": "header",
+          "description": "This header identifies the call, if not passed it is self-generated. This ID is returned in the response.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
     },
     "/organizations/{organizationfiscalcode}/debtpositions/{iupd}": {
       "get": {
@@ -1083,8 +1222,8 @@
               }
             }
           },
-          "400": {
-            "description": "Malformed request.",
+          "500": {
+            "description": "Service unavailable.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -1361,8 +1500,8 @@
               }
             }
           },
-          "200": {
-            "description": "Request published.",
+          "409": {
+            "description": "Conflict: debt position is not in invalidable state.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -1374,7 +1513,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaymentPositionModel"
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -1416,7 +1555,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+                  "$ref": "#/components/schemas/PaymentPositionModel"
                 }
               }
             }
@@ -1517,8 +1656,8 @@
               }
             }
           },
-          "200": {
-            "description": "Request published.",
+          "500": {
+            "description": "Service unavailable.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -1530,7 +1669,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaymentPositionModel"
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -1572,7 +1711,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+                  "$ref": "#/components/schemas/PaymentPositionModel"
                 }
               }
             }
@@ -1663,8 +1802,8 @@
               }
             }
           },
-          "404": {
-            "description": "Payment Position not found.",
+          "500": {
+            "description": "Service unavailable.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -1688,8 +1827,8 @@
               }
             }
           },
-          "400": {
-            "description": "Malformed request.",
+          "404": {
+            "description": "Payment Position not found.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -1743,6 +1882,20 @@
                   "type": "string"
                 }
               }
+            }
+          },
+          "400": {
+            "description": "Malformed request.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {}
             }
           }
         },
@@ -1839,8 +1992,8 @@
               }
             }
           },
-          "409": {
-            "description": "Conflict: existing related payment found.",
+          "404": {
+            "description": "No transfer found.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -1857,8 +2010,8 @@
               }
             }
           },
-          "400": {
-            "description": "Malformed request.",
+          "409": {
+            "description": "Conflict: existing related payment found.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -1968,24 +2121,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Obtained payment option details.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
                   "$ref": "#/components/schemas/PaymentsWithDebtorInfoModelResponse"
                 }
               }
@@ -2016,6 +2151,24 @@
                 "description": "This header identifies the call",
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service unavailable.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -2160,13 +2313,6 @@
                   "type": "string"
                 }
               }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
-                }
-              }
             }
           },
           "500": {
@@ -2187,13 +2333,20 @@
               }
             }
           },
-          "401": {
-            "description": "Wrong or missing function key.",
+          "404": {
+            "description": "No payment option found.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
                 "schema": {
                   "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -2356,22 +2509,22 @@
                   "type": "string"
                 }
               }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
-                }
-              }
             }
           },
-          "401": {
-            "description": "Wrong or missing function key.",
+          "404": {
+            "description": "No payment option found.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
                 "schema": {
                   "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -2562,8 +2715,8 @@
               }
             }
           },
-          "200": {
-            "description": "Obtained all organization payment positions.",
+          "400": {
+            "description": "Malformed request.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -2575,13 +2728,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaymentPositionsInfoV3"
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
           },
-          "400": {
-            "description": "Malformed request.",
+          "500": {
+            "description": "Service unavailable.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -2773,22 +2926,22 @@
                   "type": "string"
                 }
               }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
-                }
-              }
             }
           },
-          "401": {
-            "description": "Wrong or missing function key.",
+          "409": {
+            "description": "Conflict: duplicate debt position found.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
                 "schema": {
                   "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -2841,8 +2994,8 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Obtained debt position details.",
+          "404": {
+            "description": "No debt position found.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -2854,7 +3007,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaymentPositionModelResponseV3"
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -2910,22 +3063,22 @@
                   "type": "string"
                 }
               }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
-                }
-              }
             }
           },
-          "401": {
-            "description": "Wrong or missing function key.",
+          "200": {
+            "description": "Obtained debt position details.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
                 "schema": {
                   "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentPositionModelResponseV3"
                 }
               }
             }
@@ -3061,8 +3214,8 @@
               }
             }
           },
-          "400": {
-            "description": "Malformed request.",
+          "500": {
+            "description": "Service unavailable.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -3333,8 +3486,8 @@
               }
             }
           },
-          "200": {
-            "description": "Request published.",
+          "500": {
+            "description": "Service unavailable.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -3346,7 +3499,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaymentPositionModelV3"
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -3388,7 +3541,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+                  "$ref": "#/components/schemas/PaymentPositionModelV3"
                 }
               }
             }
@@ -4190,6 +4343,29 @@
           },
           "fee": {
             "type": "string"
+          }
+        }
+      },
+      "UpdateTransferIbanMassiveModel": {
+        "required": [
+          "newIban"
+        ],
+        "type": "object",
+        "properties": {
+          "newIban": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateTransferIbanMassiveResponse": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "updatedTransfers": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },

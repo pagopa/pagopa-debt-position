@@ -143,6 +143,13 @@
                   "type" : "string"
                 }
               }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentPositionModelResponseV3"
+                }
+              }
             }
           }
         },
@@ -654,6 +661,13 @@
                   "$ref" : "#/components/schemas/ProblemJson"
                 }
               }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentPositionsInfoV3"
+                }
+              }
             }
           },
           "401" : {
@@ -817,6 +831,13 @@
                 "description" : "This header identifies the call",
                 "schema" : {
                   "type" : "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }

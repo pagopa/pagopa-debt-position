@@ -3,9 +3,7 @@ package it.gov.pagopa.debtposition.controller;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -29,6 +27,7 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
+import it.gov.pagopa.debtposition.service.payments.PaymentsService;
 import it.gov.pagopa.debtposition.util.CustomHttpStatus;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
 import java.time.LocalDateTime;
@@ -44,6 +43,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -58,6 +58,8 @@ class PaymentsControllerTest {
   @Mock private ModelMapper modelMapperMock;
 
   @MockBean private NodeClient nodeClient;
+
+  @SpyBean private PaymentsService paymentsService;
 
   @Value("${nav.aux.digit}")
   private String auxDigit;
@@ -610,7 +612,7 @@ class PaymentsControllerTest {
   }
 
   @Test
-  void payPaymentOption_Multiple_Partial2_409() throws Exception {
+  void getPaymentOption_Multiple_Partial_409() throws Exception {
     // creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato) con più
     // opzioni di pagamento
     mvc.perform(
@@ -652,13 +654,12 @@ class PaymentsControllerTest {
             MockMvcResultMatchers.jsonPath("$.status")
                 .value(DebtPositionStatus.PARTIALLY_PAID.toString()));
 
-    // effettuo un nuovo pagamento sulla payment option non rateizzabile (isPartialPayment = false)
-    // e ottengo errore
+    // effettuo una GET/ACTIVATE sulla payment option corrispondente alla rata unica/intero importo
+    // e ottengo errore 409
     mvc.perform(
-            post("/organizations/PAY_Multiple_Partial2_409_12345678901/paymentoptions/"
+            get("/organizations/PAY_Multiple_Partial2_409_12345678901/paymentoptions/"
                     + auxDigit
-                    + "123456IUVMULTIPLEMOCK3/pay")
-                .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
+                    + "123456IUVMULTIPLEMOCK3")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isConflict());
   }

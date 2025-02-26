@@ -13,7 +13,8 @@ const {
     getPaymentOptionByIuv,
     invalidateDebtPosition,
     createMassiveDebtPositions,
-    getDebtPositionByIUV
+    getDebtPositionByIUV,
+    updateTransferIbanMassive
 } = require("../clients/gpd_client");
 
 const {
@@ -199,6 +200,11 @@ async function executeDebtPositionUpdateAndPublication(bundle, idOrg, iupd) {
     bundle.responseToCheck = response;
 }
 
+async function executeUpdateTransferIbanMassive(idOrg, oldIban, newIban) {
+    let response = await updateTransferIbanMassive(idOrg, oldIban, newIban);
+    return response;
+}
+
 module.exports = {
     executeDebtPositionCreation,
     executeDebtPositionDeletion,
@@ -225,5 +231,6 @@ module.exports = {
     executeDebtPositionPublishWithSegregationCodes,
     executeDebtPositionInvalidateWithSegregationCodes,
     executeMassiveDebtPositionsCreation,
-    executeMassiveDebtPositionCreationWithSegregationCodes
+    executeMassiveDebtPositionCreationWithSegregationCodes,
+    executeUpdateTransferIbanMassive
 }

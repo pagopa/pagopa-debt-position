@@ -79,6 +79,7 @@ public class PaymentsController implements IPaymentsController {
         paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
 
     if (paidPaymentOption == null) {
+
       throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, nav);
     }
 

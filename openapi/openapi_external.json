@@ -4,7 +4,7 @@
     "title": "PagoPA API Debt Position",
     "description": "Progetto Gestione Posizioni Debitorie",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "0.11.82"
+    "version": "0.13.1"
   },
   "servers": [
     {
@@ -407,22 +407,22 @@
                   "type": "string"
                 }
               }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
-                }
-              }
             }
           },
-          "401": {
-            "description": "Wrong or missing function key.",
+          "409": {
+            "description": "Conflict: duplicate debt position found.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
                 "schema": {
                   "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -701,8 +701,8 @@
               }
             }
           },
-          "400": {
-            "description": "Malformed request.",
+          "500": {
+            "description": "Service unavailable.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -979,8 +979,8 @@
               }
             }
           },
-          "200": {
-            "description": "Request published.",
+          "500": {
+            "description": "Service unavailable.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -992,7 +992,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaymentPositionModel"
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -1034,7 +1034,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+                  "$ref": "#/components/schemas/PaymentPositionModel"
                 }
               }
             }
@@ -1135,8 +1135,8 @@
               }
             }
           },
-          "200": {
-            "description": "Request published.",
+          "409": {
+            "description": "Conflict: debt position is not in invalidable state.",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -1148,7 +1148,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaymentPositionModel"
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
@@ -1190,7 +1190,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
+                  "$ref": "#/components/schemas/PaymentPositionModel"
                 }
               }
             }
@@ -1227,13 +1227,55 @@
         }
       ]
     },
-    "/info": {
-      "get": {
+    "/organizations/{organizationfiscalcode}/debtpositions/transfers": {
+      "patch": {
         "tags": [
-          "Home"
+          "Debt Positions API"
         ],
-        "summary": "Return OK if application is started",
-        "operationId": "healthCheck",
+        "summary": "The Organization updates the IBANs of every updatable payment option's transfers",
+        "operationId": "updateTransferIbanMassive",
+        "parameters": [
+          {
+            "name": "organizationfiscalcode",
+            "in": "path",
+            "description": "Organization fiscal code, the fiscal code of the Organization.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "oldIban",
+            "in": "query",
+            "description": "The old iban to replace",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of Transfer to update (max = 1000, default = 1000)",
+            "required": false,
+            "schema": {
+              "maximum": 1000,
+              "type": "integer",
+              "format": "int32",
+              "default": 1000
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTransferIbanMassiveModel"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "403": {
             "description": "Forbidden.",
@@ -1278,6 +1320,35 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service unavailable.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -1645,6 +1716,29 @@
             "type": "string",
             "description": "A human readable explanation specific to this occurrence of the problem.",
             "example": "There was an error processing the request"
+          }
+        }
+      },
+      "UpdateTransferIbanMassiveModel": {
+        "required": [
+          "newIban"
+        ],
+        "type": "object",
+        "properties": {
+          "newIban": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateTransferIbanMassiveResponse": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "updatedTransfers": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },

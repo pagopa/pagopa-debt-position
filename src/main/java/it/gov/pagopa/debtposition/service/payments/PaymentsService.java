@@ -17,14 +17,12 @@ import it.gov.pagopa.debtposition.model.payments.OrganizationModelQueryBean;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
+import it.gov.pagopa.debtposition.repository.TransferRepository;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -38,11 +36,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class PaymentsService {
 
-  @Autowired private PaymentOptionRepository paymentOptionRepository;
+  private final PaymentOptionRepository paymentOptionRepository;
+  private final PaymentPositionRepository paymentPositionRepository;
+  private final NodeClient nodeClient;
 
-  @Autowired private PaymentPositionRepository paymentPositionRepository;
-
-  @Autowired private NodeClient nodeClient;
+  @Autowired
+  public PaymentsService(
+      PaymentPositionRepository paymentPositionRepository,
+      PaymentOptionRepository paymentOptionRepository,
+      NodeClient nodeClient) {
+    this.paymentPositionRepository = paymentPositionRepository;
+    this.paymentOptionRepository = paymentOptionRepository;
+    this.nodeClient = nodeClient;
+  }
 
   @Value("${nav.aux.digit}")
   private String auxDigit;
@@ -65,6 +71,7 @@ public class PaymentsService {
     // PaymentPosition used when converting PaymentOption to POWithDebtor
     DebtPositionStatus.validityCheckAndUpdate(paymentOption);
     DebtPositionStatus.expirationCheckAndUpdate(paymentOption);
+    DebtPositionStatus.checkAlreadyPaidInstallments(paymentOption, nav);
 
     return paymentOption;
   }
@@ -283,7 +290,11 @@ public class PaymentsService {
     }
 
     // aggiorno lo stato della payment position
-    if (countPaidPartialPayment > 0 && countPaidPartialPayment < numberOfPartialPayment) {
+    // PIDM-42 if paying the full amount when there is already a paid partial payment
+    // then update the payment position status to PAID
+    if (countPaidPartialPayment > 0
+        && countPaidPartialPayment < numberOfPartialPayment
+        && Boolean.TRUE.equals(Objects.requireNonNull(poToPay).getIsPartialPayment())) {
       pp.setStatus(DebtPositionStatus.PARTIALLY_PAID);
     } else {
       pp.setStatus(DebtPositionStatus.PAID);

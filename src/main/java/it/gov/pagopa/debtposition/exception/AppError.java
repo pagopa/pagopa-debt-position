@@ -33,6 +33,10 @@ public enum AppError {
       HttpStatus.NOT_FOUND,
       "Not found the debt position",
       "Not found a debt position for Organization Fiscal Code %s and IUPD %s"),
+  DEBT_POSITION_IN_UPDATABLE_STATE_NOT_FOUND(
+      HttpStatus.NOT_FOUND,
+      "No debt position in updatable state found",
+      "Not found a debt position in updatable state for Organization Fiscal Code %s"),
   DEBT_POSITION_PAYMENT_FOUND(
       HttpStatus.CONFLICT,
       "Existing related payment found",

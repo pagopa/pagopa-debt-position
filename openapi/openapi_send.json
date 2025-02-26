@@ -179,6 +179,13 @@
                   "type" : "string"
                 }
               }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
             }
           }
         },
@@ -285,6 +292,13 @@
                   "type" : "string"
                 }
               }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
+                }
+              }
             }
           }
         },
@@ -334,6 +348,13 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/AppInfo"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemJson"
                 }
               }
             }
