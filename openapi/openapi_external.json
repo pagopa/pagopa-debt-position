@@ -43,6 +43,21 @@
   "paths": {
     "/organizations/{organizationfiscalcode}/debtpositions": {
       "get": {
+        "description": "New endpoint",
+        "responses": {
+          "200": {
+            "description": "New response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "": ""
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
         "tags": [
           "Debt Positions API"
         ],
