@@ -39,8 +39,7 @@ public interface IDebtPositionController {
   @Operation(
       summary = "The Organization creates a debt Position.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "createPosition")
   @ApiResponses(
@@ -109,8 +108,7 @@ public interface IDebtPositionController {
   @Operation(
       summary = "The Organization creates multiple debt positions.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "createMultiplePositions")
   @ApiResponses(
@@ -181,8 +179,7 @@ public interface IDebtPositionController {
           "Return the list of the organization debt positions. "
               + "The due dates interval is mutually exclusive with the payment dates interval.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "getOrganizationDebtPositions")
   @ApiResponses(
@@ -298,8 +295,7 @@ public interface IDebtPositionController {
   @Operation(
       summary = "Return the details of a specific debt position.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "getOrganizationDebtPositionByIUPD")
   @ApiResponses(
@@ -369,8 +365,7 @@ public interface IDebtPositionController {
   @Operation(
       summary = "The Organization deletes a debt position",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "deletePosition")
   @ApiResponses(
@@ -439,8 +434,7 @@ public interface IDebtPositionController {
   @Operation(
       summary = "The Organization updates a debt position ",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "updatePosition")
   @ApiResponses(
@@ -517,8 +511,7 @@ public interface IDebtPositionController {
   @Operation(
       summary = "The Organization updates multiple debt positions.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "updateMultiplePositions")
   @ApiResponses(
@@ -581,8 +574,7 @@ public interface IDebtPositionController {
   @Operation(
       summary = "The Organization deletes multiple debt positions.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "deleteMultipleDebtPositions")
   @ApiResponses(
@@ -636,8 +628,7 @@ public interface IDebtPositionController {
   @Operation(
       summary = "The organization retrieves a debt position by payment option IUV",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "getDebtPositionByIUV")
   @ApiResponses(
@@ -697,8 +688,7 @@ public interface IDebtPositionController {
   @Operation(
       summary = "The Organization updates the IBANs of every updatable payment option's transfers",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "updateTransferIbanMassive")
   @ApiResponses(

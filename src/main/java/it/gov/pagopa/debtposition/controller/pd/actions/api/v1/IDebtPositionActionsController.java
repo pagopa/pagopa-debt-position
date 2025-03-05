@@ -27,8 +27,7 @@ public interface IDebtPositionActionsController {
   @Operation(
       summary = "The Organization publish a debt Position.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "publishPosition")
   @ApiResponses(
@@ -94,8 +93,7 @@ public interface IDebtPositionActionsController {
   @Operation(
       summary = "The Organization invalidate a debt Position.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "invalidatePosition")
   @ApiResponses(
