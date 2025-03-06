@@ -201,7 +201,7 @@ public class SwaggerConfig {
 
     return GroupedOpenApi.builder()
             .group("external_v3")
-            .displayName("GPD - External API: Installments and Payment Options Manager")
+            .displayName("GPD - External API - v3")
             .pathsToMatch("/v3/**")
             .addOpenApiCustomiser(customizeOpenApi(serverInfo, removeFromExternalV3))
             .build();
@@ -223,7 +223,6 @@ public class SwaggerConfig {
             .addOpenApiCustomiser(customizeOpenApi(serverInfo, removeFromSendV1))
             .build();
   }
-
 
   private Server createServer(String env, String service, String version, String description) {
     String baseUrl = "https://api%s.platform.pagopa.it/%s/%s/";
