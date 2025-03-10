@@ -479,7 +479,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaymentPositionModelBaseResponse"
+                  "$ref": "#/components/schemas/PaymentPositionModelEnhancedResponse"
                 }
               }
             }
@@ -1832,6 +1832,27 @@
             }
           }
         }
+      },
+      "PaymentPositionModelEnhancedResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PaymentPositionModelBaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "switchToExpired": {
+                "type": "boolean",
+                "description": "feature flag to enable the debt position to expire after the due date",
+                "example": false,
+                "default": false
+              },
+              "debtor": {
+                "$ref": "#/components/schemas/DebtorModel"
+              }
+            }
+          }
+        ]
       },
       "PaymentPositionsInfo": {
         "required": [

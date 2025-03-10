@@ -17,6 +17,7 @@ import it.gov.pagopa.debtposition.model.pd.MultipleIUPDModel;
 import it.gov.pagopa.debtposition.model.pd.MultiplePaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
+import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelEnhancedResponse;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
 import java.time.LocalDate;
 import javax.validation.Valid;
@@ -310,7 +311,7 @@ public interface IDebtPositionController {
   @GetMapping(
       value = "/organizations/{organizationfiscalcode}/debtpositions/{iupd}",
       produces = {"application/json"})
-  ResponseEntity<PaymentPositionModelBaseResponse> getOrganizationDebtPositionByIUPD(
+  ResponseEntity<PaymentPositionModelEnhancedResponse> getOrganizationDebtPositionByIUPD(
       @Parameter(
               description = "Organization fiscal code, the fiscal code of the Organization.",
               required = true)
