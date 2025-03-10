@@ -32,6 +32,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @SpringBootTest(classes = DebtPositionApplication.class)
 @AutoConfigureMockMvc
@@ -262,5 +263,28 @@ class DebtPositionControllerV3Test {
                 new TransferMetadataModel("key2", "value2")));
     transfer.setTransferMetadata(transferMetadataList);
     return transfer;
+  }
+
+  @Test
+  void shouldNotFindDebtPositionsWithServiceTypeWISP() throws Exception {
+    // Create a debt position with service type WISP
+    String uri = "/v3/organizations/12345678905/debtpositions?serviceType=WISP";
+    PaymentPositionModelV3 paymentPositionV3 =
+            createPaymentPositionV3(1, 1);
+
+    mvc.perform(
+                    post(uri)
+                            .content(TestUtil.toJson(paymentPositionV3))
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isCreated());
+
+    // Retrieve debt positions; expect no results since the uploaded debt position has service type WISP
+    mvc.perform(
+                    get("/v3/organizations/12345678905/debtpositions")
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(
+                    MockMvcResultMatchers.jsonPath("$.page_info.items_found").value(0));
   }
 }
