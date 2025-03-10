@@ -436,6 +436,8 @@ public class DebtPositionController implements IDebtPositionController {
     debtor.setProvince(paymentPosition.getProvince());
     debtor.setRegion(paymentPosition.getRegion());
     debtor.setCountry(paymentPosition.getCountry());
+    debtor.setEmail(paymentPosition.getEmail());
+    debtor.setPhone(paymentPosition.getPhone());
     debtor.setType(paymentPosition.getType());
     return debtor;
   }
