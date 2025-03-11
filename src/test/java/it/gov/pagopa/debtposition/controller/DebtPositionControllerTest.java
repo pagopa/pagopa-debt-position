@@ -2244,4 +2244,23 @@ class DebtPositionControllerTest {
             .andExpect(
                     MockMvcResultMatchers.jsonPath("$.page_info.items_found").value(0));
   }
+
+  @Test
+  void shouldFindDebtPositionsWithServiceTypeWISP() throws Exception {
+    // Create a debt position with service type WISP
+    mvc.perform(
+                    post("/organizations/12345678905/debtpositions?serviceType=WISP")
+                            .content(TestUtil.toJson(DebtPositionMock.getMock2()))
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isCreated());
+
+    // Retrieve debt positions; expect multiple results since the uploaded debt position has service type WISP
+    mvc.perform(
+                    get("/organizations/12345678905/debtpositions?serviceType=WISP")
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(
+                    MockMvcResultMatchers.jsonPath("$.page_info.items_found").value(Matchers.not(0)));
+  }
 }

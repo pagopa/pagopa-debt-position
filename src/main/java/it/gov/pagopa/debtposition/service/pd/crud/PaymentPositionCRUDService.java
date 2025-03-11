@@ -176,7 +176,7 @@ public class PaymentPositionCRUDService {
                                                         filterAndOrder.getFilter().getPaymentDateFrom(),
                                                         filterAndOrder.getFilter().getPaymentDateTo()))
                                         .and(new PaymentPositionByStatus(filterAndOrder.getFilter().getStatus())))
-                        .and(new PaymentPositionByServiceType());
+                        .and(new PaymentPositionByServiceType(filterAndOrder.getFilter().getServiceType()));
 
         Specification<PaymentPosition> specPP = Specification.where(paymentPositionSpecification);
 

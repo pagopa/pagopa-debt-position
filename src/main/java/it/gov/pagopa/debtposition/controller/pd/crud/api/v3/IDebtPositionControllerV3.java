@@ -202,7 +202,11 @@ public interface IDebtPositionControllerV3 {
               hidden = true)
           @Pattern(regexp = "\\d{2}(,\\d{2})*")
           @RequestParam(required = false)
-          String segregationCodes);
+          String segregationCodes,
+      @Valid
+          @Parameter(description = "Filter by debt position service type")
+          @RequestParam(value = "serviceType", required = false)
+          ServiceType serviceType);
 
   @Operation(
       summary = "Return the details of a specific debt position.",
