@@ -3,6 +3,7 @@ package it.gov.pagopa.debtposition.controller.pd.actions.api.v1;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -26,8 +27,7 @@ public interface IDebtPositionActionsController {
   @Operation(
       summary = "The Organization publish a debt Position.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "publishPosition")
   @ApiResponses(
@@ -37,6 +37,13 @@ public interface IDebtPositionActionsController {
             responseCode = "401",
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "403",
+            content = @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                {
+                  "statusCode": 403,
+                  "message": "You are not allowed to access this resource."
+                }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "404",
             description = "No debt position found.",
@@ -86,8 +93,7 @@ public interface IDebtPositionActionsController {
   @Operation(
       summary = "The Organization invalidate a debt Position.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "invalidatePosition")
   @ApiResponses(
@@ -97,6 +103,13 @@ public interface IDebtPositionActionsController {
             responseCode = "401",
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "403",
+            content = @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                {
+                  "statusCode": 403,
+                  "message": "You are not allowed to access this resource."
+                }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "404",
             description = "No debt position found.",

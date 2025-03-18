@@ -27,8 +27,7 @@ public interface IPaymentsController {
   @Operation(
       summary = "Return the details of a specific payment option.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "getOrganizationPaymentOptionByNAV")
   @ApiResponses(
@@ -81,8 +80,8 @@ public interface IPaymentsController {
   @Operation(
       summary = "The Organization paid a payment option.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
+
       },
       operationId = "payPaymentOption")
   @ApiResponses(
@@ -147,8 +146,7 @@ public interface IPaymentsController {
   @Operation(
       summary = "The organization reports a transaction.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "reportTransfer")
   @ApiResponses(
@@ -212,8 +210,7 @@ public interface IPaymentsController {
   @Operation(
       summary = "The organization updates the notification fee of a payment option.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "updateNotificationFee")
   @ApiResponses(
