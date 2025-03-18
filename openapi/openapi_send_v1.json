@@ -7,10 +7,10 @@
     "version" : "0.13.1"
   },
   "servers" : [ {
-    "url" : "https://api.uat.platform.pagopa.it/gpd/debt-positions-service/v3/",
+    "url" : "https://api.uat.platform.pagopa.it/gpd/debt-positions-service/v3",
     "description" : "GPD Test environment"
   }, {
-    "url" : "https://api.platform.pagopa.it/gpd/debt-positions-service/v3/",
+    "url" : "https://api.platform.pagopa.it/gpd/debt-positions-service/v3",
     "description" : "GPD Production Environment"
   } ],
   "paths" : {

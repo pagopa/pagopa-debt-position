@@ -7,10 +7,10 @@
     "version" : "0.13.1"
   },
   "servers" : [ {
-    "url" : "https://api.uat.platform.pagopa.it/gpd/api/v1/",
+    "url" : "https://api.uat.platform.pagopa.it/gpd/api/v1",
     "description" : "GPD Test environment"
   }, {
-    "url" : "https://api.platform.pagopa.it/gpd/api/v1/",
+    "url" : "https://api.platform.pagopa.it/gpd/api/v1",
     "description" : "GPD Production Environment"
   } ],
   "paths" : {
@@ -2223,18 +2223,6 @@
           }
         }
       },
-      "MultiplePaymentPositionModel" : {
-        "required" : [ "paymentPositions" ],
-        "type" : "object",
-        "properties" : {
-          "paymentPositions" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/PaymentPositionModel"
-            }
-          }
-        }
-      },
       "PaymentOptionMetadataModel" : {
         "required" : [ "key" ],
         "type" : "object",
@@ -2822,20 +2810,6 @@
           },
           "environment" : {
             "type" : "string"
-          }
-        }
-      },
-      "MultipleIUPDModel" : {
-        "required" : [ "paymentPositionIUPDs" ],
-        "type" : "object",
-        "properties" : {
-          "paymentPositionIUPDs" : {
-            "maxItems" : 20,
-            "minItems" : 0,
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
           }
         }
       }

@@ -7,10 +7,10 @@
     "version" : "0.13.1"
   },
   "servers" : [ {
-    "url" : "https://api.uat.platform.pagopa.it/gpd/debt-positions-service/v2/",
+    "url" : "https://api.uat.platform.pagopa.it/gpd/debt-positions-service/v2",
     "description" : "GPD Test environment"
   }, {
-    "url" : "https://api.platform.pagopa.it/gpd/debt-positions-service/v2/",
+    "url" : "https://api.platform.pagopa.it/gpd/debt-positions-service/v2",
     "description" : "GPD Production Environment"
   } ],
   "paths" : {
@@ -227,8 +227,8 @@
       },
       "post" : {
         "tags" : [ "Debt Positions API" ],
-        "summary" : "The Organization creates a debt Position.",
-        "operationId" : "createPosition",
+        "summary" : "The Organization creates multiple debt positions.",
+        "operationId" : "createMultiplePositions",
         "parameters" : [ {
           "name" : "organizationfiscalcode",
           "in" : "path",
@@ -250,7 +250,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PaymentPositionModel"
+                "$ref" : "#/components/schemas/MultiplePaymentPositionModel"
               }
             }
           },
@@ -264,13 +264,6 @@
                 "description" : "This header identifies the call",
                 "schema" : {
                   "type" : "string"
-                }
-              }
-            },
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/PaymentPositionModel"
                 }
               }
             }

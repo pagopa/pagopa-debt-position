@@ -7,10 +7,10 @@
     "version" : "0.13.1"
   },
   "servers" : [ {
-    "url" : "https://api.uat.platform.pagopa.it/gpd/api/v2/",
+    "url" : "https://api.uat.platform.pagopa.it/gpd/api/v2",
     "description" : "GPD Test environment"
   }, {
-    "url" : "https://api.platform.pagopa.it/gpd/api/v2/",
+    "url" : "https://api.platform.pagopa.it/gpd/api/v2",
     "description" : "GPD Production Environment"
   } ],
   "paths" : {
@@ -428,8 +428,8 @@
       },
       "post" : {
         "tags" : [ "Debt Positions API" ],
-        "summary" : "The Organization creates a debt Position.",
-        "operationId" : "createPosition",
+        "summary" : "The Organization creates multiple debt positions.",
+        "operationId" : "createMultiplePositions",
         "parameters" : [ {
           "name" : "organizationfiscalcode",
           "in" : "path",
@@ -451,7 +451,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PaymentPositionModel"
+                "$ref" : "#/components/schemas/MultiplePaymentPositionModel"
               }
             }
           },
@@ -465,13 +465,6 @@
                 "description" : "This header identifies the call",
                 "schema" : {
                   "type" : "string"
-                }
-              }
-            },
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/PaymentPositionModel"
                 }
               }
             }
@@ -678,148 +671,6 @@
             },
             "content" : {
               "application/json" : { }
-            }
-          }
-        },
-        "security" : [ {
-          "ApiKey" : [ ]
-        } ]
-      },
-      "parameters" : [ {
-        "name" : "X-Request-Id",
-        "in" : "header",
-        "description" : "This header identifies the call, if not passed it is self-generated. This ID is returned in the response.",
-        "schema" : {
-          "type" : "string"
-        }
-      } ]
-    },
-    "/organizations/{organizationfiscalcode}/debtpositions/bulk" : {
-      "post" : {
-        "tags" : [ "Debt Positions API" ],
-        "summary" : "The Organization creates multiple debt positions.",
-        "operationId" : "createMultiplePositions",
-        "parameters" : [ {
-          "name" : "organizationfiscalcode",
-          "in" : "path",
-          "description" : "Organization fiscal code, the fiscal code of the Organization.",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "toPublish",
-          "in" : "query",
-          "required" : false,
-          "schema" : {
-            "type" : "boolean",
-            "default" : false
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/MultiplePaymentPositionModel"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "201" : {
-            "description" : "Request created.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Malformed request.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            },
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemJson"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Wrong or missing function key.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "Forbidden",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            },
-            "content" : {
-              "application/json" : {
-                "example" : {
-                  "statusCode" : 403,
-                  "message" : "You are not allowed to access this resource."
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Conflict: duplicate debt position found.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            },
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemJson"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Service unavailable.",
-            "headers" : {
-              "X-Request-Id" : {
-                "description" : "This header identifies the call",
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            },
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ProblemJson"
-                }
-              }
             }
           }
         },
