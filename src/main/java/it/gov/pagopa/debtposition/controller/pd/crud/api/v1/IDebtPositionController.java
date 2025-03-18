@@ -3,6 +3,7 @@ package it.gov.pagopa.debtposition.controller.pd.crud.api.v1;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -38,8 +39,7 @@ public interface IDebtPositionController {
   @Operation(
       summary = "The Organization creates a debt Position.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "createPosition")
   @ApiResponses(
@@ -56,6 +56,13 @@ public interface IDebtPositionController {
             responseCode = "401",
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "403",
+            content = @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                {
+                    "statusCode": 403,
+                    "message": "You are not allowed to access this resource."
+                }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "409",
             description = "Conflict: duplicate debt position found.",
@@ -101,8 +108,7 @@ public interface IDebtPositionController {
   @Operation(
       summary = "The Organization creates multiple debt positions.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "createMultiplePositions")
   @ApiResponses(
@@ -119,6 +125,13 @@ public interface IDebtPositionController {
             responseCode = "401",
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "403",
+            content = @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                {
+                    "statusCode": 403,
+                    "message": "You are not allowed to access this resource."
+                }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "409",
             description = "Conflict: duplicate debt position found.",
@@ -166,8 +179,7 @@ public interface IDebtPositionController {
           "Return the list of the organization debt positions. "
               + "The due dates interval is mutually exclusive with the payment dates interval.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "getOrganizationDebtPositions")
   @ApiResponses(
@@ -186,6 +198,14 @@ public interface IDebtPositionController {
                 @Content(
                     mediaType = MediaType.APPLICATION_JSON_VALUE,
                     schema = @Schema(implementation = ProblemJson.class))),
+        @ApiResponse(
+            responseCode = "403",
+            content =
+                @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                    {
+                        "statusCode": 403,
+                        "message": "You are not allowed to access this resource."
+                    }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "401",
             description = "Wrong or missing function key.",
@@ -280,8 +300,7 @@ public interface IDebtPositionController {
   @Operation(
       summary = "Return the details of a specific debt position.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "getOrganizationDebtPositionByIUPD")
   @ApiResponses(
@@ -300,6 +319,13 @@ public interface IDebtPositionController {
             responseCode = "401",
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "403",
+            content = @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                {
+                    "statusCode": 403,
+                    "message": "You are not allowed to access this resource."
+                }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "404",
             description = "No debt position found.",
@@ -344,8 +370,7 @@ public interface IDebtPositionController {
   @Operation(
       summary = "The Organization deletes a debt position",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "deletePosition")
   @ApiResponses(
@@ -355,6 +380,14 @@ public interface IDebtPositionController {
             responseCode = "401",
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "403",
+            content =
+                @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                    {
+                      "statusCode": 403,
+                      "message": "You are not allowed to access this resource."
+                    }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "404",
             description = "No debt position position found.",
@@ -406,8 +439,7 @@ public interface IDebtPositionController {
   @Operation(
       summary = "The Organization updates a debt position ",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "updatePosition")
   @ApiResponses(
@@ -424,6 +456,14 @@ public interface IDebtPositionController {
             responseCode = "401",
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "403",
+            content =
+                @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                      {
+                        "statusCode": 403,
+                        "message": "You are not allowed to access this resource."
+                      }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "404",
             description = "No debt position found.",
@@ -476,8 +516,7 @@ public interface IDebtPositionController {
   @Operation(
       summary = "The Organization updates multiple debt positions.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "updateMultiplePositions")
   @ApiResponses(
@@ -494,6 +533,14 @@ public interface IDebtPositionController {
             responseCode = "401",
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "403",
+            content =
+                @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                    {
+                        "statusCode": 403,
+                        "message": "You are not allowed to access this resource."
+                    }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "409",
             description = "Conflict: existing related payment found.",
@@ -532,8 +579,7 @@ public interface IDebtPositionController {
   @Operation(
       summary = "The Organization deletes multiple debt positions.",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "deleteMultipleDebtPositions")
   @ApiResponses(
@@ -547,6 +593,14 @@ public interface IDebtPositionController {
             responseCode = "401",
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "403",
+            content =
+                @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                    {
+                        "statusCode": 403,
+                        "message": "You are not allowed to access this resource."
+                    }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "404",
             description = "Payment Position not found.",
@@ -579,8 +633,7 @@ public interface IDebtPositionController {
   @Operation(
       summary = "The organization retrieves a debt position by payment option IUV",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "getDebtPositionByIUV")
   @ApiResponses(
@@ -594,6 +647,14 @@ public interface IDebtPositionController {
             responseCode = "401",
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "403",
+            content =
+                @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                    {
+                        "statusCode": 403,
+                        "message": "You are not allowed to access this resource."
+                    }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "404",
             description = "Payment Position not found.",
@@ -632,8 +693,7 @@ public interface IDebtPositionController {
   @Operation(
       summary = "The Organization updates the IBANs of every updatable payment option's transfers",
       security = {
-        @SecurityRequirement(name = "ApiKey"),
-        @SecurityRequirement(name = "Authorization")
+        @SecurityRequirement(name = "ApiKey")
       },
       operationId = "updateTransferIbanMassive")
   @ApiResponses(
@@ -650,6 +710,14 @@ public interface IDebtPositionController {
             responseCode = "401",
             description = "Wrong or missing function key.",
             content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "403",
+            content =
+            @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                {
+                    "statusCode": 403,
+                    "message": "You are not allowed to access this resource."
+                }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "500",
             description = "Service unavailable.",

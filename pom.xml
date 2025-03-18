@@ -11,12 +11,12 @@
     </parent>
     <groupId>it.gov.pagopa.debtposition</groupId>
     <artifactId>gpd</artifactId>
-    <version>0.13.1</version>
+    <version>0.13.2</version>
     <name>Gestione Posizioni Debitorie</name>
     <description>Progetto Gestione Posizioni Debitorie</description>
     <properties>
         <java.version>17</java.version>
-        <springdoc-version>1.6.6</springdoc-version>
+        <springdoc-version>1.8.0</springdoc-version>
         <modelmapper-version>3.1.0</modelmapper-version>
         <jackson-datatype-jsr310-version>2.13.1</jackson-datatype-jsr310-version>
         <flyway-version>9.22.3</flyway-version>
