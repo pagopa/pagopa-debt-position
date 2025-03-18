@@ -257,7 +257,9 @@ public class SwaggerConfig {
 
     Set<String> schemasToRemove = Set.of(
             "MultiplePaymentPositionModel",
-            "MultipleIUPDModel"
+            "MultipleIUPDModel",
+            "UpdateTransferIbanMassiveModel",
+            "UpdateTransferIbanMassiveResponse"
     );
 
     return GroupedOpenApi.builder()

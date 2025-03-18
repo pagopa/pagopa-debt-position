@@ -1415,27 +1415,6 @@
           }
         }
       },
-      "UpdateTransferIbanMassiveModel" : {
-        "required" : [ "newIban" ],
-        "type" : "object",
-        "properties" : {
-          "newIban" : {
-            "type" : "string"
-          }
-        }
-      },
-      "UpdateTransferIbanMassiveResponse" : {
-        "type" : "object",
-        "properties" : {
-          "description" : {
-            "type" : "string"
-          },
-          "updatedTransfers" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        }
-      },
       "PageInfo" : {
         "required" : [ "items_found", "limit", "page", "total_pages" ],
         "type" : "object",
