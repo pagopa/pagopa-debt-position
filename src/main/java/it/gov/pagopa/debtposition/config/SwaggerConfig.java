@@ -246,7 +246,8 @@ public class SwaggerConfig {
   @Bean
   public GroupedOpenApi acaV1Api() {
     Map<String, Set<String>> removeFromAcaV1 = Map.of(
-            DEBT_POSITIONS_API, Set.of("put", "delete")
+            DEBT_POSITIONS_API, Set.of("put", "delete"),
+            "/organizations/{organizationfiscalcode}/debtpositions/transfers", Set.of("patch")
     );
 
     // server list
