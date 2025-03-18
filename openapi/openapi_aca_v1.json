@@ -7,16 +7,94 @@
     "version" : "0.13.1"
   },
   "servers" : [ {
-    "url" : "https://api.uat.platform.pagopa.it/gpd/debt-positions-service/v3",
-    "description" : "GPD Test environment"
+    "url" : "https://api.uat.platform.pagopa.it/aca/debt-positions-service/v1",
+    "description" : "ACA Test environment"
   }, {
-    "url" : "https://api.platform.pagopa.it/gpd/debt-positions-service/v3",
-    "description" : "GPD Production Environment"
+    "url" : "https://api.platform.pagopa.it/aca/debt-positions-service/v1",
+    "description" : "ACA Production Environment"
   } ],
   "paths" : {
+    "/info" : {
+      "get" : {
+        "tags" : [ "Home" ],
+        "summary" : "Return OK if application is started",
+        "operationId" : "healthCheck",
+        "responses" : {
+          "200" : {
+            "description" : "OK.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AppInfo"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Wrong or missing function key.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Service unavailable.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "ApiKey" : [ ]
+        } ]
+      },
+      "parameters" : [ {
+        "name" : "X-Request-Id",
+        "in" : "header",
+        "description" : "This header identifies the call, if not passed it is self-generated. This ID is returned in the response.",
+        "schema" : {
+          "type" : "string"
+        }
+      } ]
+    },
     "/organizations/{organizationfiscalcode}/debtpositions" : {
       "get" : {
-        "tags" : [ "Debt Positions API: Installments and Payment Options Manager" ],
+        "tags" : [ "Debt Positions API" ],
         "summary" : "Return the list of the organization debt positions. The due dates interval is mutually exclusive with the payment dates interval.",
         "operationId" : "getOrganizationDebtPositions",
         "parameters" : [ {
@@ -92,7 +170,7 @@
           "required" : false,
           "schema" : {
             "type" : "string",
-            "enum" : [ "DRAFT", "PUBLISHED", "VALID", "UNPAYABLE", "PARTIALLY_PAID", "PAID" ]
+            "enum" : [ "DRAFT", "PUBLISHED", "VALID", "INVALID", "EXPIRED", "PARTIALLY_PAID", "PAID", "REPORTED" ]
           }
         }, {
           "name" : "orderby",
@@ -129,7 +207,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaymentPositionsInfoV3"
+                  "$ref" : "#/components/schemas/PaymentPositionsInfo"
                 }
               }
             }
@@ -217,7 +295,7 @@
         } ]
       },
       "post" : {
-        "tags" : [ "Debt Positions API: Installments and Payment Options Manager" ],
+        "tags" : [ "Debt Positions API" ],
         "summary" : "The Organization creates a debt Position.",
         "operationId" : "createPosition",
         "parameters" : [ {
@@ -241,7 +319,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PaymentPositionModelV3"
+                "$ref" : "#/components/schemas/PaymentPositionModel"
               }
             }
           },
@@ -261,7 +339,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaymentPositionModelV3"
+                  "$ref" : "#/components/schemas/PaymentPositionModel"
                 }
               }
             }
@@ -364,9 +442,151 @@
         }
       } ]
     },
+    "/organizations/{organizationfiscalcode}/debtpositions/transfers" : {
+      "patch" : {
+        "tags" : [ "Debt Positions API" ],
+        "summary" : "The Organization updates the IBANs of every updatable payment option's transfers",
+        "operationId" : "updateTransferIbanMassive",
+        "parameters" : [ {
+          "name" : "organizationfiscalcode",
+          "in" : "path",
+          "description" : "Organization fiscal code, the fiscal code of the Organization.",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "oldIban",
+          "in" : "query",
+          "description" : "The old iban to replace",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "description" : "Number of Transfer to update (max = 1000, default = 1000)",
+          "required" : false,
+          "schema" : {
+            "maximum" : 1000,
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 1000
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateTransferIbanMassiveModel"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "IBANs updated",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UpdateTransferIbanMassiveResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Malformed request.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Wrong or missing function key.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "example" : {
+                  "statusCode" : 403,
+                  "message" : "You are not allowed to access this resource."
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Service unavailable.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "ApiKey" : [ ]
+        } ]
+      },
+      "parameters" : [ {
+        "name" : "X-Request-Id",
+        "in" : "header",
+        "description" : "This header identifies the call, if not passed it is self-generated. This ID is returned in the response.",
+        "schema" : {
+          "type" : "string"
+        }
+      } ]
+    },
     "/organizations/{organizationfiscalcode}/debtpositions/{iupd}" : {
       "get" : {
-        "tags" : [ "Debt Positions API: Installments and Payment Options Manager" ],
+        "tags" : [ "Debt Positions API" ],
         "summary" : "Return the details of a specific debt position.",
         "operationId" : "getOrganizationDebtPositionByIUPD",
         "parameters" : [ {
@@ -402,7 +622,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaymentPositionModelResponseV3"
+                  "$ref" : "#/components/schemas/PaymentPositionModelBaseResponse"
                 }
               }
             }
@@ -479,7 +699,7 @@
         } ]
       },
       "put" : {
-        "tags" : [ "Debt Positions API: Installments and Payment Options Manager" ],
+        "tags" : [ "Debt Positions API" ],
         "summary" : "The Organization updates a debt position ",
         "operationId" : "updatePosition",
         "parameters" : [ {
@@ -511,7 +731,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PaymentPositionModelV3"
+                "$ref" : "#/components/schemas/PaymentPositionModel"
               }
             }
           },
@@ -531,7 +751,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaymentPositionModelV3"
+                  "$ref" : "#/components/schemas/PaymentPositionModel"
                 }
               }
             }
@@ -644,7 +864,7 @@
         } ]
       },
       "delete" : {
-        "tags" : [ "Debt Positions API: Installments and Payment Options Manager" ],
+        "tags" : [ "Debt Positions API" ],
         "summary" : "The Organization deletes a debt position",
         "operationId" : "deletePosition",
         "parameters" : [ {
@@ -783,6 +1003,145 @@
         }
       } ]
     },
+    "/organizations/{organizationfiscalcode}/debtpositions/{iupd}/invalidate" : {
+      "post" : {
+        "tags" : [ "Debt Position Actions API" ],
+        "summary" : "The Organization invalidate a debt Position.",
+        "operationId" : "invalidatePosition",
+        "parameters" : [ {
+          "name" : "organizationfiscalcode",
+          "in" : "path",
+          "description" : "Organization fiscal code, the fiscal code of the Organization.",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "iupd",
+          "in" : "path",
+          "description" : "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Request published.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaymentPositionModel"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Wrong or missing function key.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "example" : {
+                  "statusCode" : 403,
+                  "message" : "You are not allowed to access this resource."
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "No debt position found.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Conflict: debt position is not in invalidable state.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Service unavailable.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "ApiKey" : [ ]
+        } ]
+      },
+      "parameters" : [ {
+        "name" : "X-Request-Id",
+        "in" : "header",
+        "description" : "This header identifies the call, if not passed it is self-generated. This ID is returned in the response.",
+        "schema" : {
+          "type" : "string"
+        }
+      } ]
+    },
     "/organizations/{organizationfiscalcode}/debtpositions/{iupd}/publish" : {
       "post" : {
         "tags" : [ "Debt Position Actions API" ],
@@ -819,7 +1178,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PaymentPositionModelV3"
+                  "$ref" : "#/components/schemas/PaymentPositionModel"
                 }
               }
             }
@@ -925,13 +1284,91 @@
   },
   "components" : {
     "schemas" : {
-      "DebtorModel" : {
-        "required" : [ "fiscalCode", "fullName", "type" ],
+      "PaymentOptionMetadataModel" : {
+        "required" : [ "key" ],
         "type" : "object",
         "properties" : {
+          "key" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "string"
+          }
+        },
+        "description" : "it can added a maximum of 10 key-value pairs for metadata"
+      },
+      "PaymentOptionModel" : {
+        "required" : [ "amount", "description", "dueDate", "isPartialPayment", "iuv" ],
+        "type" : "object",
+        "properties" : {
+          "nav" : {
+            "type" : "string"
+          },
+          "iuv" : {
+            "type" : "string"
+          },
+          "amount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "description" : {
+            "maxLength" : 140,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "isPartialPayment" : {
+            "type" : "boolean"
+          },
+          "dueDate" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "retentionDate" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "fee" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "notificationFee" : {
+            "type" : "integer",
+            "format" : "int64",
+            "readOnly" : true
+          },
+          "transfer" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TransferModel"
+            }
+          },
+          "paymentOptionMetadata" : {
+            "maxItems" : 10,
+            "minItems" : 0,
+            "type" : "array",
+            "description" : "it can added a maximum of 10 key-value pairs for metadata",
+            "items" : {
+              "$ref" : "#/components/schemas/PaymentOptionMetadataModel"
+            }
+          }
+        }
+      },
+      "PaymentPositionModel" : {
+        "required" : [ "companyName", "fiscalCode", "fullName", "iupd", "switchToExpired", "type" ],
+        "type" : "object",
+        "properties" : {
+          "iupd" : {
+            "type" : "string"
+          },
           "type" : {
             "type" : "string",
             "enum" : [ "F", "G" ]
+          },
+          "payStandIn" : {
+            "type" : "boolean",
+            "description" : "feature flag to enable a debt position in stand-in mode",
+            "example" : true,
+            "default" : true
           },
           "fiscalCode" : {
             "type" : "string"
@@ -968,127 +1405,12 @@
           },
           "phone" : {
             "type" : "string"
-          }
-        }
-      },
-      "InstallmentMetadataModel" : {
-        "required" : [ "key" ],
-        "type" : "object",
-        "properties" : {
-          "key" : {
-            "type" : "string"
-          },
-          "value" : {
-            "type" : "string"
-          }
-        }
-      },
-      "InstallmentModel" : {
-        "required" : [ "amount", "description", "dueDate", "iuv" ],
-        "type" : "object",
-        "properties" : {
-          "nav" : {
-            "type" : "string"
-          },
-          "iuv" : {
-            "type" : "string"
-          },
-          "amount" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "description" : {
-            "maxLength" : 140,
-            "minLength" : 0,
-            "type" : "string"
-          },
-          "dueDate" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "fee" : {
-            "type" : "integer",
-            "format" : "int64",
-            "readOnly" : true
-          },
-          "notificationFee" : {
-            "type" : "integer",
-            "format" : "int64",
-            "readOnly" : true
-          },
-          "status" : {
-            "type" : "string",
-            "readOnly" : true,
-            "enum" : [ "UNPAID", "PAID", "PARTIALLY_REPORTED", "REPORTED", "UNPAYABLE", "EXPIRED" ]
-          },
-          "transfer" : {
-            "maxItems" : 2147483647,
-            "minItems" : 1,
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/TransferModel"
-            }
-          },
-          "installmentMetadata" : {
-            "maxItems" : 10,
-            "minItems" : 0,
-            "type" : "array",
-            "description" : "it can added a maximum of 10 key-value pairs for metadata",
-            "items" : {
-              "$ref" : "#/components/schemas/InstallmentMetadataModel"
-            }
-          }
-        }
-      },
-      "PaymentOptionModelV3" : {
-        "required" : [ "debtor", "installments", "switchToExpired" ],
-        "type" : "object",
-        "properties" : {
-          "description" : {
-            "maxLength" : 140,
-            "minLength" : 0,
-            "type" : "string",
-            "writeOnly" : true
-          },
-          "validityDate" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "retentionDate" : {
-            "type" : "string",
-            "format" : "date-time"
           },
           "switchToExpired" : {
             "type" : "boolean",
-            "description" : "feature flag to enable the payment option to expire after the due date",
+            "description" : "feature flag to enable the debt position to expire after the due date",
             "example" : false,
             "default" : false
-          },
-          "debtor" : {
-            "$ref" : "#/components/schemas/DebtorModel"
-          },
-          "installments" : {
-            "maxItems" : 100,
-            "minItems" : 1,
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/InstallmentModel"
-            }
-          }
-        }
-      },
-      "PaymentPositionModelV3" : {
-        "required" : [ "companyName", "iupd", "paymentOption" ],
-        "type" : "object",
-        "properties" : {
-          "iupd" : {
-            "type" : "string"
-          },
-          "payStandIn" : {
-            "type" : "boolean",
-            "description" : "feature flag to enable a debt position in stand-in mode",
-            "example" : true,
-            "default" : true
           },
           "companyName" : {
             "maxLength" : 140,
@@ -1100,6 +1422,10 @@
             "minLength" : 0,
             "type" : "string"
           },
+          "validityDate" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
           "paymentDate" : {
             "type" : "string",
             "format" : "date-time",
@@ -1108,14 +1434,12 @@
           "status" : {
             "type" : "string",
             "readOnly" : true,
-            "enum" : [ "DRAFT", "PUBLISHED", "VALID", "UNPAYABLE", "PARTIALLY_PAID", "PAID" ]
+            "enum" : [ "DRAFT", "PUBLISHED", "VALID", "INVALID", "EXPIRED", "PARTIALLY_PAID", "PAID", "REPORTED" ]
           },
           "paymentOption" : {
-            "maxItems" : 100,
-            "minItems" : 1,
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/PaymentOptionModelV3"
+              "$ref" : "#/components/schemas/PaymentOptionModel"
             }
           }
         }
@@ -1233,76 +1557,24 @@
           }
         }
       },
-      "InstallmentModelResponse" : {
+      "UpdateTransferIbanMassiveModel" : {
+        "required" : [ "newIban" ],
         "type" : "object",
         "properties" : {
-          "nav" : {
+          "newIban" : {
             "type" : "string"
-          },
-          "iuv" : {
-            "type" : "string"
-          },
-          "organizationFiscalCode" : {
-            "type" : "string"
-          },
-          "amount" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
+          }
+        }
+      },
+      "UpdateTransferIbanMassiveResponse" : {
+        "type" : "object",
+        "properties" : {
           "description" : {
             "type" : "string"
           },
-          "dueDate" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "paymentDate" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "reportingDate" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "paymentMethod" : {
-            "type" : "string"
-          },
-          "pspCompany" : {
-            "type" : "string"
-          },
-          "fee" : {
+          "updatedTransfers" : {
             "type" : "integer",
-            "format" : "int64"
-          },
-          "notificationFee" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "idReceipt" : {
-            "type" : "string"
-          },
-          "idFlowReporting" : {
-            "type" : "string"
-          },
-          "status" : {
-            "type" : "string",
-            "enum" : [ "UNPAID", "PAID", "PARTIALLY_REPORTED", "REPORTED", "UNPAYABLE", "EXPIRED" ]
-          },
-          "lastUpdatedDate" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "installmentMetadata" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/InstallmentMetadataModel"
-            }
-          },
-          "transfer" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/TransferModelResponse"
-            }
+            "format" : "int32"
           }
         }
       },
@@ -1332,13 +1604,52 @@
           }
         }
       },
-      "PaymentOptionModelResponseV3" : {
+      "PaymentOptionMetadataModelResponse" : {
         "type" : "object",
         "properties" : {
-          "switchToExpired" : {
+          "key" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PaymentOptionModelResponse" : {
+        "type" : "object",
+        "properties" : {
+          "nav" : {
+            "type" : "string"
+          },
+          "iuv" : {
+            "type" : "string"
+          },
+          "organizationFiscalCode" : {
+            "type" : "string"
+          },
+          "amount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "isPartialPayment" : {
             "type" : "boolean"
           },
+          "dueDate" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
           "retentionDate" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "paymentDate" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "reportingDate" : {
             "type" : "string",
             "format" : "date-time"
           },
@@ -1346,22 +1657,49 @@
             "type" : "string",
             "format" : "date-time"
           },
-          "validityDate" : {
+          "paymentMethod" : {
+            "type" : "string"
+          },
+          "fee" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "notificationFee" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "pspCompany" : {
+            "type" : "string"
+          },
+          "idReceipt" : {
+            "type" : "string"
+          },
+          "idFlowReporting" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PO_UNPAID", "PO_PAID", "PO_PARTIALLY_REPORTED", "PO_REPORTED" ]
+          },
+          "lastUpdatedDate" : {
             "type" : "string",
             "format" : "date-time"
           },
-          "debtor" : {
-            "$ref" : "#/components/schemas/DebtorModel"
-          },
-          "installments" : {
+          "paymentOptionMetadata" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/InstallmentModelResponse"
+              "$ref" : "#/components/schemas/PaymentOptionMetadataModelResponse"
+            }
+          },
+          "transfer" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TransferModelResponse"
             }
           }
         }
       },
-      "PaymentPositionModelResponseV3" : {
+      "PaymentPositionModelBaseResponse" : {
         "type" : "object",
         "properties" : {
           "iupd" : {
@@ -1369,6 +1707,10 @@
           },
           "organizationFiscalCode" : {
             "type" : "string"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "F", "G" ]
           },
           "companyName" : {
             "type" : "string"
@@ -1384,13 +1726,17 @@
             "type" : "string",
             "format" : "date-time"
           },
+          "validityDate" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
           "paymentDate" : {
             "type" : "string",
             "format" : "date-time"
           },
           "status" : {
             "type" : "string",
-            "enum" : [ "DRAFT", "PUBLISHED", "VALID", "UNPAYABLE", "PARTIALLY_PAID", "PAID" ]
+            "enum" : [ "DRAFT", "PUBLISHED", "VALID", "INVALID", "EXPIRED", "PARTIALLY_PAID", "PAID", "REPORTED" ]
           },
           "lastUpdatedDate" : {
             "type" : "string",
@@ -1399,19 +1745,19 @@
           "paymentOption" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/PaymentOptionModelResponseV3"
+              "$ref" : "#/components/schemas/PaymentOptionModelResponse"
             }
           }
         }
       },
-      "PaymentPositionsInfoV3" : {
+      "PaymentPositionsInfo" : {
         "required" : [ "page_info", "payment_position_list" ],
         "type" : "object",
         "properties" : {
           "payment_position_list" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/PaymentPositionModelResponseV3"
+              "$ref" : "#/components/schemas/PaymentPositionModelBaseResponse"
             }
           },
           "page_info" : {
@@ -1478,6 +1824,20 @@
             "items" : {
               "$ref" : "#/components/schemas/TransferMetadataModelResponse"
             }
+          }
+        }
+      },
+      "AppInfo" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "version" : {
+            "type" : "string"
+          },
+          "environment" : {
+            "type" : "string"
           }
         }
       }
