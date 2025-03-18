@@ -277,8 +277,8 @@ public class SwaggerConfig {
 
     // server list
     List<Server> serverInfo = new ArrayList<>();
-    serverInfo.add(createServer(".uat", "gpd/debt-positions-service", "v3", "GPD Test environment"));
-    serverInfo.add(createServer("", "gpd/debt-positions-service", "v3", "GPD Production Environment"));
+    serverInfo.add(createServer(".uat", "pn-integration-gpd/api", "v1", "GPD Test environment"));
+    serverInfo.add(createServer("", "pn-integration-gpd/api", "v1", "GPD Production Environment"));
 
     return GroupedOpenApi.builder()
             .group("send_v1")
