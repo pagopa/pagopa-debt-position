@@ -1,6 +1,7 @@
 package it.gov.pagopa.debtposition.model.filterandorder;
 
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import javax.validation.constraints.NotNull;
@@ -22,4 +23,5 @@ public class Filter {
   private LocalDateTime paymentDateTo;
   private DebtPositionStatus status;
   private ArrayList<String> segregationCodes;
+  private ServiceType serviceType;
 }
