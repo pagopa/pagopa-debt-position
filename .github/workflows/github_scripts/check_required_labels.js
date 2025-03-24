@@ -18,7 +18,7 @@ module.exports = async ({github, context, core}) => {
         issue_number: context.issue.number,
         owner: context.repo.owner,
         repo: context.repo.repo,
-        body: 'This pull request does not contain a valid label. Please add one of the following labels: `[major, minor, patch, patch, skip]`'
+        body: 'This pull request does not contain a valid label. Please add one of the following labels: `[major, minor, patch, skip]`'
     })
     core.setFailed('Missing required labels')
 }
