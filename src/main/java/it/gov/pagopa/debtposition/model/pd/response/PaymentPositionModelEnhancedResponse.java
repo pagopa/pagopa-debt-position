@@ -8,7 +8,6 @@ import lombok.Setter;
 @Setter
 public class PaymentPositionModelEnhancedResponse extends PaymentPositionModelBaseResponse {
 
-    private Boolean switchToExpired;
-    private DebtorModel debtor;
-
+  private Boolean switchToExpired;
+  private DebtorModel debtor;
 }
