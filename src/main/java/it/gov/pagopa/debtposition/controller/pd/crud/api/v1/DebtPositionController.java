@@ -13,12 +13,14 @@ import it.gov.pagopa.debtposition.model.filterandorder.Filter;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
 import it.gov.pagopa.debtposition.model.filterandorder.Order.PaymentPositionOrder;
-import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
+import it.gov.pagopa.debtposition.model.pd.DebtorModel;
 import it.gov.pagopa.debtposition.model.pd.MultipleIUPDModel;
 import it.gov.pagopa.debtposition.model.pd.MultiplePaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
+import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
+import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelEnhancedResponse;
 import it.gov.pagopa.debtposition.model.pd.response.UpdateTransferIbanMassiveResponse;
 import it.gov.pagopa.debtposition.service.pd.crud.PaymentPositionCRUDService;
 import it.gov.pagopa.debtposition.util.CommonUtil;
@@ -34,6 +36,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort.Direction;
@@ -161,7 +164,7 @@ public class DebtPositionController implements IDebtPositionController {
   }
 
   @Override
-  public ResponseEntity<PaymentPositionModelBaseResponse> getOrganizationDebtPositionByIUPD(
+  public ResponseEntity<PaymentPositionModelEnhancedResponse> getOrganizationDebtPositionByIUPD(
       @Pattern(regexp = "[\\w*\\h-]+") String organizationFiscalCode,
       @Pattern(regexp = "[\\w*\\h-]+") String iupd,
       @Valid @Pattern(regexp = "\\d{2}(,\\d{2})*") String segregationCodes) {
@@ -179,13 +182,24 @@ public class DebtPositionController implements IDebtPositionController {
         segregationCodes != null
             ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
             : null;
-    // flip entity to model
-    PaymentPositionModelBaseResponse paymentPositionResponse =
-        ObjectMapperUtils.map(
-            paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segCodes),
-            PaymentPositionModelBaseResponse.class);
 
-    return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
+    PaymentPosition paymentPosition =
+        paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segCodes);
+
+    // flip entity to model
+    PaymentPositionModelBaseResponse basePaymentPositionResponse =
+        ObjectMapperUtils.map(paymentPosition, PaymentPositionModelBaseResponse.class);
+
+    PaymentPositionModelEnhancedResponse enhancedPaymentPositionResponse =
+        new PaymentPositionModelEnhancedResponse();
+    BeanUtils.copyProperties(basePaymentPositionResponse, enhancedPaymentPositionResponse);
+
+    enhancedPaymentPositionResponse.setSwitchToExpired(paymentPosition.getSwitchToExpired());
+
+    DebtorModel debtor = getDebtorModel(paymentPosition);
+    enhancedPaymentPositionResponse.setDebtor(debtor);
+
+    return new ResponseEntity<>(enhancedPaymentPositionResponse, HttpStatus.OK);
   }
 
   @Override
@@ -410,5 +424,22 @@ public class DebtPositionController implements IDebtPositionController {
     return ResponseEntity.status(HttpStatus.OK.value())
         .contentType(MediaType.APPLICATION_JSON)
         .body(response);
+  }
+
+  private static DebtorModel getDebtorModel(PaymentPosition paymentPosition) {
+    DebtorModel debtor = new DebtorModel();
+    debtor.setFiscalCode(paymentPosition.getFiscalCode());
+    debtor.setFullName(paymentPosition.getFullName());
+    debtor.setStreetName(paymentPosition.getStreetName());
+    debtor.setCivicNumber(paymentPosition.getCivicNumber());
+    debtor.setPostalCode(paymentPosition.getPostalCode());
+    debtor.setCity(paymentPosition.getCity());
+    debtor.setProvince(paymentPosition.getProvince());
+    debtor.setRegion(paymentPosition.getRegion());
+    debtor.setCountry(paymentPosition.getCountry());
+    debtor.setEmail(paymentPosition.getEmail());
+    debtor.setPhone(paymentPosition.getPhone());
+    debtor.setType(paymentPosition.getType());
+    return debtor;
   }
 }
