@@ -184,13 +184,14 @@ public class DebtPositionController implements IDebtPositionController {
             : null;
 
     PaymentPosition paymentPosition =
-            paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segCodes);
+        paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segCodes);
 
     // flip entity to model
     PaymentPositionModelBaseResponse basePaymentPositionResponse =
         ObjectMapperUtils.map(paymentPosition, PaymentPositionModelBaseResponse.class);
 
-    PaymentPositionModelEnhancedResponse enhancedPaymentPositionResponse = new PaymentPositionModelEnhancedResponse();
+    PaymentPositionModelEnhancedResponse enhancedPaymentPositionResponse =
+        new PaymentPositionModelEnhancedResponse();
     BeanUtils.copyProperties(basePaymentPositionResponse, enhancedPaymentPositionResponse);
 
     enhancedPaymentPositionResponse.setSwitchToExpired(paymentPosition.getSwitchToExpired());
