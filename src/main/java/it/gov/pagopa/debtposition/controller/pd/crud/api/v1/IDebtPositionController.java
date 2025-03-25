@@ -18,13 +18,12 @@ import it.gov.pagopa.debtposition.model.pd.MultiplePaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
 import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
+import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelEnhancedResponse;
 import it.gov.pagopa.debtposition.model.pd.response.UpdateTransferIbanMassiveResponse;
-import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
 import java.time.LocalDate;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
-
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
