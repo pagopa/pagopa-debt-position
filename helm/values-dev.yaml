@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.13.2"
+    tag: "0.13.2-1-PIDM-292-add-api-response-fields"
     pullPolicy: Always
   livenessProbe:
     httpGet:
