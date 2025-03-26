@@ -230,20 +230,6 @@
                 "DESC"
               ]
             }
-          },
-          {
-            "name": "serviceType",
-            "in": "query",
-            "description": "Filter by debt position service type",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "ACA",
-                "WISP",
-                "GPD"
-              ]
-            }
           }
         ],
         "responses": {
