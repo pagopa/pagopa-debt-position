@@ -113,7 +113,8 @@ public class DebtPositionController implements IDebtPositionController {
       DebtPositionStatus status,
       PaymentPositionOrder orderBy,
       Direction ordering,
-      String segregationCodes) {
+      String segregationCodes,
+      ServiceType serviceType) {
     log.debug(
         String.format(
             LOG_BASE_HEADER_INFO,
@@ -141,6 +142,7 @@ public class DebtPositionController implements IDebtPositionController {
                         paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : null)
                     .status(status)
                     .segregationCodes(segCodesList)
+                    .serviceType(serviceType)
                     .build())
             .order(Order.builder().orderBy(orderBy).ordering(ordering).build())
             .build();
