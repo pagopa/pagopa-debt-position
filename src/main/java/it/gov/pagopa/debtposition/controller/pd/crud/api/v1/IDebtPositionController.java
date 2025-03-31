@@ -296,7 +296,7 @@ public interface IDebtPositionController {
                     description =
                             "The field must not be considered as its value is set via the API Management"
                                     + " (APIM) policy")
-            @RequestParam(required = false, defaultValue = "GPD")
+            @RequestParam(required = false)
             ServiceType serviceType
     );
 
