@@ -1,27 +1,33 @@
 -- Step 1: we add the column as nullable. This way PostgreSQL does not physically update each row right away.
-ALTER TABLE payment_option ADD send_sync boolean DEFAULT false
+ALTER TABLE apd.payment_option ADD send_sync boolean DEFAULT false
 
 -- Step 2: we update the column in batches: this avoids long transactions and keeps write locks short.
-CREATE PROCEDURE update_payment_option_send_sync(batch_size INT)
-LANGUAGE SQL
-AS $$
-    DECLARE
-      updated_rows INTEGER := 0;
-    BEGIN
-      LOOP
-        UPDATE payment_option po
-        SET send_sync = true
-        WHERE po.send_sync IS NULL
-        LIMIT batch_size;
+CREATE OR replace PROCEDURE apd.update_payment_option_send_sync(batch_size INT)
+LANGUAGE plpgsql
+AS
+$$
+DECLARE
+  updated_rows INTEGER := 0;
+BEGIN
+  LOOP
+    WITH to_update AS (
+      SELECT id
+      FROM apd.payment_option
+      WHERE send_sync IS NULL
+      LIMIT batch_size
+    )
+    UPDATE apd.payment_option
+    SET send_sync = true
+    WHERE id IN (SELECT id FROM to_update);
 
-        GET DIAGNOSTICS updated_rows = ROW_COUNT;
-        EXIT WHEN updated_rows = 0;
+    GET DIAGNOSTICS updated_rows = ROW_COUNT;
+    EXIT WHEN updated_rows = 0;
+    PERFORM pg_sleep(0.1); -- short pause between batches
+  END LOOP;
+END;
+$$;
 
-        PERFORM pg_sleep(0.1); -- short pause between batches
-      END LOOP;
-    END $$;
-
-CALL update_payment_option_send_sync(100)
+CALL apd.update_payment_option_send_sync(1000)
 
 -- Step 3: after updates, we add NOT NULL constraint
-ALTER TABLE payment_option ALTER COLUMN send_sync SET NOT NULL;
+ALTER TABLE apd.payment_option ALTER COLUMN send_sync SET NOT NULL;
