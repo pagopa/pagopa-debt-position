@@ -159,6 +159,9 @@ public class PaymentOption implements Serializable {
   @ToString.Exclude private String email;
   @ToString.Exclude private String phone;
 
+  @Column(name = "send_sync")
+  private Boolean sendSync;
+
   // flag that identifies if the payment option has a payment in progress (false = no payment in
   // progress)
   @Builder.Default @Transient private boolean paymentInProgress = false;
