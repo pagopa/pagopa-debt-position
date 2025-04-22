@@ -2,7 +2,7 @@ package it.gov.pagopa.debtposition.client;
 
 import feign.FeignException;
 import it.gov.pagopa.debtposition.config.feign.SendFeignConfig;
-import it.gov.pagopa.debtposition.model.send.response.GetNotificationFeeResponse;
+import it.gov.pagopa.debtposition.model.send.response.NotificationPriceResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.retry.annotation.Backoff;
@@ -19,5 +19,5 @@ public interface SendClient {
   @GetMapping(
       value = "${service.get.notification.fee.path}", // todo add path param CI fiscal-code and NAV
       consumes = MediaType.APPLICATION_JSON_VALUE)
-  GetNotificationFeeResponse getNotificationFee();
+  NotificationPriceResponse getNotificationFee();
 }

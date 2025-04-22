@@ -16,7 +16,7 @@ import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.payments.OrganizationModelQueryBean;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
-import it.gov.pagopa.debtposition.model.send.response.GetNotificationFeeResponse;
+import it.gov.pagopa.debtposition.model.send.response.NotificationPriceResponse;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
@@ -128,8 +128,8 @@ public class PaymentsService {
   @Transactional
   public boolean updateNotificationFeeSync(PaymentOption paymentOption) {
     // call SEND API to retrieve notification fee amount
-    GetNotificationFeeResponse sendResponse = sendClient.getNotificationFee();
-    long notificationFeeAmount = sendResponse.getNotificationFeeAmount();
+    NotificationPriceResponse sendResponse = sendClient.getNotificationFee();
+    int notificationFeeAmount = sendResponse.getTotalPrice();
     // call internal method updateAmountsWithNotificationFee
     updateAmountsWithNotificationFee(paymentOption, paymentOption.getOrganizationFiscalCode(), notificationFeeAmount);
     // Updated to track the PO update
@@ -228,7 +228,7 @@ public class PaymentsService {
     return paymentOption;
   }
 
-  public static PaymentOption updateAmountsWithNotificationFee(
+  public static void updateAmountsWithNotificationFee(
       PaymentOption paymentOption, String organizationFiscalCode, long notificationFeeAmount) {
     // Get the first valid transfer to add the fee
     List<Transfer> transfers = paymentOption.getTransfer();
@@ -263,7 +263,6 @@ public class PaymentsService {
     validTransfer.setAmount(validTransfer.getAmount() - oldNotificationFee);
     validTransfer.setAmount(validTransfer.getAmount() + notificationFeeAmount);
 
-    return paymentOption;
   }
 
   public List<OrganizationModelQueryBean> getOrganizationsToAdd(@NotNull LocalDate since) {
