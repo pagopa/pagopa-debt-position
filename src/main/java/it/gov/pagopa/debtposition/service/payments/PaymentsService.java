@@ -128,11 +128,11 @@ public class PaymentsService {
   @Transactional
   public boolean updateNotificationFeeSync(PaymentOption paymentOption) {
     // call SEND API to retrieve notification fee amount
-    NotificationPriceResponse sendResponse = sendClient.getNotificationFee();
+    NotificationPriceResponse sendResponse = sendClient.getNotificationFee(paymentOption.getOrganizationFiscalCode(), paymentOption.getNav());
     int notificationFeeAmount = sendResponse.getTotalPrice();
     // call internal method updateAmountsWithNotificationFee
     updateAmountsWithNotificationFee(paymentOption, paymentOption.getOrganizationFiscalCode(), notificationFeeAmount);
-    // Updated to track the PO update
+    // track the PO last update
     paymentOption.setLastUpdatedDate(LocalDateTime.now(ZoneOffset.UTC));
     paymentOption.setLastUpdatedDateNotificationFee(LocalDateTime.now(ZoneOffset.UTC));
 
