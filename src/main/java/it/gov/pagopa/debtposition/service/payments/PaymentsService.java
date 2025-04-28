@@ -127,17 +127,22 @@ public class PaymentsService {
 
   @Transactional
   public boolean updateNotificationFeeSync(PaymentOption paymentOption) {
-    // call SEND API to retrieve notification fee amount
-    NotificationPriceResponse sendResponse = sendClient.getNotificationFee(paymentOption.getOrganizationFiscalCode(), paymentOption.getNav());
-    int notificationFeeAmount = sendResponse.getTotalPrice();
-    // call internal method updateAmountsWithNotificationFee
-    updateAmountsWithNotificationFee(paymentOption, paymentOption.getOrganizationFiscalCode(), notificationFeeAmount);
-    // track the PO last update
-    paymentOption.setLastUpdatedDate(LocalDateTime.now(ZoneOffset.UTC));
-    paymentOption.setLastUpdatedDateNotificationFee(LocalDateTime.now(ZoneOffset.UTC));
+    try {
+      // call SEND API to retrieve notification fee amount
+      NotificationPriceResponse sendResponse = sendClient.getNotificationFee(paymentOption.getOrganizationFiscalCode(), paymentOption.getNav());
+      int notificationFeeAmount = sendResponse.getTotalPrice();
+      // call internal method updateAmountsWithNotificationFee
+      updateAmountsWithNotificationFee(paymentOption, paymentOption.getOrganizationFiscalCode(), notificationFeeAmount);
+      // track the PO last update
+      paymentOption.setLastUpdatedDate(LocalDateTime.now(ZoneOffset.UTC));
+      paymentOption.setLastUpdatedDateNotificationFee(LocalDateTime.now(ZoneOffset.UTC));
 
-    paymentOptionRepository.saveAndFlush(paymentOption);
-    return true;
+      paymentOptionRepository.saveAndFlush(paymentOption);
+      return true;
+    } catch (FeignException feignException) {
+      log.error("FeignException while calling getNotificationFee for NAV {}, message = {}.", paymentOption.getNav(), feignException.getMessage());
+      return false;
+    }
   }
 
   @Transactional

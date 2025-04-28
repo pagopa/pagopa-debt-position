@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
@@ -23,6 +24,7 @@ import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.mock.DebtPositionMock;
 import it.gov.pagopa.debtposition.model.checkposition.NodeCheckPositionModel;
 import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPositionResponse;
+import it.gov.pagopa.debtposition.model.config.Notice;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
@@ -33,6 +35,8 @@ import it.gov.pagopa.debtposition.util.DebtPositionValidation;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -85,6 +89,38 @@ class PaymentsControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(MockMvcResultMatchers.jsonPath("$.nav").value("CUSTOMNAV_123456IUVMOCK1"))
         .andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMOCK1"));
+  }
+
+  @Test
+  void getPaymentOptionByNAVSendSync_200() throws Exception {
+    // creo una posizione debitoria con NAV custom e recupero la payment option associata
+    PaymentPositionDTO pp = DebtPositionMock.getMock1();
+    String organization = "PO200_12345678901";
+
+    for (PaymentOptionDTO po : pp.getPaymentOption()) {
+      po.setNav("CUSTOMNAV_" + po.getIuv());
+    }
+
+    mvc.perform(post("/organizations/" + organization + "/debtpositions")
+                    .content(TestUtil.toJson(pp))
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isCreated());
+
+    for (PaymentOptionDTO po : pp.getPaymentOption()) {
+      ArrayList<Notice> notices = new ArrayList<>();
+      notices.add(new Notice(organization, po.getNav()));
+      mvc.perform(post("/internal/config/send")
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(new ObjectMapper().writeValueAsString(notices)))
+              .andExpect(status().isOk());
+    }
+
+    String url = "/organizations/" + organization + "/paymentoptions/CUSTOMNAV_123456IUVMOCK1";
+    mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.nav").value("CUSTOMNAV_123456IUVMOCK1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMOCK1"));
   }
 
   @Test

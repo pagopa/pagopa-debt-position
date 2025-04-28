@@ -2568,10 +2568,10 @@
         "required" : [ "nav", "organizationFiscalCode" ],
         "type" : "object",
         "properties" : {
-          "nav" : {
+          "organizationFiscalCode" : {
             "type" : "string"
           },
-          "organizationFiscalCode" : {
+          "nav" : {
             "type" : "string"
           }
         }

@@ -15,8 +15,8 @@ public interface SendClient {
 
   @Retryable(
       exclude = FeignException.FeignClientException.class,
-      maxAttemptsExpression = "${retry.maxAttempts}", // todo config retry maxAttempts
-      backoff = @Backoff(delayExpression = "${retry.maxDelay}")) // todo config retry maxAttempts
+      maxAttemptsExpression = "${send.retry.maxAttempts}",
+      backoff = @Backoff(delayExpression = "${send.retry.maxDelay}"))
   @GetMapping(
       value = "${service.get.notification.fee.path}",
       consumes = MediaType.APPLICATION_JSON_VALUE)
