@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Data
 @NoArgsConstructor
@@ -34,12 +34,12 @@ public class NotificationPriceResponse implements Serializable {
     private Integer paFee;
 
     // Refinement date due to expiration of terms
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime refinementDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    private ZonedDateTime refinementDate;
 
     // Refinement date for acknowledgement
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime notificationViewDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    private ZonedDateTime notificationViewDate;
 
     // Base cost of SeND per notification
     private Integer sendFee;
