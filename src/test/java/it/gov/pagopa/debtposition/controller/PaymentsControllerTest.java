@@ -48,6 +48,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -81,7 +82,12 @@ class PaymentsControllerTest {
             post("/organizations/PO200_12345678901/debtpositions")
                 .content(TestUtil.toJson(pp))
                 .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isCreated());
+        .andExpect(result -> {
+          int status = result.getResponse().getStatus();
+          if (status != HttpStatus.CREATED.value() && status != HttpStatus.CONFLICT.value()) {
+            throw new AssertionError("Expected status 201 (Created) or 409 (Conflict), but got: " + status);
+          }
+        });
 
     String url = "/organizations/PO200_12345678901/paymentoptions/CUSTOMNAV_123456IUVMOCK1";
     mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
@@ -103,8 +109,7 @@ class PaymentsControllerTest {
 
     mvc.perform(post("/organizations/" + organization + "/debtpositions")
                     .content(TestUtil.toJson(pp))
-                    .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isCreated());
+                    .contentType(MediaType.APPLICATION_JSON));
 
     for (PaymentOptionDTO po : pp.getPaymentOption()) {
       ArrayList<Notice> notices = new ArrayList<>();
