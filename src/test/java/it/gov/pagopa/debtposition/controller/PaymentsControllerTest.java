@@ -14,6 +14,7 @@ import feign.FeignException;
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
 import it.gov.pagopa.debtposition.client.NodeClient;
+import it.gov.pagopa.debtposition.client.SendClient;
 import it.gov.pagopa.debtposition.dto.PaymentOptionDTO;
 import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import it.gov.pagopa.debtposition.dto.TransferDTO;
@@ -29,6 +30,7 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
+import it.gov.pagopa.debtposition.model.send.response.NotificationPriceResponse;
 import it.gov.pagopa.debtposition.service.payments.PaymentsService;
 import it.gov.pagopa.debtposition.util.CustomHttpStatus;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
@@ -64,6 +66,8 @@ class PaymentsControllerTest {
 
   @MockBean private NodeClient nodeClient;
 
+  @MockBean private SendClient sendClient;
+
   @SpyBean private PaymentsService paymentsService;
 
   @Value("${nav.aux.digit}")
@@ -98,7 +102,7 @@ class PaymentsControllerTest {
   }
 
   @Test
-  void getPaymentOptionByNAVSendSync_200() throws Exception {
+  void getPaymentOptionByNAVSendSyncNotFoundServer_200() throws Exception {
     // creo una posizione debitoria con NAV custom e recupero la payment option associata
     PaymentPositionDTO pp = DebtPositionMock.getMock1();
     String organization = "PO200_12345678901";
@@ -126,6 +130,46 @@ class PaymentsControllerTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.jsonPath("$.nav").value("CUSTOMNAV_123456IUVMOCK1"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMOCK1"));
+  }
+
+  @Test
+  void getPaymentOptionByNAVSendSyncOk_200() throws Exception {
+    // creo una posizione debitoria con NAV custom e recupero la payment option associata
+    PaymentPositionDTO pp = DebtPositionMock.getMock1();
+    String organization = "PO200_12345678901";
+
+    for (PaymentOptionDTO po : pp.getPaymentOption()) {
+      po.setNav("CUSTOMNAV_" + po.getIuv());
+    }
+
+    mvc.perform(post("/organizations/" + organization + "/debtpositions")
+            .content(TestUtil.toJson(pp))
+            .contentType(MediaType.APPLICATION_JSON));
+
+    for (PaymentOptionDTO po : pp.getPaymentOption()) {
+      ArrayList<Notice> notices = new ArrayList<>();
+      notices.add(new Notice(organization, po.getNav()));
+      mvc.perform(post("/internal/config/send")
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(new ObjectMapper().writeValueAsString(notices)))
+              .andExpect(status().isOk());
+    }
+
+    long firstPOAmount = pp.getPaymentOption().get(0).getAmount();
+    String firstPONav = pp.getPaymentOption().get(0).getNav();
+    NotificationPriceResponse priceRes = new NotificationPriceResponse("IUN", 1, 1, 0, 0, LocalDateTime.now(),  LocalDateTime.now(),  1, 1);
+    Integer price = priceRes.getTotalPrice();
+    when(sendClient.getNotificationFee(anyString(), anyString()))
+            .thenReturn(priceRes);
+
+    // Get first Payment Option
+    String url = "/organizations/" + organization + "/paymentoptions/" + firstPONav;
+    mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.nav").value("CUSTOMNAV_123456IUVMOCK1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMOCK1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.amount").value(firstPOAmount + price));
   }
 
   @Test
