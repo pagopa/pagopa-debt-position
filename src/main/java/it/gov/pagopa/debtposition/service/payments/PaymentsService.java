@@ -46,7 +46,8 @@ public class PaymentsService {
   public PaymentsService(
       PaymentPositionRepository paymentPositionRepository,
       PaymentOptionRepository paymentOptionRepository,
-      NodeClient nodeClient, SendClient sendClient) {
+      NodeClient nodeClient,
+      SendClient sendClient) {
     this.paymentPositionRepository = paymentPositionRepository;
     this.paymentOptionRepository = paymentOptionRepository;
     this.nodeClient = nodeClient;
@@ -58,6 +59,7 @@ public class PaymentsService {
 
   // TODO #naviuv: temporary regression management --> the nav variable can also be evaluated with
   // iuv. Remove the comment when only nav managment is enabled
+  @Transactional
   public PaymentOption getPaymentOptionByNAV(
       @NotBlank String organizationFiscalCode, @NotBlank String nav) {
 
@@ -77,10 +79,16 @@ public class PaymentsService {
     DebtPositionStatus.checkAlreadyPaidInstallments(paymentOption, nav);
 
     // Synchronous update of notification fees
-    if(paymentOption.getSendSync()) {
+    if (paymentOption.getSendSync()) {
       boolean result = updateNotificationFeeSync(paymentOption);
-      if(result) log.info("Notification fee amount of Payment Option with NAV {} has been updated: {}.", paymentOption.getNav(), paymentOption);
-      else log.error("Error while updating notification fee amount for NAV {}.", paymentOption.getNav());
+      if (result)
+        log.info(
+            "Notification fee amount of Payment Option with NAV {} has been updated: {}.",
+            paymentOption.getNav(),
+            paymentOption);
+      else
+        log.error(
+            "Error while updating notification fee amount for NAV {}.", paymentOption.getNav());
     }
 
     return paymentOption;
@@ -129,10 +137,13 @@ public class PaymentsService {
   public boolean updateNotificationFeeSync(PaymentOption paymentOption) {
     try {
       // call SEND API to retrieve notification fee amount
-      NotificationPriceResponse sendResponse = sendClient.getNotificationFee(paymentOption.getOrganizationFiscalCode(), paymentOption.getNav());
+      NotificationPriceResponse sendResponse =
+          sendClient.getNotificationFee(
+              paymentOption.getOrganizationFiscalCode(), paymentOption.getNav());
       int notificationFeeAmount = sendResponse.getTotalPrice();
       // call internal method updateAmountsWithNotificationFee
-      updateAmountsWithNotificationFee(paymentOption, paymentOption.getOrganizationFiscalCode(), notificationFeeAmount);
+      updateAmountsWithNotificationFee(
+          paymentOption, paymentOption.getOrganizationFiscalCode(), notificationFeeAmount);
       // track the PO last update
       paymentOption.setLastUpdatedDate(LocalDateTime.now(ZoneOffset.UTC));
       paymentOption.setLastUpdatedDateNotificationFee(LocalDateTime.now(ZoneOffset.UTC));
@@ -140,7 +151,11 @@ public class PaymentsService {
       paymentOptionRepository.saveAndFlush(paymentOption);
       return true;
     } catch (Exception e) {
-      log.error("Exception while calling getNotificationFee for NAV {}, class = {}, message = {}.", paymentOption.getNav(), e.getClass(), e.getMessage());
+      log.error(
+          "Exception while calling getNotificationFee for NAV {}, class = {}, message = {}.",
+          paymentOption.getNav(),
+          e.getClass(),
+          e.getMessage());
       return false;
     }
   }
@@ -267,7 +282,6 @@ public class PaymentsService {
     // Subtracting the old value and adding the new one
     validTransfer.setAmount(validTransfer.getAmount() - oldNotificationFee);
     validTransfer.setAmount(validTransfer.getAmount() + notificationFeeAmount);
-
   }
 
   public List<OrganizationModelQueryBean> getOrganizationsToAdd(@NotNull LocalDate since) {
