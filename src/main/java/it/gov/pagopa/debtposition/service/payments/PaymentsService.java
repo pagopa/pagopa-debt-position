@@ -83,12 +83,12 @@ public class PaymentsService {
       boolean result = updateNotificationFeeSync(paymentOption);
       if (result)
         log.info(
-            "Notification fee amount of Payment Option with NAV {} has been updated: {}.",
+            "Notification fee amount of Payment Option with NAV {} has been updated with notification-fee: {}.",
             paymentOption.getNav(),
-            paymentOption);
+            paymentOption.getNotificationFee());
       else
         log.error(
-            "Error while updating notification fee amount for NAV {}.", paymentOption.getNav());
+            "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.", paymentOption.getNav());
     }
 
     return paymentOption;
@@ -152,7 +152,7 @@ public class PaymentsService {
       return true;
     } catch (Exception e) {
       log.error(
-          "Exception while calling getNotificationFee for NAV {}, class = {}, message = {}.",
+          "[GPD-ERR-SEND-00] Exception while calling getNotificationFee for NAV {}, class = {}, message = {}.",
           paymentOption.getNav(),
           e.getClass(),
           e.getMessage());
