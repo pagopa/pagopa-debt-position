@@ -139,8 +139,8 @@ public class PaymentsService {
 
       paymentOptionRepository.saveAndFlush(paymentOption);
       return true;
-    } catch (FeignException feignException) {
-      log.error("FeignException while calling getNotificationFee for NAV {}, message = {}.", paymentOption.getNav(), feignException.getMessage());
+    } catch (Exception e) {
+      log.error("Exception while calling getNotificationFee for NAV {}, class = {}, message = {}.", paymentOption.getNav(), e.getClass(), e.getMessage());
       return false;
     }
   }

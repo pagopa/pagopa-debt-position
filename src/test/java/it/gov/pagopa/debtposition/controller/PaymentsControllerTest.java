@@ -93,6 +93,10 @@ class PaymentsControllerTest {
           }
         });
 
+    NotificationPriceResponse priceRes = new NotificationPriceResponse("IUN", 1, 1, 0, 0, LocalDateTime.now(),  LocalDateTime.now(),  1, 1);
+    when(sendClient.getNotificationFee(anyString(), anyString()))
+            .thenReturn(priceRes);
+
     String url = "/organizations/PO200_12345678901/paymentoptions/CUSTOMNAV_123456IUVMOCK1";
     mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
@@ -102,7 +106,7 @@ class PaymentsControllerTest {
   }
 
   @Test
-  void getPaymentOptionByNAVSendSyncNotFoundServer_200() throws Exception {
+  void getPaymentOptionByNAVSendSyncTimeoutException_200() throws Exception {
     // creo una posizione debitoria con NAV custom e recupero la payment option associata
     PaymentPositionDTO pp = DebtPositionMock.getMock1();
     String organization = "PO200_12345678901";
@@ -123,6 +127,9 @@ class PaymentsControllerTest {
                       .content(new ObjectMapper().writeValueAsString(notices)))
               .andExpect(status().isOk());
     }
+
+    when(sendClient.getNotificationFee(anyString(), anyString()))
+            .thenThrow(new RuntimeException("Connection timeout"));
 
     String url = "/organizations/" + organization + "/paymentoptions/CUSTOMNAV_123456IUVMOCK1";
     mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
