@@ -113,6 +113,8 @@ microservice-chart:
     NOTIFICATION_PRICE_PATH: "/delivery/v2.3/price/{paTaxId}/{noticeCode}"
     RETRY_MAX_DELAY: "2000"
     RETRY_MAX_ATTEMPTS: "1"
+    SEND_RETRY_MAX_DELAY: "1500"
+    SEND_RETRY_MAX_ATTEMPTS: "2"
     LOG_LEVEL: "INFO"
     SQL_LOG_LEVEL: "INFO"
     SQL_BINDER_LOG_LEVEL: "INFO"

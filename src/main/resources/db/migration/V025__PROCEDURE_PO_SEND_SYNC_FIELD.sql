@@ -13,7 +13,7 @@ BEGIN
       LIMIT batch_size
     )
     UPDATE apd.payment_option
-    SET send_sync = true
+    SET send_sync = false
     WHERE id IN (SELECT id FROM to_update);
 
     GET DIAGNOSTICS updated_rows = ROW_COUNT;
