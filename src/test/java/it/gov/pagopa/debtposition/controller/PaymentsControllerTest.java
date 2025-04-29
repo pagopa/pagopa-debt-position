@@ -36,6 +36,7 @@ import it.gov.pagopa.debtposition.util.CustomHttpStatus;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 
@@ -93,7 +94,7 @@ class PaymentsControllerTest {
           }
         });
 
-    NotificationPriceResponse priceRes = new NotificationPriceResponse("IUN", 1, 1, 0, 0, LocalDateTime.now(),  LocalDateTime.now(),  1, 1);
+    NotificationPriceResponse priceRes = new NotificationPriceResponse("IUN", 1, 1, 0, 0, ZonedDateTime.now(),  ZonedDateTime.now(),  1, 1);
     when(sendClient.getNotificationFee(anyString(), anyString()))
             .thenReturn(priceRes);
 
@@ -164,7 +165,7 @@ class PaymentsControllerTest {
 
     long firstPOAmount = pp.getPaymentOption().get(0).getAmount();
     String firstPONav = pp.getPaymentOption().get(0).getNav();
-    NotificationPriceResponse priceRes = new NotificationPriceResponse("IUN", 1, 1, 0, 0, LocalDateTime.now(),  LocalDateTime.now(),  1, 1);
+    NotificationPriceResponse priceRes = new NotificationPriceResponse("IUN", 1, 1, 0, 0, ZonedDateTime.now(),  ZonedDateTime.now(),  1, 1);
     Integer price = priceRes.getTotalPrice();
     when(sendClient.getNotificationFee(anyString(), anyString()))
             .thenReturn(priceRes);
