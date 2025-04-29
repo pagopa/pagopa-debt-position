@@ -3,6 +3,7 @@ package it.gov.pagopa.debtposition.service.payments;
 import feign.FeignException;
 import it.gov.pagopa.debtposition.client.NodeClient;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
@@ -17,7 +18,6 @@ import it.gov.pagopa.debtposition.model.payments.OrganizationModelQueryBean;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
-import it.gov.pagopa.debtposition.repository.TransferRepository;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,6 +31,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
 
 @Service
 @Slf4j
@@ -237,6 +239,13 @@ public class PaymentsService {
     // Subtracting the old value and adding the new one
     validTransfer.setAmount(validTransfer.getAmount() - oldNotificationFee);
     validTransfer.setAmount(validTransfer.getAmount() + notificationFeeAmount);
+
+    // Add NOTIFICATION_FEE_METADATA_KEY to payment option metadata
+    for (PaymentOptionMetadata pom : paymentOption.getPaymentOptionMetadata()) {
+      if (pom.getKey().equals(NOTIFICATION_FEE_METADATA_KEY)) {
+        pom.setValue(String.valueOf(notificationFeeAmount));
+      }
+    }
 
     return paymentOption;
   }

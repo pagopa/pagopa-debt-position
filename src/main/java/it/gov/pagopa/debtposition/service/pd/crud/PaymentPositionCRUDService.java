@@ -1,6 +1,7 @@
 package it.gov.pagopa.debtposition.service.pd.crud;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
@@ -41,6 +42,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
 
 @Service
 @Slf4j
@@ -504,6 +507,13 @@ public class PaymentPositionCRUDService {
         pp.setServiceType(pp.getServiceType());
 
         for (PaymentOption po : pp.getPaymentOption()) {
+            // Make sure there isn't reserved metadata
+            for (PaymentOptionMetadata pom : po.getPaymentOptionMetadata()) {
+                if (pom.getKey().equals(NOTIFICATION_FEE_METADATA_KEY)) {
+                    throw new AppException(AppError.PAYMENT_OPTION_RESERVED_METADATA, organizationFiscalCode, pp.getIupd());
+                }
+            }
+
             po.setOrganizationFiscalCode(organizationFiscalCode);
             po.setInsertedDate(Objects.requireNonNullElse(pp.getInsertedDate(), currentDate));
             po.setLastUpdatedDate(currentDate);
