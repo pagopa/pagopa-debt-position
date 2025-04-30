@@ -90,7 +90,7 @@ public enum AppError {
   PAYMENT_OPTION_RESERVED_METADATA(
           HttpStatus.CONFLICT,
           "The payment option contains reserved metadata",
-          "The caller should not add or modify reserved payment option metadata, one of the following = (NOTIFICATION_FEE_AMOUNT)."),
+          "The caller should not add or modify reserved payment option metadata. Reserved metadata list = {NOTIFICATION_FEE}."),
   ORGANIZATION_NOT_FOUND(
       HttpStatus.NOT_FOUND,
       "Not found the organization",

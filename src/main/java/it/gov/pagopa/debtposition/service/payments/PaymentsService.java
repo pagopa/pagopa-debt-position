@@ -75,6 +75,15 @@ public class PaymentsService {
     DebtPositionStatus.expirationCheckAndUpdate(paymentOption);
     DebtPositionStatus.checkAlreadyPaidInstallments(paymentOption, nav);
 
+    // Add NOTIFICATION_FEE_METADATA_KEY is notification fee is equals to zero (never updated)
+    if (paymentOption.getNotificationFee() == 0) {
+      paymentOption.getPaymentOptionMetadata()
+              .add(PaymentOptionMetadata.builder()
+                      .key(NOTIFICATION_FEE_METADATA_KEY)
+                      .value(String.valueOf(paymentOption.getNotificationFee()))
+                      .build());
+    }
+
     return paymentOption;
   }
 
@@ -245,6 +254,21 @@ public class PaymentsService {
       if (pom.getKey().equals(NOTIFICATION_FEE_METADATA_KEY)) {
         pom.setValue(String.valueOf(notificationFeeAmount));
       }
+    }
+
+    boolean found = false;
+    for (PaymentOptionMetadata pom : paymentOption.getPaymentOptionMetadata()) {
+      if (pom.getKey().equals(NOTIFICATION_FEE_METADATA_KEY)) {
+        pom.setValue(String.valueOf(notificationFeeAmount));
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      PaymentOptionMetadata metadata = PaymentOptionMetadata.builder()
+              .key(NOTIFICATION_FEE_METADATA_KEY)
+              .value(String.valueOf(notificationFeeAmount)).build();
+      paymentOption.getPaymentOptionMetadata().add(metadata);
     }
 
     return paymentOption;
