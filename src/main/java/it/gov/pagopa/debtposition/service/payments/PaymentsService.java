@@ -250,12 +250,6 @@ public class PaymentsService {
     validTransfer.setAmount(validTransfer.getAmount() + notificationFeeAmount);
 
     // Add NOTIFICATION_FEE_METADATA_KEY to payment option metadata
-    for (PaymentOptionMetadata pom : paymentOption.getPaymentOptionMetadata()) {
-      if (pom.getKey().equals(NOTIFICATION_FEE_METADATA_KEY)) {
-        pom.setValue(String.valueOf(notificationFeeAmount));
-      }
-    }
-
     boolean found = false;
     for (PaymentOptionMetadata pom : paymentOption.getPaymentOptionMetadata()) {
       if (pom.getKey().equals(NOTIFICATION_FEE_METADATA_KEY)) {
