@@ -22,6 +22,7 @@ microservice-chart:
     periodSeconds: 10
   deployment:
     create: true
+    replicas: 3
   service:
     create: true
     type: ClusterIP
@@ -33,9 +34,9 @@ microservice-chart:
     path: /pagopa-gpd-core/(.*)
     servicePort: 8080
   serviceAccount:
-    create: false
-    annotations: {}
-    name: ""
+    name: "gps-workload-identity"
+  azure:
+    workloadIdentityClientId: <workload-identity-client-id-set-automatically-by-gha>
   podAnnotations: {}
   podSecurityContext:
     seccompProfile:
