@@ -82,7 +82,7 @@ public class PaymentsService {
     if (paymentOption.getSendSync()) {
       boolean result = updateNotificationFeeSync(paymentOption);
       if (result)
-        log.info(
+        log.debug(
             "Notification fee amount of Payment Option with NAV {} has been updated with notification-fee: {}.",
             paymentOption.getNav(),
             paymentOption.getNotificationFee());
