@@ -14,7 +14,9 @@ import lombok.ToString;
 @NoArgsConstructor
 public class DebtorModel implements Serializable {
 
-  @NotNull(message = "type is required")
+  private static final long serialVersionUID = -3988004044071493474L;
+
+@NotNull(message = "type is required")
   private Type type;
 
   @NotNull(message = "fiscal code is required")
