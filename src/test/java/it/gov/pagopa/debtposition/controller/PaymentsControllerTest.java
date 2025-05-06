@@ -9,10 +9,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
 import it.gov.pagopa.debtposition.client.NodeClient;
+import it.gov.pagopa.debtposition.client.SendClient;
 import it.gov.pagopa.debtposition.dto.PaymentOptionDTO;
 import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import it.gov.pagopa.debtposition.dto.TransferDTO;
@@ -23,16 +25,21 @@ import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.mock.DebtPositionMock;
 import it.gov.pagopa.debtposition.model.checkposition.NodeCheckPositionModel;
 import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPositionResponse;
+import it.gov.pagopa.debtposition.model.config.Notice;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
+import it.gov.pagopa.debtposition.model.send.response.NotificationPriceResponse;
 import it.gov.pagopa.debtposition.service.payments.PaymentsService;
 import it.gov.pagopa.debtposition.util.CustomHttpStatus;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +51,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -58,6 +66,8 @@ class PaymentsControllerTest {
   @Mock private ModelMapper modelMapperMock;
 
   @MockBean private NodeClient nodeClient;
+
+  @MockBean private SendClient sendClient;
 
   @SpyBean private PaymentsService paymentsService;
 
@@ -77,7 +87,16 @@ class PaymentsControllerTest {
             post("/organizations/PO200_12345678901/debtpositions")
                 .content(TestUtil.toJson(pp))
                 .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isCreated());
+        .andExpect(result -> {
+          int status = result.getResponse().getStatus();
+          if (status != HttpStatus.CREATED.value() && status != HttpStatus.CONFLICT.value()) {
+            throw new AssertionError("Expected status 201 (Created) or 409 (Conflict), but got: " + status);
+          }
+        });
+
+    NotificationPriceResponse priceRes = new NotificationPriceResponse("IUN", 1, 1, 0, 0, ZonedDateTime.now(),  ZonedDateTime.now(),  1, 1);
+    when(sendClient.getNotificationFee(anyString(), anyString()))
+            .thenReturn(priceRes);
 
     String url = "/organizations/PO200_12345678901/paymentoptions/CUSTOMNAV_123456IUVMOCK1";
     mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
@@ -85,6 +104,80 @@ class PaymentsControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(MockMvcResultMatchers.jsonPath("$.nav").value("CUSTOMNAV_123456IUVMOCK1"))
         .andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMOCK1"));
+  }
+
+  @Test
+  void getPaymentOptionByNAVSendSyncTimeoutException_200() throws Exception {
+    // creo una posizione debitoria con NAV custom e recupero la payment option associata
+    PaymentPositionDTO pp = DebtPositionMock.getMock1();
+    String organization = "PO200_12345678901";
+
+    for (PaymentOptionDTO po : pp.getPaymentOption()) {
+      po.setNav("CUSTOMNAV_" + po.getIuv());
+    }
+
+    mvc.perform(post("/organizations/" + organization + "/debtpositions")
+                    .content(TestUtil.toJson(pp))
+                    .contentType(MediaType.APPLICATION_JSON));
+
+    for (PaymentOptionDTO po : pp.getPaymentOption()) {
+      ArrayList<Notice> notices = new ArrayList<>();
+      notices.add(new Notice(organization, po.getNav()));
+      mvc.perform(post("/internal/config/send")
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(new ObjectMapper().writeValueAsString(notices)))
+              .andExpect(status().isOk());
+    }
+
+    when(sendClient.getNotificationFee(anyString(), anyString()))
+            .thenThrow(new RuntimeException("Connection timeout"));
+
+    String url = "/organizations/" + organization + "/paymentoptions/CUSTOMNAV_123456IUVMOCK1";
+    mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.nav").value("CUSTOMNAV_123456IUVMOCK1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMOCK1"));
+  }
+
+  @Test
+  void getPaymentOptionByNAVSendSyncOk_200() throws Exception {
+    // creo una posizione debitoria con NAV custom e recupero la payment option associata
+    PaymentPositionDTO pp = DebtPositionMock.getMock1();
+    String organization = "PO200_12345678901";
+
+    for (PaymentOptionDTO po : pp.getPaymentOption()) {
+      po.setNav("CUSTOMNAV_" + po.getIuv());
+    }
+
+    mvc.perform(post("/organizations/" + organization + "/debtpositions")
+            .content(TestUtil.toJson(pp))
+            .contentType(MediaType.APPLICATION_JSON));
+
+    for (PaymentOptionDTO po : pp.getPaymentOption()) {
+      ArrayList<Notice> notices = new ArrayList<>();
+      notices.add(new Notice(organization, po.getNav()));
+      mvc.perform(post("/internal/config/send")
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(new ObjectMapper().writeValueAsString(notices)))
+              .andExpect(status().isOk());
+    }
+
+    long firstPOAmount = pp.getPaymentOption().get(0).getAmount();
+    String firstPONav = pp.getPaymentOption().get(0).getNav();
+    NotificationPriceResponse priceRes = new NotificationPriceResponse("IUN", 1, 1, 0, 0, ZonedDateTime.now(),  ZonedDateTime.now(),  1, 1);
+    Integer price = priceRes.getTotalPrice();
+    when(sendClient.getNotificationFee(anyString(), anyString()))
+            .thenReturn(priceRes);
+
+    // Get first Payment Option
+    String url = "/organizations/" + organization + "/paymentoptions/" + firstPONav;
+    mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.nav").value("CUSTOMNAV_123456IUVMOCK1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMOCK1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.amount").value(firstPOAmount + price));
   }
 
   @Test

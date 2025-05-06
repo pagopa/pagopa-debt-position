@@ -101,145 +101,207 @@
         }
       ]
     },
-    "/organizations/{organizationfiscalcode}/debtpositions": {
-      "get": {
-        "tags": [
-          "Debt Positions API"
-        ],
-        "summary": "Return the list of the organization debt positions. The due dates interval is mutually exclusive with the payment dates interval.",
-        "operationId": "getOrganizationDebtPositions",
-        "parameters": [
-          {
-            "name": "organizationfiscalcode",
-            "in": "path",
-            "description": "Organization fiscal code, the fiscal code of the Organization.",
-            "required": true,
-            "schema": {
-              "type": "string"
+    "/internal/config/send" : {
+      "post" : {
+        "tags" : [ "Configuration" ],
+        "summary" : "Configures payment options for which communication with SeND is synchronous",
+        "operationId" : "handleSyncSendConfiguration",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "maximum" : 1000,
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/Notice"
+                }
+              }
             }
           },
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "Number of elements on one page. Default = 50",
-            "required": false,
-            "schema": {
-              "maximum": 50,
-              "type": "integer",
-              "format": "int32",
-              "default": 10
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AppInfo"
+                }
+              }
             }
           },
-          {
-            "name": "page",
-            "in": "query",
-            "description": "Page number. Page value starts from 0",
-            "required": false,
-            "schema": {
-              "minimum": 0,
-              "type": "integer",
-              "format": "int32",
-              "default": 0
+          "401" : {
+            "description" : "Wrong or missing function key.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
             }
           },
-          {
-            "name": "due_date_from",
-            "in": "query",
-            "description": "Filter from due_date (if provided use the format yyyy-MM-dd). If not provided will be set to 30 days before the due_date_to.",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "date"
+          "403" : {
+            "description" : "Forbidden.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
             }
           },
-          {
-            "name": "due_date_to",
-            "in": "query",
-            "description": "Filter to due_date (if provided use the format yyyy-MM-dd). If not provided will be set to 30 days after the due_date_from.",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "date"
-            }
-          },
-          {
-            "name": "payment_date_from",
-            "in": "query",
-            "description": "Filter from payment_date (if provided use the format yyyy-MM-dd). If not provided will be set to 30 days before the payment_date_to.",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "date"
-            }
-          },
-          {
-            "name": "payment_date_to",
-            "in": "query",
-            "description": "Filter to payment_date (if provided use the format yyyy-MM-dd). If not provided will be set to 30 days after the payment_date_from",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "date"
-            }
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "description": "Filter by debt position status",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "DRAFT",
-                "PUBLISHED",
-                "VALID",
-                "INVALID",
-                "EXPIRED",
-                "PARTIALLY_PAID",
-                "PAID",
-                "REPORTED"
-              ]
-            }
-          },
-          {
-            "name": "orderby",
-            "in": "query",
-            "description": "Order by INSERTED_DATE, COMPANY_NAME, IUPD or STATUS",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "default": "INSERTED_DATE",
-              "enum": [
-                "INSERTED_DATE",
-                "IUPD",
-                "STATUS",
-                "COMPANY_NAME"
-              ]
-            }
-          },
-          {
-            "name": "ordering",
-            "in": "query",
-            "description": "Direction of ordering",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "default": "DESC",
-              "enum": [
-                "ASC",
-                "DESC"
-              ]
+          "500" : {
+            "description" : "Service unavailable.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
             }
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Obtained all organization payment positions.",
-            "headers": {
-              "X-Request-Id": {
-                "description": "This header identifies the call",
-                "schema": {
-                  "type": "string"
+        },
+        "security" : [ {
+          "ApiKey" : [ ]
+        } ]
+      },
+      "parameters" : [ {
+        "name" : "X-Request-Id",
+        "in" : "header",
+        "description" : "This header identifies the call, if not passed it is self-generated. This ID is returned in the response.",
+        "schema" : {
+          "type" : "string"
+        }
+      } ]
+    },
+    "/organizations/{organizationfiscalcode}/debtpositions" : {
+      "get" : {
+        "tags" : [ "Debt Positions API" ],
+        "summary" : "Return the list of the organization debt positions. The due dates interval is mutually exclusive with the payment dates interval.",
+        "operationId" : "getOrganizationDebtPositions",
+        "parameters" : [ {
+          "name" : "organizationfiscalcode",
+          "in" : "path",
+          "description" : "Organization fiscal code, the fiscal code of the Organization.",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "description" : "Number of elements on one page. Default = 50",
+          "required" : false,
+          "schema" : {
+            "maximum" : 50,
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 10
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "description" : "Page number. Page value starts from 0",
+          "required" : false,
+          "schema" : {
+            "minimum" : 0,
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "due_date_from",
+          "in" : "query",
+          "description" : "Filter from due_date (if provided use the format yyyy-MM-dd). If not provided will be set to 30 days before the due_date_to.",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "due_date_to",
+          "in" : "query",
+          "description" : "Filter to due_date (if provided use the format yyyy-MM-dd). If not provided will be set to 30 days after the due_date_from.",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "payment_date_from",
+          "in" : "query",
+          "description" : "Filter from payment_date (if provided use the format yyyy-MM-dd). If not provided will be set to 30 days before the payment_date_to.",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "payment_date_to",
+          "in" : "query",
+          "description" : "Filter to payment_date (if provided use the format yyyy-MM-dd). If not provided will be set to 30 days after the payment_date_from",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "description" : "Filter by debt position status",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "DRAFT", "PUBLISHED", "VALID", "INVALID", "EXPIRED", "PARTIALLY_PAID", "PAID", "REPORTED" ]
+          }
+        }, {
+          "name" : "orderby",
+          "in" : "query",
+          "description" : "Order by INSERTED_DATE, COMPANY_NAME, IUPD or STATUS",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "INSERTED_DATE",
+            "enum" : [ "INSERTED_DATE", "IUPD", "STATUS", "COMPANY_NAME" ]
+          }
+        }, {
+          "name" : "ordering",
+          "in" : "query",
+          "description" : "Direction of ordering",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "DESC",
+            "enum" : [ "ASC", "DESC" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Obtained all organization payment positions.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
                 }
               }
             },
@@ -2949,14 +3011,38 @@
           }
         }
       },
-      "UpdateTransferIbanMassiveModel": {
-        "required": [
-          "newIban"
-        ],
-        "type": "object",
-        "properties": {
-          "newIban": {
-            "type": "string"
+      "Notice" : {
+        "required" : [ "nav", "organizationFiscalCode" ],
+        "type" : "object",
+        "properties" : {
+          "organizationFiscalCode" : {
+            "type" : "string"
+          },
+          "nav" : {
+            "type" : "string"
+          }
+        }
+      },
+      "AppInfo" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "version" : {
+            "type" : "string"
+          },
+          "environment" : {
+            "type" : "string"
+          }
+        }
+      },
+      "UpdateTransferIbanMassiveModel" : {
+        "required" : [ "newIban" ],
+        "type" : "object",
+        "properties" : {
+          "newIban" : {
+            "type" : "string"
           }
         }
       },
@@ -3320,32 +3406,16 @@
           }
         }
       },
-      "AppInfo": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "version": {
-            "type": "string"
-          },
-          "environment": {
-            "type": "string"
-          }
-        }
-      },
-      "MultipleIUPDModel": {
-        "required": [
-          "paymentPositionIUPDs"
-        ],
-        "type": "object",
-        "properties": {
-          "paymentPositionIUPDs": {
-            "maxItems": 20,
-            "minItems": 0,
-            "type": "array",
-            "items": {
-              "type": "string"
+      "MultipleIUPDModel" : {
+        "required" : [ "paymentPositionIUPDs" ],
+        "type" : "object",
+        "properties" : {
+          "paymentPositionIUPDs" : {
+            "maxItems" : 20,
+            "minItems" : 0,
+            "type" : "array",
+            "items" : {
+              "type" : "string"
             }
           }
         }

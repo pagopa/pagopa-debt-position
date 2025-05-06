@@ -2,6 +2,7 @@ package it.gov.pagopa.debtposition.service.payments;
 
 import feign.FeignException;
 import it.gov.pagopa.debtposition.client.NodeClient;
+import it.gov.pagopa.debtposition.client.SendClient;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
@@ -15,9 +16,9 @@ import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.payments.OrganizationModelQueryBean;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
+import it.gov.pagopa.debtposition.model.send.response.NotificationPriceResponse;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
-import it.gov.pagopa.debtposition.repository.TransferRepository;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -39,15 +40,18 @@ public class PaymentsService {
   private final PaymentOptionRepository paymentOptionRepository;
   private final PaymentPositionRepository paymentPositionRepository;
   private final NodeClient nodeClient;
+  private final SendClient sendClient;
 
   @Autowired
   public PaymentsService(
       PaymentPositionRepository paymentPositionRepository,
       PaymentOptionRepository paymentOptionRepository,
-      NodeClient nodeClient) {
+      NodeClient nodeClient,
+      SendClient sendClient) {
     this.paymentPositionRepository = paymentPositionRepository;
     this.paymentOptionRepository = paymentOptionRepository;
     this.nodeClient = nodeClient;
+    this.sendClient = sendClient;
   }
 
   @Value("${nav.aux.digit}")
@@ -55,6 +59,7 @@ public class PaymentsService {
 
   // TODO #naviuv: temporary regression management --> the nav variable can also be evaluated with
   // iuv. Remove the comment when only nav managment is enabled
+  @Transactional
   public PaymentOption getPaymentOptionByNAV(
       @NotBlank String organizationFiscalCode, @NotBlank String nav) {
 
@@ -72,6 +77,19 @@ public class PaymentsService {
     DebtPositionStatus.validityCheckAndUpdate(paymentOption);
     DebtPositionStatus.expirationCheckAndUpdate(paymentOption);
     DebtPositionStatus.checkAlreadyPaidInstallments(paymentOption, nav);
+
+    // Synchronous update of notification fees
+    if (paymentOption.getSendSync()) {
+      boolean result = updateNotificationFeeSync(paymentOption);
+      if (result)
+        log.debug(
+            "Notification fee amount of Payment Option with NAV {} has been updated with notification-fee: {}.",
+            paymentOption.getNav(),
+            paymentOption.getNotificationFee());
+      else
+        log.error(
+            "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.", paymentOption.getNav());
+    }
 
     return paymentOption;
   }
@@ -113,6 +131,33 @@ public class PaymentsService {
     DebtPositionValidation.checkPaymentPositionAccountability(ppToReport.get(), iuv, transferId);
 
     return this.updateTransferStatus(ppToReport.get(), iuv, transferId);
+  }
+
+  @Transactional
+  public boolean updateNotificationFeeSync(PaymentOption paymentOption) {
+    try {
+      // call SEND API to retrieve notification fee amount
+      NotificationPriceResponse sendResponse =
+          sendClient.getNotificationFee(
+              paymentOption.getOrganizationFiscalCode(), paymentOption.getNav());
+      int notificationFeeAmount = sendResponse.getTotalPrice();
+      // call internal method updateAmountsWithNotificationFee
+      updateAmountsWithNotificationFee(
+          paymentOption, paymentOption.getOrganizationFiscalCode(), notificationFeeAmount);
+      // track the PO last update
+      paymentOption.setLastUpdatedDate(LocalDateTime.now(ZoneOffset.UTC));
+      paymentOption.setLastUpdatedDateNotificationFee(LocalDateTime.now(ZoneOffset.UTC));
+
+      paymentOptionRepository.saveAndFlush(paymentOption);
+      return true;
+    } catch (Exception e) {
+      log.error(
+          "[GPD-ERR-SEND-00] Exception while calling getNotificationFee for NAV {}, class = {}, message = {}.",
+          paymentOption.getNav(),
+          e.getClass(),
+          e.getMessage());
+      return false;
+    }
   }
 
   @Transactional
@@ -203,7 +248,7 @@ public class PaymentsService {
     return paymentOption;
   }
 
-  public static PaymentOption updateAmountsWithNotificationFee(
+  public static void updateAmountsWithNotificationFee(
       PaymentOption paymentOption, String organizationFiscalCode, long notificationFeeAmount) {
     // Get the first valid transfer to add the fee
     List<Transfer> transfers = paymentOption.getTransfer();
@@ -237,8 +282,6 @@ public class PaymentsService {
     // Subtracting the old value and adding the new one
     validTransfer.setAmount(validTransfer.getAmount() - oldNotificationFee);
     validTransfer.setAmount(validTransfer.getAmount() + notificationFeeAmount);
-
-    return paymentOption;
   }
 
   public List<OrganizationModelQueryBean> getOrganizationsToAdd(@NotNull LocalDate since) {
