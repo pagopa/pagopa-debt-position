@@ -17,6 +17,8 @@ public class PaymentOptionModel implements Serializable {
 
   private LocalDateTime paymentDate;
   private String paymentMethod;
+  private String pspCode;
+  private String pspTaxCode;
 
   @NotBlank(message = "pspCompany is required")
   private String pspCompany;
