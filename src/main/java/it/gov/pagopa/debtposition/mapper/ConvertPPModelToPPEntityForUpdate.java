@@ -1,12 +1,9 @@
 package it.gov.pagopa.debtposition.mapper;
 
-import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.UNDEFINED_DEBTOR;
-
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
-import it.gov.pagopa.debtposition.model.enumeration.Type;
 import it.gov.pagopa.debtposition.model.pd.PaymentOptionMetadataModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
@@ -50,14 +47,14 @@ public class ConvertPPModelToPPEntityForUpdate
     List<PaymentOptionModel> paymentOpts = source.getPaymentOption();
     if (null != paymentOpts && !paymentOpts.isEmpty()) {
       for (PaymentOptionModel pOModel : paymentOpts) {
-        destination.addPaymentOption(this.convertPOModelToPOEntityForUpdate(pOModel));
+        destination.addPaymentOption(this.convertPOModelToPOEntityForUpdate(source, pOModel));
       }
     }
 
     return destination;
   }
 
-  private PaymentOption convertPOModelToPOEntityForUpdate(PaymentOptionModel pom) {
+  private PaymentOption convertPOModelToPOEntityForUpdate(PaymentPositionModel ppm, PaymentOptionModel pom) {
 
     PaymentOption po = new PaymentOption();
     po.setAmount(pom.getAmount());
@@ -69,10 +66,20 @@ public class ConvertPPModelToPPEntityForUpdate
     po.setNav(pom.getNav());
     po.setRetentionDate(pom.getRetentionDate());
     po.setNotificationFee(pom.getNotificationFee());
-    // set debtor fields default values for v1 model
-    po.setDebtorType(Type.F);
-    po.setFullName(UNDEFINED_DEBTOR);
-    po.setFiscalCode(UNDEFINED_DEBTOR);
+    
+    // PAGOPA-3034 GPD for RPT: add debtor data on PO also for v1 API
+    po.setDebtorType(ppm.getType());
+    po.setFiscalCode(ppm.getFiscalCode());
+    po.setFullName(ppm.getFullName());
+    po.setStreetName(ppm.getStreetName());
+    po.setCivicNumber(ppm.getCivicNumber());
+    po.setPostalCode(ppm.getPostalCode());
+    po.setCity(ppm.getCity());
+    po.setProvince(ppm.getProvince());
+    po.setRegion(ppm.getRegion());
+    po.setCountry(ppm.getCountry());
+    po.setEmail(ppm.getEmail());
+    po.setPhone(ppm.getPhone());
 
     List<TransferModel> transfers = pom.getTransfer();
     po.setTransfer(UtilityMapper.convertTransfersModel(transfers));
