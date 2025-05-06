@@ -317,12 +317,12 @@ public class PaymentPositionCRUDService {
         List<PaymentPosition> updatePositions = new ArrayList<>();
         Map<String, PaymentPosition> inPositionsMap = new HashMap<>();
         inputPaymentPositions.forEach(pp -> inPositionsMap.put(pp.getIupd(), pp));
-        List<PaymentPosition> readPositions =
+        List<PaymentPosition> dbPaymentPosition =
                 getDebtPositionsByIUPDs(
                         organizationFiscalCode, inPositionsMap.keySet().stream().toList(), segCodes);
 
         try {
-            for (PaymentPosition paymentPosition : readPositions) {
+            for (PaymentPosition paymentPosition : dbPaymentPosition) {
                 PaymentPosition inputPaymentPosition = inPositionsMap.get(paymentPosition.getIupd());
                 PaymentPosition updatePaymentPosition = paymentPosition.deepClone();
 
@@ -335,15 +335,17 @@ public class PaymentPositionCRUDService {
                 }
 
                 // flip model to entity
+                List<PaymentOption> oldPaymentOptions = new ArrayList<>(updatePaymentPosition.getPaymentOption());
                 updatePaymentPosition.getPaymentOption().clear();
                 modelMapper.map(inputPaymentPosition, updatePaymentPosition);
 
                 // migrate the notification fee value (if defined) and update the amounts
                 updatePaymentPosition =
                         setOldNotificationFee(
-                                updatePaymentPosition.getPaymentOption(),
+                                oldPaymentOptions,
                                 organizationFiscalCode,
                                 updatePaymentPosition);
+
                 // check the input data
                 DebtPositionValidation.checkPaymentPositionInputDataAccuracy(updatePaymentPosition, action);
                 // the version is increased at each change
@@ -352,7 +354,7 @@ public class PaymentPositionCRUDService {
                 updatePositions.add(updatePaymentPosition);
             }
 
-            paymentPositionRepository.deleteAll(readPositions);
+            paymentPositionRepository.deleteAll(dbPaymentPosition);
             paymentPositionRepository.flush();
             this.createMultipleDebtPositions(
                     updatePositions, organizationFiscalCode, toPublish, segCodes, action);
