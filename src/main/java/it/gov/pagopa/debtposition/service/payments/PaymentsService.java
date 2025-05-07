@@ -4,6 +4,7 @@ import feign.FeignException;
 import it.gov.pagopa.debtposition.client.NodeClient;
 import it.gov.pagopa.debtposition.client.SendClient;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
@@ -32,6 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
 
 @Service
 @Slf4j
@@ -90,6 +93,13 @@ public class PaymentsService {
         log.error(
             "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.", paymentOption.getNav());
     }
+    
+    // Add NOTIFICATION_FEE_METADATA_KEY on the fly
+    paymentOption.getPaymentOptionMetadata()
+            .add(PaymentOptionMetadata.builder()
+                    .key(NOTIFICATION_FEE_METADATA_KEY)
+                    .value(String.valueOf(paymentOption.getNotificationFee()))
+                    .build());
 
     return paymentOption;
   }
