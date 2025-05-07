@@ -317,17 +317,17 @@ public class PaymentPositionCRUDService {
         List<PaymentPosition> updatePositions = new ArrayList<>();
         Map<String, PaymentPosition> inPositionsMap = new HashMap<>();
         inputPaymentPositions.forEach(pp -> inPositionsMap.put(pp.getIupd(), pp));
-        List<PaymentPosition> dbPaymentPosition =
+        List<PaymentPosition> currentPaymentPositions =
                 getDebtPositionsByIUPDs(
                         organizationFiscalCode, inPositionsMap.keySet().stream().toList(), segCodes);
 
         try {
-            for (PaymentPosition paymentPosition : dbPaymentPosition) {
-                PaymentPosition inputPaymentPosition = inPositionsMap.get(paymentPosition.getIupd());
-                PaymentPosition updatePaymentPosition = paymentPosition.deepClone();
+            for (PaymentPosition currentPP : currentPaymentPositions) {
+                PaymentPosition inputPaymentPosition = inPositionsMap.get(currentPP.getIupd());
+                PaymentPosition newPaymentPosition = currentPP.deepClone();
 
                 if (DebtPositionStatus.getPaymentPosNotUpdatableStatus()
-                        .contains(paymentPosition.getStatus())) {
+                        .contains(currentPP.getStatus())) {
                     throw new AppException(
                             AppError.DEBT_POSITION_NOT_UPDATABLE,
                             organizationFiscalCode,
@@ -335,26 +335,26 @@ public class PaymentPositionCRUDService {
                 }
 
                 // flip model to entity
-                List<PaymentOption> oldPaymentOptions = new ArrayList<>(updatePaymentPosition.getPaymentOption());
-                updatePaymentPosition.getPaymentOption().clear();
-                modelMapper.map(inputPaymentPosition, updatePaymentPosition);
+                List<PaymentOption> oldPaymentOptions = new ArrayList<>(newPaymentPosition.getPaymentOption());
+                newPaymentPosition.getPaymentOption().clear();
+                modelMapper.map(inputPaymentPosition, newPaymentPosition);
 
                 // migrate the notification fee value (if defined) and update the amounts
-                updatePaymentPosition =
+                newPaymentPosition =
                         setOldNotificationFee(
                                 oldPaymentOptions,
                                 organizationFiscalCode,
-                                updatePaymentPosition);
+                                newPaymentPosition);
 
                 // check the input data
-                DebtPositionValidation.checkPaymentPositionInputDataAccuracy(updatePaymentPosition, action);
+                DebtPositionValidation.checkPaymentPositionInputDataAccuracy(newPaymentPosition, action);
                 // the version is increased at each change
-                updatePaymentPosition.setVersion(updatePaymentPosition.getVersion() + 1);
+                newPaymentPosition.setVersion(newPaymentPosition.getVersion() + 1);
 
-                updatePositions.add(updatePaymentPosition);
+                updatePositions.add(newPaymentPosition);
             }
 
-            paymentPositionRepository.deleteAll(dbPaymentPosition);
+            paymentPositionRepository.deleteAll(currentPaymentPositions);
             paymentPositionRepository.flush();
             this.createMultipleDebtPositions(
                     updatePositions, organizationFiscalCode, toPublish, segCodes, action);
