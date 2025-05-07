@@ -27,7 +27,7 @@ public class DebtPositionApplication {
   }
 
   @Bean
-  public ModelMapper modelMapper() {
+  ModelMapper modelMapper() {
     ModelMapper modelMapper = new ModelMapper();
     modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
     modelMapper.addMappings(
