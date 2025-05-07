@@ -9,48 +9,59 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import it.gov.pagopa.debtposition.model.AppInfo;
 import it.gov.pagopa.debtposition.model.ProblemJson;
+import it.gov.pagopa.debtposition.model.config.Notice;
+import it.gov.pagopa.debtposition.service.config.SendConfigurator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
+
+import javax.validation.constraints.Max;
+import java.util.List;
 
 @RestController()
 public class BaseController {
-  @Value("${info.application.name}")
-  private String name;
+    @Value("${info.application.name}")
+    private String name;
 
-  @Value("${info.application.version}")
-  private String version;
+    @Value("${info.application.version}")
+    private String version;
 
-  @Value("${info.properties.environment}")
-  private String environment;
+    @Value("${info.properties.environment}")
+    private String environment;
 
-  /**
-   * @return 200 OK
-   */
-  @Hidden
-  @GetMapping("")
-  @ResponseStatus(HttpStatus.OK)
-  public RedirectView home() {
-    return new RedirectView("/swagger-ui/index.html");
-  }
+    private final SendConfigurator sendConfigurator;
 
-  /**
-   * Health Check
-   *
-   * @return ok
-   */
-  @Operation(
+    @Autowired
+    public BaseController(SendConfigurator sendConfigurator) {
+        this.sendConfigurator = sendConfigurator;
+    }
+
+    /**
+    * @return 200 OK
+    */
+    @Hidden
+    @GetMapping("")
+    @ResponseStatus(HttpStatus.OK)
+    public RedirectView home() {
+        return new RedirectView("/swagger-ui/index.html");
+    }
+
+    /**
+    * Health Check
+    *
+    * @return ok
+    */
+    @Operation(
       summary = "Return OK if application is started",
       security = {
         @SecurityRequirement(name = "ApiKey")
       },
       tags = {"Home"})
-  @ApiResponses(
+    @ApiResponses(
       value = {
         @ApiResponse(
             responseCode = "200",
@@ -75,9 +86,51 @@ public class BaseController {
                     mediaType = MediaType.APPLICATION_JSON_VALUE,
                     schema = @Schema(implementation = ProblemJson.class)))
       })
-  @GetMapping("/info")
-  public ResponseEntity<AppInfo> healthCheck() {
+    @GetMapping("/info")
+    public ResponseEntity<AppInfo> healthCheck() {
     AppInfo info = AppInfo.builder().name(name).version(version).environment(environment).build();
-    return ResponseEntity.status(HttpStatus.OK).body(info);
-  }
+        return ResponseEntity.status(HttpStatus.OK).body(info);
+    }
+
+    /**
+    * Internal API for Synchronous SeND Configuration
+    *
+    * @return ok
+    */
+    @Operation(
+          summary = "Configures payment options for which communication with SeND is synchronous",
+          security = {
+                  @SecurityRequirement(name = "ApiKey")
+          },
+          tags = {"Configuration"})
+    @ApiResponses(
+          value = {
+                  @ApiResponse(
+                          responseCode = "200",
+                          description = "OK.",
+                          content =
+                          @Content(
+                                  mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                  schema = @Schema(implementation = AppInfo.class))),
+                  @ApiResponse(
+                          responseCode = "401",
+                          description = "Wrong or missing function key.",
+                          content = @Content(schema = @Schema())),
+                  @ApiResponse(
+                          responseCode = "403",
+                          description = "Forbidden.",
+                          content = @Content(schema = @Schema())),
+                  @ApiResponse(
+                          responseCode = "500",
+                          description = "Service unavailable.",
+                          content =
+                          @Content(
+                                  mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                  schema = @Schema(implementation = ProblemJson.class)))
+          })
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, path = "internal/config/send")
+    public ResponseEntity<String> handleSyncSendConfiguration(@RequestBody @Max(1000) List<Notice> notices) {
+        int updated = sendConfigurator.updateSendSync(notices);
+        return ResponseEntity.status(HttpStatus.OK).body("Configuration completed for " + updated + " items");
+    }
 }

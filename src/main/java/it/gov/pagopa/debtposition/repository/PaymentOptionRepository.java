@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -29,4 +32,14 @@ public interface PaymentOptionRepository
   // and in the specified statuses
   List<PaymentOption> findByPaymentPositionInAndStatusIn(
       List<PaymentPosition> paymentPositionList, List<PaymentOptionStatus> statusList);
+
+  // Configuration Query
+  @Modifying
+  @Query(
+          "update PaymentOption po set po.sendSync = true " +
+                  "where po.organizationFiscalCode = :organization " +
+                  "and po.nav = :noticeNumber")
+  int updatePaymentOptionSendSync(
+          @Param(value = "organization") String organizationFiscalCode,
+          @Param(value = "noticeNumber") String noticeNumber);
 }
