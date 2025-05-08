@@ -1,10 +1,10 @@
 {
-  "openapi" : "3.0.1",
-  "info" : {
-    "title" : "PagoPA API Debt Position ${service}",
-    "description" : "Progetto Gestione Posizioni Debitorie",
-    "termsOfService" : "https://www.pagopa.gov.it/",
-    "version" : "0.13.4"
+  "openapi": "3.0.1",
+  "info": {
+    "title": "PagoPA API Debt Position ${service}",
+    "description": "Progetto Gestione Posizioni Debitorie",
+    "termsOfService": "https://www.pagopa.gov.it/",
+    "version": "0.13.6"
   },
   "servers" : [ {
     "url" : "https://api.uat.platform.pagopa.it/gpd/api/v1",

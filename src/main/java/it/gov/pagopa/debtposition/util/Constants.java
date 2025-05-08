@@ -9,4 +9,5 @@ public class Constants {
   public static final String HEADER_REQUEST_ID = "X-Request-Id";
   public static final String CREATE_ACTION = "create";
   public static final String UPDATE_ACTION = "update";
+  public static final String NOTIFICATION_FEE_METADATA_KEY = "NOTIFICATION_FEE";
 }

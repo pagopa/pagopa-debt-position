@@ -1,6 +1,7 @@
 package it.gov.pagopa.debtposition.service.pd.crud;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
@@ -41,6 +42,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
 
 @Service
 @Slf4j
@@ -317,17 +320,17 @@ public class PaymentPositionCRUDService {
         List<PaymentPosition> updatePositions = new ArrayList<>();
         Map<String, PaymentPosition> inPositionsMap = new HashMap<>();
         inputPaymentPositions.forEach(pp -> inPositionsMap.put(pp.getIupd(), pp));
-        List<PaymentPosition> readPositions =
+        List<PaymentPosition> currentPaymentPositions =
                 getDebtPositionsByIUPDs(
                         organizationFiscalCode, inPositionsMap.keySet().stream().toList(), segCodes);
 
         try {
-            for (PaymentPosition paymentPosition : readPositions) {
-                PaymentPosition inputPaymentPosition = inPositionsMap.get(paymentPosition.getIupd());
-                PaymentPosition updatePaymentPosition = paymentPosition.deepClone();
+            for (PaymentPosition currentPP : currentPaymentPositions) {
+                PaymentPosition inputPaymentPosition = inPositionsMap.get(currentPP.getIupd());
+                PaymentPosition newPaymentPosition = currentPP.deepClone();
 
                 if (DebtPositionStatus.getPaymentPosNotUpdatableStatus()
-                        .contains(paymentPosition.getStatus())) {
+                        .contains(currentPP.getStatus())) {
                     throw new AppException(
                             AppError.DEBT_POSITION_NOT_UPDATABLE,
                             organizationFiscalCode,
@@ -335,24 +338,26 @@ public class PaymentPositionCRUDService {
                 }
 
                 // flip model to entity
-                updatePaymentPosition.getPaymentOption().clear();
-                modelMapper.map(inputPaymentPosition, updatePaymentPosition);
+                List<PaymentOption> oldPaymentOptions = new ArrayList<>(newPaymentPosition.getPaymentOption());
+                newPaymentPosition.getPaymentOption().clear();
+                modelMapper.map(inputPaymentPosition, newPaymentPosition);
 
                 // migrate the notification fee value (if defined) and update the amounts
-                updatePaymentPosition =
+                newPaymentPosition =
                         setOldNotificationFee(
-                                updatePaymentPosition.getPaymentOption(),
+                                oldPaymentOptions,
                                 organizationFiscalCode,
-                                updatePaymentPosition);
-                // check the input data
-                DebtPositionValidation.checkPaymentPositionInputDataAccuracy(updatePaymentPosition, action);
-                // the version is increased at each change
-                updatePaymentPosition.setVersion(updatePaymentPosition.getVersion() + 1);
+                                newPaymentPosition);
 
-                updatePositions.add(updatePaymentPosition);
+                // check the input data
+                DebtPositionValidation.checkPaymentPositionInputDataAccuracy(newPaymentPosition, action);
+                // the version is increased at each change
+                newPaymentPosition.setVersion(newPaymentPosition.getVersion() + 1);
+
+                updatePositions.add(newPaymentPosition);
             }
 
-            paymentPositionRepository.deleteAll(readPositions);
+            paymentPositionRepository.deleteAll(currentPaymentPositions);
             paymentPositionRepository.flush();
             this.createMultipleDebtPositions(
                     updatePositions, organizationFiscalCode, toPublish, segCodes, action);
@@ -504,6 +509,13 @@ public class PaymentPositionCRUDService {
         pp.setServiceType(pp.getServiceType());
 
         for (PaymentOption po : pp.getPaymentOption()) {
+            // Make sure there isn't reserved metadata
+            for (PaymentOptionMetadata pom : po.getPaymentOptionMetadata()) {
+                if (pom.getKey().equals(NOTIFICATION_FEE_METADATA_KEY)) {
+                    throw new AppException(AppError.PAYMENT_OPTION_RESERVED_METADATA, organizationFiscalCode, pp.getIupd());
+                }
+            }
+
             po.setOrganizationFiscalCode(organizationFiscalCode);
             po.setInsertedDate(Objects.requireNonNullElse(pp.getInsertedDate(), currentDate));
             po.setLastUpdatedDate(currentDate);
