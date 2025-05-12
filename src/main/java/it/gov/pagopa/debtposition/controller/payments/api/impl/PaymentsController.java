@@ -9,6 +9,7 @@ import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
+import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionMetadataModelResponse;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
 import it.gov.pagopa.debtposition.service.payments.PaymentsService;
 import it.gov.pagopa.debtposition.util.CommonUtil;
@@ -22,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+
+import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
 
 @Controller
 @Slf4j
@@ -58,6 +61,13 @@ public class PaymentsController implements IPaymentsController {
         modelMapper.map(
             paymentsService.getPaymentOptionByNAV(organizationFiscalCode, nav),
             PaymentOptionWithDebtorInfoModelResponse.class);
+
+    // Add NOTIFICATION_FEE_METADATA_KEY to response on the fly
+    paymentOptionResponse.getPaymentOptionMetadata()
+                    .add(PaymentOptionMetadataModelResponse.builder()
+                            .key(NOTIFICATION_FEE_METADATA_KEY)
+                            .value(String.valueOf(paymentOptionResponse.getNotificationFee()))
+                            .build());
 
     return new ResponseEntity<>(paymentOptionResponse, HttpStatus.OK);
   }

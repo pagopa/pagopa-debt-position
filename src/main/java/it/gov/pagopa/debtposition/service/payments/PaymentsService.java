@@ -93,13 +93,6 @@ public class PaymentsService {
         log.error(
             "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.", paymentOption.getNav());
     }
-    
-    // Add NOTIFICATION_FEE_METADATA_KEY on the fly
-    paymentOption.getPaymentOptionMetadata()
-            .add(PaymentOptionMetadata.builder()
-                    .key(NOTIFICATION_FEE_METADATA_KEY)
-                    .value(String.valueOf(paymentOption.getNotificationFee()))
-                    .build());
 
     return paymentOption;
   }
