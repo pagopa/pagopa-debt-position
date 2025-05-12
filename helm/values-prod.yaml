@@ -160,7 +160,7 @@ microservice-chart:
       weightPercent: 0
     image:
       repository: ghcr.io/pagopa/pagopa-debt-position
-      tag: "0.11.82"
+      tag: "0.13.7"
       pullPolicy: Always
     envConfig:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.p.internal.postgresql.pagopa.it:5432/apd?sslmode=require&prepareThreshold=0"
