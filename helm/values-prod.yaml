@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.13.6-1-PIDM-433-fix"
+    tag: "0.13.7"
     pullPolicy: Always
   livenessProbe:
     httpGet:
