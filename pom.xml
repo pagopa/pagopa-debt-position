@@ -11,7 +11,7 @@
     </parent>
     <groupId>it.gov.pagopa.debtposition</groupId>
     <artifactId>gpd</artifactId>
-    <version>0.13.8-1-PAGOPA-3034-RTP-debtor</version>
+    <version>0.14.0</version>
     <name>Gestione Posizioni Debitorie</name>
     <description>Progetto Gestione Posizioni Debitorie</description>
     <properties>
