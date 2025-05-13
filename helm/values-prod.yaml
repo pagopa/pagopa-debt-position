@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.13.7"
+    tag: "0.13.8-1-PAGOPA-3034-RTP-debtor"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -160,7 +160,7 @@ microservice-chart:
       weightPercent: 0
     image:
       repository: ghcr.io/pagopa/pagopa-debt-position
-      tag: "0.11.82"
+      tag: "0.13.7"
       pullPolicy: Always
     envConfig:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.p.internal.postgresql.pagopa.it:5432/apd?sslmode=require&prepareThreshold=0"
