@@ -323,6 +323,8 @@ public class PaymentsService {
         po.setLastUpdatedDate(currentDate);
         po.setPaymentDate(paymentOptionModel.getPaymentDate());
         po.setPaymentMethod(paymentOptionModel.getPaymentMethod());
+        po.setPspCode(paymentOptionModel.getPspCode());
+        po.setPspTaxCode(paymentOptionModel.getPspTaxCode());
         po.setPspCompany(paymentOptionModel.getPspCompany());
         po.setIdReceipt(paymentOptionModel.getIdReceipt());
         po.setFee(Long.parseLong(paymentOptionModel.getFee()));
