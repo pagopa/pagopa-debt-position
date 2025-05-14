@@ -15,15 +15,10 @@ on:
         required: false
         default: ''
         type: string
-      uninstall:
-        description: 'true if you want to uninstall instead of install'
-        required: false
-        type: boolean
-        default: false
       traffic_weight:
         required: false
         type: string
-        default: 0
+        default: "0"
         description: 'The percentage of traffic to be sent to the canary version'
       is_canary:
         type: boolean
@@ -39,98 +34,22 @@ permissions:
   contents: read
 
 jobs:
-  create_runner:
-    name: Create Runner
-    runs-on: ubuntu-22.04
-    environment:
-      name: ${{ inputs.environment }}
-    outputs:
-      runner_name: ${{ steps.create_github_runner.outputs.runner_name }}
-    steps:
-      - name: Create GitHub Runner
-        id: create_github_runner
-        # from https://github.com/pagopa/eng-github-actions-iac-template/tree/main/azure/github-self-hosted-runner-azure-create-action
-        uses: pagopa/eng-github-actions-iac-template/azure/github-self-hosted-runner-azure-create-action@main
-        with:
-          client_id: ${{ secrets.CLIENT_ID }}
-          tenant_id: ${{ secrets.TENANT_ID }}
-          subscription_id: ${{ secrets.SUBSCRIPTION_ID }}
-          container_app_environment_name: ${{ vars.CONTAINER_APP_ENVIRONMENT_NAME }}
-          resource_group_name: ${{ vars.CONTAINER_APP_ENVIRONMENT_RESOURCE_GROUP_NAME }} # RG of the runner
-          pat_token: ${{ secrets.BOT_TOKEN_GITHUB }}
-          self_hosted_runner_image_tag: "latest"
-
   deploy:
-    needs: [ create_runner ]
-    runs-on: [ self-hosted, "${{ needs.create_runner.outputs.runner_name }}" ]
+    runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
     name: Deploy on AKS
     environment: ${{ inputs.environment }}
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+      - name: Deploy
+        uses: pagopa/github-actions-template/aks-deploy@main
         with:
-          ref: ${{ inputs.branch}}
-
-      - name: Login
-        uses: azure/login@89d153571fe9a34ed70fcf9f1d95ab8debea7a73
-        with:
-          client-id: ${{ secrets.CLIENT_ID }}
-          tenant-id: ${{ secrets.TENANT_ID }}
-          subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
-
-      - name: Gets K8s context
-        uses: azure/aks-set-context@4edaee69f820359371ee8bc85189ac03a21d3a58 # v3
-        with:
-          resource-group: ${{ vars.CLUSTER_RESOURCE_GROUP }}
-          cluster-name: ${{ vars.CLUSTER_NAME }}
-          admin: 'false'
-          use-kubelogin: 'true'
-
-      - name: 🛠️ Helm configure repos
-        shell: bash
-        run: |
-          helm repo add microservice-chart https://pagopa.github.io/aks-microservice-chart-blueprint
-          helm dep build helm
-          echo "✅ aks blueprint configured"
-
-      - name: 🚀 Helm Deploy
-        shell: bash
-        if: ${{ inputs.uninstall  == false }}
-        run: |
-          echo "🚀 Launch helm deploy"
-          
-          helm upgrade --namespace ${{ vars.NAMESPACE }} \
-            --install --values ./helm/values-${{ inputs.environment }}.yaml \
-            --set microservice-chart.canaryDelivery.ingress.weightPercent=${{ inputs.traffic_weight }} \
-            --set microservice-chart.canaryDelivery.create=${{ inputs.is_canary }} \
-            --wait --timeout 10m0s --debug \
-            ${{ env.APP_NAME }}${{inputs.suffix_name}} ./helm
-
-          echo "✅Helm deployed"
-
-      - name: 🗑Remove deployment
-        if: ${{ inputs.uninstall == true }}
-        shell: bash
-        run: |
-          echo "🗑Launch helm uninstall"
-          helm uninstall ${{ env.APP_NAME }}${{inputs.suffix_name}} -n ${{ vars.NAMESPACE }} 
-          echo "✔️Helm uninstall"
-
-
-  cleanup_runner:
-    name: Cleanup Runner
-    needs: [ create_runner, deploy ]
-    if: ${{ success() || failure() }}
-    runs-on: ubuntu-22.04
-    environment: ${{ inputs.environment }}
-    steps:
-      - name: Cleanup GitHub Runner
-        id: cleanup_github_runner
-        # from https://github.com/pagopa/eng-github-actions-iac-template/tree/main/azure/github-self-hosted-runner-azure-cleanup-action
-        uses: pagopa/eng-github-actions-iac-template/azure/github-self-hosted-runner-azure-cleanup-action@0ee2f58fd46d10ac7f00bce4304b98db3dbdbe9a
-        with:
+          branch: ${{ inputs.branch }}
           client_id: ${{ secrets.CLIENT_ID }}
-          tenant_id: ${{ secrets.TENANT_ID }}
           subscription_id: ${{ secrets.SUBSCRIPTION_ID }}
-          resource_group_name: ${{ vars.CONTAINER_APP_ENVIRONMENT_RESOURCE_GROUP_NAME }}
-          runner_name: ${{ needs.create_runner.outputs.runner_name }}
-          pat_token: ${{ secrets.BOT_TOKEN_GITHUB }}
+          tenant_id: ${{ secrets.TENANT_ID }}
+          env: ${{ inputs.environment }}
+          namespace: ${{ vars.NAMESPACE }}
+          cluster_name: ${{ vars.CLUSTER_NAME }}
+          resource_group: ${{ vars.CLUSTER_RESOURCE_GROUP }}
+          app_name: '${{ env.APP_NAME }}${{inputs.suffix_name}}'
+          helm_upgrade_options: '--debug --set microservice-chart.azure.workloadIdentityClientId=${{vars.WORKLOAD_IDENTITY_ID}} --set microservice-chart.canaryDelivery.ingress.weightPercent=${{ inputs.traffic_weight }} --set microservice-chart.canaryDelivery.create=${{ inputs.is_canary }}'
+          timeout: '10m0s'
