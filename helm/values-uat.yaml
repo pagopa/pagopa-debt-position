@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.14.0-1-PAGOPA-3031"
+    tag: "0.14.0-2-PAGOPA-3031"
     pullPolicy: Always
   livenessProbe:
     httpGet:
