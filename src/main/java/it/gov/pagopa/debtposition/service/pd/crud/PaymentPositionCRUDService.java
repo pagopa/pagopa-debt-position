@@ -240,7 +240,7 @@ public class PaymentPositionCRUDService {
             modelMapper.map(ppModel, ppToUpdate);
 
             // migrate the notification fee value (if defined) and update the amounts
-            setOldNotificationFee(oldPaymentOptions, organizationFiscalCode, ppToUpdate);
+            setOldNotificationFeeAndSendSync(oldPaymentOptions, organizationFiscalCode, ppToUpdate);
 
             // check the input data
             DebtPositionValidation.checkPaymentPositionInputDataAccuracy(ppToUpdate, action);
@@ -344,7 +344,7 @@ public class PaymentPositionCRUDService {
 
                 // migrate the notification fee value (if defined) and update the amounts
                 newPaymentPosition =
-                        setOldNotificationFee(
+                        setOldNotificationFeeAndSendSync(
                                 oldPaymentOptions,
                                 organizationFiscalCode,
                                 newPaymentPosition);
@@ -408,13 +408,16 @@ public class PaymentPositionCRUDService {
         }
     }
 
-    private PaymentPosition setOldNotificationFee(
+    private PaymentPosition setOldNotificationFeeAndSendSync(
             List<PaymentOption> oldPaymentOptions,
             String organizationFiscalCode,
             PaymentPosition paymentPosition) {
         Map<String, Long> oldPONotificationFeeMapping =
                 oldPaymentOptions.stream()
                         .collect(Collectors.toMap(PaymentOption::getIuv, PaymentOption::getNotificationFee));
+        Map<String, Boolean> oldSendSync =
+                oldPaymentOptions.stream()
+                        .collect(Collectors.toMap(PaymentOption::getIuv, PaymentOption::getSendSync));
         for (PaymentOption paymentOptionModel : paymentPosition.getPaymentOption()) {
             long oldNotificationFee =
                     Objects.requireNonNullElse(
@@ -423,6 +426,9 @@ public class PaymentPositionCRUDService {
                 PaymentsService.updateAmountsWithNotificationFee(
                         paymentOptionModel, organizationFiscalCode, oldNotificationFee);
             }
+            // read sendSync from current payment_option and overwrite paymentOptionModel input
+            Boolean sendSync = oldSendSync.get(paymentOptionModel.getIuv());
+            paymentOptionModel.setSendSync(sendSync != null ? sendSync : Boolean.FALSE);
         }
         return paymentPosition;
     }
