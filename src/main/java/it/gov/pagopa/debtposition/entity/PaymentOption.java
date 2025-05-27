@@ -103,6 +103,12 @@ public class PaymentOption implements Serializable {
   @Column(name = "notification_fee")
   private long notificationFee;
 
+  @Column(name = "psp_code")
+  private String pspCode;
+
+  @Column(name = "psp_tax_code")
+  private String pspTaxCode;
+
   @Column(name = "psp_company")
   private String pspCompany;
 
@@ -158,6 +164,9 @@ public class PaymentOption implements Serializable {
   @ToString.Exclude private String country;
   @ToString.Exclude private String email;
   @ToString.Exclude private String phone;
+
+  @Column(name = "send_sync")
+  private Boolean sendSync = false;
 
   // flag that identifies if the payment option has a payment in progress (false = no payment in
   // progress)
