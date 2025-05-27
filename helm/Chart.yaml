@@ -2,9 +2,9 @@ apiVersion: v2
 name: pagopa-gpd-core
 description: micro-service to manage Creditor Institution debtor positions
 type: application
-version: 0.216.0
-appVersion: 0.14.3
+version: 0.217.0
+appVersion: 0.14.4
 dependencies:
   - name: microservice-chart
-    version: 5.11.0
+    version: 7.5.0
     repository: "https://pagopa.github.io/aks-microservice-chart-blueprint"

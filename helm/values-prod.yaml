@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.14.3"
+    tag: "0.14.4"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -33,9 +33,9 @@ microservice-chart:
     path: /pagopa-gpd-core/(.*)
     servicePort: 8080
   serviceAccount:
-    create: false
-    annotations: {}
-    name: ""
+    name: "gps-workload-identity"
+  azure:
+    workloadIdentityClientId: <workload-identity-client-id-set-automatically-by-gha>
   podAnnotations: {}
   podSecurityContext:
     seccompProfile:
@@ -47,8 +47,8 @@ microservice-chart:
       memory: "1024Mi"
       cpu: "0.75"
     limits:
-      memory: "1024Mi"
-      cpu: "0.75"
+      memory: "1280Mi"
+      cpu: "0.80"
   autoscaling:
     enable: true
     minReplica: 3
