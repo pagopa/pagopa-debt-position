@@ -85,7 +85,7 @@ public class PaymentsService {
     if (paymentOption.getSendSync()) {
       boolean result = updateNotificationFeeSync(paymentOption);
       if (result)
-        log.debug(
+        log.info(
             "Notification fee amount of Payment Option with NAV {} has been updated with notification-fee: {}.",
             paymentOption.getNav(),
             paymentOption.getNotificationFee());
@@ -323,6 +323,8 @@ public class PaymentsService {
         po.setLastUpdatedDate(currentDate);
         po.setPaymentDate(paymentOptionModel.getPaymentDate());
         po.setPaymentMethod(paymentOptionModel.getPaymentMethod());
+        po.setPspCode(paymentOptionModel.getPspCode());
+        po.setPspTaxCode(paymentOptionModel.getPspTaxCode());
         po.setPspCompany(paymentOptionModel.getPspCompany());
         po.setIdReceipt(paymentOptionModel.getIdReceipt());
         po.setFee(Long.parseLong(paymentOptionModel.getFee()));
