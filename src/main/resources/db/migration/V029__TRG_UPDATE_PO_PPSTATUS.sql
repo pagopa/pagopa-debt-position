@@ -12,6 +12,7 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 DROP TRIGGER IF EXISTS trg_sync_status_on_payment_option_insert ON apd.payment_option;
 CREATE TRIGGER trg_sync_status_on_payment_option_insert
 BEFORE INSERT ON apd.payment_option
@@ -30,6 +31,7 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 DROP TRIGGER IF EXISTS trg_update_options_on_position_status_change ON apd.payment_position;
 CREATE TRIGGER trg_update_options_on_position_status_change
 AFTER UPDATE OF status ON apd.payment_position
