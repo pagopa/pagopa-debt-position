@@ -3,6 +3,8 @@ name: Release And Deploy
 # Controls when the workflow will run
 on:
   pull_request:
+    branches:
+      - main
     types: [ closed ]
 
   # Allows you to run this workflow manually from the Actions tab
@@ -16,15 +18,17 @@ on:
           - dev
           - uat
           - prod
-      version:
-        required: false
+      semver:
+        required: true
         type: choice
-        description: 'Select the version'
+        description: Select the new Semantic Version
         options:
+          - major
+          - minor
           - patch
-          - skip_or_promote
-          - new_release
-          - breaking_change
+          - buildNumber
+          - skip
+        default: skip
       db_migration:
         required: false
         type: boolean
@@ -55,67 +59,40 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       semver: ${{ steps.get_semver.outputs.semver }}
-      environment: ${{ steps.get_env.outputs.environment }}
+      environment: ${{ steps.output.outputs.environment }}
     steps:
-      - name: pull request rejected
-        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged != true
-        run: |
-          echo "❌ PR was closed without a merge"
-          exit 1
+      - name: Get semver
+        id: get_semver
+        uses: pagopa/github-actions-template/semver-setup@0018ad6b766a082c35ec88cd9f18de6b54fd59d1 # v1.4.2
 
-      # Set Semvar
-      - run: echo "SEMVER=patch" >> $GITHUB_ENV
-
-      - if: ${{ (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'skip')) }}
-        run: echo "SEMVER=skip" >> $GITHUB_ENV
-
-      - if: ${{ (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'patch')) }}
-        run: echo "SEMVER=patch" >> $GITHUB_ENV
-
-      - if: ${{ (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'minor')) }}
-        run: echo "SEMVER=minor" >> $GITHUB_ENV
-
-      - if: ${{ (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'major')) }}
-        run: echo "SEMVER=major" >> $GITHUB_ENV
-
-      # force semver if dev, !=main or skip release
-      - if: ${{ inputs.version == 'new_release' }}
-        run: echo "SEMVER=minor" >> $GITHUB_ENV
-
-      - if: ${{ inputs.version == 'breaking_change' }}
-        run: echo "SEMVER=major" >> $GITHUB_ENV
-
-      - if: ${{ github.ref_name != 'main' }}
-        run: echo "SEMVER=buildNumber" >> $GITHUB_ENV
-
-      - if: ${{ inputs.version == 'skip_or_promote' }}
-        run: echo "SEMVER=skip" >> $GITHUB_ENV
-      - id: get_semver
-        name: Set Output
-        run: echo "semver=${{env.SEMVER}}" >> $GITHUB_OUTPUT
-
-      # Set Environment
-      - run: echo "ENVIRNOMENT=${{ inputs.environment}}" >> $GITHUB_ENV
-
-      - if: ${{ inputs.environment == null }}
+      - if: ${{ github.event.inputs.environment == null || github.event.inputs.environment == 'dev' }}
         run: echo "ENVIRNOMENT=dev" >> $GITHUB_ENV
 
-      - id: get_env
+      - if: ${{ github.event.inputs.environment == 'uat' }}
+        run: echo "ENVIRNOMENT=uat" >> $GITHUB_ENV
+
+      - if: ${{ github.event.inputs.environment == 'prod' }}
+        run: echo "ENVIRNOMENT=prod" >> $GITHUB_ENV
+
+      - if: ${{ github.event.inputs.environment == 'all' }}
+        run: echo "ENVIRNOMENT=all" >> $GITHUB_ENV
+
+      - id: output
         name: Set Output
-        run: echo "environment=${{env.ENVIRNOMENT}}" >> $GITHUB_OUTPUT
+        run: |
+          echo "environment=${{env.ENVIRNOMENT}}" >> $GITHUB_OUTPUT
 
 
   release:
     name: Create a New Release
     runs-on: ubuntu-latest
-    needs: [ setup ]
-    if: ${{ needs.setup.outputs.semver != 'skip' }}
+    needs: [setup]
     outputs:
       version: ${{ steps.release.outputs.version }}
     steps:
       - name: Make Release
         id: release
-        uses: pagopa/github-actions-template/maven-release@ae5e4d205387c6c0bbc10b0a99df18b698e0c60c # v1.20.0
+        uses: pagopa/github-actions-template/maven-release@d91a1fd0b913c9830589be5d86cdb71c90813fae # v1.5.4
         with:
           semver: ${{ needs.setup.outputs.semver }}
           github_token: ${{ secrets.BOT_TOKEN_GITHUB }}
@@ -140,13 +117,12 @@ jobs:
     needs: [ setup, release ]
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
-    if: ${{ needs.setup.outputs.semver != 'skip' }}
+    if: ${{ inputs.semver != 'skip' }}
     steps:
       - name: Build and Push
         id: semver
         uses: pagopa/github-actions-template/ghcr-build-push@d91a1fd0b913c9830589be5d86cdb71c90813fae # v1.5.4
         with:
-          branch: ${{ github.ref_name}}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ needs.release.outputs.version }}
 
