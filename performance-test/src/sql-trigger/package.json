@@ -1,0 +1,14 @@
+{
+  "name": "pagopa-debt-position-sql-trigger-test",
+  "version": "0.0.1",
+  "dependencies": {},
+  "scripts": {
+    "start-load-events-local": "export $(cat .env.local | xargs) && node sql_trigger_test.js",
+    "start-load-events-dev": "export $(cat .env.dev | xargs) && node sql_trigger_test.js",
+    "start-load-events-uat": "export $(cat .env.uat | xargs) && node sql_trigger_test.js"
+  },
+  "devDependencies": {
+    "pg": "^8.13.1",
+    "dotenv": "^16.1.4"
+  }
+}
