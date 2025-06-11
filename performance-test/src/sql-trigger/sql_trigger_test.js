@@ -3,15 +3,15 @@ const {shutDownPool} = require("./modules/pg_gpd_client");
 
 const NUMBER_OF_RECORDS =JSON.parse(process.env.NUMBER_OF_RECORDS);
 
-async function insertEvents() {
+async function performTest() {
     console.log("Cleaning up before execution...");
     await cleanup();
 
     const startTime = Date.now();  // process.hrtime() for higher precision.
-
+    console.log(`Start time: ${new Date(startTime).toLocaleString()} `);
     //const arrayIdTokenized = [];
 
-    console.log("Selected number of events: ", NUMBER_OF_RECORDS);
+    console.log("Selected number of rows: ", NUMBER_OF_RECORDS);
     // POPULATE ON DB paymentPositions
     for (let i = 0; i < NUMBER_OF_RECORDS ; i++) {
         const uniqueId = 220798 + i;
@@ -36,6 +36,7 @@ async function insertEvents() {
     console.log(`Updated status on ${NUMBER_OF_RECORDS} elements in database paymentPositions `);
 
     const endTime = Date.now();
+    console.log(`End time: ${new Date(endTime).toLocaleString()} `);
     console.log(`Execution time: ${(endTime - startTime) / 1000} seconds`);
 
     console.log("Cleaning up...");
@@ -54,7 +55,7 @@ async function cleanup() {
     console.log("Deleted payment positions");
 }
 
-insertEvents().then(() => {
+performTest().then(() => {
     console.log("Trigger performance test script ended");
     process.exit();
 });

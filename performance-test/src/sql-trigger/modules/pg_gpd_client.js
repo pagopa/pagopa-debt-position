@@ -14,7 +14,7 @@ const pool = new Pool({
   password: password,
   host: serverName,
   port: 5432,
-  ssl: false
+  ssl: true
 });
 
 const connection = {
