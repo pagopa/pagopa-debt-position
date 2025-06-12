@@ -41,6 +41,7 @@ public class PaymentOptionWithDebtorInfoModelResponse implements Serializable {
   private String pspCompany;
   private String idReceipt;
   private String idFlowReporting;
+  private String serviceType;
   private PaymentOptionStatus status;
   private List<PaymentOptionMetadataModelResponse> paymentOptionMetadata = new ArrayList<>();
 

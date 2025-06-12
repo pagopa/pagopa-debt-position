@@ -2686,6 +2686,9 @@
           "idFlowReporting" : {
             "type" : "string"
           },
+          "serviceType" : {
+            "type" : "string"
+          },
           "status" : {
             "type" : "string",
             "enum" : [ "PO_UNPAID", "PO_PAID", "PO_PARTIALLY_REPORTED", "PO_REPORTED" ]
