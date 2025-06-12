@@ -29,6 +29,7 @@ public class PaymentOptionWithDebtorInfoModelResponse implements Serializable {
   private long amount;
   private String description;
   private Boolean isPartialPayment;
+  private Boolean payStandIn;
   private LocalDateTime dueDate;
   private LocalDateTime retentionDate;
   private LocalDateTime paymentDate;
