@@ -50,6 +50,8 @@ public class ConvertPOEntityToPOWithDebtor
     destination.setIupd(source.getPaymentPosition().getIupd());
     destination.setCompanyName(source.getPaymentPosition().getCompanyName());
     destination.setOfficeName(source.getPaymentPosition().getOfficeName());
+    destination.setPayStandIn(source.getPaymentPosition().getPayStandIn());
+    destination.setServiceType(source.getPaymentPosition().getServiceType().name());
 
     // Get Debtor fields from Payment Position since is UNDEFINED on Payment Option
     String poFullName = source.getFullName();
