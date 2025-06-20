@@ -1,0 +1,9 @@
+const VALID_CF = "PRFGPD24S20B157N";
+const INVALID_CF = "invalidCF";
+const ENTITY_IDENTIFIER = "PERFORMANCE_TEST_DEBT_POSITION";
+
+module.exports = {
+    VALID_CF,
+    INVALID_CF,
+    ENTITY_IDENTIFIER,
+}
