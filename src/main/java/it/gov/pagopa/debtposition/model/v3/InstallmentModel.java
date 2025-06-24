@@ -11,6 +11,7 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,6 +26,7 @@ public class InstallmentModel implements Serializable {
   private String iuv;
 
   @NotNull(message = "amount is required")
+  @Positive(message = "amount cannot be zero")
   private Long amount;
 
   @NotBlank(message = "payment option description is required")
