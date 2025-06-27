@@ -7,9 +7,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -26,6 +25,7 @@ public class PaymentOptionModel implements Serializable {
   private String iuv;
 
   @NotNull(message = "amount is required")
+  @Min(value= 1L, message = "minimum amount is 1 eurocent")
   private Long amount;
 
   @NotBlank(message = "payment option description is required")
