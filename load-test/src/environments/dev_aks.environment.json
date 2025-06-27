@@ -1,9 +1,0 @@
-{
-  "environment": [
-    {
-      "env": "dev",
-      "host": "https://api.dev.platform.pagopa.it/gpd/aks/api/v1"
-    }
-  ]
-}
-
