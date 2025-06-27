@@ -7,9 +7,8 @@ async function performTest() {
     console.log("Cleaning up before execution...");
     await cleanup();
 
-    const startTime = Date.now();  // process.hrtime() for higher precision.
+    const startTime = Date.now();
     console.log(`Start time: ${new Date(startTime).toLocaleString()} `);
-    //const arrayIdTokenized = [];
 
     console.log("Selected number of rows: ", NUMBER_OF_RECORDS);
     // POPULATE ON DB paymentPositions
@@ -17,18 +16,12 @@ async function performTest() {
         const uniqueId = 220798 + i;
 
         await insertPaymentPositionWithValidFiscalCode(uniqueId);
-        //arrayIdTokenized.push(idValidFiscalCode);
 
         await insertPaymentOption(uniqueId);
-
     }
-
-    // console.log(`Inserted ${arrayIdTokenized.length} elements in database paymentPositions with valid fiscal code with ids: `, JSON.stringify(arrayIdTokenized));
-    // console.log(`Inserted ${arrayIdTokenized.length} elements in database paymentOptions with same ids `); //: ,JSON.stringify(arrayIdTokenized));
 
     console.log(`Inserted ${NUMBER_OF_RECORDS} elements in database paymentPositions with valid fiscal code`);
     console.log(`Inserted ${NUMBER_OF_RECORDS} elements in database paymentOptions `);
-
 
     // UPDATE paymentPositions
     console.log(`Updating status on ${NUMBER_OF_RECORDS} elements in database paymentPositions `);
