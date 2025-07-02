@@ -25,7 +25,7 @@ on:
       target:
         required: true
         type: choice
-        description: Select the Environment
+        description: Select the Environment Target
         options:
           - dev
           - uat
