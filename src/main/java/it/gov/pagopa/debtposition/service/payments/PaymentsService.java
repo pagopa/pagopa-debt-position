@@ -4,7 +4,6 @@ import feign.FeignException;
 import it.gov.pagopa.debtposition.client.NodeClient;
 import it.gov.pagopa.debtposition.client.SendClient;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
-import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
@@ -17,6 +16,7 @@ import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.payments.OrganizationModelQueryBean;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
+import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.send.response.NotificationPriceResponse;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
@@ -28,13 +28,13 @@ import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+
+import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
 
 @Service
 @Slf4j
@@ -98,24 +98,30 @@ public class PaymentsService {
   }
 
   @Transactional
-  public PaymentOption pay(
+  public PaidPaymentOptionModel pay(
       @NotBlank String organizationFiscalCode,
       @NotBlank String nav,
       @NotNull @Valid PaymentOptionModel paymentOptionModel) {
-    Optional<PaymentPosition> ppToPay =
+    Optional<PaymentPosition> paymentPositionToPayOpt =
         paymentPositionRepository
             .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvOrPaymentOptionOrganizationFiscalCodeAndPaymentOptionNav(
                 organizationFiscalCode, nav, organizationFiscalCode, nav);
 
-    if (ppToPay.isEmpty()) {
+    if (paymentPositionToPayOpt.isEmpty()) {
       throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav);
     }
 
-    // Update PaymentPosition instance only in memory
-    DebtPositionStatus.validityCheckAndUpdate(ppToPay.get());
-    DebtPositionValidation.checkPaymentPositionPayability(ppToPay.get(), nav);
+    PaymentPosition paymentPositionToPay = paymentPositionToPayOpt.get();
 
-    return this.updatePaymentStatus(ppToPay.get(), nav, paymentOptionModel);
+    // Update PaymentPosition instance only in memory
+    DebtPositionStatus.validityCheckAndUpdate(paymentPositionToPay);
+    DebtPositionValidation.checkPaymentPositionPayability(paymentPositionToPay, nav);
+    PaymentOption paidPaymentOption = this.executePaymentFlow(paymentPositionToPay, nav, paymentOptionModel);
+
+    PaidPaymentOptionModel paidPaymentOptionModel = ObjectMapperUtils.map(paidPaymentOption, PaidPaymentOptionModel.class);
+    paidPaymentOptionModel.setServiceType(paymentPositionToPay.getServiceType().name());
+
+    return paidPaymentOptionModel;
   }
 
   @Transactional
@@ -296,11 +302,11 @@ public class PaymentsService {
     return Collections.emptyList();
   }
 
-  private PaymentOption updatePaymentStatus(
+  private PaymentOption executePaymentFlow(
       PaymentPosition pp, String nav, PaymentOptionModel paymentOptionModel) {
 
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-    PaymentOption poToPay = null;
+    PaymentOption paidPO = null;
 
     long numberOfPartialPayment =
         pp.getPaymentOption().stream()
@@ -333,7 +339,7 @@ public class PaymentsService {
         if (Boolean.TRUE.equals(po.getIsPartialPayment())) {
           countPaidPartialPayment++;
         }
-        poToPay = po;
+        paidPO = po;
       }
     }
 
@@ -342,7 +348,7 @@ public class PaymentsService {
     // then update the payment position status to PAID
     if (countPaidPartialPayment > 0
         && countPaidPartialPayment < numberOfPartialPayment
-        && Boolean.TRUE.equals(Objects.requireNonNull(poToPay).getIsPartialPayment())) {
+        && Boolean.TRUE.equals(Objects.requireNonNull(paidPO).getIsPartialPayment())) {
       pp.setStatus(DebtPositionStatus.PARTIALLY_PAID);
     } else {
       pp.setStatus(DebtPositionStatus.PAID);
@@ -353,7 +359,7 @@ public class PaymentsService {
 
     // salvo l'aggiornamento del pagamento
     paymentPositionRepository.saveAndFlush(pp);
-    return poToPay;
+    return paidPO;
   }
 
   private Transfer updateTransferStatus(PaymentPosition pp, String iuv, String transferId) {

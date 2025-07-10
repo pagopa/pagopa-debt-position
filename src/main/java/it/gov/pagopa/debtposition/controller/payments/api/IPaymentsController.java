@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.gov.pagopa.debtposition.model.ProblemJson;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
+import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
@@ -128,7 +129,7 @@ public interface IPaymentsController {
       value = "/organizations/{organizationfiscalcode}/paymentoptions/{nav}/pay",
       produces = {"application/json"},
       consumes = {"application/json"})
-  ResponseEntity<PaymentOptionModelResponse> payPaymentOption(
+  ResponseEntity<PaidPaymentOptionModel> payPaymentOption(
       @Parameter(
               description = "Organization fiscal code, the fiscal code of the Organization.",
               required = true)
