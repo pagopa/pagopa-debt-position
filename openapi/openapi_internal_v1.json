@@ -2226,6 +2226,9 @@
             "items" : {
               "$ref" : "#/components/schemas/TransferModelResponse"
             }
+          },
+          "serviceType" : {
+            "type" : "string"
           }
         }
       },

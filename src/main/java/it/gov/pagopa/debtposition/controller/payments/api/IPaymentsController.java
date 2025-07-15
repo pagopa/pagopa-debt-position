@@ -87,7 +87,13 @@ public interface IPaymentsController {
       operationId = "payPaymentOption")
   @ApiResponses(
       value = {
-        @ApiResponse(responseCode = "200", description = "Request paid."),
+        @ApiResponse(
+            responseCode = "200",
+            description = "Request paid.",
+            content =
+                @Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = @Schema(implementation = PaidPaymentOptionModel.class))),
         @ApiResponse(
             responseCode = "400",
             description = "Malformed request.",
