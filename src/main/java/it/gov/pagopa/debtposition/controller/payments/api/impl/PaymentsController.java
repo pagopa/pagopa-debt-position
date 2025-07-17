@@ -6,6 +6,7 @@ import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
+import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
@@ -73,7 +74,7 @@ public class PaymentsController implements IPaymentsController {
   }
 
   @Override
-  public ResponseEntity<PaymentOptionModelResponse> payPaymentOption(
+  public ResponseEntity<PaidPaymentOptionModel> payPaymentOption(
       String organizationFiscalCode, String nav, @Valid PaymentOptionModel paymentOptionModel) {
     log.debug(
         String.format(
@@ -88,13 +89,14 @@ public class PaymentsController implements IPaymentsController {
     PaymentOption paidPaymentOption =
         paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
 
-    if (paidPaymentOption == null) {
+    // Convert entity to model
+    PaidPaymentOptionModel paidPaymentOptionModel = modelMapper.map(paidPaymentOption, PaidPaymentOptionModel.class);
 
+    if (paidPaymentOptionModel == null) {
       throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, nav);
     }
 
-    return new ResponseEntity<>(
-        ObjectMapperUtils.map(paidPaymentOption, PaymentOptionModelResponse.class), HttpStatus.OK);
+    return new ResponseEntity<>(paidPaymentOptionModel, HttpStatus.OK);
   }
 
   @Override
