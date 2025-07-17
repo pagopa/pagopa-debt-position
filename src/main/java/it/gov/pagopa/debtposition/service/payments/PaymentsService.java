@@ -29,7 +29,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -98,7 +97,7 @@ public class PaymentsService {
   }
 
   @Transactional
-  public PaidPaymentOptionModel pay(
+  public PaymentOption pay(
       @NotBlank String organizationFiscalCode,
       @NotBlank String nav,
       @NotNull @Valid PaymentOptionModel paymentOptionModel) {
@@ -116,12 +115,8 @@ public class PaymentsService {
     // Update PaymentPosition instance only in memory
     DebtPositionStatus.validityCheckAndUpdate(paymentPositionToPay);
     DebtPositionValidation.checkPaymentPositionPayability(paymentPositionToPay, nav);
-    PaymentOption paidPaymentOption = this.executePaymentFlow(paymentPositionToPay, nav, paymentOptionModel);
 
-    PaidPaymentOptionModel paidPaymentOptionModel = ObjectMapperUtils.map(paidPaymentOption, PaidPaymentOptionModel.class);
-    paidPaymentOptionModel.setServiceType(paymentPositionToPay.getServiceType().name());
-
-    return paidPaymentOptionModel;
+      return this.executePaymentFlow(paymentPositionToPay, nav, paymentOptionModel);
   }
 
   @Transactional

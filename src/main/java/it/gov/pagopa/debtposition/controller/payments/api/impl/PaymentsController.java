@@ -86,8 +86,11 @@ public class PaymentsController implements IPaymentsController {
                 CommonUtil.sanitize(organizationFiscalCode),
                 CommonUtil.sanitize(nav))));
 
-    PaidPaymentOptionModel paidPaymentOptionModel =
+    PaymentOption paidPaymentOption =
         paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
+
+    // Convert entity to model
+    PaidPaymentOptionModel paidPaymentOptionModel = modelMapper.map(paidPaymentOption, PaidPaymentOptionModel.class);
 
     if (paidPaymentOptionModel == null) {
       throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, nav);
