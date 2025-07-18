@@ -26,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
 import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
+import static it.gov.pagopa.debtposition.util.Constants.PO_MARKED_AS_PAID_FIELD_PLACEHOLDER;
 
 @Controller
 @Slf4j
@@ -154,5 +155,35 @@ public class PaymentsController implements IPaymentsController {
     }
     throw new AppException(
         AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_FAILED, organizationFiscalCode, iuv);
+  }
+
+  @Override
+  public ResponseEntity<PaidPaymentOptionModel> setPaymentOptionAsAlreadyPaid(
+          String organizationFiscalCode, String nav) {
+    log.debug(
+            String.format(
+                    LOG_BASE_HEADER_INFO,
+                    "POST",
+                    "setPaymentOptionAsAlreadyPaid",
+                    String.format(
+                            LOG_BASE_PARAMS_DETAIL,
+                            CommonUtil.sanitize(organizationFiscalCode),
+                            CommonUtil.sanitize(nav))));
+
+    PaymentOptionModel paymentOptionModel = new PaymentOptionModel();
+    paymentOptionModel.setIdReceipt(PO_MARKED_AS_PAID_FIELD_PLACEHOLDER);
+    paymentOptionModel.setPspCompany(PO_MARKED_AS_PAID_FIELD_PLACEHOLDER);
+
+    PaymentOption paidPaymentOption =
+            paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
+
+    // Convert entity to model
+    PaidPaymentOptionModel paidPaymentOptionModel = modelMapper.map(paidPaymentOption, PaidPaymentOptionModel.class);
+
+    if (paidPaymentOptionModel == null) {
+      throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, nav);
+    }
+
+    return new ResponseEntity<>(paidPaymentOptionModel, HttpStatus.OK);
   }
 }
