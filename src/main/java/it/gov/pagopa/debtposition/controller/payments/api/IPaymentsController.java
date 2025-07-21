@@ -271,8 +271,6 @@ public interface IPaymentsController {
           String nav,
       @Valid @RequestBody NotificationFeeUpdateModel notificationFeeUpdateModel);
 
-
-
     @Operation(
             summary = "The Organization mark a payment option as already paid.",
             security = {
