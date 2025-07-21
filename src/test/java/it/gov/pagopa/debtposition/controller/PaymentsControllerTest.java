@@ -810,13 +810,13 @@ class PaymentsControllerTest {
     // creo una posizione debitoria (con 'validity date' impostata e nav non valorizzato)
     mvc.perform(
                     post("/organizations/PAY_422_12345678901/debtpositions")
-                            .content(TestUtil.toJson(DebtPositionMock.getMock6()))
+                            .content(TestUtil.toJson(DebtPositionMock.getMock10()))
                             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isCreated());
 
     // porto in pubblicata lo stato della posizione debitoria
     mvc.perform(
-                    post("/organizations/PAY_422_12345678901/debtpositions/12345678901IUPDMOCK5/publish")
+                    post("/organizations/PAY_422_12345678901/debtpositions/12345678901IUPDMOCK10_markd/publish")
                             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
@@ -825,7 +825,7 @@ class PaymentsControllerTest {
     mvc.perform(
                     post("/organizations/PAY_422_12345678901/paymentoptions/"
                             + auxDigit
-                            + "123456IUVMOCK6/mark-as-paid")
+                            + "123456IUVMOCK10/mark-as-paid")
                             //.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
                             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
