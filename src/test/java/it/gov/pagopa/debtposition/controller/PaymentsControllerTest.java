@@ -805,6 +805,41 @@ class PaymentsControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
 
+  @Test
+  void markAsPaidPaymentOption_ok() throws Exception {
+    // creo una posizione debitoria (con 'validity date' impostata e nav non valorizzato)
+    mvc.perform(
+                    post("/organizations/PAY_422_12345678901/debtpositions")
+                            .content(TestUtil.toJson(DebtPositionMock.getMock6()))
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isCreated());
+
+    // porto in pubblicata lo stato della posizione debitoria
+    mvc.perform(
+                    post("/organizations/PAY_422_12345678901/debtpositions/12345678901IUPDMOCK5/publish")
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+    // effettuo l'aggiornamento della posizione debutoria come già pagata e verifico
+    // l'errore 422 di 'Not in payable state'
+    mvc.perform(
+                    post("/organizations/PAY_422_12345678901/paymentoptions/"
+                            + auxDigit
+                            + "123456IUVMOCK6/mark-as-paid")
+                            //.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+  }
+
+  @Test
+  void markAsPaidPaymentOption_404() throws Exception {
+    // provo a pagare una payment option che non esiste
+    String url = "/organizations/PAY_400_12345678901/paymentoptions/123456_NAV_NOTEXIST/mark-as-paid";
+    mvc.perform(post(url).contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+  }
+
   /** REPORT A TRANSFER */
   @Test
   void reportTransfer_200() throws Exception {
