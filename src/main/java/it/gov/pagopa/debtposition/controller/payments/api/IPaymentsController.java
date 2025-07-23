@@ -330,7 +330,7 @@ public interface IPaymentsController {
             value = "/organizations/{organizationfiscalcode}/paymentoptions/paids/{nav}",
             produces = {"application/json"},
             consumes = {"application/json"})
-    ResponseEntity<PaidPaymentOptionModel> setPaymentOptionAsAlreadyPaid(
+    ResponseEntity<PaymentOptionModelResponse> setPaymentOptionAsAlreadyPaid(
             @Parameter(
                     description = "Organization fiscal code, the fiscal code of the Organization.",
                     required = true)

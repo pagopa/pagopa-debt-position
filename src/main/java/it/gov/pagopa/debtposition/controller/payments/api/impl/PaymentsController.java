@@ -160,7 +160,7 @@ public class PaymentsController implements IPaymentsController {
   }
 
   @Override
-  public ResponseEntity<PaidPaymentOptionModel> setPaymentOptionAsAlreadyPaid(
+  public ResponseEntity<PaymentOptionModelResponse> setPaymentOptionAsAlreadyPaid(
           String organizationFiscalCode, String nav, LocalDateTime paymentDate) {
     log.debug(
             String.format(
@@ -181,7 +181,7 @@ public class PaymentsController implements IPaymentsController {
             paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
 
     // Convert entity to model
-    PaidPaymentOptionModel paidPaymentOptionModel = modelMapper.map(paidPaymentOption, PaidPaymentOptionModel.class);
+    PaymentOptionModelResponse paidPaymentOptionModel = modelMapper.map(paidPaymentOption, PaymentOptionModelResponse.class);
 
     if (paidPaymentOptionModel == null) {
       throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, nav);
