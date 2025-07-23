@@ -1281,7 +1281,7 @@
         }
       } ]
     },
-    "/organizations/{organizationfiscalcode}/paymentoptions/{nav}/mark-as-paid" : {
+    "/organizations/{organizationfiscalcode}/paymentoptions/paids/{nav}" : {
       "post" : {
         "tags" : [ "Payments API" ],
         "summary" : "The Organization mark a payment option as already paid.",
@@ -1301,6 +1301,15 @@
           "required" : true,
           "schema" : {
             "type" : "string"
+          }
+        }, {
+          "name" : "paymentDate",
+          "in" : "query",
+          "description" : "Date on which the payment was made outside the pagoPA platform",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
           }
         } ],
         "responses" : {
