@@ -30,7 +30,7 @@ public class SwaggerConfig {
   private final String INFO_API = "/info";
   private final String DEBT_POSITIONS_API = "/organizations/{organizationfiscalcode}/debtpositions";
   private final String DEBT_POSITIONS_BULK_API= "/organizations/{organizationfiscalcode}/debtpositions/bulk";
-  private final String PAYMENTS_MARK_AS_PAID_API = "/organizations/{organizationfiscalcode}/paymentoptions/{nav}/mark-as-paid";
+  private final String PAYMENTS_MARK_AS_PAID_API = "/organizations/{organizationfiscalcode}/paymentoptions/paids/{nav}";
 
   private final String DEBT_POSITION_API_BLOCK = "/organizations/{organizationfiscalcode}/debtpositions/**";
 

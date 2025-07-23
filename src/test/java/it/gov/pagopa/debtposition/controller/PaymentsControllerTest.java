@@ -823,9 +823,9 @@ class PaymentsControllerTest {
     // effettuo l'aggiornamento della posizione debutoria come già pagata e verifico
     // l'errore 422 di 'Not in payable state'
     mvc.perform(
-                    post("/organizations/PAY_422_12345678901/paymentoptions/"
+                    post("/organizations/PAY_422_12345678901/paymentoptions/paids/"
                             + auxDigit
-                            + "123456IUVMOCK10/mark-as-paid")
+                            + "123456IUVMOCK10")
                             //.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
                             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
@@ -834,7 +834,7 @@ class PaymentsControllerTest {
   @Test
   void markAsPaidPaymentOption_404() throws Exception {
     // provo a pagare una payment option che non esiste
-    String url = "/organizations/PAY_400_12345678901/paymentoptions/123456_NAV_NOTEXIST/mark-as-paid";
+    String url = "/organizations/PAY_400_12345678901/paymentoptions/paids/123456_NAV_NOTEXIST";
     mvc.perform(post(url).contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isNotFound())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON));

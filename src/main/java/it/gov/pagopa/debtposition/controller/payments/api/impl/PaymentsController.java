@@ -25,6 +25,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
+import java.time.LocalDateTime;
+
 import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
 import static it.gov.pagopa.debtposition.util.Constants.PO_MARKED_AS_PAID_FIELD_PLACEHOLDER;
 
@@ -159,7 +161,7 @@ public class PaymentsController implements IPaymentsController {
 
   @Override
   public ResponseEntity<PaidPaymentOptionModel> setPaymentOptionAsAlreadyPaid(
-          String organizationFiscalCode, String nav) {
+          String organizationFiscalCode, String nav, LocalDateTime paymentDate) {
     log.debug(
             String.format(
                     LOG_BASE_HEADER_INFO,
@@ -173,6 +175,7 @@ public class PaymentsController implements IPaymentsController {
     PaymentOptionModel paymentOptionModel = new PaymentOptionModel();
     paymentOptionModel.setIdReceipt(PO_MARKED_AS_PAID_FIELD_PLACEHOLDER);
     paymentOptionModel.setPspCompany(PO_MARKED_AS_PAID_FIELD_PLACEHOLDER);
+    paymentOptionModel.setPaymentDate(paymentDate);
 
     PaymentOption paidPaymentOption =
             paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);

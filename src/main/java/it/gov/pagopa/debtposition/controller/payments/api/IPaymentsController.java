@@ -21,6 +21,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+
 @Tag(name = "Payments API")
 @RequestMapping
 public interface IPaymentsController {
@@ -325,7 +327,7 @@ public interface IPaymentsController {
                                     schema = @Schema(implementation = ProblemJson.class)))
             })
     @PostMapping(
-            value = "/organizations/{organizationfiscalcode}/paymentoptions/{nav}/mark-as-paid",
+            value = "/organizations/{organizationfiscalcode}/paymentoptions/paids/{nav}",
             produces = {"application/json"},
             consumes = {"application/json"})
     ResponseEntity<PaidPaymentOptionModel> setPaymentOptionAsAlreadyPaid(
@@ -340,5 +342,9 @@ public interface IPaymentsController {
                                     + " creditor institution.",
                     required = true)
             @PathVariable("nav")
-            String nav);
+            String nav,
+            @Parameter(
+                    description =
+                            "Date on which the payment was made outside the pagoPA platform")
+            @RequestParam(required = false) LocalDateTime paymentDate);
 }
