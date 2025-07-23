@@ -257,7 +257,7 @@ public class DebtPositionValidation {
                               LOG_BASE_PARAMS_DETAIL,
                               CommonUtil.sanitize(ppToPay.getOrganizationFiscalCode()),
                               CommonUtil.sanitize(ppToPay.getIupd()),
-                              nav)
+                              CommonUtil.sanitize(nav))
                           + "]");
                   return new AppException(
                       AppError.PAYMENT_OPTION_PAY_FAILED, ppToPay.getOrganizationFiscalCode(), nav);
@@ -290,7 +290,7 @@ public class DebtPositionValidation {
               + "Timestamp: {}",
           CommonUtil.sanitize(ppToPay.getOrganizationFiscalCode()),
           CommonUtil.sanitize(ppToPay.getIupd()),
-          nav,
+          CommonUtil.sanitize(nav),
           ppToPay.getStatus(),
           poToPay.getStatus(),
           poToPay.getIsPartialPayment(),
