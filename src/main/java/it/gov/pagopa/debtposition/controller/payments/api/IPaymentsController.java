@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.gov.pagopa.debtposition.model.ProblemJson;
+import it.gov.pagopa.debtposition.model.payments.AlreadyPaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
@@ -20,8 +21,6 @@ import javax.validation.constraints.Pattern;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
 
 @Tag(name = "Payments API")
 @RequestMapping
@@ -343,8 +342,5 @@ public interface IPaymentsController {
                     required = true)
             @PathVariable("nav")
             String nav,
-            @Parameter(
-                    description =
-                            "Date on which the payment was made outside the pagoPA platform")
-            @RequestParam(required = false) LocalDateTime paymentDate);
+            @Valid @RequestBody AlreadyPaidPaymentOptionModel paidPaymentOptionModel);
 }
