@@ -5,6 +5,7 @@ import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
+import it.gov.pagopa.debtposition.model.payments.AlreadyPaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
@@ -26,6 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
 import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
+import static it.gov.pagopa.debtposition.util.Constants.PO_MARKED_AS_PAID_FIELD_PLACEHOLDER;
 
 @Controller
 @Slf4j
@@ -154,5 +156,36 @@ public class PaymentsController implements IPaymentsController {
     }
     throw new AppException(
         AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_FAILED, organizationFiscalCode, iuv);
+  }
+
+  @Override
+  public ResponseEntity<PaymentOptionModelResponse> setPaymentOptionAsAlreadyPaid(
+          String organizationFiscalCode, String nav, AlreadyPaidPaymentOptionModel alreadyPaidPaymentOptionModel) {
+    log.debug(
+            String.format(
+                    LOG_BASE_HEADER_INFO,
+                    "POST",
+                    "setPaymentOptionAsAlreadyPaid",
+                    String.format(
+                            LOG_BASE_PARAMS_DETAIL,
+                            CommonUtil.sanitize(organizationFiscalCode),
+                            CommonUtil.sanitize(nav))));
+
+    PaymentOptionModel paymentOptionModel = new PaymentOptionModel();
+    paymentOptionModel.setIdReceipt(PO_MARKED_AS_PAID_FIELD_PLACEHOLDER);
+    paymentOptionModel.setPspCompany(PO_MARKED_AS_PAID_FIELD_PLACEHOLDER);
+    paymentOptionModel.setPaymentDate(alreadyPaidPaymentOptionModel.getPaymentDate());
+
+    PaymentOption paidPaymentOption =
+            paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
+
+    // Convert entity to model
+    PaymentOptionModelResponse paymentOptionModelResponse = modelMapper.map(paidPaymentOption, PaymentOptionModelResponse.class);
+
+    if (paymentOptionModelResponse == null) {
+      throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, nav);
+    }
+
+    return new ResponseEntity<>(paymentOptionModelResponse, HttpStatus.OK);
   }
 }
