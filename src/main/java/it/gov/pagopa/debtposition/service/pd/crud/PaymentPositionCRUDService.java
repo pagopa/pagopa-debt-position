@@ -402,6 +402,7 @@ public class PaymentPositionCRUDService {
 
       paymentPositionRepository.deleteAll(currentPaymentPositions);
       paymentPositionRepository.flush();
+      // TODO
       this.createMultipleDebtPositions(
           updatePositions, organizationFiscalCode, toPublish, segCodes, action);
 
