@@ -87,6 +87,11 @@ public enum AppError {
       "The payment position is forbidden",
       "The caller does not have proper authorization to access or modify the IUVs in the payment"
           + " position. [Organization Fiscal Code=%s, IUPD=%s]"),
+  DEBT_POSITION_FORBIDDEN_ON_NAV(
+          HttpStatus.FORBIDDEN,
+          "The payment position is forbidden",
+          "The caller does not have proper authorization to access or modify the NAVs in the payment"
+                  + " position. [Organization Fiscal Code=%s]"),
   PAYMENT_OPTION_RESERVED_METADATA(
           HttpStatus.CONFLICT,
           "The payment option contains reserved metadata",

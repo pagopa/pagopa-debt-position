@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.gov.pagopa.debtposition.model.ProblemJson;
+import it.gov.pagopa.debtposition.model.payments.AlreadyPaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
@@ -270,4 +271,83 @@ public interface IPaymentsController {
           @PathVariable("nav")
           String nav,
       @Valid @RequestBody NotificationFeeUpdateModel notificationFeeUpdateModel);
+
+    @Operation(
+            summary = "The Organization mark a payment option as already paid.",
+            security = {
+                    @SecurityRequirement(name = "ApiKey")
+
+            },
+            operationId = "setPaymentOptionAsAlreadyPaid")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Request set as paid.",
+                            content =
+                            @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = PaidPaymentOptionModel.class))),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Malformed request.",
+                            content =
+                            @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ProblemJson.class))),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Wrong or missing function key.",
+                            content = @Content(schema = @Schema())),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "No payment option found.",
+                            content = @Content(schema = @Schema(implementation = ProblemJson.class))),
+                    @ApiResponse(
+                            responseCode = "409",
+                            description = "Conflict: existing related payment found.",
+                            content =
+                            @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ProblemJson.class))),
+                    @ApiResponse(
+                            responseCode = "422",
+                            description = "Unprocessable: not in payable state.",
+                            content =
+                            @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ProblemJson.class))),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "Service unavailable.",
+                            content =
+                            @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ProblemJson.class)))
+            })
+    @PostMapping(
+            value = "/organizations/{organizationfiscalcode}/paymentoptions/paids/{nav}",
+            produces = {"application/json"},
+            consumes = {"application/json"})
+    ResponseEntity<PaymentOptionModelResponse> setPaymentOptionAsAlreadyPaid(
+            @Parameter(
+                    description = "Organization fiscal code, the fiscal code of the Organization.",
+                    required = true)
+            @PathVariable("organizationfiscalcode")
+            String organizationFiscalCode,
+            @Parameter(
+                    description =
+                            "NAV (notice number) is the unique reference assigned to the payment by a"
+                                    + " creditor institution.",
+                    required = true)
+            @PathVariable("nav")
+            String nav,
+            @Valid
+            @Parameter(
+                    description = "Segregation codes for which broker is authorized",
+                    hidden = true)
+            @Pattern(regexp = "\\d{2}(,\\d{2})*")
+            @RequestParam(required = false)
+            String segregationCodes,
+            @Valid @RequestBody AlreadyPaidPaymentOptionModel paidPaymentOptionModel);
 }
