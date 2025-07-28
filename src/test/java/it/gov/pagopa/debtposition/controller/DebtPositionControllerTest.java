@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import it.gov.pagopa.debtposition.DebtPositionApplication;
@@ -141,8 +142,8 @@ class DebtPositionControllerTest {
             pp.getPaymentOption().get(0).getAmount(),
             "info",
             "0",
-            "",
-            "",
+            null,
+            null,
             new Stamp("hash1", "01", "ML"),
             TransferStatus.T_UNREPORTED);
     pp.getPaymentOption().get(0).getTransfer().set(0, t);
@@ -481,6 +482,83 @@ class DebtPositionControllerTest {
         .andExpect(status().isBadRequest())
         .andExpect(content().string(containsString("size must be between 0 and 10")));
   }
+  
+  
+  @Test
+  void createDebtPositionWithCheckOnIBAN_400() throws Exception {
+
+	  // Blank postalIban
+	  PaymentPositionDTO pp = DebtPositionMock.getMock1();
+	  pp.getPaymentOption().get(0).getTransfer().get(0).setPostalIban("");
+	  mvc.perform(
+			  post("/organizations/CHKIBAN_12345678901/debtpositions")
+			  .content(TestUtil.toJson(pp))
+			  .contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(status().isBadRequest())
+	  .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(jsonPath("$.detail").value(containsString(
+			  "postalIban: Postal IBAN is optional, but if provided, it must not be blank and must not exceed 35 characters"
+			  )));
+
+	  // postalIban with single space
+	  pp.getPaymentOption().get(0).getTransfer().get(0).setPostalIban(" ");
+	  mvc.perform(
+			  post("/organizations/CHKIBAN_12345678901/debtpositions")
+			  .content(TestUtil.toJson(pp))
+			  .contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(jsonPath("$.detail").value(containsString(
+			  "postalIban: Postal IBAN must not contain spaces or special characters"
+			  )));
+
+	  // postalIban with special characters
+	  pp = DebtPositionMock.getMock1();
+	  pp.getPaymentOption().get(0).getTransfer().get(0).setPostalIban("IT60X054281110!@#0000123456");
+	  mvc.perform(post("/organizations/CHKIBAN_12345678901/debtpositions")
+			  .content(TestUtil.toJson(pp))
+			  .contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(status().isBadRequest()).andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(jsonPath("$.detail").value(containsString(
+			  "postalIban: Postal IBAN must not contain spaces or special characters"
+			  )));
+
+	  // postalIban too long
+	  pp = DebtPositionMock.getMock1();
+	  pp.getPaymentOption().get(0).getTransfer().get(0).setPostalIban("IT60X054281110100000012345678901234567"); // 36 chars
+	  mvc.perform(post("/organizations/CHKIBAN_12345678901/debtpositions")
+			  .content(TestUtil.toJson(pp))
+			  .contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(status().isBadRequest())
+	  .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(jsonPath("$.detail").value(containsString(
+			  "postalIban: Postal IBAN is optional, but if provided, it must not be blank and must not exceed 35 characters"
+			  )));
+
+	  // iban with spaces
+	  pp = DebtPositionMock.getMock1();
+	  pp.getPaymentOption().get(0).getTransfer().get(0).setIban("IT60 X0542811101000000123456");
+	  mvc.perform(post("/organizations/CHKIBAN_12345678901/debtpositions")
+			  .content(TestUtil.toJson(pp))
+			  .contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(status().isBadRequest())
+	  .andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(jsonPath("$.detail").value(containsString(
+			  "iban: IBAN must not contain spaces or special characters"
+			  )));
+
+	  // iban too long (36 characters)
+	  pp = DebtPositionMock.getMock1();
+	  pp.getPaymentOption().get(0).getTransfer().get(0).setIban("IT60X054281110100000012345678901234567");
+	  mvc.perform(post("/organizations/CHKIBAN_12345678901/debtpositions")
+			  .content(TestUtil.toJson(pp))
+			  .contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(status().isBadRequest())
+	  .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(jsonPath("$.detail").value(containsString(
+			  "iban: The IBAN must not be blank and must not exceed 35 characters"
+			  )));
+  }
+  
 
   /** GET DEBT POSITION BY IUV */
   @Test
@@ -512,8 +590,8 @@ class DebtPositionControllerTest {
             pp.getPaymentOption().get(0).getAmount(),
             "info",
             "0",
-            "",
-            "",
+            null,
+            null,
             new Stamp("hash1", "01", "ML"),
             TransferStatus.T_UNREPORTED);
     pp.getPaymentOption().get(0).getTransfer().set(0, t);
@@ -690,8 +768,8 @@ class DebtPositionControllerTest {
             pp.getPaymentOption().get(0).getAmount(),
             "info",
             "0",
-            "",
-            "",
+            null,
+            null,
             new Stamp("hash1", "01", "ML"),
             TransferStatus.T_UNREPORTED);
     pp.getPaymentOption().get(0).getTransfer().set(0, t);
