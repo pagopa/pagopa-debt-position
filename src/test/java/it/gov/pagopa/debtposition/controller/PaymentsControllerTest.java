@@ -826,17 +826,62 @@ class PaymentsControllerTest {
                     post("/organizations/PAY_422_12345678901/paymentoptions/paids/"
                             + auxDigit
                             + "123456IUVMOCK10")
-                            //.content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
+                            .content("{}")
+                            .queryParam("segregationCodes", "12")
                             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
   }
 
   @Test
+  void markAsPaidPaymentOption_ok_withBody() throws Exception {
+    // creo una posizione debitoria (con 'validity date' impostata e nav non valorizzato)
+    mvc.perform(
+                    post("/organizations/PAY_422_12345678901/debtpositions")
+                            .content(TestUtil.toJson(DebtPositionMock.getMock10()))
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isCreated());
+
+    // porto in pubblicata lo stato della posizione debitoria
+    mvc.perform(
+                    post("/organizations/PAY_422_12345678901/debtpositions/12345678901IUPDMOCK10_markd/publish")
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+    // effettuo l'aggiornamento della posizione debutoria come già pagata e verifico
+    // l'errore 422 di 'Not in payable state'
+    mvc.perform(
+                    post("/organizations/PAY_422_12345678901/paymentoptions/paids/"
+                            + auxDigit
+                            + "123456IUVMOCK10")
+                            .content("{\"paymentDate\":\"2025-01-01T10:00:00.000Z\"}")
+                            .queryParam("segregationCodes", "12")
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+  }
+
+
+  @Test
   void markAsPaidPaymentOption_404() throws Exception {
     // provo a pagare una payment option che non esiste
-    String url = "/organizations/PAY_400_12345678901/paymentoptions/paids/123456_NAV_NOTEXIST";
-    mvc.perform(post(url).contentType(MediaType.APPLICATION_JSON))
+    String url = "/organizations/PAY_400_12345678901/paymentoptions/paids/3123456_NAV_NOTEXIST";
+    mvc.perform(post(url)
+                    .queryParam("segregationCodes", "12")
+                    .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isNotFound())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+  }
+
+  @Test
+  void markAsPaidPaymentOption_403() throws Exception {
+    // provo a pagare una payment option su cui non ho i permessi di accedere
+    String url = "/organizations/PAY_422_12345678901/paymentoptions/paids/"
+            + auxDigit
+            + "123456IUVMOCK10";
+    mvc.perform(post(url)
+                    .queryParam("segregationCodes", "51")
+                    .content("{}")
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
 
