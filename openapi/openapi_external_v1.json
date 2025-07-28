@@ -1285,13 +1285,17 @@
   "components" : {
     "schemas" : {
       "PaymentOptionMetadataModel" : {
-        "required" : [ "key" ],
+        "required" : [ "key", "value" ],
         "type" : "object",
         "properties" : {
           "key" : {
+            "maxLength" : 140,
+            "minLength" : 0,
             "type" : "string"
           },
           "value" : {
+            "maxLength" : 140,
+            "minLength" : 0,
             "type" : "string"
           }
         },
@@ -1470,13 +1474,17 @@
         }
       },
       "TransferMetadataModel" : {
-        "required" : [ "key" ],
+        "required" : [ "key", "value" ],
         "type" : "object",
         "properties" : {
           "key" : {
+            "maxLength" : 140,
+            "minLength" : 0,
             "type" : "string"
           },
           "value" : {
+            "maxLength" : 140,
+            "minLength" : 0,
             "type" : "string"
           }
         },

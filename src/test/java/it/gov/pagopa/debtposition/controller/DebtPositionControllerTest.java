@@ -1597,13 +1597,13 @@ class DebtPositionControllerTest {
         .getPaymentOption()
         .get(0)
         .addPaymentOptionMetadata(
-            PaymentOptionMetadataDTO.builder().key("keypometadataupd").build());
+            PaymentOptionMetadataDTO.builder().key("keypometadataupd").value("valuepometadataupd").build());
     ppToUpdate
         .getPaymentOption()
         .get(0)
         .getTransfer()
         .get(0)
-        .addTransferMetadata(TransferMetadataDTO.builder().key("keytransfermetadataupd").build());
+        .addTransferMetadata(TransferMetadataDTO.builder().key("keytransfermetadataupd").value("valuetransfermetadataupd").build());
     mvc.perform(
             put("/organizations/200_UPD_metadata_12345678901/debtpositions/12345678901IUPDMETADATAMOCK7")
                 .content(TestUtil.toJson(ppToUpdate))
