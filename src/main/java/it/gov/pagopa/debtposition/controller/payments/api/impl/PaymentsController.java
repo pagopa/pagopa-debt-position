@@ -26,6 +26,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
 import static it.gov.pagopa.debtposition.util.Constants.PO_MARKED_AS_PAID_FIELD_PLACEHOLDER;
 
@@ -160,7 +163,8 @@ public class PaymentsController implements IPaymentsController {
 
   @Override
   public ResponseEntity<PaymentOptionModelResponse> setPaymentOptionAsAlreadyPaid(
-          String organizationFiscalCode, String nav, AlreadyPaidPaymentOptionModel alreadyPaidPaymentOptionModel) {
+          String organizationFiscalCode, String nav, String segregationCodes, AlreadyPaidPaymentOptionModel alreadyPaidPaymentOptionModel) {
+
     log.debug(
             String.format(
                     LOG_BASE_HEADER_INFO,
@@ -170,6 +174,14 @@ public class PaymentsController implements IPaymentsController {
                             LOG_BASE_PARAMS_DETAIL,
                             CommonUtil.sanitize(organizationFiscalCode),
                             CommonUtil.sanitize(nav))));
+
+    ArrayList<String> segCodes =
+            segregationCodes != null
+                    ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
+                    : null;
+    if (segCodes != null && !CommonUtil.isAuthorizedOnNavBySegregationCode(nav, segCodes)) {
+      throw new AppException(AppError.DEBT_POSITION_FORBIDDEN_ON_NAV, organizationFiscalCode, nav);
+    }
 
     PaymentOptionModel paymentOptionModel = new PaymentOptionModel();
     paymentOptionModel.setIdReceipt(PO_MARKED_AS_PAID_FIELD_PLACEHOLDER);

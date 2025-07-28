@@ -342,5 +342,12 @@ public interface IPaymentsController {
                     required = true)
             @PathVariable("nav")
             String nav,
+            @Valid
+            @Parameter(
+                    description = "Segregation codes for which broker is authorized",
+                    hidden = true)
+            @Pattern(regexp = "\\d{2}(,\\d{2})*")
+            @RequestParam(required = false)
+            String segregationCodes,
             @Valid @RequestBody AlreadyPaidPaymentOptionModel paidPaymentOptionModel);
 }

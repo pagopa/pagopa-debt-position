@@ -3,7 +3,7 @@ package it.gov.pagopa.debtposition;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.mapper.*;
-import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModelResponse;
+import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
@@ -47,10 +47,10 @@ public class DebtPositionApplication {
         .setConverter(convertPPModelToPPEntity);
 
     // GPD version 1 converter used to return a paid Payment Option data (differs from default mapping by serviceType adding).
-    Converter<PaymentOption, PaidPaymentOptionModelResponse>
+    Converter<PaymentOption, PaidPaymentOptionModel>
             convertPOEntityToPaidPOModel = new ConvertPOEntityToPaidPOModel();
     modelMapper
-            .createTypeMap(PaymentOption.class, PaidPaymentOptionModelResponse.class)
+            .createTypeMap(PaymentOption.class, PaidPaymentOptionModel.class)
             .setConverter(convertPOEntityToPaidPOModel);
 
     // GPD version 1 converter used to return a Payment Option with debtor data.
