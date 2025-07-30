@@ -1,7 +1,6 @@
 package it.gov.pagopa.debtposition.service.pd.crud;
 
 import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
-import static it.gov.pagopa.debtposition.util.ObjectMapperUtils.copyObjId;
 
 import it.gov.pagopa.debtposition.entity.*;
 import it.gov.pagopa.debtposition.exception.AppError;
@@ -231,10 +230,10 @@ public class PaymentPositionCRUDService {
       // flip model to entity
       List<PaymentOption> oldPaymentOptions = new ArrayList<>(ppToUpdate.getPaymentOption());
 
-      ppToUpdate.getPaymentOption().clear();
-      modelMapper.map(ppModel, ppToUpdate);
+      PaymentPosition inputPP = PaymentPosition.builder().build();
+      modelMapper.map(ppModel, inputPP);
 
-      copyObjId(ppToUpdate, oldPaymentOptions);
+      MapperPP.mapAndUpdatePaymentPosition(inputPP, ppToUpdate);
 
       // migrate the notification fee value (if defined) and update the amounts
       setOldNotificationFeeAndSendSync(oldPaymentOptions, organizationFiscalCode, ppToUpdate);
