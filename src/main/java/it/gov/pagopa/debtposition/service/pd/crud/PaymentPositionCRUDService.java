@@ -3,13 +3,11 @@ package it.gov.pagopa.debtposition.service.pd.crud;
 import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
 import static it.gov.pagopa.debtposition.util.ObjectMapperUtils.copyObjId;
 
-import it.gov.pagopa.debtposition.entity.PaymentOption;
-import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
-import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.entity.*;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.exception.ValidationException;
+import it.gov.pagopa.debtposition.mapper.MapperPP;
 import it.gov.pagopa.debtposition.model.IPaymentPositionModel;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
@@ -233,8 +231,6 @@ public class PaymentPositionCRUDService {
       // flip model to entity
       List<PaymentOption> oldPaymentOptions = new ArrayList<>(ppToUpdate.getPaymentOption());
 
-      // TODO: se ho 1 opzione e non modifico nulla cosa succede a db visto che faccio un clear?
-
       ppToUpdate.getPaymentOption().clear();
       modelMapper.map(ppModel, ppToUpdate);
 
@@ -247,7 +243,7 @@ public class PaymentPositionCRUDService {
       DebtPositionValidation.checkPaymentPositionInputDataAccuracy(ppToUpdate, action);
 
       var ppUpdated =
-          this.checkAndBuildDebtPositionToUpdate(
+          this.checkDebtPositionToUpdate(
               ppToUpdate, organizationFiscalCode, toPublish, segregationCodes, action);
 
       return paymentPositionRepository.saveAndFlush(ppUpdated);
@@ -284,7 +280,7 @@ public class PaymentPositionCRUDService {
 
       for (PaymentPosition debtPosition : debtPositions) {
         ppToSaveList.add(
-            this.checkAndBuildDebtPositionToUpdate(
+            this.checkDebtPositionToUpdate(
                 debtPosition, organizationFiscalCode, toPublish, segCodes, action));
       }
 
@@ -317,16 +313,17 @@ public class PaymentPositionCRUDService {
       boolean toPublish,
       List<String> segCodes,
       String... action) {
-    final String ERROR_UPDATE_LOG_MSG = "Error during debt positions update: %s";
-    List<PaymentPosition> updatePositions = new ArrayList<>();
+
     Map<String, PaymentPosition> inPositionsMap = new HashMap<>();
     inputPaymentPositions.forEach(pp -> inPositionsMap.put(pp.getIupd(), pp));
-    List<PaymentPosition> currentPaymentPositions =
+
+    // 1. Carica le entità gestite dal DB
+    List<PaymentPosition> managedPositions =
         getDebtPositionsByIUPDs(
             organizationFiscalCode, inPositionsMap.keySet().stream().toList(), segCodes);
 
     try {
-      for (PaymentPosition currentPP : currentPaymentPositions) {
+      for (PaymentPosition currentPP : managedPositions) {
         PaymentPosition inputPaymentPosition = inPositionsMap.get(currentPP.getIupd());
 
         if (DebtPositionStatus.getPaymentPosNotUpdatableStatus().contains(currentPP.getStatus())) {
@@ -336,24 +333,22 @@ public class PaymentPositionCRUDService {
               inputPaymentPosition.getIupd());
         }
 
-        // aggiorno direttamente l’istanza gestita
-        PaymentPosition newPaymentPosition = PaymentPosition.builder().build();
-        modelMapper.map(inputPaymentPosition, newPaymentPosition);
-        newPaymentPosition.setId(currentPP.getId());
-        copyObjId(newPaymentPosition, currentPP.getPaymentOption());
+        // 2. Usa il nuovo mapper custom per aggiornare in modo sicuro l'entità
+        MapperPP.mapAndUpdatePaymentPosition(inputPaymentPosition, currentPP);
 
+        // 3. Esegui la logica di business restante
         setOldNotificationFeeAndSendSync(
             currentPP.getPaymentOption(), organizationFiscalCode, currentPP);
-
         DebtPositionValidation.checkPaymentPositionInputDataAccuracy(currentPP, action);
-
-        updatePositions.add(currentPP);
       }
 
+      // 4. Salva le entità modificate
+      // Hibernate rileverà automaticamente tutti gli INSERT, UPDATE e DELETE necessari
       this.createMultipleDebtPositions(
-          updatePositions, organizationFiscalCode, toPublish, segCodes, action);
+          managedPositions, organizationFiscalCode, toPublish, segCodes, action);
 
-      return updatePositions;
+      return managedPositions;
+
     } catch (ValidationException e) {
       throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
     } catch (AppException e) {
@@ -366,7 +361,8 @@ public class PaymentPositionCRUDService {
       }
       throw e;
     } catch (Exception e) {
-      log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
+      // Logga l'errore completo per il debug
+      log.error("Error during debt position update process", e);
       throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
     }
   }
@@ -469,7 +465,7 @@ public class PaymentPositionCRUDService {
     return numberOfUpdates;
   }
 
-  private PaymentPosition checkAndBuildDebtPositionToUpdate(
+  private PaymentPosition checkDebtPositionToUpdate(
       PaymentPosition pp,
       String organizationFiscalCode,
       boolean toPublish,
@@ -551,8 +547,7 @@ public class PaymentPositionCRUDService {
       String... action) {
 
     PaymentPosition pp = SerializationUtils.clone(debtPosition);
-    return checkAndBuildDebtPositionToUpdate(
-        pp, organizationFiscalCode, toPublish, segCodes, action);
+    return checkDebtPositionToUpdate(pp, organizationFiscalCode, toPublish, segCodes, action);
   }
 
   private boolean isAuthorizedBySegregationCode(
