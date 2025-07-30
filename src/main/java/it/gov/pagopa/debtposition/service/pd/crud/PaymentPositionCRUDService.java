@@ -1,6 +1,7 @@
 package it.gov.pagopa.debtposition.service.pd.crud;
 
 import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
+import static it.gov.pagopa.debtposition.util.ObjectMapperUtils.copyObjId;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
@@ -231,6 +232,9 @@ public class PaymentPositionCRUDService {
     try {
       // flip model to entity
       List<PaymentOption> oldPaymentOptions = new ArrayList<>(ppToUpdate.getPaymentOption());
+
+      // TODO: se ho 1 opzione e non modifico nulla cosa succede a db visto che faccio un clear?
+
       ppToUpdate.getPaymentOption().clear();
       modelMapper.map(ppModel, ppToUpdate);
 
@@ -265,54 +269,6 @@ public class PaymentPositionCRUDService {
     }
   }
 
-  private static void copyObjId(PaymentPosition ppToUpdate, List<PaymentOption> oldPaymentOptions) {
-    for (var i = 0; i < ppToUpdate.getPaymentOption().size(); i += 1) {
-
-      PaymentOption paymentOption = ppToUpdate.getPaymentOption().get(i);
-      var iuv = paymentOption.getIuv();
-      var optionalPo =
-          oldPaymentOptions.stream().filter(elem -> elem.getIuv().equals(iuv)).findFirst();
-
-      if (optionalPo.isPresent()) {
-        PaymentOption sourcePo = optionalPo.get();
-        var objId = sourcePo.getId();
-        paymentOption.setId(objId);
-
-        for (var j = 0; j < paymentOption.getTransfer().size(); j += 1) {
-          var transfer = paymentOption.getTransfer().get(j);
-          var id = transfer.getIdTransfer();
-          var optionalTransfer =
-              sourcePo.getTransfer().stream()
-                  .filter(elem -> elem.getIdTransfer().equals(id))
-                  .findFirst();
-
-          if (optionalTransfer.isPresent()) {
-            var sourceTransfer = optionalTransfer.get();
-            transfer.setId(sourceTransfer.getId());
-
-            for (var k = 0; k < transfer.getTransferMetadata().size(); k += 1) {
-              var metadata = transfer.getTransferMetadata().get(k);
-              var key = metadata.getKey();
-              sourceTransfer.getTransferMetadata().stream()
-                  .filter(elem -> elem.getKey().equals(key))
-                  .findFirst()
-                  .ifPresent(elem -> metadata.setId(elem.getId()));
-            }
-          }
-        }
-
-        for (var j = 0; j < paymentOption.getPaymentOptionMetadata().size(); j += 1) {
-          var metadata = paymentOption.getPaymentOptionMetadata().get(j);
-          var key = metadata.getKey();
-          sourcePo.getPaymentOptionMetadata().stream()
-              .filter(elem -> elem.getKey().equals(key))
-              .findFirst()
-              .ifPresent(elem -> metadata.setId(elem.getId()));
-        }
-      }
-    }
-  }
-
   public List<PaymentPosition> createMultipleDebtPositions(
       @Valid List<PaymentPosition> debtPositions,
       String organizationFiscalCode,
@@ -328,7 +284,7 @@ public class PaymentPositionCRUDService {
 
       for (PaymentPosition debtPosition : debtPositions) {
         ppToSaveList.add(
-            this.checkAndBuildDebtPositionToSave(
+            this.checkAndBuildDebtPositionToUpdate(
                 debtPosition, organizationFiscalCode, toPublish, segCodes, action));
       }
 
@@ -372,7 +328,6 @@ public class PaymentPositionCRUDService {
     try {
       for (PaymentPosition currentPP : currentPaymentPositions) {
         PaymentPosition inputPaymentPosition = inPositionsMap.get(currentPP.getIupd());
-        PaymentPosition newPaymentPosition = currentPP.deepClone();
 
         if (DebtPositionStatus.getPaymentPosNotUpdatableStatus().contains(currentPP.getStatus())) {
           throw new AppException(
@@ -381,28 +336,19 @@ public class PaymentPositionCRUDService {
               inputPaymentPosition.getIupd());
         }
 
-        // flip model to entity
-        List<PaymentOption> oldPaymentOptions =
-            new ArrayList<>(newPaymentPosition.getPaymentOption());
-        newPaymentPosition.getPaymentOption().clear();
+        // aggiorno direttamente l’istanza gestita
+        PaymentPosition newPaymentPosition = PaymentPosition.builder().build();
         modelMapper.map(inputPaymentPosition, newPaymentPosition);
+        newPaymentPosition.setId(currentPP.getId());
+        copyObjId(newPaymentPosition, currentPP.getPaymentOption());
 
-        // migrate the notification fee value (if defined) and update the amounts
-        newPaymentPosition =
-            setOldNotificationFeeAndSendSync(
-                oldPaymentOptions, organizationFiscalCode, newPaymentPosition);
+        setOldNotificationFeeAndSendSync(
+            currentPP.getPaymentOption(), organizationFiscalCode, currentPP);
 
-        // check the input data
-        DebtPositionValidation.checkPaymentPositionInputDataAccuracy(newPaymentPosition, action);
-        // the version is increased at each change
-        newPaymentPosition.setVersion(newPaymentPosition.getVersion() + 1);
+        DebtPositionValidation.checkPaymentPositionInputDataAccuracy(currentPP, action);
 
-        updatePositions.add(newPaymentPosition);
+        updatePositions.add(currentPP);
       }
-
-      paymentPositionRepository.deleteAll(currentPaymentPositions);
-      paymentPositionRepository.flush();
-      // TODO
 
       this.createMultipleDebtPositions(
           updatePositions, organizationFiscalCode, toPublish, segCodes, action);
@@ -453,7 +399,7 @@ public class PaymentPositionCRUDService {
     }
   }
 
-  private PaymentPosition setOldNotificationFeeAndSendSync(
+  private void setOldNotificationFeeAndSendSync(
       List<PaymentOption> oldPaymentOptions,
       String organizationFiscalCode,
       PaymentPosition paymentPosition) {
@@ -475,7 +421,6 @@ public class PaymentPositionCRUDService {
       Boolean sendSync = oldSendSync.get(paymentOptionModel.getIuv());
       paymentOptionModel.setSendSync(sendSync != null ? sendSync : Boolean.FALSE);
     }
-    return paymentPosition;
   }
 
   /*
