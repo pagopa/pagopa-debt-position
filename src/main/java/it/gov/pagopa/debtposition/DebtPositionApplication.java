@@ -42,7 +42,7 @@ public class DebtPositionApplication {
 
     // Convert PaymentPosition entity to PaymentPositionModel
     Converter<PaymentPositionModel, PaymentPosition> convertPPModelToPPEntity =
-        new ConvertPPModelToPPEntityForUpdate();
+        new ConvertPPModelToPPEntity();
     modelMapper
         .createTypeMap(PaymentPositionModel.class, PaymentPosition.class)
         .setConverter(convertPPModelToPPEntity);

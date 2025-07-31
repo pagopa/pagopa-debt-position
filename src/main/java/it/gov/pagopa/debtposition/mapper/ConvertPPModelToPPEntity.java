@@ -7,10 +7,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import lombok.experimental.UtilityClass;
+import javax.validation.constraints.NotNull;
+import org.modelmapper.Converter;
+import org.modelmapper.spi.MappingContext;
 
-@UtilityClass
-public class MapperPP {
+public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel, PaymentPosition> {
+
+  @Override
+  public PaymentPosition convert(
+      MappingContext<@NotNull PaymentPositionModel, PaymentPosition> context) {
+    PaymentPositionModel source = context.getSource();
+    PaymentPosition destination =
+        context.getDestination() != null ? context.getDestination() : new PaymentPosition();
+
+    mapAndUpdatePaymentPosition(source, destination);
+
+    return destination;
+  }
 
   public void mapAndUpdatePaymentPosition(
       PaymentPositionModel source, PaymentPosition destination) {

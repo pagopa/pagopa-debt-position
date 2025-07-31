@@ -10,15 +10,12 @@ import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.exception.ValidationException;
-import it.gov.pagopa.debtposition.mapper.MapperPP;
-import it.gov.pagopa.debtposition.mapper.MapperPPV3;
 import it.gov.pagopa.debtposition.model.IPaymentPositionModel;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
-import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.repository.TransferRepository;
@@ -234,12 +231,7 @@ public class PaymentPositionCRUDService {
     try {
 
       // flip model to entity
-      if (ppModel instanceof PaymentPositionModel input) {
-        MapperPP.mapAndUpdatePaymentPosition(input, ppToUpdate);
-      }
-      if (ppModel instanceof PaymentPositionModelV3 input) {
-        MapperPPV3.mapAndUpdatePaymentPosition(input, ppToUpdate);
-      }
+      modelMapper.map(ppModel, ppToUpdate);
 
       // update amounts adding notification fee
       updateAmounts(organizationFiscalCode, ppToUpdate);
@@ -361,7 +353,7 @@ public class PaymentPositionCRUDService {
         }
 
         // map model to entity
-        MapperPP.mapAndUpdatePaymentPosition(inputPaymentPosition, currentPP);
+        modelMapper.map(inputPaymentPosition, currentPP);
 
         // update amounts adding notification fee
         updateAmounts(organizationFiscalCode, currentPP);

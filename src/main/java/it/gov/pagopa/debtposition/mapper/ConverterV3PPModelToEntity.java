@@ -3,23 +3,20 @@ package it.gov.pagopa.debtposition.mapper;
 import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.UNDEFINED_DEBTOR;
 
 import it.gov.pagopa.debtposition.entity.*;
-import it.gov.pagopa.debtposition.exception.AppError;
-import it.gov.pagopa.debtposition.exception.AppException;
-import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
-import it.gov.pagopa.debtposition.model.pd.*;
+import it.gov.pagopa.debtposition.model.pd.DebtorModel;
+import it.gov.pagopa.debtposition.model.pd.Stamp;
+import it.gov.pagopa.debtposition.model.pd.TransferMetadataModel;
+import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import it.gov.pagopa.debtposition.model.v3.InstallmentMetadataModel;
 import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
-import org.springframework.util.CollectionUtils;
 
 public class ConverterV3PPModelToEntity
     implements Converter<PaymentPositionModelV3, PaymentPosition> {
@@ -30,62 +27,25 @@ public class ConverterV3PPModelToEntity
     PaymentPosition destination =
         context.getDestination() != null ? context.getDestination() : new PaymentPosition();
 
-    destination.setIupd(source.getIupd());
-    destination.setCompanyName(source.getCompanyName());
-    destination.setOfficeName(source.getOfficeName());
-    destination.setPayStandIn(source.isPayStandIn());
+    mapAndUpdatePaymentPosition(source, destination);
 
-    // debtor field in PaymentPosition
+    return destination;
+  }
+
+  public void mapAndUpdatePaymentPosition(
+      PaymentPositionModelV3 source, PaymentPosition destination) {
+    destination.setIupd(source.getIupd());
+    destination.setPayStandIn(source.isPayStandIn());
     destination.setType(Type.F);
     destination.setFiscalCode(UNDEFINED_DEBTOR);
     destination.setFullName(UNDEFINED_DEBTOR);
-    // all remaining debtor fields are set to null
+    destination.setCompanyName(source.getCompanyName());
+    destination.setOfficeName(source.getOfficeName());
+    destination.setValidityDate(getValidityDate(source.getPaymentOption()));
+    destination.setPaymentDate(source.getPaymentDate());
+    destination.setSwitchToExpired(getSwitchToExpired(source.getPaymentOption()));
 
-    List<PaymentOptionModelV3> paymentOpts = source.getPaymentOption();
-    if (null == paymentOpts || paymentOpts.isEmpty()) {
-      return destination;
-    }
-
-    destination.setValidityDate(getValidityDate(paymentOpts));
-    destination.setSwitchToExpired(getSwitchToExpired(paymentOpts));
-
-    // Check installment distribution in payment options by filtering for those with more than 1
-    // installment
-    long count =
-        paymentOpts.stream()
-            .filter(po -> po.getInstallments() != null && po.getInstallments().size() > 1)
-            .count();
-
-    // N payment options with N Installment is not possible (ie Opzione Rateale Multipla) ->
-    // BAD_REQUEST
-    if (count > 1)
-      throw new AppException(
-          AppError.DEBT_POSITION_REQUEST_DATA_ERROR,
-          "Bad Request",
-          "Multiple Installment plan not available");
-
-    // Covered cases:
-    // - 1 Payment Option with [1:N] Installment (ie Opzione Rateale)
-    // - [1:N] Payment Option with 1 Installment (ie Opzione Multipla)
-    // - [1:N] Payment Option with 1 Installment and 1 Payment Option with [1:N] Installment (ie
-    // Opzione Unica + Opzione Rateale)
-    for (PaymentOptionModelV3 pov3 : paymentOpts) {
-      List<InstallmentModel> installments = pov3.getInstallments();
-      if (installments != null) {
-        int instCount = installments.size();
-        boolean isPartialPayment = instCount > 1;
-        installments.forEach(
-            inst -> {
-              PaymentOption po = this.convert(inst, pov3.getDebtor());
-              po.setIsPartialPayment(isPartialPayment);
-              po.setDueDate(inst.getDueDate());
-              po.setRetentionDate(pov3.getRetentionDate());
-              destination.addPaymentOption(po);
-            });
-      }
-    }
-
-    return destination;
+    mapAndUpdateInstallments(source, destination);
   }
 
   private LocalDateTime getValidityDate(List<PaymentOptionModelV3> paymentOptions) {
@@ -108,40 +68,180 @@ public class ConverterV3PPModelToEntity
     return paymentOptions.stream().anyMatch(PaymentOptionModelV3::getSwitchToExpired);
   }
 
-  private PaymentOption convert(InstallmentModel inst, DebtorModel debtor) {
-    PaymentOption po = new PaymentOption();
+  private void mapAndUpdateInstallments(
+      PaymentPositionModelV3 source, PaymentPosition destination) {
+    Map<String, PaymentOption> managedOptionsByIuv =
+        destination.getPaymentOption().stream()
+            .collect(Collectors.toMap(PaymentOption::getIuv, po -> po));
 
-    po.setNav(inst.getNav());
-    po.setIuv(inst.getIuv());
-    po.setAmount(inst.getAmount());
-    po.setDescription(inst.getDescription());
-    po.setFee(inst.getFee());
-    po.setNotificationFee(inst.getNotificationFee());
-    // PO debtor fields
-    po.setDebtorType(debtor.getType());
-    po.setFiscalCode(debtor.getFiscalCode());
-    po.setFullName(debtor.getFullName());
-    po.setStreetName(debtor.getStreetName());
-    po.setCivicNumber(debtor.getCivicNumber());
-    po.setPostalCode(debtor.getPostalCode());
-    po.setCity(debtor.getCity());
-    po.setProvince(debtor.getProvince());
-    po.setRegion(debtor.getRegion());
-    po.setCountry(debtor.getCountry());
-    po.setEmail(debtor.getEmail());
-    po.setPhone(debtor.getPhone());
+    List<PaymentOptionModelV3> sourceOptions = source.getPaymentOption();
+    List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
 
-    List<TransferModel> transfers = inst.getTransfer();
-    po.setTransfer(UtilityMapper.convertTransfersModel(transfers));
-
-    List<InstallmentMetadataModel> metadata = inst.getInstallmentMetadata();
-    if (!CollectionUtils.isEmpty(metadata)) {
-      for (InstallmentMetadataModel m : metadata) {
-        po.addPaymentOptionMetadata(
-            PaymentOptionMetadata.builder().key(m.getKey()).value(m.getValue()).build());
+    for (PaymentOptionModelV3 sourceOption : sourceOptions) {
+      for (InstallmentModel installment : sourceOption.getInstallments()) {
+        PaymentOption managedOpt = managedOptionsByIuv.get(installment.getIuv());
+        if (managedOpt != null) {
+          // UPDATE: the option
+          mapAndUpdateSinglePaymentOption(sourceOption, installment, managedOpt);
+          optionsToRemove.remove(managedOpt);
+        } else {
+          // CREATE: the option
+          PaymentOption po = PaymentOption.builder().build();
+          po.setSendSync(false);
+          mapAndUpdateSinglePaymentOption(sourceOption, installment, po);
+          destination.getPaymentOption().add(po);
+        }
       }
     }
 
-    return po;
+    // DELETE: remove the orphans options
+    destination.getPaymentOption().removeAll(optionsToRemove);
+  }
+
+  /**
+   * @param source the input model
+   * @param sourceInstallment the input installment
+   * @param destination the output entity
+   */
+  private void mapAndUpdateSinglePaymentOption(
+      PaymentOptionModelV3 source, InstallmentModel sourceInstallment, PaymentOption destination) {
+    DebtorModel debtor = source.getDebtor();
+
+    destination.setAmount(sourceInstallment.getAmount());
+    destination.setCity(debtor.getCity());
+    destination.setCivicNumber(debtor.getCivicNumber());
+    destination.setCountry(debtor.getCountry());
+    destination.setDebtorType(debtor.getType());
+    destination.setDescription(source.getDescription());
+    destination.setDueDate(sourceInstallment.getDueDate());
+    destination.setEmail(debtor.getEmail());
+    destination.setFee(sourceInstallment.getFee());
+    destination.setFiscalCode(debtor.getFiscalCode());
+    destination.setFullName(debtor.getFullName());
+    destination.setIsPartialPayment(source.getInstallments().size() > 1);
+    destination.setIuv(sourceInstallment.getIuv());
+    destination.setLastUpdatedDate(LocalDateTime.now());
+    destination.setNav(sourceInstallment.getNav());
+    destination.setPhone(debtor.getPhone());
+    destination.setPostalCode(debtor.getPostalCode());
+    destination.setProvince(debtor.getProvince());
+    destination.setRegion(debtor.getRegion());
+    destination.setRetentionDate(source.getRetentionDate());
+    destination.setStreetName(debtor.getStreetName());
+
+    mapAndUpdateTransfers(sourceInstallment, destination);
+    mapAndUpdateOptionMetadata(sourceInstallment, destination);
+  }
+
+  private void mapAndUpdateTransfers(
+      InstallmentModel sourceInstallment, PaymentOption destination) {
+    Map<String, Transfer> managedTransfersById =
+        destination.getTransfer().stream()
+            .collect(Collectors.toMap(Transfer::getIdTransfer, t -> t));
+
+    List<TransferModel> sourceTransfers = sourceInstallment.getTransfer().stream().toList();
+    List<Transfer> transfersToRemove = new ArrayList<>(destination.getTransfer());
+
+    for (TransferModel sourceTx : sourceTransfers) {
+      Transfer managedTx = managedTransfersById.get(sourceTx.getIdTransfer());
+      if (managedTx != null) {
+        // UPDATE
+        mapAndUpdateSingleTransfer(sourceTx, managedTx);
+        transfersToRemove.remove(managedTx);
+      } else {
+        // CREATE
+        Transfer tr = Transfer.builder().build();
+        mapAndUpdateSingleTransfer(sourceTx, tr);
+        destination.getTransfer().add(tr);
+      }
+    }
+    // DELETE
+    destination.getTransfer().removeAll(transfersToRemove);
+  }
+
+  private void mapAndUpdateSingleTransfer(TransferModel source, Transfer destination) {
+    destination.setAmount(source.getAmount());
+    destination.setCategory(source.getCategory());
+    destination.setCompanyName(source.getCompanyName());
+    destination.setIban(source.getIban());
+    destination.setIdTransfer(source.getIdTransfer());
+    destination.setLastUpdatedDate(LocalDateTime.now());
+    destination.setOrganizationFiscalCode(source.getOrganizationFiscalCode());
+    destination.setPostalIban(source.getPostalIban());
+    destination.setRemittanceInformation(source.getRemittanceInformation());
+    Stamp stamp = source.getStamp();
+    if (stamp != null) {
+      destination.setHashDocument(stamp.getHashDocument());
+      destination.setProvincialResidence(stamp.getProvincialResidence());
+      destination.setStampType(stamp.getStampType());
+    }
+
+    mapAndUpdateTransferMetadata(source, destination);
+  }
+
+  private void mapAndUpdateOptionMetadata(
+      InstallmentModel sourceInstallment, PaymentOption destination) {
+    Map<String, PaymentOptionMetadata> managedPaymentOptionMetadataByKey =
+        destination.getPaymentOptionMetadata().stream()
+            .collect(Collectors.toMap(PaymentOptionMetadata::getKey, po -> po));
+
+    List<InstallmentMetadataModel> sourcePaymentOptionMetadata =
+        sourceInstallment.getInstallmentMetadata().stream().toList();
+    List<PaymentOptionMetadata> metadataToRemove =
+        new ArrayList<>(destination.getPaymentOptionMetadata());
+
+    for (InstallmentMetadataModel sourceMetadata : sourcePaymentOptionMetadata) {
+      PaymentOptionMetadata managedMetadata =
+          managedPaymentOptionMetadataByKey.get(sourceMetadata.getKey());
+
+      if (managedMetadata != null) {
+        // UPDATE:
+        sourceMetadata.setValue(managedMetadata.getValue());
+        metadataToRemove.remove(managedMetadata);
+      } else {
+        // CREATE:
+        PaymentOptionMetadata md =
+            PaymentOptionMetadata.builder()
+                .key(sourceMetadata.getKey())
+                .value(sourceMetadata.getValue())
+                .paymentOption(destination)
+                .build();
+        destination.getPaymentOptionMetadata().add(md);
+      }
+    }
+
+    // DELETE:the orphans metadata are removed
+    destination.getPaymentOptionMetadata().removeAll(metadataToRemove);
+  }
+
+  private void mapAndUpdateTransferMetadata(TransferModel source, Transfer destination) {
+    Map<String, TransferMetadata> managedTransferMetadataByKey =
+        destination.getTransferMetadata().stream()
+            .collect(Collectors.toMap(TransferMetadata::getKey, po -> po));
+
+    List<TransferMetadataModel> sourceTransferMetadata = source.getTransferMetadata();
+    List<TransferMetadata> metadataToRemove = new ArrayList<>(destination.getTransferMetadata());
+
+    for (TransferMetadataModel sourceMetadata : sourceTransferMetadata) {
+      TransferMetadata managedMetadata = managedTransferMetadataByKey.get(sourceMetadata.getKey());
+
+      if (managedMetadata != null) {
+        // UPDATE:
+        sourceMetadata.setValue(managedMetadata.getValue());
+        metadataToRemove.remove(managedMetadata);
+      } else {
+        // CREATE:
+        TransferMetadata md =
+            TransferMetadata.builder()
+                .key(sourceMetadata.getKey())
+                .value(sourceMetadata.getValue())
+                .transfer(destination)
+                .build();
+        destination.getTransferMetadata().add(md);
+      }
+    }
+
+    // DELETE:
+    destination.getTransferMetadata().removeAll(metadataToRemove);
   }
 }
