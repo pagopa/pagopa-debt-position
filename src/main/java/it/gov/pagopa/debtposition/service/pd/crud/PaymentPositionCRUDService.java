@@ -1,29 +1,34 @@
 package it.gov.pagopa.debtposition.service.pd.crud;
 
+import static it.gov.pagopa.debtposition.service.payments.PaymentsService.findPrimaryTransfer;
 import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
 
-import it.gov.pagopa.debtposition.entity.*;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.exception.ValidationException;
 import it.gov.pagopa.debtposition.mapper.MapperPP;
+import it.gov.pagopa.debtposition.mapper.MapperPPV3;
 import it.gov.pagopa.debtposition.model.IPaymentPositionModel;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
+import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
+import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.repository.TransferRepository;
 import it.gov.pagopa.debtposition.repository.specification.*;
-import it.gov.pagopa.debtposition.service.payments.PaymentsService;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
 import it.gov.pagopa.debtposition.util.PublishPaymentUtil;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -227,18 +232,19 @@ public class PaymentPositionCRUDService {
     }
 
     try {
+
       // flip model to entity
-      List<PaymentOption> oldPaymentOptions = new ArrayList<>(ppToUpdate.getPaymentOption());
+      if (ppModel instanceof PaymentPositionModel input) {
+        MapperPP.mapAndUpdatePaymentPosition(input, ppToUpdate);
+      }
+      if (ppModel instanceof PaymentPositionModelV3 input) {
+        MapperPPV3.mapAndUpdatePaymentPosition(input, ppToUpdate);
+      }
 
-      PaymentPosition inputPP = PaymentPosition.builder().build();
-      modelMapper.map(ppModel, inputPP);
+      // update amounts adding notification fee
+      updateAmounts(organizationFiscalCode, ppToUpdate);
 
-      MapperPP.mapAndUpdatePaymentPosition(inputPP, ppToUpdate);
-
-      // migrate the notification fee value (if defined) and update the amounts
-      setOldNotificationFeeAndSendSync(oldPaymentOptions, organizationFiscalCode, ppToUpdate);
-
-      // check the input data
+      // check the data
       DebtPositionValidation.checkPaymentPositionInputDataAccuracy(ppToUpdate, action);
 
       var ppUpdated =
@@ -262,6 +268,29 @@ public class PaymentPositionCRUDService {
       log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
       throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
     }
+  }
+
+  /**
+   * This method adds the notification fee to the amount in the PaymentOption and the Primary
+   * Transfer
+   *
+   * @param organizationFiscalCode EC
+   * @param ppToUpdate the entity of the debt position to update
+   */
+  private static void updateAmounts(String organizationFiscalCode, PaymentPosition ppToUpdate) {
+    ppToUpdate
+        .getPaymentOption()
+        .forEach(
+            po -> {
+              // update amount in the PaymentOption
+              po.setAmount(po.getAmount() + po.getNotificationFee());
+
+              if (!po.getTransfer().isEmpty()) {
+                // update amount in the Transfer
+                Transfer primaryTransfer = findPrimaryTransfer(po, organizationFiscalCode);
+                primaryTransfer.setAmount(primaryTransfer.getAmount() + po.getNotificationFee());
+              }
+            });
   }
 
   public List<PaymentPosition> createMultipleDebtPositions(
@@ -307,23 +336,22 @@ public class PaymentPositionCRUDService {
 
   @Transactional
   public List<PaymentPosition> updateMultipleDebtPositions(
-      @Valid List<PaymentPosition> inputPaymentPositions,
+      @Valid List<PaymentPositionModel> inputPaymentPositions,
       String organizationFiscalCode,
       boolean toPublish,
       List<String> segCodes,
       String... action) {
 
-    Map<String, PaymentPosition> inPositionsMap = new HashMap<>();
+    Map<String, PaymentPositionModel> inPositionsMap = new HashMap<>();
     inputPaymentPositions.forEach(pp -> inPositionsMap.put(pp.getIupd(), pp));
 
-    // 1. Carica le entità gestite dal DB
     List<PaymentPosition> managedPositions =
         getDebtPositionsByIUPDs(
             organizationFiscalCode, inPositionsMap.keySet().stream().toList(), segCodes);
 
     try {
       for (PaymentPosition currentPP : managedPositions) {
-        PaymentPosition inputPaymentPosition = inPositionsMap.get(currentPP.getIupd());
+        PaymentPositionModel inputPaymentPosition = inPositionsMap.get(currentPP.getIupd());
 
         if (DebtPositionStatus.getPaymentPosNotUpdatableStatus().contains(currentPP.getStatus())) {
           throw new AppException(
@@ -332,17 +360,15 @@ public class PaymentPositionCRUDService {
               inputPaymentPosition.getIupd());
         }
 
-        // 2. Usa il nuovo mapper custom per aggiornare in modo sicuro l'entità
+        // map model to entity
         MapperPP.mapAndUpdatePaymentPosition(inputPaymentPosition, currentPP);
 
-        // 3. Esegui la logica di business restante
-        setOldNotificationFeeAndSendSync(
-            currentPP.getPaymentOption(), organizationFiscalCode, currentPP);
+        // update amounts adding notification fee
+        updateAmounts(organizationFiscalCode, currentPP);
+
+        // check data
         DebtPositionValidation.checkPaymentPositionInputDataAccuracy(currentPP, action);
       }
-
-      // 4. Salva le entità modificate
-      // Hibernate rileverà automaticamente tutti gli INSERT, UPDATE e DELETE necessari
       this.createMultipleDebtPositions(
           managedPositions, organizationFiscalCode, toPublish, segCodes, action);
 
@@ -391,30 +417,6 @@ public class PaymentPositionCRUDService {
     } catch (Exception e) {
       log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
       throw new AppException(AppError.DEBT_POSITION_DELETE_FAILED, organizationFiscalCode);
-    }
-  }
-
-  private void setOldNotificationFeeAndSendSync(
-      List<PaymentOption> oldPaymentOptions,
-      String organizationFiscalCode,
-      PaymentPosition paymentPosition) {
-    Map<String, Long> oldPONotificationFeeMapping =
-        oldPaymentOptions.stream()
-            .collect(Collectors.toMap(PaymentOption::getIuv, PaymentOption::getNotificationFee));
-    Map<String, Boolean> oldSendSync =
-        oldPaymentOptions.stream()
-            .collect(Collectors.toMap(PaymentOption::getIuv, PaymentOption::getSendSync));
-    for (PaymentOption paymentOptionModel : paymentPosition.getPaymentOption()) {
-      long oldNotificationFee =
-          Objects.requireNonNullElse(
-              oldPONotificationFeeMapping.get(paymentOptionModel.getIuv()), 0L);
-      if (oldNotificationFee != 0) {
-        PaymentsService.updateAmountsWithNotificationFee(
-            paymentOptionModel, organizationFiscalCode, oldNotificationFee);
-      }
-      // read sendSync from current payment_option and overwrite paymentOptionModel input
-      Boolean sendSync = oldSendSync.get(paymentOptionModel.getIuv());
-      paymentOptionModel.setSendSync(sendSync != null ? sendSync : Boolean.FALSE);
     }
   }
 

@@ -1,7 +1,14 @@
 package it.gov.pagopa.debtposition.mapper;
 
+import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.UNDEFINED_DEBTOR;
+
 import it.gov.pagopa.debtposition.entity.*;
+import it.gov.pagopa.debtposition.model.enumeration.Type;
 import it.gov.pagopa.debtposition.model.pd.*;
+import it.gov.pagopa.debtposition.model.v3.InstallmentMetadataModel;
+import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
+import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
+import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,56 +17,57 @@ import java.util.stream.Collectors;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-public class MapperPP {
+public class MapperPPV3 {
 
   public void mapAndUpdatePaymentPosition(
-      PaymentPositionModel source, PaymentPosition destination) {
+      PaymentPositionModelV3 source, PaymentPosition destination) {
     destination.setIupd(source.getIupd());
     destination.setPayStandIn(source.isPayStandIn());
-    destination.setType(source.getType());
-    destination.setFiscalCode(source.getFiscalCode());
-    destination.setFullName(source.getFullName());
-    destination.setStreetName(source.getStreetName());
-    destination.setCivicNumber(source.getCivicNumber());
-    destination.setPostalCode(source.getPostalCode());
-    destination.setCity(source.getCity());
-    destination.setProvince(source.getProvince());
-    destination.setRegion(source.getRegion());
-    destination.setCountry(source.getCountry());
-    destination.setEmail(source.getEmail());
-    destination.setPhone(source.getPhone());
+    destination.setType(Type.F);
+    destination.setFiscalCode(UNDEFINED_DEBTOR);
+    destination.setFullName(UNDEFINED_DEBTOR);
+    //        destination.setStreetName(source.getStreetName());
+    //        destination.setCivicNumber(source.getCivicNumber());
+    //        destination.setPostalCode(source.getPostalCode());
+    //        destination.setCity(source.getCity());
+    //        destination.setProvince(source.getProvince());
+    //        destination.setRegion(source.getRegion());
+    //        destination.setCountry(source.getCountry());
+    //        destination.setEmail(source.getEmail());
+    //        destination.setPhone(source.getPhone());
     destination.setCompanyName(source.getCompanyName());
     destination.setOfficeName(source.getOfficeName());
-    destination.setValidityDate(source.getValidityDate());
-    destination.setStatus(source.getStatus());
+    //        destination.setValidityDate(source.getValidityDate());
+    //        destination.setStatus(DebtPositionStatus.valueOf(source.getStatus().name()));
     destination.setPaymentDate(source.getPaymentDate());
-    destination.setSwitchToExpired(source.getSwitchToExpired());
+    //        destination.setSwitchToExpired(source.getSwitchToExpired());
 
-    mapAndUpdatePaymentOptions(source, destination);
+    mapAndUpdateInstallments(source, destination);
   }
 
-  private void mapAndUpdatePaymentOptions(
-      PaymentPositionModel source, PaymentPosition destination) {
+  private void mapAndUpdateInstallments(
+      PaymentPositionModelV3 source, PaymentPosition destination) {
     Map<String, PaymentOption> managedOptionsByIuv =
         destination.getPaymentOption().stream()
             .collect(Collectors.toMap(PaymentOption::getIuv, po -> po));
 
-    List<PaymentOptionModel> sourceOptions = source.getPaymentOption();
+    List<PaymentOptionModelV3> sourceOptions = source.getPaymentOption();
     List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
 
-    for (PaymentOptionModel sourceOpt : sourceOptions) {
-      PaymentOption managedOpt = managedOptionsByIuv.get(sourceOpt.getIuv());
-
-      if (managedOpt != null) {
-        // UPDATE: L'opzione esiste, la aggiorniamo ricorsivamente.
-        mapAndUpdateSinglePaymentOption(source, sourceOpt, managedOpt);
-        optionsToRemove.remove(managedOpt);
-      } else {
-        // CREATE: L'opzione è nuova. La aggiungiamo.
-        PaymentOption po = PaymentOption.builder().build();
-        po.setSendSync(false);
-        mapAndUpdateSinglePaymentOption(source, sourceOpt, po);
-        destination.getPaymentOption().add(po);
+    for (PaymentOptionModelV3 sourceOption : sourceOptions) {
+      for (InstallmentModel installment : sourceOption.getInstallments()) {
+        PaymentOption managedOpt = managedOptionsByIuv.get(installment.getIuv());
+        if (managedOpt != null) {
+          // UPDATE: L'opzione esiste, la aggiorniamo ricorsivamente.
+          mapAndUpdateSinglePaymentOption(sourceOption, installment, managedOpt);
+          optionsToRemove.remove(managedOpt);
+        } else {
+          // CREATE: L'opzione è nuova. La aggiungiamo.
+          PaymentOption po = PaymentOption.builder().build();
+          po.setSendSync(false);
+          mapAndUpdateSinglePaymentOption(sourceOption, installment, po);
+          destination.getPaymentOption().add(po);
+        }
       }
     }
 
@@ -69,29 +77,31 @@ public class MapperPP {
 
   /** Aggiorna una singola istanza di PaymentOption. */
   private void mapAndUpdateSinglePaymentOption(
-      PaymentPositionModel paymentPosition, PaymentOptionModel source, PaymentOption destination) {
+      PaymentOptionModelV3 source, InstallmentModel sourceInstallment, PaymentOption destination) {
+    DebtorModel debtor = source.getDebtor();
+
     // Aggiorniamo i campi scalari
-    destination.setAmount(source.getAmount());
-    destination.setCity(paymentPosition.getCity());
-    destination.setCivicNumber(paymentPosition.getCivicNumber());
-    destination.setCountry(paymentPosition.getCountry());
-    destination.setDebtorType(paymentPosition.getType());
+    destination.setAmount(sourceInstallment.getAmount());
+    destination.setCity(debtor.getCity());
+    destination.setCivicNumber(debtor.getCivicNumber());
+    destination.setCountry(debtor.getCountry());
+    destination.setDebtorType(debtor.getType());
     destination.setDescription(source.getDescription());
-    destination.setDueDate(source.getDueDate());
-    destination.setEmail(paymentPosition.getEmail());
-    destination.setFee(source.getFee());
-    destination.setFiscalCode(paymentPosition.getFiscalCode());
-    destination.setFullName(paymentPosition.getFullName());
-    destination.setIsPartialPayment(source.getIsPartialPayment());
-    destination.setIuv(source.getIuv());
+    destination.setDueDate(sourceInstallment.getDueDate());
+    destination.setEmail(debtor.getEmail());
+    destination.setFee(sourceInstallment.getFee());
+    destination.setFiscalCode(debtor.getFiscalCode());
+    destination.setFullName(debtor.getFullName());
+    destination.setIsPartialPayment(source.getInstallments().size() > 1);
+    destination.setIuv(sourceInstallment.getIuv());
     destination.setLastUpdatedDate(LocalDateTime.now());
-    destination.setNav(source.getNav());
-    destination.setPhone(paymentPosition.getPhone());
-    destination.setPostalCode(paymentPosition.getPostalCode());
-    destination.setProvince(paymentPosition.getProvince());
-    destination.setRegion(paymentPosition.getRegion());
+    destination.setNav(sourceInstallment.getNav());
+    destination.setPhone(debtor.getPhone());
+    destination.setPostalCode(debtor.getPostalCode());
+    destination.setProvince(debtor.getProvince());
+    destination.setRegion(debtor.getRegion());
     destination.setRetentionDate(source.getRetentionDate());
-    destination.setStreetName(paymentPosition.getStreetName());
+    destination.setStreetName(debtor.getStreetName());
 
     // Sincronizzazione ricorsiva delle sotto-collezioni
     mapAndUpdateTransfers(source, destination);
@@ -99,13 +109,16 @@ public class MapperPP {
   }
 
   /** Sincronizza la collezione di Transfer. */
-  private void mapAndUpdateTransfers(PaymentOptionModel source, PaymentOption destination) {
+  private void mapAndUpdateTransfers(PaymentOptionModelV3 source, PaymentOption destination) {
     // Assumiamo che Transfer abbia una chiave di business, es. "transferId"
     Map<String, Transfer> managedTransfersById =
         destination.getTransfer().stream()
             .collect(Collectors.toMap(Transfer::getIdTransfer, t -> t));
 
-    List<TransferModel> sourceTransfers = source.getTransfer();
+    List<TransferModel> sourceTransfers =
+        source.getInstallments().stream()
+            .flatMap(installment -> installment.getTransfer().stream())
+            .toList();
     List<Transfer> transfersToRemove = new ArrayList<>(destination.getTransfer());
 
     for (TransferModel sourceTx : sourceTransfers) {
@@ -151,17 +164,19 @@ public class MapperPP {
    * Sincronizza i metadati di PaymentOption usando la strategia "clear and add". È efficiente per
    * collezioni di valori semplici senza una chiave di business stabile.
    */
-  private void mapAndUpdateOptionMetadata(PaymentOptionModel source, PaymentOption destination) {
+  private void mapAndUpdateOptionMetadata(PaymentOptionModelV3 source, PaymentOption destination) {
     Map<String, PaymentOptionMetadata> managedPaymentOptionMetadataByKey =
         destination.getPaymentOptionMetadata().stream()
             .collect(Collectors.toMap(PaymentOptionMetadata::getKey, po -> po));
 
-    List<PaymentOptionMetadataModel> sourcePaymentOptionMetadata =
-        source.getPaymentOptionMetadata();
+    List<InstallmentMetadataModel> sourcePaymentOptionMetadata =
+        source.getInstallments().stream()
+            .flatMap(installment -> installment.getInstallmentMetadata().stream())
+            .toList();
     List<PaymentOptionMetadata> metadataToRemove =
         new ArrayList<>(destination.getPaymentOptionMetadata());
 
-    for (PaymentOptionMetadataModel sourceMetadata : sourcePaymentOptionMetadata) {
+    for (InstallmentMetadataModel sourceMetadata : sourcePaymentOptionMetadata) {
       PaymentOptionMetadata managedMetadata =
           managedPaymentOptionMetadataByKey.get(sourceMetadata.getKey());
 
