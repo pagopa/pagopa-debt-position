@@ -1,29 +1,22 @@
 package it.gov.pagopa.debtposition.mapper;
 
-import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.UNDEFINED_DEBTOR;
-
 import it.gov.pagopa.debtposition.entity.*;
-import it.gov.pagopa.debtposition.model.enumeration.Type;
-import it.gov.pagopa.debtposition.model.pd.DebtorModel;
-import it.gov.pagopa.debtposition.model.pd.Stamp;
-import it.gov.pagopa.debtposition.model.pd.TransferMetadataModel;
-import it.gov.pagopa.debtposition.model.pd.TransferModel;
-import it.gov.pagopa.debtposition.model.v3.InstallmentMetadataModel;
-import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
-import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
-import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
+import it.gov.pagopa.debtposition.model.pd.*;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import javax.validation.constraints.NotNull;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
-public class ConverterV3PPModelToEntity
-    implements Converter<PaymentPositionModelV3, PaymentPosition> {
+public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel, PaymentPosition> {
 
   @Override
-  public PaymentPosition convert(MappingContext<PaymentPositionModelV3, PaymentPosition> context) {
-    PaymentPositionModelV3 source = context.getSource();
+  public PaymentPosition convert(
+      MappingContext<@NotNull PaymentPositionModel, PaymentPosition> context) {
+    PaymentPositionModel source = context.getSource();
     PaymentPosition destination =
         context.getDestination() != null ? context.getDestination() : new PaymentPosition();
 
@@ -33,113 +26,99 @@ public class ConverterV3PPModelToEntity
   }
 
   public void mapAndUpdatePaymentPosition(
-      PaymentPositionModelV3 source, PaymentPosition destination) {
+      PaymentPositionModel source, PaymentPosition destination) {
     destination.setIupd(source.getIupd());
     destination.setPayStandIn(source.isPayStandIn());
-    destination.setType(Type.F);
-    destination.setFiscalCode(UNDEFINED_DEBTOR);
-    destination.setFullName(UNDEFINED_DEBTOR);
+    destination.setType(source.getType());
+    destination.setFiscalCode(source.getFiscalCode());
+    destination.setFullName(source.getFullName());
+    destination.setStreetName(source.getStreetName());
+    destination.setCivicNumber(source.getCivicNumber());
+    destination.setPostalCode(source.getPostalCode());
+    destination.setCity(source.getCity());
+    destination.setProvince(source.getProvince());
+    destination.setRegion(source.getRegion());
+    destination.setCountry(source.getCountry());
+    destination.setEmail(source.getEmail());
+    destination.setPhone(source.getPhone());
     destination.setCompanyName(source.getCompanyName());
     destination.setOfficeName(source.getOfficeName());
-    destination.setValidityDate(getValidityDate(source.getPaymentOption()));
+    destination.setValidityDate(source.getValidityDate());
+    destination.setStatus(source.getStatus());
     destination.setPaymentDate(source.getPaymentDate());
-    destination.setSwitchToExpired(getSwitchToExpired(source.getPaymentOption()));
+    destination.setSwitchToExpired(source.getSwitchToExpired());
 
-    mapAndUpdateInstallments(source, destination);
+    mapAndUpdatePaymentOptions(source, destination);
   }
 
-  private LocalDateTime getValidityDate(List<PaymentOptionModelV3> paymentOptions) {
-    LocalDateTime validityDate = null;
-    // Find the minimum validityDate
-    Optional<LocalDateTime> minValidityDate =
-        paymentOptions.stream()
-            .map(PaymentOptionModelV3::getValidityDate)
-            .filter(Objects::nonNull) // Ensure we only deal with non-null values
-            .min(Comparator.naturalOrder());
-
-    if (minValidityDate.isPresent()) validityDate = minValidityDate.get();
-
-    return validityDate;
-  }
-
-  private boolean getSwitchToExpired(List<PaymentOptionModelV3> paymentOptions) {
-    // Check if any PaymentOptionModelV3 has switchToExpired as true
-    // OR operation for the boolean field
-    return paymentOptions.stream().anyMatch(PaymentOptionModelV3::getSwitchToExpired);
-  }
-
-  private void mapAndUpdateInstallments(
-      PaymentPositionModelV3 source, PaymentPosition destination) {
+  private void mapAndUpdatePaymentOptions(
+      PaymentPositionModel source, PaymentPosition destination) {
     Map<String, PaymentOption> managedOptionsByIuv =
         destination.getPaymentOption().stream()
             .collect(Collectors.toMap(PaymentOption::getIuv, po -> po));
 
-    List<PaymentOptionModelV3> sourceOptions = source.getPaymentOption();
+    List<PaymentOptionModel> sourceOptions = source.getPaymentOption();
     List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
 
-    for (PaymentOptionModelV3 sourceOption : sourceOptions) {
-      for (InstallmentModel installment : sourceOption.getInstallments()) {
-        PaymentOption managedOpt = managedOptionsByIuv.get(installment.getIuv());
-        if (managedOpt != null) {
-          // UPDATE: the option
-          mapAndUpdateSinglePaymentOption(sourceOption, installment, managedOpt);
-          optionsToRemove.remove(managedOpt);
-        } else {
-          // CREATE: the option
-          PaymentOption po = PaymentOption.builder().build();
-          po.setSendSync(false);
-          mapAndUpdateSinglePaymentOption(sourceOption, installment, po);
-          destination.getPaymentOption().add(po);
-        }
+    for (PaymentOptionModel sourceOpt : sourceOptions) {
+      PaymentOption managedOpt = managedOptionsByIuv.get(sourceOpt.getIuv());
+
+      if (managedOpt != null) {
+        // UPDATE: L'opzione esiste, la aggiorniamo ricorsivamente.
+        mapAndUpdateSinglePaymentOption(source, sourceOpt, managedOpt);
+        optionsToRemove.remove(managedOpt);
+      } else {
+        // CREATE: L'opzione è nuova. La aggiungiamo.
+        PaymentOption po = PaymentOption.builder().build();
+        po.setSendSync(false);
+        mapAndUpdateSinglePaymentOption(source, sourceOpt, po);
+        destination.getPaymentOption().add(po);
       }
     }
 
-    // DELETE: remove the orphans options
+    // DELETE: Rimuoviamo le opzioni "orfane".
     destination.getPaymentOption().removeAll(optionsToRemove);
   }
 
-  /**
-   * @param source the input model
-   * @param sourceInstallment the input installment
-   * @param destination the output entity
-   */
+  /** Aggiorna una singola istanza di PaymentOption. */
   private void mapAndUpdateSinglePaymentOption(
-      PaymentOptionModelV3 source, InstallmentModel sourceInstallment, PaymentOption destination) {
-    DebtorModel debtor = source.getDebtor();
-
-    destination.setAmount(sourceInstallment.getAmount());
-    destination.setCity(debtor.getCity());
-    destination.setCivicNumber(debtor.getCivicNumber());
-    destination.setCountry(debtor.getCountry());
-    destination.setDebtorType(debtor.getType());
+      PaymentPositionModel paymentPosition, PaymentOptionModel source, PaymentOption destination) {
+    // Aggiorniamo i campi scalari
+    destination.setAmount(source.getAmount());
+    destination.setCity(paymentPosition.getCity());
+    destination.setCivicNumber(paymentPosition.getCivicNumber());
+    destination.setCountry(paymentPosition.getCountry());
+    destination.setDebtorType(paymentPosition.getType());
     destination.setDescription(source.getDescription());
-    destination.setDueDate(sourceInstallment.getDueDate());
-    destination.setEmail(debtor.getEmail());
-    destination.setFee(sourceInstallment.getFee());
-    destination.setFiscalCode(debtor.getFiscalCode());
-    destination.setFullName(debtor.getFullName());
-    destination.setIsPartialPayment(source.getInstallments().size() > 1);
-    destination.setIuv(sourceInstallment.getIuv());
+    destination.setDueDate(source.getDueDate());
+    destination.setEmail(paymentPosition.getEmail());
+    destination.setFee(source.getFee());
+    destination.setFiscalCode(paymentPosition.getFiscalCode());
+    destination.setFullName(paymentPosition.getFullName());
+    destination.setIsPartialPayment(source.getIsPartialPayment());
+    destination.setIuv(source.getIuv());
     destination.setLastUpdatedDate(LocalDateTime.now());
-    destination.setNav(sourceInstallment.getNav());
-    destination.setPhone(debtor.getPhone());
-    destination.setPostalCode(debtor.getPostalCode());
-    destination.setProvince(debtor.getProvince());
-    destination.setRegion(debtor.getRegion());
+    destination.setNav(source.getNav());
+    destination.setPhone(paymentPosition.getPhone());
+    destination.setPostalCode(paymentPosition.getPostalCode());
+    destination.setProvince(paymentPosition.getProvince());
+    destination.setRegion(paymentPosition.getRegion());
     destination.setRetentionDate(source.getRetentionDate());
-    destination.setStreetName(debtor.getStreetName());
+    destination.setStreetName(paymentPosition.getStreetName());
 
-    mapAndUpdateTransfers(sourceInstallment, destination);
-    mapAndUpdateOptionMetadata(sourceInstallment, destination);
+    // Sincronizzazione ricorsiva delle sotto-collezioni
+    mapAndUpdateTransfers(source, destination);
+    mapAndUpdateOptionMetadata(source, destination); // <-- CHIAMATA ALLA NUOVA LOGICA
   }
 
-  private void mapAndUpdateTransfers(
-      InstallmentModel sourceInstallment, PaymentOption destination) {
+  /** Sincronizza la collezione di Transfer. */
+  private void mapAndUpdateTransfers(PaymentOptionModel source, PaymentOption destination) {
+    // Assumiamo che Transfer abbia una chiave di business, es. "transferId"
     Map<String, Transfer> managedTransfersById =
         destination.getTransfer().stream()
             .collect(Collectors.toMap(Transfer::getIdTransfer, t -> t));
 
-    List<TransferModel> sourceTransfers = sourceInstallment.getTransfer().stream().toList();
+    List<TransferModel> sourceTransfers = source.getTransfer();
     List<Transfer> transfersToRemove = new ArrayList<>(destination.getTransfer());
 
     for (TransferModel sourceTx : sourceTransfers) {
@@ -159,6 +138,7 @@ public class ConverterV3PPModelToEntity
     destination.getTransfer().removeAll(transfersToRemove);
   }
 
+  /** Aggiorna una singola istanza di Transfer. */
   private void mapAndUpdateSingleTransfer(TransferModel source, Transfer destination) {
     destination.setAmount(source.getAmount());
     destination.setCategory(source.getCategory());
@@ -176,30 +156,34 @@ public class ConverterV3PPModelToEntity
       destination.setStampType(stamp.getStampType());
     }
 
-    mapAndUpdateTransferMetadata(source, destination);
+    // Sincronizzazione metadati del transfer
+    mapAndUpdateTransferMetadata(source, destination); // <-- CHIAMATA ALLA NUOVA LOGICA
   }
 
-  private void mapAndUpdateOptionMetadata(
-      InstallmentModel sourceInstallment, PaymentOption destination) {
+  /**
+   * Sincronizza i metadati di PaymentOption usando la strategia "clear and add". È efficiente per
+   * collezioni di valori semplici senza una chiave di business stabile.
+   */
+  private void mapAndUpdateOptionMetadata(PaymentOptionModel source, PaymentOption destination) {
     Map<String, PaymentOptionMetadata> managedPaymentOptionMetadataByKey =
         destination.getPaymentOptionMetadata().stream()
             .collect(Collectors.toMap(PaymentOptionMetadata::getKey, po -> po));
 
-    List<InstallmentMetadataModel> sourcePaymentOptionMetadata =
-        sourceInstallment.getInstallmentMetadata().stream().toList();
+    List<PaymentOptionMetadataModel> sourcePaymentOptionMetadata =
+        source.getPaymentOptionMetadata();
     List<PaymentOptionMetadata> metadataToRemove =
         new ArrayList<>(destination.getPaymentOptionMetadata());
 
-    for (InstallmentMetadataModel sourceMetadata : sourcePaymentOptionMetadata) {
+    for (PaymentOptionMetadataModel sourceMetadata : sourcePaymentOptionMetadata) {
       PaymentOptionMetadata managedMetadata =
           managedPaymentOptionMetadataByKey.get(sourceMetadata.getKey());
 
       if (managedMetadata != null) {
-        // UPDATE:
+        // UPDATE: L'opzione esiste, la aggiorniamo ricorsivamente.
         sourceMetadata.setValue(managedMetadata.getValue());
         metadataToRemove.remove(managedMetadata);
       } else {
-        // CREATE:
+        // CREATE: L'opzione è nuova. La aggiungiamo.
         PaymentOptionMetadata md =
             PaymentOptionMetadata.builder()
                 .key(sourceMetadata.getKey())
@@ -210,10 +194,11 @@ public class ConverterV3PPModelToEntity
       }
     }
 
-    // DELETE:the orphans metadata are removed
+    // DELETE: Rimuoviamo le opzioni "orfane".
     destination.getPaymentOptionMetadata().removeAll(metadataToRemove);
   }
 
+  /** Sincronizza i metadati di Transfer usando la strategia "clear and add". */
   private void mapAndUpdateTransferMetadata(TransferModel source, Transfer destination) {
     Map<String, TransferMetadata> managedTransferMetadataByKey =
         destination.getTransferMetadata().stream()
@@ -226,11 +211,11 @@ public class ConverterV3PPModelToEntity
       TransferMetadata managedMetadata = managedTransferMetadataByKey.get(sourceMetadata.getKey());
 
       if (managedMetadata != null) {
-        // UPDATE:
+        // UPDATE: L'opzione esiste, la aggiorniamo ricorsivamente.
         sourceMetadata.setValue(managedMetadata.getValue());
         metadataToRemove.remove(managedMetadata);
       } else {
-        // CREATE:
+        // CREATE: L'opzione è nuova. La aggiungiamo.
         TransferMetadata md =
             TransferMetadata.builder()
                 .key(sourceMetadata.getKey())
@@ -241,7 +226,7 @@ public class ConverterV3PPModelToEntity
       }
     }
 
-    // DELETE:
+    // DELETE: Rimuoviamo le opzioni "orfane".
     destination.getTransferMetadata().removeAll(metadataToRemove);
   }
 }

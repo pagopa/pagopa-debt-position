@@ -56,11 +56,20 @@ public interface IDebtPositionControllerV3 {
             content = @Content(schema = @Schema())),
         @ApiResponse(
             responseCode = "403",
-            content = @Content(schema = @Schema(), examples = {@ExampleObject(value = """
-                {
-                    "statusCode": 403,
-                    "message": "You are not allowed to access this resource."
-                }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            content =
+                @Content(
+                    schema = @Schema(),
+                    examples = {
+                      @ExampleObject(
+                          value =
+                              """
+                              {
+                                  "statusCode": 403,
+                                  "message": "You are not allowed to access this resource."
+                              }\
+                              """)
+                    },
+                    mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "409",
             description = "Conflict: duplicate debt position found.",
@@ -132,11 +141,20 @@ public interface IDebtPositionControllerV3 {
             content = @Content(schema = @Schema())),
         @ApiResponse(
             responseCode = "403",
-            content = @Content(schema = @Schema(), examples = {@ExampleObject(value = """
-                {
-                    "statusCode": 403,
-                    "message": "You are not allowed to access this resource."
-                }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            content =
+                @Content(
+                    schema = @Schema(),
+                    examples = {
+                      @ExampleObject(
+                          value =
+                              """
+                              {
+                                  "statusCode": 403,
+                                  "message": "You are not allowed to access this resource."
+                              }\
+                              """)
+                    },
+                    mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "429",
             description = "Too many requests.",
@@ -241,11 +259,20 @@ public interface IDebtPositionControllerV3 {
             content = @Content(schema = @Schema())),
         @ApiResponse(
             responseCode = "403",
-            content = @Content(schema = @Schema(), examples = {@ExampleObject(value = """
-                {
-                    "statusCode": 403,
-                    "message": "You are not allowed to access this resource."
-                }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            content =
+                @Content(
+                    schema = @Schema(),
+                    examples = {
+                      @ExampleObject(
+                          value =
+                              """
+                              {
+                                  "statusCode": 403,
+                                  "message": "You are not allowed to access this resource."
+                              }\
+                              """)
+                    },
+                    mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "404",
             description = "No debt position found.",
@@ -312,11 +339,20 @@ public interface IDebtPositionControllerV3 {
             content = @Content(schema = @Schema())),
         @ApiResponse(
             responseCode = "403",
-            content = @Content(schema = @Schema(), examples = {@ExampleObject(value = """
-               {
-                 "statusCode": 403,
-                 "message": "You are not allowed to access this resource."
-               }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            content =
+                @Content(
+                    schema = @Schema(),
+                    examples = {
+                      @ExampleObject(
+                          value =
+                              """
+                              {
+                                "statusCode": 403,
+                                "message": "You are not allowed to access this resource."
+                              }\
+                              """)
+                    },
+                    mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "404",
             description = "No debt position found.",
@@ -380,11 +416,20 @@ public interface IDebtPositionControllerV3 {
             content = @Content(schema = @Schema())),
         @ApiResponse(
             responseCode = "403",
-            content = @Content(schema = @Schema(), examples = {@ExampleObject(value = """
-                {
-                    "statusCode": 403,
-                    "message": "You are not allowed to access this resource."
-                }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            content =
+                @Content(
+                    schema = @Schema(),
+                    examples = {
+                      @ExampleObject(
+                          value =
+                              """
+                              {
+                                  "statusCode": 403,
+                                  "message": "You are not allowed to access this resource."
+                              }\
+                              """)
+                    },
+                    mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "404",
             description = "No debt position position found.",

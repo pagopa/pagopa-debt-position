@@ -36,22 +36,24 @@ public class DebtPositionApplication {
           @Override
           protected void configure() {
             skip(destination.getServiceType()); // Skip mapping of the serviceType field
+            skip(destination.getPaymentOption());
           }
         });
 
     // Convert PaymentPosition entity to PaymentPositionModel
     Converter<PaymentPositionModel, PaymentPosition> convertPPModelToPPEntity =
-        new ConvertPPModelToPPEntityForUpdate();
+        new ConvertPPModelToPPEntity();
     modelMapper
         .createTypeMap(PaymentPositionModel.class, PaymentPosition.class)
         .setConverter(convertPPModelToPPEntity);
 
-    // GPD version 1 converter used to return a paid Payment Option data (differs from default mapping by serviceType adding).
-    Converter<PaymentOption, PaidPaymentOptionModel>
-            convertPOEntityToPaidPOModel = new ConvertPOEntityToPaidPOModel();
+    // GPD version 1 converter used to return a paid Payment Option data (differs from default
+    // mapping by serviceType adding).
+    Converter<PaymentOption, PaidPaymentOptionModel> convertPOEntityToPaidPOModel =
+        new ConvertPOEntityToPaidPOModel();
     modelMapper
-            .createTypeMap(PaymentOption.class, PaidPaymentOptionModel.class)
-            .setConverter(convertPOEntityToPaidPOModel);
+        .createTypeMap(PaymentOption.class, PaidPaymentOptionModel.class)
+        .setConverter(convertPOEntityToPaidPOModel);
 
     // GPD version 1 converter used to return a Payment Option with debtor data.
     Converter<PaymentOption, PaymentOptionWithDebtorInfoModelResponse>

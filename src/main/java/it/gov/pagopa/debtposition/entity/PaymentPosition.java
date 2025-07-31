@@ -12,7 +12,6 @@ import java.util.List;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import lombok.*;
-import org.apache.commons.lang3.SerializationUtils;
 
 /**
  * @author aacitelli
@@ -158,19 +157,5 @@ public class PaymentPosition implements Serializable {
   public void addPaymentOption(PaymentOption paymentOpt) {
     paymentOption.add(paymentOpt);
     paymentOpt.setPaymentPosition(this);
-  }
-
-  public void removePaymentOption(PaymentOption paymentOpt) {
-    paymentOption.remove(paymentOpt);
-    paymentOpt.setPaymentPosition(null);
-  }
-
-  public PaymentPosition deepClone() {
-    PaymentPosition clone = SerializationUtils.clone(this);
-    List<PaymentOption> clonedPaymentOptions = new ArrayList<>();
-    paymentOption.forEach(po -> clonedPaymentOptions.add(SerializationUtils.clone(po)));
-    clone.setPaymentOption(clonedPaymentOptions);
-
-    return clone;
   }
 }
