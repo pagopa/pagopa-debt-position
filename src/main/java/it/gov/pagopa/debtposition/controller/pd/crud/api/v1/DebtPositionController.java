@@ -13,11 +13,11 @@ import it.gov.pagopa.debtposition.model.filterandorder.Filter;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
 import it.gov.pagopa.debtposition.model.filterandorder.Order.PaymentPositionOrder;
-import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.pd.MultipleIUPDModel;
 import it.gov.pagopa.debtposition.model.pd.MultiplePaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
+import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
 import it.gov.pagopa.debtposition.model.pd.response.UpdateTransferIbanMassiveResponse;
 import it.gov.pagopa.debtposition.service.pd.crud.PaymentPositionCRUDService;
@@ -321,19 +321,17 @@ public class DebtPositionController implements IDebtPositionController {
             String.format(
                 LOG_BASE_PARAMS_DETAIL, CommonUtil.sanitize(organizationFiscalCode), "N/A")));
 
-    // flip model to entity
-    List<PaymentPosition> debtPositions =
-        multiplePaymentPositionModel.getPaymentPositions().stream()
-            .map(ppModel -> modelMapper.map(ppModel, PaymentPosition.class))
-            .collect(Collectors.toList());
-
     ArrayList<String> segCodes =
         segregationCodes != null
             ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
             : null;
     List<PaymentPosition> updatedDebtPosList =
         paymentPositionService.updateMultipleDebtPositions(
-            debtPositions, organizationFiscalCode, toPublish, segCodes, UPDATE_ACTION);
+            multiplePaymentPositionModel.getPaymentPositions(),
+            organizationFiscalCode,
+            toPublish,
+            segCodes,
+            UPDATE_ACTION);
 
     if (!CollectionUtils.isEmpty(updatedDebtPosList)) {
       return ResponseEntity.status(HttpStatus.OK).build();
@@ -402,7 +400,8 @@ public class DebtPositionController implements IDebtPositionController {
         paymentPositionService.updateTransferIbanMassive(
             organizationFiscalCode, oldIban, updateTransferIbanMassiveModel.getNewIban(), limit);
 
-    UpdateTransferIbanMassiveResponse response = UpdateTransferIbanMassiveResponse.builder()
+    UpdateTransferIbanMassiveResponse response =
+        UpdateTransferIbanMassiveResponse.builder()
             .description(String.format("Updated IBAN on %s Transfers", numberOfUpdates))
             .updatedTransfers(numberOfUpdates)
             .build();

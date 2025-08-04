@@ -3,19 +3,17 @@ package it.gov.pagopa.debtposition.mapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.Collections;
-
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.modelmapper.spi.MappingContext;
-
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import it.gov.pagopa.debtposition.model.pd.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
+import java.util.Collections;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.modelmapper.spi.MappingContext;
 
-class ConvertPPModelToPPEntityForUpdateTest {
+class ConvertPPModelToPPEntityTest {
 
   @Test
   void shouldMapDebtorFieldsIntoPaymentOption() {
@@ -39,9 +37,10 @@ class ConvertPPModelToPPEntityForUpdateTest {
     poModel.setIuv("123456IUV");
     model.setPaymentOption(Collections.singletonList(poModel));
 
-    ConvertPPModelToPPEntityForUpdate mapper = new ConvertPPModelToPPEntityForUpdate();
+    ConvertPPModelToPPEntity mapper = new ConvertPPModelToPPEntity();
 
-    MappingContext<PaymentPositionModel, PaymentPosition> context = Mockito.mock(MappingContext.class);
+    MappingContext<PaymentPositionModel, PaymentPosition> context =
+        Mockito.mock(MappingContext.class);
     Mockito.when(context.getSource()).thenReturn(model);
     Mockito.when(context.getDestination()).thenReturn(null);
 
@@ -67,4 +66,3 @@ class ConvertPPModelToPPEntityForUpdateTest {
     assertEquals(Type.F, po.getDebtorType());
   }
 }
-
