@@ -1,6 +1,5 @@
 package it.gov.pagopa.debtposition.util;
 
-import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.mapper.ConverterV3PPEntityToModelResponse;
@@ -104,53 +103,5 @@ public class ObjectMapperUtils {
   public static <S, D> D map(final S source, D destination) {
     modelMapper.map(source, destination);
     return destination;
-  }
-
-  public static void copyObjId(PaymentPosition ppToUpdate, List<PaymentOption> oldPaymentOptions) {
-    for (var i = 0; i < ppToUpdate.getPaymentOption().size(); i += 1) {
-
-      PaymentOption paymentOption = ppToUpdate.getPaymentOption().get(i);
-      var iuv = paymentOption.getIuv();
-      var optionalPo =
-          oldPaymentOptions.stream().filter(elem -> elem.getIuv().equals(iuv)).findFirst();
-
-      if (optionalPo.isPresent()) {
-        PaymentOption sourcePo = optionalPo.get();
-        var objId = sourcePo.getId();
-        paymentOption.setId(objId);
-
-        for (var j = 0; j < paymentOption.getTransfer().size(); j += 1) {
-          var transfer = paymentOption.getTransfer().get(j);
-          var id = transfer.getIdTransfer();
-          var optionalTransfer =
-              sourcePo.getTransfer().stream()
-                  .filter(elem -> elem.getIdTransfer().equals(id))
-                  .findFirst();
-
-          if (optionalTransfer.isPresent()) {
-            var sourceTransfer = optionalTransfer.get();
-            transfer.setId(sourceTransfer.getId());
-
-            for (var k = 0; k < transfer.getTransferMetadata().size(); k += 1) {
-              var metadata = transfer.getTransferMetadata().get(k);
-              var key = metadata.getKey();
-              sourceTransfer.getTransferMetadata().stream()
-                  .filter(elem -> elem.getKey().equals(key))
-                  .findFirst()
-                  .ifPresent(elem -> metadata.setId(elem.getId()));
-            }
-          }
-        }
-
-        for (var j = 0; j < paymentOption.getPaymentOptionMetadata().size(); j += 1) {
-          var metadata = paymentOption.getPaymentOptionMetadata().get(j);
-          var key = metadata.getKey();
-          sourcePo.getPaymentOptionMetadata().stream()
-              .filter(elem -> elem.getKey().equals(key))
-              .findFirst()
-              .ifPresent(elem -> metadata.setId(elem.getId()));
-        }
-      }
-    }
   }
 }

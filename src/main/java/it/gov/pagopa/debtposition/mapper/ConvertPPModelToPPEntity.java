@@ -27,6 +27,7 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
 
   public void mapAndUpdatePaymentPosition(
       PaymentPositionModel source, PaymentPosition destination) {
+
     destination.setIupd(source.getIupd());
     destination.setPayStandIn(source.isPayStandIn());
     destination.setType(source.getType());
@@ -45,7 +46,6 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     destination.setOfficeName(source.getOfficeName());
     destination.setValidityDate(source.getValidityDate());
     destination.setStatus(source.getStatus());
-    destination.setPaymentDate(source.getPaymentDate());
     destination.setSwitchToExpired(source.getSwitchToExpired());
 
     mapAndUpdatePaymentOptions(source, destination);
@@ -64,11 +64,11 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
       PaymentOption managedOpt = managedOptionsByIuv.get(sourceOpt.getIuv());
 
       if (managedOpt != null) {
-        // UPDATE: L'opzione esiste, la aggiorniamo ricorsivamente.
+        // UPDATE
         mapAndUpdateSinglePaymentOption(source, sourceOpt, managedOpt);
         optionsToRemove.remove(managedOpt);
       } else {
-        // CREATE: L'opzione è nuova. La aggiungiamo.
+        // CREATE
         PaymentOption po = PaymentOption.builder().build();
         po.setSendSync(false);
         mapAndUpdateSinglePaymentOption(source, sourceOpt, po);
@@ -76,14 +76,13 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
       }
     }
 
-    // DELETE: Rimuoviamo le opzioni "orfane".
+    // DELETE
     destination.getPaymentOption().removeAll(optionsToRemove);
   }
 
-  /** Aggiorna una singola istanza di PaymentOption. */
   private void mapAndUpdateSinglePaymentOption(
       PaymentPositionModel paymentPosition, PaymentOptionModel source, PaymentOption destination) {
-    // Aggiorniamo i campi scalari
+
     destination.setAmount(source.getAmount());
     destination.setCity(paymentPosition.getCity());
     destination.setCivicNumber(paymentPosition.getCivicNumber());
@@ -92,7 +91,6 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     destination.setDescription(source.getDescription());
     destination.setDueDate(source.getDueDate());
     destination.setEmail(paymentPosition.getEmail());
-    destination.setFee(source.getFee());
     destination.setFiscalCode(paymentPosition.getFiscalCode());
     destination.setFullName(paymentPosition.getFullName());
     destination.setIsPartialPayment(source.getIsPartialPayment());
@@ -106,14 +104,11 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     destination.setRetentionDate(source.getRetentionDate());
     destination.setStreetName(paymentPosition.getStreetName());
 
-    // Sincronizzazione ricorsiva delle sotto-collezioni
     mapAndUpdateTransfers(source, destination);
-    mapAndUpdateOptionMetadata(source, destination); // <-- CHIAMATA ALLA NUOVA LOGICA
+    mapAndUpdateOptionMetadata(source, destination);
   }
 
-  /** Sincronizza la collezione di Transfer. */
   private void mapAndUpdateTransfers(PaymentOptionModel source, PaymentOption destination) {
-    // Assumiamo che Transfer abbia una chiave di business, es. "transferId"
     Map<String, Transfer> managedTransfersById =
         destination.getTransfer().stream()
             .collect(Collectors.toMap(Transfer::getIdTransfer, t -> t));
@@ -138,7 +133,6 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     destination.getTransfer().removeAll(transfersToRemove);
   }
 
-  /** Aggiorna una singola istanza di Transfer. */
   private void mapAndUpdateSingleTransfer(TransferModel source, Transfer destination) {
     destination.setAmount(source.getAmount());
     destination.setCategory(source.getCategory());
@@ -156,14 +150,9 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
       destination.setStampType(stamp.getStampType());
     }
 
-    // Sincronizzazione metadati del transfer
-    mapAndUpdateTransferMetadata(source, destination); // <-- CHIAMATA ALLA NUOVA LOGICA
+    mapAndUpdateTransferMetadata(source, destination);
   }
 
-  /**
-   * Sincronizza i metadati di PaymentOption usando la strategia "clear and add". È efficiente per
-   * collezioni di valori semplici senza una chiave di business stabile.
-   */
   private void mapAndUpdateOptionMetadata(PaymentOptionModel source, PaymentOption destination) {
     Map<String, PaymentOptionMetadata> managedPaymentOptionMetadataByKey =
         destination.getPaymentOptionMetadata().stream()
@@ -179,11 +168,11 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
           managedPaymentOptionMetadataByKey.get(sourceMetadata.getKey());
 
       if (managedMetadata != null) {
-        // UPDATE: L'opzione esiste, la aggiorniamo ricorsivamente.
+        // UPDATE
         sourceMetadata.setValue(managedMetadata.getValue());
         metadataToRemove.remove(managedMetadata);
       } else {
-        // CREATE: L'opzione è nuova. La aggiungiamo.
+        // CREATE
         PaymentOptionMetadata md =
             PaymentOptionMetadata.builder()
                 .key(sourceMetadata.getKey())
@@ -194,11 +183,10 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
       }
     }
 
-    // DELETE: Rimuoviamo le opzioni "orfane".
+    // DELETE
     destination.getPaymentOptionMetadata().removeAll(metadataToRemove);
   }
 
-  /** Sincronizza i metadati di Transfer usando la strategia "clear and add". */
   private void mapAndUpdateTransferMetadata(TransferModel source, Transfer destination) {
     Map<String, TransferMetadata> managedTransferMetadataByKey =
         destination.getTransferMetadata().stream()
@@ -211,11 +199,11 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
       TransferMetadata managedMetadata = managedTransferMetadataByKey.get(sourceMetadata.getKey());
 
       if (managedMetadata != null) {
-        // UPDATE: L'opzione esiste, la aggiorniamo ricorsivamente.
+        // UPDATE
         sourceMetadata.setValue(managedMetadata.getValue());
         metadataToRemove.remove(managedMetadata);
       } else {
-        // CREATE: L'opzione è nuova. La aggiungiamo.
+        // CREATE
         TransferMetadata md =
             TransferMetadata.builder()
                 .key(sourceMetadata.getKey())
@@ -226,7 +214,7 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
       }
     }
 
-    // DELETE: Rimuoviamo le opzioni "orfane".
+    // DELETE
     destination.getTransferMetadata().removeAll(metadataToRemove);
   }
 }
