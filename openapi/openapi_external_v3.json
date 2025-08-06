@@ -4,7 +4,7 @@
     "title": "PagoPA API Debt Position ${service}",
     "description": "@project.description@",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "0.14.9"
+    "version": "0.14.9-1-logging"
   },
   "servers": [
     {
