@@ -84,7 +84,7 @@ public class LoggingAspect {
     return params;
   }
 
-  @Pointcut("@within(org.springframework.web.bind.annotation.RestController)")
+  @Pointcut("execution(* *..controller..api..*(..))")
   public void restController() {
     // all rest controllers
   }
