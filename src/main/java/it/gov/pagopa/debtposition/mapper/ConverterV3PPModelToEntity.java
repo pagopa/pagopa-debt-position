@@ -77,23 +77,24 @@ public class ConverterV3PPModelToEntity
     List<PaymentOptionModelV3> sourceOptions = source.getPaymentOption();
     List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
 
-    for (PaymentOptionModelV3 sourceOption : sourceOptions) {
-      for (InstallmentModel installment : sourceOption.getInstallments()) {
-        PaymentOption managedOpt = managedOptionsByIuv.get(installment.getIuv());
-        if (managedOpt != null) {
-          // UPDATE: the option
-          mapAndUpdateSinglePaymentOption(sourceOption, installment, managedOpt);
-          optionsToRemove.remove(managedOpt);
-        } else {
-          // CREATE: the option
-          PaymentOption po = PaymentOption.builder().build();
-          po.setSendSync(false);
-          mapAndUpdateSinglePaymentOption(sourceOption, installment, po);
-          destination.getPaymentOption().add(po);
+    if (sourceOptions != null) {
+      for (PaymentOptionModelV3 sourceOption : sourceOptions) {
+        for (InstallmentModel installment : sourceOption.getInstallments()) {
+          PaymentOption managedOpt = managedOptionsByIuv.get(installment.getIuv());
+          if (managedOpt != null) {
+            // UPDATE: the option
+            mapAndUpdateSinglePaymentOption(sourceOption, installment, managedOpt);
+            optionsToRemove.remove(managedOpt);
+          } else {
+            // CREATE: the option
+            PaymentOption po = PaymentOption.builder().build();
+            po.setSendSync(false);
+            mapAndUpdateSinglePaymentOption(sourceOption, installment, po);
+            destination.getPaymentOption().add(po);
+          }
         }
       }
     }
-
     // DELETE: remove the orphans options
     destination.getPaymentOption().removeAll(optionsToRemove);
   }
@@ -142,17 +143,19 @@ public class ConverterV3PPModelToEntity
     List<TransferModel> sourceTransfers = sourceInstallment.getTransfer().stream().toList();
     List<Transfer> transfersToRemove = new ArrayList<>(destination.getTransfer());
 
-    for (TransferModel sourceTx : sourceTransfers) {
-      Transfer managedTx = managedTransfersById.get(sourceTx.getIdTransfer());
-      if (managedTx != null) {
-        // UPDATE
-        mapAndUpdateSingleTransfer(sourceTx, managedTx);
-        transfersToRemove.remove(managedTx);
-      } else {
-        // CREATE
-        Transfer tr = Transfer.builder().build();
-        mapAndUpdateSingleTransfer(sourceTx, tr);
-        destination.getTransfer().add(tr);
+    if (sourceTransfers != null) {
+      for (TransferModel sourceTx : sourceTransfers) {
+        Transfer managedTx = managedTransfersById.get(sourceTx.getIdTransfer());
+        if (managedTx != null) {
+          // UPDATE
+          mapAndUpdateSingleTransfer(sourceTx, managedTx);
+          transfersToRemove.remove(managedTx);
+        } else {
+          // CREATE
+          Transfer tr = Transfer.builder().build();
+          mapAndUpdateSingleTransfer(sourceTx, tr);
+          destination.getTransfer().add(tr);
+        }
       }
     }
     // DELETE
@@ -190,26 +193,27 @@ public class ConverterV3PPModelToEntity
     List<PaymentOptionMetadata> metadataToRemove =
         new ArrayList<>(destination.getPaymentOptionMetadata());
 
-    for (InstallmentMetadataModel sourceMetadata : sourcePaymentOptionMetadata) {
-      PaymentOptionMetadata managedMetadata =
-          managedPaymentOptionMetadataByKey.get(sourceMetadata.getKey());
+    if (sourcePaymentOptionMetadata != null) {
+      for (InstallmentMetadataModel sourceMetadata : sourcePaymentOptionMetadata) {
+        PaymentOptionMetadata managedMetadata =
+            managedPaymentOptionMetadataByKey.get(sourceMetadata.getKey());
 
-      if (managedMetadata != null) {
-        // UPDATE:
-        sourceMetadata.setValue(managedMetadata.getValue());
-        metadataToRemove.remove(managedMetadata);
-      } else {
-        // CREATE:
-        PaymentOptionMetadata md =
-            PaymentOptionMetadata.builder()
-                .key(sourceMetadata.getKey())
-                .value(sourceMetadata.getValue())
-                .paymentOption(destination)
-                .build();
-        destination.getPaymentOptionMetadata().add(md);
+        if (managedMetadata != null) {
+          // UPDATE:
+          sourceMetadata.setValue(managedMetadata.getValue());
+          metadataToRemove.remove(managedMetadata);
+        } else {
+          // CREATE:
+          PaymentOptionMetadata md =
+              PaymentOptionMetadata.builder()
+                  .key(sourceMetadata.getKey())
+                  .value(sourceMetadata.getValue())
+                  .paymentOption(destination)
+                  .build();
+          destination.getPaymentOptionMetadata().add(md);
+        }
       }
     }
-
     // DELETE:the orphans metadata are removed
     destination.getPaymentOptionMetadata().removeAll(metadataToRemove);
   }
@@ -222,25 +226,27 @@ public class ConverterV3PPModelToEntity
     List<TransferMetadataModel> sourceTransferMetadata = source.getTransferMetadata();
     List<TransferMetadata> metadataToRemove = new ArrayList<>(destination.getTransferMetadata());
 
-    for (TransferMetadataModel sourceMetadata : sourceTransferMetadata) {
-      TransferMetadata managedMetadata = managedTransferMetadataByKey.get(sourceMetadata.getKey());
+    if (sourceTransferMetadata != null) {
+      for (TransferMetadataModel sourceMetadata : sourceTransferMetadata) {
+        TransferMetadata managedMetadata =
+            managedTransferMetadataByKey.get(sourceMetadata.getKey());
 
-      if (managedMetadata != null) {
-        // UPDATE:
-        sourceMetadata.setValue(managedMetadata.getValue());
-        metadataToRemove.remove(managedMetadata);
-      } else {
-        // CREATE:
-        TransferMetadata md =
-            TransferMetadata.builder()
-                .key(sourceMetadata.getKey())
-                .value(sourceMetadata.getValue())
-                .transfer(destination)
-                .build();
-        destination.getTransferMetadata().add(md);
+        if (managedMetadata != null) {
+          // UPDATE:
+          sourceMetadata.setValue(managedMetadata.getValue());
+          metadataToRemove.remove(managedMetadata);
+        } else {
+          // CREATE:
+          TransferMetadata md =
+              TransferMetadata.builder()
+                  .key(sourceMetadata.getKey())
+                  .value(sourceMetadata.getValue())
+                  .transfer(destination)
+                  .build();
+          destination.getTransferMetadata().add(md);
+        }
       }
     }
-
     // DELETE:
     destination.getTransferMetadata().removeAll(metadataToRemove);
   }
