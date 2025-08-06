@@ -13,7 +13,9 @@ FROM --platform=linux/amd64 amazoncorretto:17.0.9-alpine3.18@sha256:df48bf2e1832
 COPY --from=buildtime /build/target/*.jar application.jar
 RUN java -Djarmode=layertools -jar application.jar extract
 
-FROM ghcr.io/pagopa/docker-base-springboot-openjdk17:v2.2.0@sha256:b866656c31f2c6ebe6e78b9437ce930d6c94c0b4bfc8e9ecc1076a780b9dfb18
+
+FROM ghcr.io/pagopa/docker-base-springboot-openjdk17:v2.2.7@sha256:ea58bccaed00c346eea5ed0ad221d8763feb34c8cce620d86cd4370d7df35125
+ADD --chown=spring:spring https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v1.25.1/opentelemetry-javaagent.jar .
 
 COPY --chown=spring:spring  --from=builder dependencies/ ./
 COPY --chown=spring:spring  --from=builder snapshot-dependencies/ ./
@@ -22,3 +24,7 @@ COPY --chown=spring:spring  --from=builder snapshot-dependencies/ ./
 RUN true
 COPY --chown=spring:spring  --from=builder spring-boot-loader/ ./
 COPY --chown=spring:spring  --from=builder application/ ./
+
+EXPOSE 8080
+
+ENTRYPOINT ["java","-javaagent:opentelemetry-javaagent.jar","--enable-preview","org.springframework.boot.loader.launch.JarLauncher"]
