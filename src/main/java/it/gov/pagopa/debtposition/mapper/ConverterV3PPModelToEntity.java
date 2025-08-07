@@ -49,6 +49,11 @@ public class ConverterV3PPModelToEntity
   }
 
   private LocalDateTime getValidityDate(List<PaymentOptionModelV3> paymentOptions) {
+
+    if (paymentOptions == null) {
+      return null;
+    }
+
     LocalDateTime validityDate = null;
     // Find the minimum validityDate
     Optional<LocalDateTime> minValidityDate =
@@ -63,9 +68,14 @@ public class ConverterV3PPModelToEntity
   }
 
   private boolean getSwitchToExpired(List<PaymentOptionModelV3> paymentOptions) {
+    if (paymentOptions == null) {
+      return false;
+    }
     // Check if any PaymentOptionModelV3 has switchToExpired as true
     // OR operation for the boolean field
-    return paymentOptions.stream().anyMatch(PaymentOptionModelV3::getSwitchToExpired);
+    return paymentOptions.stream()
+        .filter(Objects::nonNull)
+        .anyMatch(PaymentOptionModelV3::getSwitchToExpired);
   }
 
   private void mapAndUpdateInstallments(
@@ -108,27 +118,30 @@ public class ConverterV3PPModelToEntity
       PaymentOptionModelV3 source, InstallmentModel sourceInstallment, PaymentOption destination) {
     DebtorModel debtor = source.getDebtor();
 
+    if (debtor != null) {
+      destination.setCity(debtor.getCity());
+      destination.setCivicNumber(debtor.getCivicNumber());
+      destination.setCountry(debtor.getCountry());
+      destination.setDebtorType(debtor.getType());
+      destination.setEmail(debtor.getEmail());
+      destination.setFiscalCode(debtor.getFiscalCode());
+      destination.setFullName(debtor.getFullName());
+      destination.setPhone(debtor.getPhone());
+      destination.setPostalCode(debtor.getPostalCode());
+      destination.setProvince(debtor.getProvince());
+      destination.setRegion(debtor.getRegion());
+      destination.setStreetName(debtor.getStreetName());
+    }
+
     destination.setAmount(sourceInstallment.getAmount());
-    destination.setCity(debtor.getCity());
-    destination.setCivicNumber(debtor.getCivicNumber());
-    destination.setCountry(debtor.getCountry());
-    destination.setDebtorType(debtor.getType());
     destination.setDescription(source.getDescription());
     destination.setDueDate(sourceInstallment.getDueDate());
-    destination.setEmail(debtor.getEmail());
     destination.setFee(sourceInstallment.getFee());
-    destination.setFiscalCode(debtor.getFiscalCode());
-    destination.setFullName(debtor.getFullName());
     destination.setIsPartialPayment(source.getInstallments().size() > 1);
     destination.setIuv(sourceInstallment.getIuv());
     destination.setLastUpdatedDate(LocalDateTime.now());
     destination.setNav(sourceInstallment.getNav());
-    destination.setPhone(debtor.getPhone());
-    destination.setPostalCode(debtor.getPostalCode());
-    destination.setProvince(debtor.getProvince());
-    destination.setRegion(debtor.getRegion());
     destination.setRetentionDate(source.getRetentionDate());
-    destination.setStreetName(debtor.getStreetName());
 
     mapAndUpdateTransfers(sourceInstallment, destination);
     mapAndUpdateOptionMetadata(sourceInstallment, destination);
