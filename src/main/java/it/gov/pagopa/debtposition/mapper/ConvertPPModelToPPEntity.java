@@ -59,19 +59,21 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     List<PaymentOptionModel> sourceOptions = source.getPaymentOption();
     List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
 
-    for (PaymentOptionModel sourceOpt : sourceOptions) {
-      PaymentOption managedOpt = managedOptionsByIuv.get(sourceOpt.getIuv());
+    if (sourceOptions != null) {
+      for (PaymentOptionModel sourceOpt : sourceOptions) {
+        PaymentOption managedOpt = managedOptionsByIuv.get(sourceOpt.getIuv());
 
-      if (managedOpt != null) {
-        // UPDATE
-        mapAndUpdateSinglePaymentOption(source, sourceOpt, managedOpt);
-        optionsToRemove.remove(managedOpt);
-      } else {
-        // CREATE
-        PaymentOption po = PaymentOption.builder().build();
-        po.setSendSync(false);
-        mapAndUpdateSinglePaymentOption(source, sourceOpt, po);
-        destination.getPaymentOption().add(po);
+        if (managedOpt != null) {
+          // UPDATE
+          mapAndUpdateSinglePaymentOption(source, sourceOpt, managedOpt);
+          optionsToRemove.remove(managedOpt);
+        } else {
+          // CREATE
+          PaymentOption po = PaymentOption.builder().build();
+          po.setSendSync(false);
+          mapAndUpdateSinglePaymentOption(source, sourceOpt, po);
+          destination.getPaymentOption().add(po);
+        }
       }
     }
 
@@ -115,17 +117,19 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     List<TransferModel> sourceTransfers = source.getTransfer();
     List<Transfer> transfersToRemove = new ArrayList<>(destination.getTransfer());
 
-    for (TransferModel sourceTx : sourceTransfers) {
-      Transfer managedTx = managedTransfersById.get(sourceTx.getIdTransfer());
-      if (managedTx != null) {
-        // UPDATE
-        mapAndUpdateSingleTransfer(sourceTx, managedTx);
-        transfersToRemove.remove(managedTx);
-      } else {
-        // CREATE
-        Transfer tr = Transfer.builder().build();
-        mapAndUpdateSingleTransfer(sourceTx, tr);
-        destination.getTransfer().add(tr);
+    if (sourceTransfers != null) {
+      for (TransferModel sourceTx : sourceTransfers) {
+        Transfer managedTx = managedTransfersById.get(sourceTx.getIdTransfer());
+        if (managedTx != null) {
+          // UPDATE
+          mapAndUpdateSingleTransfer(sourceTx, managedTx);
+          transfersToRemove.remove(managedTx);
+        } else {
+          // CREATE
+          Transfer tr = Transfer.builder().build();
+          mapAndUpdateSingleTransfer(sourceTx, tr);
+          destination.getTransfer().add(tr);
+        }
       }
     }
     // DELETE
@@ -162,26 +166,27 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     List<PaymentOptionMetadata> metadataToRemove =
         new ArrayList<>(destination.getPaymentOptionMetadata());
 
-    for (PaymentOptionMetadataModel sourceMetadata : sourcePaymentOptionMetadata) {
-      PaymentOptionMetadata managedMetadata =
-          managedPaymentOptionMetadataByKey.get(sourceMetadata.getKey());
+    if (sourcePaymentOptionMetadata != null) {
+      for (PaymentOptionMetadataModel sourceMetadata : sourcePaymentOptionMetadata) {
+        PaymentOptionMetadata managedMetadata =
+            managedPaymentOptionMetadataByKey.get(sourceMetadata.getKey());
 
-      if (managedMetadata != null) {
-        // UPDATE
-        sourceMetadata.setValue(managedMetadata.getValue());
-        metadataToRemove.remove(managedMetadata);
-      } else {
-        // CREATE
-        PaymentOptionMetadata md =
-            PaymentOptionMetadata.builder()
-                .key(sourceMetadata.getKey())
-                .value(sourceMetadata.getValue())
-                .paymentOption(destination)
-                .build();
-        destination.getPaymentOptionMetadata().add(md);
+        if (managedMetadata != null) {
+          // UPDATE
+          sourceMetadata.setValue(managedMetadata.getValue());
+          metadataToRemove.remove(managedMetadata);
+        } else {
+          // CREATE
+          PaymentOptionMetadata md =
+              PaymentOptionMetadata.builder()
+                  .key(sourceMetadata.getKey())
+                  .value(sourceMetadata.getValue())
+                  .paymentOption(destination)
+                  .build();
+          destination.getPaymentOptionMetadata().add(md);
+        }
       }
     }
-
     // DELETE
     destination.getPaymentOptionMetadata().removeAll(metadataToRemove);
   }
@@ -194,25 +199,27 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     List<TransferMetadataModel> sourceTransferMetadata = source.getTransferMetadata();
     List<TransferMetadata> metadataToRemove = new ArrayList<>(destination.getTransferMetadata());
 
-    for (TransferMetadataModel sourceMetadata : sourceTransferMetadata) {
-      TransferMetadata managedMetadata = managedTransferMetadataByKey.get(sourceMetadata.getKey());
+    if (sourceTransferMetadata != null) {
+      for (TransferMetadataModel sourceMetadata : sourceTransferMetadata) {
+        TransferMetadata managedMetadata =
+            managedTransferMetadataByKey.get(sourceMetadata.getKey());
 
-      if (managedMetadata != null) {
-        // UPDATE
-        sourceMetadata.setValue(managedMetadata.getValue());
-        metadataToRemove.remove(managedMetadata);
-      } else {
-        // CREATE
-        TransferMetadata md =
-            TransferMetadata.builder()
-                .key(sourceMetadata.getKey())
-                .value(sourceMetadata.getValue())
-                .transfer(destination)
-                .build();
-        destination.getTransferMetadata().add(md);
+        if (managedMetadata != null) {
+          // UPDATE
+          sourceMetadata.setValue(managedMetadata.getValue());
+          metadataToRemove.remove(managedMetadata);
+        } else {
+          // CREATE
+          TransferMetadata md =
+              TransferMetadata.builder()
+                  .key(sourceMetadata.getKey())
+                  .value(sourceMetadata.getValue())
+                  .transfer(destination)
+                  .build();
+          destination.getTransferMetadata().add(md);
+        }
       }
     }
-
     // DELETE
     destination.getTransferMetadata().removeAll(metadataToRemove);
   }

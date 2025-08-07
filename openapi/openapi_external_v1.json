@@ -2,9 +2,9 @@
   "openapi": "3.0.1",
   "info": {
     "title": "PagoPA API Debt Position ${service}",
-    "description": "@project.description@",
+    "description": "Progetto Gestione Posizioni Debitorie",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "0.14.9"
+    "version": "0.14.9-3-logging"
   },
   "servers": [
     {
