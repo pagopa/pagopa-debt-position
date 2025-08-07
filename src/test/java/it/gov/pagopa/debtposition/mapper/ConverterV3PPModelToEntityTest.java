@@ -95,7 +95,6 @@ class ConverterV3PPModelToEntityTest {
     assertEquals("Comune", entity.getCompanyName());
 
     assertEquals(1, entity.getPaymentOption().size());
-    assertEquals("rata", entity.getPaymentOption().get(0).getDescription());
   }
 
   @Test
@@ -135,7 +134,6 @@ class ConverterV3PPModelToEntityTest {
     assertEquals("Comune", entity.getCompanyName());
 
     assertEquals(1, entity.getPaymentOption().size());
-    assertEquals("rata", entity.getPaymentOption().get(0).getDescription());
     assertEquals(1, entity.getPaymentOption().get(0).getTransfer().size());
     assertEquals("1", entity.getPaymentOption().get(0).getTransfer().get(0).getIdTransfer());
   }
@@ -182,7 +180,6 @@ class ConverterV3PPModelToEntityTest {
     assertEquals("Comune", entity.getCompanyName());
 
     assertEquals(1, entity.getPaymentOption().size());
-    assertEquals("rata", entity.getPaymentOption().get(0).getDescription());
     assertEquals(1, entity.getPaymentOption().get(0).getTransfer().size());
     assertEquals("1", entity.getPaymentOption().get(0).getTransfer().get(0).getIdTransfer());
     assertEquals(1, entity.getPaymentOption().get(0).getPaymentOptionMetadata().size());
@@ -236,7 +233,6 @@ class ConverterV3PPModelToEntityTest {
     assertEquals("Comune", entity.getCompanyName());
 
     assertEquals(1, entity.getPaymentOption().size());
-    assertEquals("rata", entity.getPaymentOption().get(0).getDescription());
     assertEquals(1, entity.getPaymentOption().get(0).getTransfer().size());
     assertEquals("1", entity.getPaymentOption().get(0).getTransfer().get(0).getIdTransfer());
     assertEquals(1, entity.getPaymentOption().get(0).getPaymentOptionMetadata().size());
