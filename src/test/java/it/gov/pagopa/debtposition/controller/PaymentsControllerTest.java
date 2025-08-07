@@ -1921,6 +1921,13 @@ class PaymentsControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/organizations/PO422_notificationfee_invalidtransfer_12345678901/paymentoptions/123456IUVMOCK1/notificationfee")
+                .content(TestUtil.toJson(DebtPositionMock.createNotificationFeeMock(150L)))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is(209));
+
     // effettuo la chiamata ma non posso continuare perche non esiste un transfer correlata all'EC
     // in input
     paymentPositionDTO
@@ -1935,13 +1942,6 @@ class PaymentsControllerTest {
                 .content(TestUtil.toJson(paymentPositionDTO))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isUnprocessableEntity());
-
-    mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/organizations/PO422_notificationfee_invalidtransfer_12345678901/paymentoptions/123456IUVMOCK1/notificationfee")
-                .content(TestUtil.toJson(DebtPositionMock.createNotificationFeeMock(150L)))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().is(209));
   }
 
   @Test
