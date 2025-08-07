@@ -274,13 +274,15 @@ public class PaymentPositionCRUDService {
         .getPaymentOption()
         .forEach(
             po -> {
-              // update amount in the PaymentOption
-              po.setAmount(po.getAmount() + po.getNotificationFee());
+              if (po.getNotificationFee() > 0) {
+                // update amount in the PaymentOption
+                po.setAmount(po.getAmount() + po.getNotificationFee());
 
-              if (!po.getTransfer().isEmpty()) {
-                // update amount in the Transfer
-                Transfer primaryTransfer = findPrimaryTransfer(po, organizationFiscalCode);
-                primaryTransfer.setAmount(primaryTransfer.getAmount() + po.getNotificationFee());
+                if (!po.getTransfer().isEmpty()) {
+                  // update amount in the Transfer
+                  Transfer primaryTransfer = findPrimaryTransfer(po, organizationFiscalCode);
+                  primaryTransfer.setAmount(primaryTransfer.getAmount() + po.getNotificationFee());
+                }
               }
             });
   }
