@@ -87,6 +87,11 @@ public class ConverterV3PPModelToEntity
     List<PaymentOptionModelV3> sourceOptions = source.getPaymentOption();
     List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
 
+    // Covered cases:
+    // - 1 Payment Option with [1:N] Installment (ie Opzione Rateale)
+    // - [1:N] Payment Option with 1 Installment (ie Opzione Multipla)
+    // - [1:N] Payment Option with 1 Installment and 1 Payment Option with [1:N] Installment (ie
+    // Opzione Unica + Opzione Rateale)
     if (sourceOptions != null) {
       for (PaymentOptionModelV3 sourceOption : sourceOptions) {
         for (InstallmentModel installment : sourceOption.getInstallments()) {
@@ -134,7 +139,7 @@ public class ConverterV3PPModelToEntity
     }
 
     destination.setAmount(sourceInstallment.getAmount());
-    destination.setDescription(source.getDescription());
+    destination.setDescription(sourceInstallment.getDescription());
     destination.setDueDate(sourceInstallment.getDueDate());
     destination.setFee(sourceInstallment.getFee());
     destination.setIsPartialPayment(source.getInstallments().size() > 1);
