@@ -88,9 +88,10 @@ public enum AppError {
       "The caller does not have proper authorization to access or modify the IUVs in the payment"
           + " position. [Organization Fiscal Code=%s, IUPD=%s]"),
   PAYMENT_OPTION_RESERVED_METADATA(
-          HttpStatus.CONFLICT,
-          "The payment option contains reserved metadata",
-          "The caller should not add or modify reserved payment option metadata. Reserved metadata list = {NOTIFICATION_FEE}."),
+      HttpStatus.CONFLICT,
+      "The payment option contains reserved metadata",
+      "The caller should not add or modify reserved payment option metadata. Reserved metadata list"
+          + " = {NOTIFICATION_FEE}."),
   ORGANIZATION_NOT_FOUND(
       HttpStatus.NOT_FOUND,
       "Not found the organization",
@@ -122,10 +123,6 @@ public enum AppError {
       "Not in unpaid state for notification fee update",
       "The payment option with Organization Fiscal Code %s and NAV %s is not in unpaid state and"
           + " the notification fee cannot be updated."),
-  PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_TRANSFER_NOT_FOUND(
-      HttpStatus.UNPROCESSABLE_ENTITY,
-      "No valid transfer found for notification fee update",
-      "No transfer found for payment option with IUV %s related to Organization Fiscal Code %s"),
   PAYMENT_OPTION_PAY_FAILED(
       HttpStatus.INTERNAL_SERVER_ERROR,
       "The pay call for a payment option is failed",

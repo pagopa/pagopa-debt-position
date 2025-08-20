@@ -256,7 +256,7 @@ public class PaymentsService {
   public static void updateAmountsWithNotificationFee(
       PaymentOption paymentOption, String organizationFiscalCode, long notificationFeeAmount) {
     // Get the first valid transfer to add the fee
-    Transfer validTransfer = findPrimaryTransfer(paymentOption, organizationFiscalCode);
+    Optional<Transfer> validTransfer = findPrimaryTransfer(paymentOption, organizationFiscalCode);
 
     /*
     Retrieving the old notification fee. It MUST BE SUBTRACTED from the various amount in order due to the fact that
@@ -271,8 +271,11 @@ public class PaymentsService {
     paymentOption.setAmount(paymentOption.getAmount() + notificationFeeAmount);
 
     // Subtracting the old value and adding the new one
-    validTransfer.setAmount(validTransfer.getAmount() - oldNotificationFee);
-    validTransfer.setAmount(validTransfer.getAmount() + notificationFeeAmount);
+    validTransfer.ifPresent(
+        elem -> {
+          elem.setAmount(elem.getAmount() - oldNotificationFee);
+          elem.setAmount(elem.getAmount() + notificationFeeAmount);
+        });
   }
 
   /**
@@ -282,7 +285,7 @@ public class PaymentsService {
    * @param organizationFiscalCode EC
    * @return the transfer of the primary Creditor Institution
    */
-  public static Transfer findPrimaryTransfer(
+  public static Optional<Transfer> findPrimaryTransfer(
       PaymentOption paymentOption, String organizationFiscalCode) {
     List<Transfer> transfers = paymentOption.getTransfer();
     return transfers.stream()
@@ -291,13 +294,7 @@ public class PaymentsService {
             transfer ->
                 transfer.getOrganizationFiscalCode() == null
                     || organizationFiscalCode.equals(transfer.getOrganizationFiscalCode()))
-        .findFirst()
-        .orElseThrow(
-            () ->
-                new AppException(
-                    AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_TRANSFER_NOT_FOUND,
-                    paymentOption.getIuv(),
-                    organizationFiscalCode));
+        .findFirst();
   }
 
   public List<OrganizationModelQueryBean> getOrganizationsToAdd(@NotNull LocalDate since) {
