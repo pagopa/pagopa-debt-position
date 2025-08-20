@@ -1,9 +1,7 @@
 package it.gov.pagopa.debtposition.controller;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -14,8 +12,6 @@ import it.gov.pagopa.debtposition.TestUtil;
 import it.gov.pagopa.debtposition.client.NodeClient;
 import it.gov.pagopa.debtposition.dto.*;
 import it.gov.pagopa.debtposition.mock.DebtPositionMock;
-import it.gov.pagopa.debtposition.model.checkposition.NodeCheckPositionModel;
-import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPositionResponse;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
@@ -42,7 +38,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @SpringBootTest(classes = DebtPositionApplication.class)
@@ -2080,47 +2075,6 @@ class DebtPositionControllerTest {
                 .content(TestUtil.toJson(DebtPositionMock.getMock4()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isConflict());
-  }
-
-  @Test
-  void updateDebtPosition_noValidTransfer_422() throws Exception {
-
-    PaymentPositionDTO paymentPositionDTO =
-        DebtPositionMock.paymentPositionForNotificationUpdateMock1();
-
-    when(nodeClient.getCheckPosition(any(NodeCheckPositionModel.class)))
-        .thenReturn(NodeCheckPositionResponse.builder().outcome("OK").build());
-
-    // creo una posizione debitoria e recupero la payment option associata
-    mvc.perform(
-            post("/organizations/UPD422_novalidtransfer_12345678901/debtpositions")
-                .content(TestUtil.toJson(paymentPositionDTO))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isCreated());
-
-    // effettuo un aggiornamento della notification fee (si continua ad utilizzare lo IUV e non il
-    // NAV)
-    mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/organizations/UPD422_novalidtransfer_12345678901/paymentoptions/123456IUVMOCK1/notificationfee")
-                .content(TestUtil.toJson(DebtPositionMock.createNotificationFeeMock(150L)))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk());
-
-    // effettuo la chiamata di modifica del codice fiscale dell'EC del transfer ma non posso
-    // procedere perche eliminerei tutti i transfer associabili per la fee
-    paymentPositionDTO
-        .getPaymentOption()
-        .get(0)
-        .getTransfer()
-        .get(0)
-        .setOrganizationFiscalCode("acreditorinstitution");
-    mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/organizations/UPD422_novalidtransfer_12345678901/debtpositions/12345678901IUPDMOCK1")
-                .content(TestUtil.toJson(paymentPositionDTO))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isUnprocessableEntity());
   }
 
   /** UPDATE IBAN ON TRANSFERS */

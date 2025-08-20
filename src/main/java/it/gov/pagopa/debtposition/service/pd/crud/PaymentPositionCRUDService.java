@@ -248,13 +248,6 @@ public class PaymentPositionCRUDService {
     } catch (ValidationException e) {
       throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
     } catch (AppException e) {
-      if (AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_TRANSFER_NOT_FOUND.title.equals(
-          e.getTitle())) {
-        throw new AppException(
-            AppError.DEBT_POSITION_UPDATE_FAILED_NO_TRANSFER_FOR_NOTIFICATION_FEE,
-            organizationFiscalCode,
-            ppToUpdate.getIupd());
-      }
       throw e;
     } catch (Exception e) {
       log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
@@ -280,8 +273,10 @@ public class PaymentPositionCRUDService {
 
                 if (!po.getTransfer().isEmpty()) {
                   // update amount in the Transfer
-                  Transfer primaryTransfer = findPrimaryTransfer(po, organizationFiscalCode);
-                  primaryTransfer.setAmount(primaryTransfer.getAmount() + po.getNotificationFee());
+                  Optional<Transfer> primaryTransfer =
+                      findPrimaryTransfer(po, organizationFiscalCode);
+                  primaryTransfer.ifPresent(
+                      elem -> elem.setAmount(elem.getAmount() + po.getNotificationFee()));
                 }
               }
             });
@@ -371,13 +366,6 @@ public class PaymentPositionCRUDService {
     } catch (ValidationException e) {
       throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
     } catch (AppException e) {
-      if (AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_TRANSFER_NOT_FOUND.title.equals(
-          e.getTitle())) {
-        throw new AppException(
-            AppError.DEBT_POSITION_UPDATE_FAILED_NO_TRANSFER_FOR_NOTIFICATION_FEE,
-            organizationFiscalCode,
-            e.getMessage());
-      }
       throw e;
     } catch (Exception e) {
       // Logga l'errore completo per il debug

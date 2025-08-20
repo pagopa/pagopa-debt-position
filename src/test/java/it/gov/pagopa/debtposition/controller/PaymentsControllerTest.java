@@ -1909,42 +1909,6 @@ class PaymentsControllerTest {
   }
 
   @Test
-  void updateNotificationFee_noValidTransfer_422() throws Exception {
-
-    PaymentPositionDTO paymentPositionDTO =
-        DebtPositionMock.paymentPositionForNotificationUpdateMock1();
-
-    // creo una posizione debitoria e recupero la payment option associata
-    mvc.perform(
-            post("/organizations/PO422_notificationfee_invalidtransfer_12345678901/debtpositions")
-                .content(TestUtil.toJson(paymentPositionDTO))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isCreated());
-
-    mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/organizations/PO422_notificationfee_invalidtransfer_12345678901/paymentoptions/123456IUVMOCK1/notificationfee")
-                .content(TestUtil.toJson(DebtPositionMock.createNotificationFeeMock(150L)))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().is(209));
-
-    // effettuo la chiamata ma non posso continuare perche non esiste un transfer correlata all'EC
-    // in input
-    paymentPositionDTO
-        .getPaymentOption()
-        .get(0)
-        .getTransfer()
-        .get(0)
-        .setOrganizationFiscalCode("hfdkjshfkdha");
-    mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/organizations/PO422_notificationfee_invalidtransfer_12345678901/debtpositions/12345678901IUPDMOCK1")
-                .content(TestUtil.toJson(paymentPositionDTO))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isUnprocessableEntity());
-  }
-
-  @Test
   void updateNotificationFee_209() throws Exception {
 
     PaymentPositionDTO paymentPositionDTO =
