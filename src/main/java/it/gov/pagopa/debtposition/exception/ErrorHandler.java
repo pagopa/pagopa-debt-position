@@ -204,11 +204,9 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
     String appExMsg;
 
     if (ex.getCause() != null) {
-      appExMsg = String.format(
-              "App Exception raised: " + ex.getMessage() + "\nCause of the App Exception: ", ex.getCause());
+      appExMsg = String.format("App Exception raised: %s\nCause of the App Exception: %s", ex.getMessage(), ex.getCause());
     } else {
-      appExMsg = String.format(
-              "App Exception raised: " + ex.getMessage());
+      appExMsg = String.format("App Exception raised: %s", ex.getMessage());
     }
 
     if (infoExLogLevel.contains(ex.getHttpStatus())) {
