@@ -816,21 +816,21 @@ class PaymentsControllerTest {
   void markAsPaidPaymentOption_ok() throws Exception {
     // creo una posizione debitoria (con 'validity date' impostata e nav non valorizzato)
     mvc.perform(
-                    post("/organizations/PAY_422_12345678901/debtpositions")
+                    post("/organizations/PAY_200_12345678901/debtpositions")
                             .content(TestUtil.toJson(DebtPositionMock.getMock10()))
                             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isCreated());
 
     // porto in pubblicata lo stato della posizione debitoria
     mvc.perform(
-                    post("/organizations/PAY_422_12345678901/debtpositions/12345678901IUPDMOCK10_markd/publish")
+                    post("/organizations/PAY_200_12345678901/debtpositions/12345678901IUPDMOCK10_markd/publish")
                             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
 
     // effettuo l'aggiornamento della posizione debutoria come già pagata e verifico
     // l'errore 422 di 'Not in payable state'
     mvc.perform(
-                    post("/organizations/PAY_422_12345678901/paymentoptions/paids/"
+                    post("/organizations/PAY_200_12345678901/paymentoptions/paids/"
                             + auxDigit
                             + "123456IUVMOCK10")
                             .content("{}")
@@ -873,6 +873,7 @@ class PaymentsControllerTest {
     String url = "/organizations/PAY_400_12345678901/paymentoptions/paids/3123456_NAV_NOTEXIST";
     mvc.perform(post(url)
                     .queryParam("segregationCodes", "12")
+                    .content("{\"paymentDate\":\"2025-01-01T10:00:00.000Z\"}")
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isNotFound())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON));
