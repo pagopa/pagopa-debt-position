@@ -39,7 +39,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -87,16 +86,19 @@ class PaymentsControllerTest {
             post("/organizations/PO200_12345678901/debtpositions")
                 .content(TestUtil.toJson(pp))
                 .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(result -> {
-          int status = result.getResponse().getStatus();
-          if (status != HttpStatus.CREATED.value() && status != HttpStatus.CONFLICT.value()) {
-            throw new AssertionError("Expected status 201 (Created) or 409 (Conflict), but got: " + status);
-          }
-        });
+        .andExpect(
+            result -> {
+              int status = result.getResponse().getStatus();
+              if (status != HttpStatus.CREATED.value() && status != HttpStatus.CONFLICT.value()) {
+                throw new AssertionError(
+                    "Expected status 201 (Created) or 409 (Conflict), but got: " + status);
+              }
+            });
 
-    NotificationPriceResponse priceRes = new NotificationPriceResponse("IUN", 1, 1, 0, 0, ZonedDateTime.now(),  ZonedDateTime.now(),  1, 1);
-    when(sendClient.getNotificationFee(anyString(), anyString()))
-            .thenReturn(priceRes);
+    NotificationPriceResponse priceRes =
+        new NotificationPriceResponse(
+            "IUN", 1, 1, 0, 0, ZonedDateTime.now(), ZonedDateTime.now(), 1, 1);
+    when(sendClient.getNotificationFee(anyString(), anyString())).thenReturn(priceRes);
 
     String url = "/organizations/PO200_12345678901/paymentoptions/CUSTOMNAV_123456IUVMOCK1";
     mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
@@ -116,28 +118,30 @@ class PaymentsControllerTest {
       po.setNav("CUSTOMNAV_" + po.getIuv());
     }
 
-    mvc.perform(post("/organizations/" + organization + "/debtpositions")
-                    .content(TestUtil.toJson(pp))
-                    .contentType(MediaType.APPLICATION_JSON));
+    mvc.perform(
+        post("/organizations/" + organization + "/debtpositions")
+            .content(TestUtil.toJson(pp))
+            .contentType(MediaType.APPLICATION_JSON));
 
     for (PaymentOptionDTO po : pp.getPaymentOption()) {
       ArrayList<Notice> notices = new ArrayList<>();
       notices.add(new Notice(organization, po.getNav()));
-      mvc.perform(post("/internal/config/send")
-                      .contentType(MediaType.APPLICATION_JSON)
-                      .content(new ObjectMapper().writeValueAsString(notices)))
-              .andExpect(status().isOk());
+      mvc.perform(
+              post("/internal/config/send")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(new ObjectMapper().writeValueAsString(notices)))
+          .andExpect(status().isOk());
     }
 
     when(sendClient.getNotificationFee(anyString(), anyString()))
-            .thenThrow(new RuntimeException("Connection timeout"));
+        .thenThrow(new RuntimeException("Connection timeout"));
 
     String url = "/organizations/" + organization + "/paymentoptions/CUSTOMNAV_123456IUVMOCK1";
     mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.nav").value("CUSTOMNAV_123456IUVMOCK1"))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMOCK1"));
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.nav").value("CUSTOMNAV_123456IUVMOCK1"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMOCK1"));
   }
 
   @Test
@@ -150,34 +154,37 @@ class PaymentsControllerTest {
       po.setNav("CUSTOMNAV_" + po.getIuv());
     }
 
-    mvc.perform(post("/organizations/" + organization + "/debtpositions")
+    mvc.perform(
+        post("/organizations/" + organization + "/debtpositions")
             .content(TestUtil.toJson(pp))
             .contentType(MediaType.APPLICATION_JSON));
 
     for (PaymentOptionDTO po : pp.getPaymentOption()) {
       ArrayList<Notice> notices = new ArrayList<>();
       notices.add(new Notice(organization, po.getNav()));
-      mvc.perform(post("/internal/config/send")
-                      .contentType(MediaType.APPLICATION_JSON)
-                      .content(new ObjectMapper().writeValueAsString(notices)))
-              .andExpect(status().isOk());
+      mvc.perform(
+              post("/internal/config/send")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(new ObjectMapper().writeValueAsString(notices)))
+          .andExpect(status().isOk());
     }
 
     long firstPOAmount = pp.getPaymentOption().get(0).getAmount();
     String firstPONav = pp.getPaymentOption().get(0).getNav();
-    NotificationPriceResponse priceRes = new NotificationPriceResponse("IUN", 1, 1, 0, 0, ZonedDateTime.now(),  ZonedDateTime.now(),  1, 1);
+    NotificationPriceResponse priceRes =
+        new NotificationPriceResponse(
+            "IUN", 1, 1, 0, 0, ZonedDateTime.now(), ZonedDateTime.now(), 1, 1);
     Integer price = priceRes.getTotalPrice();
-    when(sendClient.getNotificationFee(anyString(), anyString()))
-            .thenReturn(priceRes);
+    when(sendClient.getNotificationFee(anyString(), anyString())).thenReturn(priceRes);
 
     // Get first Payment Option
     String url = "/organizations/" + organization + "/paymentoptions/" + firstPONav;
     mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.nav").value("CUSTOMNAV_123456IUVMOCK1"))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMOCK1"))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.amount").value(firstPOAmount + price));
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.nav").value("CUSTOMNAV_123456IUVMOCK1"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMOCK1"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.amount").value(firstPOAmount + price));
   }
 
   @Test
@@ -1994,6 +2001,13 @@ class PaymentsControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
+    mvc.perform(
+            MockMvcRequestBuilders.put(
+                    "/organizations/PO422_notificationfee_invalidtransfer_12345678901/paymentoptions/123456IUVMOCK1/notificationfee")
+                .content(TestUtil.toJson(DebtPositionMock.createNotificationFeeMock(150L)))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is(209));
+
     // effettuo la chiamata ma non posso continuare perche non esiste un transfer correlata all'EC
     // in input
     paymentPositionDTO
@@ -2007,16 +2021,7 @@ class PaymentsControllerTest {
                     "/organizations/PO422_notificationfee_invalidtransfer_12345678901/debtpositions/12345678901IUPDMOCK1")
                 .content(TestUtil.toJson(paymentPositionDTO))
                 .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk());
-
-    mvc.perform(
-            MockMvcRequestBuilders.put(
-                    "/organizations/PO422_notificationfee_invalidtransfer_12345678901/paymentoptions/123456IUVMOCK1/notificationfee")
-                .content(TestUtil.toJson(DebtPositionMock.createNotificationFeeMock(150L)))
-                .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isUnprocessableEntity());
-
-    verify(nodeClient, times(0)).getCheckPosition(any(NodeCheckPositionModel.class));
   }
 
   @Test

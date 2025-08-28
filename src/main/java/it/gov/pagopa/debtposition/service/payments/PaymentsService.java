@@ -27,7 +27,6 @@ import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -84,12 +83,14 @@ public class PaymentsService {
       boolean result = updateNotificationFeeSync(paymentOption);
       if (result)
         log.info(
-            "Notification fee amount of Payment Option with NAV {} has been updated with notification-fee: {}.",
+            "Notification fee amount of Payment Option with NAV {} has been updated with"
+                + " notification-fee: {}.",
             paymentOption.getNav(),
             paymentOption.getNotificationFee());
       else
         log.error(
-            "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.", paymentOption.getNav());
+            "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.",
+            paymentOption.getNav());
     }
 
     return paymentOption;
@@ -115,7 +116,7 @@ public class PaymentsService {
     DebtPositionStatus.validityCheckAndUpdate(paymentPositionToPay);
     DebtPositionValidation.checkPaymentPositionPayability(paymentPositionToPay, nav);
 
-      return this.executePaymentFlow(paymentPositionToPay, nav, paymentOptionModel);
+    return this.executePaymentFlow(paymentPositionToPay, nav, paymentOptionModel);
   }
 
   @Transactional
@@ -155,7 +156,8 @@ public class PaymentsService {
       return true;
     } catch (Exception e) {
       log.error(
-          "[GPD-ERR-SEND-00] Exception while calling getNotificationFee for NAV {}, class = {}, message = {}.",
+          "[GPD-ERR-SEND-00] Exception while calling getNotificationFee for NAV {}, class = {},"
+              + " message = {}.",
           paymentOption.getNav(),
           e.getClass(),
           e.getMessage());
@@ -254,21 +256,7 @@ public class PaymentsService {
   public static void updateAmountsWithNotificationFee(
       PaymentOption paymentOption, String organizationFiscalCode, long notificationFeeAmount) {
     // Get the first valid transfer to add the fee
-    List<Transfer> transfers = paymentOption.getTransfer();
-    Transfer validTransfer =
-        transfers.stream()
-            .sorted(Comparator.comparing(Transfer::getIdTransfer))
-            .filter(
-                transfer ->
-                    transfer.getOrganizationFiscalCode() == null
-                        || organizationFiscalCode.equals(transfer.getOrganizationFiscalCode()))
-            .findFirst()
-            .orElseThrow(
-                () ->
-                    new AppException(
-                        AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_TRANSFER_NOT_FOUND,
-                        paymentOption.getIuv(),
-                        organizationFiscalCode));
+    Transfer validTransfer = findPrimaryTransfer(paymentOption, organizationFiscalCode);
 
     /*
     Retrieving the old notification fee. It MUST BE SUBTRACTED from the various amount in order due to the fact that
@@ -285,6 +273,31 @@ public class PaymentsService {
     // Subtracting the old value and adding the new one
     validTransfer.setAmount(validTransfer.getAmount() - oldNotificationFee);
     validTransfer.setAmount(validTransfer.getAmount() + notificationFeeAmount);
+  }
+
+  /**
+   * find the primary transfer of the payment option
+   *
+   * @param paymentOption the entity of the payment option
+   * @param organizationFiscalCode EC
+   * @return the transfer of the primary Creditor Institution
+   */
+  public static Transfer findPrimaryTransfer(
+      PaymentOption paymentOption, String organizationFiscalCode) {
+    List<Transfer> transfers = paymentOption.getTransfer();
+    return transfers.stream()
+        .sorted(Comparator.comparing(Transfer::getIdTransfer))
+        .filter(
+            transfer ->
+                transfer.getOrganizationFiscalCode() == null
+                    || organizationFiscalCode.equals(transfer.getOrganizationFiscalCode()))
+        .findFirst()
+        .orElseThrow(
+            () ->
+                new AppException(
+                    AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_TRANSFER_NOT_FOUND,
+                    paymentOption.getIuv(),
+                    organizationFiscalCode));
   }
 
   public List<OrganizationModelQueryBean> getOrganizationsToAdd(@NotNull LocalDate since) {
