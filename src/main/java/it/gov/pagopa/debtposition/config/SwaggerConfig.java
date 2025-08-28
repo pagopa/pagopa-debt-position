@@ -30,6 +30,9 @@ public class SwaggerConfig {
   private final String INFO_API = "/info";
   private final String DEBT_POSITIONS_API = "/organizations/{organizationfiscalcode}/debtpositions";
   private final String DEBT_POSITIONS_BULK_API= "/organizations/{organizationfiscalcode}/debtpositions/bulk";
+  private final String PAYMENTS_MARK_AS_PAID_API = "/organizations/{organizationfiscalcode}/paymentoptions/paids/{nav}";
+
+  private final String DEBT_POSITION_API_BLOCK = "/organizations/{organizationfiscalcode}/debtpositions/**";
 
   @Bean
   public OpenAPI customOpenAPI(
@@ -192,7 +195,7 @@ public class SwaggerConfig {
     return GroupedOpenApi.builder()
             .group("external_v1")
             .displayName("GPD - External API - v1")
-            .pathsToMatch("/organizations/{organizationfiscalcode}/debtpositions/**", INFO_API)
+            .pathsToMatch(DEBT_POSITION_API_BLOCK, PAYMENTS_MARK_AS_PAID_API, INFO_API)
             .pathsToExclude(DEBT_POSITIONS_BULK_API)
             .addOpenApiCustomiser(customizeServer(serverInfo))
             .addOpenApiCustomiser(customizeOpenApi(removeFromExternalV1))
@@ -215,7 +218,7 @@ public class SwaggerConfig {
     return GroupedOpenApi.builder()
             .group("external_v2")
             .displayName("GPD - External API - v2")
-            .pathsToMatch(DEBT_POSITIONS_API, DEBT_POSITIONS_BULK_API, INFO_API)
+            .pathsToMatch(DEBT_POSITIONS_API, DEBT_POSITIONS_BULK_API, PAYMENTS_MARK_AS_PAID_API, INFO_API)
             .addOpenApiCustomiser(customizeServer(serverInfo))
             .addOpenApiCustomiser(customizeOpenApi(removeFromExternalV2))
             .addOpenApiCustomiser(renamePath(DEBT_POSITIONS_BULK_API, DEBT_POSITIONS_API))
@@ -265,7 +268,7 @@ public class SwaggerConfig {
     return GroupedOpenApi.builder()
             .group("aca_v1")
             .displayName("GPD - ACA API - v1")
-            .pathsToMatch("/organizations/{organizationfiscalcode}/debtpositions/**", INFO_API)
+            .pathsToMatch(DEBT_POSITION_API_BLOCK, PAYMENTS_MARK_AS_PAID_API, INFO_API)
             .pathsToExclude(DEBT_POSITIONS_BULK_API)
             .addOpenApiCustomiser(customizeServer(serverInfo))
             .addOpenApiCustomiser(customizeOpenApi(removeFromAcaV1))

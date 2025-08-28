@@ -255,9 +255,9 @@ public class DebtPositionValidation {
                       "Obtained unexpected empty payment option - ["
                           + String.format(
                               LOG_BASE_PARAMS_DETAIL,
-                              ppToPay.getOrganizationFiscalCode(),
-                              ppToPay.getIupd(),
-                              nav)
+                              CommonUtil.sanitize(ppToPay.getOrganizationFiscalCode()),
+                              CommonUtil.sanitize(ppToPay.getIupd()),
+                              CommonUtil.sanitize(nav))
                           + "]");
                   return new AppException(
                       AppError.PAYMENT_OPTION_PAY_FAILED, ppToPay.getOrganizationFiscalCode(), nav);
@@ -288,9 +288,9 @@ public class DebtPositionValidation {
               + "Payment Option Status: {} || "
               + "Is Partial Payment: {} || "
               + "Timestamp: {}",
-          ppToPay.getOrganizationFiscalCode(),
-          ppToPay.getIupd(),
-          nav,
+          CommonUtil.sanitize(ppToPay.getOrganizationFiscalCode()),
+          CommonUtil.sanitize(ppToPay.getIupd()),
+          CommonUtil.sanitize(nav),
           ppToPay.getStatus(),
           poToPay.getStatus(),
           poToPay.getIsPartialPayment(),

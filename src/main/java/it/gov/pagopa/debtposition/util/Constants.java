@@ -10,4 +10,5 @@ public class Constants {
   public static final String CREATE_ACTION = "create";
   public static final String UPDATE_ACTION = "update";
   public static final String NOTIFICATION_FEE_METADATA_KEY = "NOTIFICATION_FEE";
+  public static final String PO_MARKED_AS_PAID_FIELD_PLACEHOLDER = "CLOSED_AS_ALREADY_PAID_BY_EC";
 }
