@@ -29,6 +29,7 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
   public static final String INTERNAL_SERVER_ERROR = "INTERNAL SERVER ERROR";
   public static final String BAD_REQUEST = "BAD REQUEST";
   public static final String FOREIGN_KEY_VIOLATION = "23503";
+  public static final List<HttpStatus> infoExLogLevel = List.of(HttpStatus.FORBIDDEN);
 
   /**
    * Handle if the input request is not a valid JSON
@@ -200,13 +201,20 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
   @ExceptionHandler({AppException.class})
   public ResponseEntity<ProblemJson> handleAppException(
       final AppException ex, final WebRequest request) {
+    String appExMsg;
+
     if (ex.getCause() != null) {
-      log.warn(
-          "App Exception raised: " + ex.getMessage() + "\nCause of the App Exception: ",
-          ex.getCause());
+      appExMsg = String.format("App Exception raised: %s%nCause of the App Exception: %s", ex.getMessage(), ex.getCause());
     } else {
-      log.warn("App Exception raised: " + ex.getMessage());
+      appExMsg = String.format("App Exception raised: %s", ex.getMessage());
     }
+
+    if (infoExLogLevel.contains(ex.getHttpStatus())) {
+      log.info(appExMsg);
+    } else {
+      log.warn(appExMsg);
+    }
+
     var errorResponse =
         ProblemJson.builder()
             .status(ex.getHttpStatus().value())
