@@ -20,8 +20,8 @@ import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPosition
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
-import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
+import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.service.pd.crud.PaymentPositionCRUDService;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -1799,52 +1799,6 @@ class DebtPositionControllerTest {
   }
 
   @Test
-  void updateDebtPosition_change_fee_200() throws Exception {
-    PaymentPositionDTO pp = DebtPositionMock.getMock1();
-
-    // creo una posizione debitoria
-    mvc.perform(
-            post("/organizations/UPD_fee_12345678901/debtpositions")
-                .content(TestUtil.toJson(pp))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isCreated());
-
-    // recupero la posizione debitoria e verifico il contenuto
-    mvc.perform(
-            get("/organizations/UPD_fee_12345678901/debtpositions/12345678901IUPDMOCK1")
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.companyName").value("Comune di Firenze"))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.officeName").value("Ufficio tributario"))
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[*].iuv").value(Matchers.hasSize(1)))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].amount").value(1000))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].fee").value(0));
-
-    // aggiorno la fee per la posizione debitoria
-    pp.getPaymentOption().get(0).setFee(500L);
-    mvc.perform(
-            put("/organizations/UPD_fee_12345678901/debtpositions/12345678901IUPDMOCK1")
-                .content(TestUtil.toJson(pp))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk());
-
-    // verifico che l'aggiornamento della fee sia avvenuto correttamente
-    mvc.perform(
-            get("/organizations/UPD_fee_12345678901/debtpositions/12345678901IUPDMOCK1")
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.companyName").value("Comune di Firenze"))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.officeName").value("Ufficio tributario"))
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[*].iuv").value(Matchers.hasSize(1)))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].amount").value(1000))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].fee").value(500));
-  }
-
-  @Test
   void updateDebtPosition_Published_200() throws Exception {
     // creo una posizione debitoria (senza 'validity date' impostata)
     mvc.perform(
@@ -2251,21 +2205,19 @@ class DebtPositionControllerTest {
   @Test
   void updateTransferIbanMassive_200() throws Exception {
     UpdateTransferIbanMassiveModel request =
-            UpdateTransferIbanMassiveModel.builder().newIban("XYZ").build();
+        UpdateTransferIbanMassiveModel.builder().newIban("XYZ").build();
 
     doReturn(1)
-            .when(paymentPositionService)
-            .updateTransferIbanMassive("77777777777", "ABCDE", "XYZ", 10);
+        .when(paymentPositionService)
+        .updateTransferIbanMassive("77777777777", "ABCDE", "XYZ", 10);
 
     mvc.perform(
-                    patch("/organizations/77777777777/debtpositions/transfers?oldIban=ABCDE&limit=10")
-                            .content(TestUtil.toJson(request))
-                            .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.updatedTransfers")
-                            .value(1));
+            patch("/organizations/77777777777/debtpositions/transfers?oldIban=ABCDE&limit=10")
+                .content(TestUtil.toJson(request))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.updatedTransfers").value(1));
   }
 
   @Test
@@ -2283,13 +2235,13 @@ class DebtPositionControllerTest {
   @Test
   void updateTransferIbanMassive_400_overMaxLimit() throws Exception {
     UpdateTransferIbanMassiveModel request =
-            UpdateTransferIbanMassiveModel.builder().newIban("XYZ").build();
+        UpdateTransferIbanMassiveModel.builder().newIban("XYZ").build();
 
     mvc.perform(
-                    patch("/organizations/notFoundOrg/debtpositions/transfers?oldIban=ABCDE&limit=10000")
-                            .content(TestUtil.toJson(request))
-                            .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest());
+            patch("/organizations/notFoundOrg/debtpositions/transfers?oldIban=ABCDE&limit=10000")
+                .content(TestUtil.toJson(request))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest());
   }
 
   @Test

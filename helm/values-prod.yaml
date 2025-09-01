@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.14.9-PIDM-858-iban-according-SANP-spec"
+    tag: "0.15.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -120,6 +120,14 @@ microservice-chart:
     SQL_BINDER_LOG_LEVEL: "INFO"
     MAX_DEBT_POSITIONS: "100"
     SERVICE_NAME: "pagopa-gpd-core"
+    OTEL_SERVICE_NAME: "pagopa-gpd-core"
+    OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=uat"
+    OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
+    OTEL_TRACES_SAMPLER: "traceidratio"
+    OTEL_TRACES_SAMPLER_ARG: "0.5"
+    OTEL_TRACES_EXPORTER: otlp
+    OTEL_METRICS_EXPORTER: otlp
+    OTEL_LOGS_EXPORTER: none
   envSecret:
     # required
     APPLICATIONINSIGHTS_CONNECTION_STRING: 'ai-p-connection-string'
@@ -128,6 +136,7 @@ microservice-chart:
     NODE_SUBSCRIPTION_KEY: "gpd-p-node-subscription-key"
     SEND_SUBSCRIPTION_KEY: "gpd-p-send-subscription-key"
     GPD_ARCHIVE_SA_CONNECTION_STRING: "gpd-archive-p-sa-connection-string"
+    OTEL_EXPORTER_OTLP_HEADERS: elastic-apm-secret-token
   keyvault:
     name: "pagopa-p-gps-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"

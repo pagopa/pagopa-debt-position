@@ -1,10 +1,8 @@
 package it.gov.pagopa.debtposition.config;
 
-import static it.gov.pagopa.debtposition.util.CommonUtil.deNull;
-
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.model.ProblemJson;
-import java.lang.reflect.Method;
+import it.gov.pagopa.debtposition.util.CommonUtil;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -18,8 +16,9 @@ import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.aspectj.lang.reflect.MethodSignature;
+import org.aspectj.lang.reflect.CodeSignature;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -40,9 +39,9 @@ public class LoggingAspect {
   public static final String OPERATION_ID = "operationId";
   public static final String ARGS = "args";
 
-  final HttpServletRequest httRequest;
+  @Autowired HttpServletRequest httRequest;
 
-  final HttpServletResponse httpResponse;
+  @Autowired HttpServletResponse httpResponse;
 
   @Value("${info.application.name}")
   private String name;
@@ -52,11 +51,6 @@ public class LoggingAspect {
 
   @Value("${info.properties.environment}")
   private String environment;
-
-  public LoggingAspect(HttpServletRequest httRequest, HttpServletResponse httpResponse) {
-    this.httRequest = httRequest;
-    this.httpResponse = httpResponse;
-  }
 
   private static String getDetail(ResponseEntity<ProblemJson> result) {
     if (result != null && result.getBody() != null && result.getBody().getDetail() != null) {
@@ -81,19 +75,16 @@ public class LoggingAspect {
   }
 
   private static Map<String, String> getParams(ProceedingJoinPoint joinPoint) {
-    MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-    Method method = signature.getMethod();
+    CodeSignature codeSignature = (CodeSignature) joinPoint.getSignature();
     Map<String, String> params = new HashMap<>();
     int i = 0;
-    for (var parameter : method.getParameters()) {
-      var paramName = parameter.getName();
-      var arg = joinPoint.getArgs()[i++];
-      params.put(paramName, deNull(arg));
+    for (var paramName : codeSignature.getParameterNames()) {
+      params.put(paramName, CommonUtil.deNull(joinPoint.getArgs()[i++]));
     }
     return params;
   }
 
-  @Pointcut("@within(org.springframework.web.bind.annotation.RestController)")
+  @Pointcut("execution(* *..controller..api..*(..))")
   public void restController() {
     // all rest controllers
   }
@@ -145,7 +136,7 @@ public class LoggingAspect {
   @AfterReturning(value = "execution(* *..exception.ErrorHandler.*(..))", returning = "result")
   public void trowingApiInvocation(JoinPoint joinPoint, ResponseEntity<ProblemJson> result) {
     MDC.put(STATUS, "KO");
-    MDC.put(CODE, String.valueOf(result.getStatusCode().value()));
+    MDC.put(CODE, String.valueOf(result.getStatusCodeValue()));
     MDC.put(RESPONSE_TIME, getExecutionTime());
     MDC.put(FAULT_CODE, getTitle(result));
     MDC.put(FAULT_DETAIL, getDetail(result));
