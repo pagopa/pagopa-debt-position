@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.15.0"
+    tag: "0.15.0-1-PIDM-858-iban-according-SANP-spec"
     pullPolicy: Always
   livenessProbe:
     httpGet:

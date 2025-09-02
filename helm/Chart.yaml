@@ -2,8 +2,8 @@ apiVersion: v2
 name: pagopa-gpd-core
 description: micro-service to manage Creditor Institution debtor positions
 type: application
-version: 0.234.0
-appVersion: 0.15.0
+version: 0.235.0
+appVersion: 0.15.0-1-PIDM-858-iban-according-SANP-spec
 dependencies:
   - name: microservice-chart
     version: 7.5.0
