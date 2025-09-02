@@ -79,7 +79,10 @@ jobs:
         with:
           maven-version: 3.8.2
 
-      - name: Run flyway::migrate
+      # ============================
+      # - Run Flyway on APD schema
+      # ============================  
+      - name: Run flyway::migrate on APD
         shell: bash
         run: |
           export FLYWAY_DATASOURCE_URL='${{ secrets.FLYWAY_DATASOURCE_URL }}'
@@ -87,6 +90,17 @@ jobs:
           export SPRING_DATASOURCE_PASSWORD='${{ secrets.DATASOURCE_PASSWORD }}'
           export GPD_SCHEMA_NAME='${{ secrets.APD_SCHEMA_NAME }}'
           mvn clean flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
+      # ============================
+      # - Run Flyway on ODP schema
+      # ============================
+      - name: Run flyway::migrate on ODP
+        shell: bash
+        run: |
+          export FLYWAY_DATASOURCE_URL='${{ secrets.FLYWAY_DATASOURCE_URL }}'
+          export SPRING_DATASOURCE_USERNAME='${{ secrets.DATASOURCE_USERNAME }}'
+          export SPRING_DATASOURCE_PASSWORD='${{ secrets.DATASOURCE_PASSWORD }}'
+          export ODP_SCHEMA_NAME='${{ secrets.ODP_SCHEMA_NAME }}'
+          mvn flyway:migrate -Dflyway.configFiles=odpFlywayConfig.conf
 
   cleanup_runner:
     name: Cleanup Runner
