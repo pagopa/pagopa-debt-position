@@ -132,10 +132,13 @@ public class PaymentPositionCRUDService {
   public List<PaymentPosition> getDebtPositionsByIUPDs(
       String organizationFiscalCode, List<String> iupdList, List<String> segCodes) {
     // findAll query by IUPD list
-    PaymentPositionByIUPDList spec = new PaymentPositionByIUPDList(iupdList);
-    Specification<PaymentPosition> specPP = Specification.where(spec);
+    Specification<PaymentPosition> spec =
+            Specification.where(
+                    new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
+                            .and(new PaymentPositionByIUPDList(iupdList)));
+
     Pageable pageable = PageRequest.of(0, iupdList.size());
-    Page<PaymentPosition> result = paymentPositionRepository.findAll(specPP, pageable);
+    Page<PaymentPosition> result = paymentPositionRepository.findAll(spec, pageable);
     List<PaymentPosition> paymentPositions = result.getContent();
 
     if (paymentPositions.isEmpty() || paymentPositions.size() != iupdList.size()) {
