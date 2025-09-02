@@ -101,7 +101,7 @@ jobs:
             export SCHEMA_NAME='${{ secrets.APD_SCHEMA_NAME }}'
             mvn clean flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
           elif [[ "${{ inputs.schema }}" == "odp" ]]; then
-            export SCHEMA_NAME='${{ secrets.ODP_SCHEMA_NAME }}'
+            export SCHEMA_NAME='odp'
             mvn clean flyway:migrate -Dflyway.configFiles=odpFlywayConfig.conf
           else
             export SCHEMA_NAME='${{ secrets.APD_SCHEMA_NAME }}'
