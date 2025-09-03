@@ -50,6 +50,10 @@ public class DebtPositionMock {
     return createPaymentPositionMultipleMock8();
   }
 
+  public static final PaymentPositionDTO getMock10() {
+    return createPaymentPositionMock10();
+  }
+
   public static final PaymentPositionDTO getMetadataMock8() {
     return createPaymentPositionMetadataMock7();
   }
@@ -287,6 +291,31 @@ public class DebtPositionMock {
 
     return pPMock;
   }
+
+  public static PaymentPositionDTO createPaymentPositionMock10() {
+
+    PaymentPositionDTO pPMock = new PaymentPositionDTO();
+    // debtor properties
+    pPMock.setFiscalCode("PIVA12345678");
+    pPMock.setType(Type.G);
+    pPMock.setFullName("Cipriani Srl");
+    pPMock.setPhone("3330987654");
+    pPMock.setStreetName("Via di novoli");
+    pPMock.setCivicNumber("50/2");
+    pPMock.setProvince("RM");
+    pPMock.setCountry("IT");
+    pPMock.setEmail("cipriani@roma.it");
+    pPMock.setPostalCode("00100");
+    // payment position properties
+    pPMock.setIupd("12345678901IUPDMOCK10_markd");
+    pPMock.setCompanyName("Comune di Roma");
+    pPMock.setOfficeName("Ufficio condono");
+    pPMock.setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plus(5, ChronoUnit.DAYS));
+    pPMock.addPaymentOptions(createPaymentOptionsMock10());
+
+    return pPMock;
+  }
+
 
   public static PaymentPositionDTO createPaymentPosition400Mock2() {
 
@@ -767,6 +796,19 @@ public class DebtPositionMock {
     poMock.addTransfers(createTransfersMultipleMock4());
     poMock.addTransfers(createTransfersMultipleMock5());
     poMock.addTransfers(createTransfersMultipleMock6());
+
+    return poMock;
+  }
+
+  public static PaymentOptionDTO createPaymentOptionsMock10() {
+    PaymentOptionDTO poMock =
+            createPaymentOption(
+                    1000,
+                    "123456IUVMOCK10",
+                    false,
+                    createTransfersMock1(),
+                    LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
+                    LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
 
     return poMock;
   }
