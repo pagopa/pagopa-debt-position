@@ -801,16 +801,14 @@ public class DebtPositionMock {
   }
 
   public static PaymentOptionDTO createPaymentOptionsMock10() {
-    PaymentOptionDTO poMock =
-            createPaymentOption(
-                    1000,
-                    "123456IUVMOCK10",
-                    false,
-                    createTransfersMock1(),
-                    LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
-                    LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
 
-    return poMock;
+      return createPaymentOption(
+              1000,
+              "123456IUVMOCK10",
+              false,
+              createTransfersMock1(),
+              LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
+              LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
   }
 
   public static PaymentOptionDTO createPaymentOptionMock9(
