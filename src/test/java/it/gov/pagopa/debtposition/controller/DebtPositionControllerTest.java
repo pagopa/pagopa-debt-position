@@ -374,7 +374,7 @@ class DebtPositionControllerTest {
     ppNav.setIupd((int) (new Random().nextInt(100)) + "_" + ppNav.getIupd());
     ppNav
         .getPaymentOption()
-        .forEach(po -> po.setIuv((int) (Math.random() * 100) + "_" + po.getIuv()));
+        .forEach(po -> po.setIuv((int) (new Random().nextInt(100)) + "_" + po.getIuv()));
     mvc.perform(
             post("/organizations/409_12345678901_NAV/debtpositions")
                 .content(TestUtil.toJson(ppNav))
