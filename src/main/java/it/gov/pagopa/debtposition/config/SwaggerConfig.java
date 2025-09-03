@@ -27,12 +27,11 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SwaggerConfig {
 
-  private final String INFO_API = "/info";
-  private final String DEBT_POSITIONS_API = "/organizations/{organizationfiscalcode}/debtpositions";
-  private final String DEBT_POSITIONS_BULK_API= "/organizations/{organizationfiscalcode}/debtpositions/bulk";
-  private final String PAYMENTS_MARK_AS_PAID_API = "/organizations/{organizationfiscalcode}/paymentoptions/paids/{nav}";
-
-  private final String DEBT_POSITION_API_BLOCK = "/organizations/{organizationfiscalcode}/debtpositions/**";
+  private final static String INFO_API = "/info";
+  private final static String DEBT_POSITIONS_API = "/organizations/{organizationfiscalcode}/debtpositions";
+  private final static String DEBT_POSITIONS_BULK_API= "/organizations/{organizationfiscalcode}/debtpositions/bulk";
+  private final static String PAYMENTS_MARK_AS_PAID_API = "/organizations/{organizationfiscalcode}/paymentoptions/paids/{nav}";
+  private final static String DEBT_POSITION_API_BLOCK = "/organizations/{organizationfiscalcode}/debtpositions/**";
 
   @Bean
   public OpenAPI customOpenAPI(
