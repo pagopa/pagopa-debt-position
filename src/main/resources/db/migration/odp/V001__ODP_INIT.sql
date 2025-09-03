@@ -81,9 +81,11 @@ CREATE TABLE IF NOT EXISTS odp.payment_position (
 );
 
 -- Index
+CREATE INDEX IF NOT EXISTS idx_iupd ON odp.payment_position (iupd);
+CREATE INDEX IF NOT EXISTS idx_organization_fiscal_code ON odp.payment_position (organization_fiscal_code);
 CREATE INDEX IF NOT EXISTS idx_company_name ON odp.payment_position (company_name);
-CREATE INDEX IF NOT EXISTS idx_inserted_date ON odp.payment_position (inserted_date);
 CREATE INDEX IF NOT EXISTS idx_payment_date ON odp.payment_position (payment_date);
+CREATE INDEX IF NOT EXISTS idx_status_validity_date ON apd.payment_position (status, validity_date)
 
 -- Function + Trigger
 CREATE OR REPLACE FUNCTION odp.update_options_on_position_status_change()
@@ -145,7 +147,7 @@ CREATE TABLE IF NOT EXISTS odp.payment_option (
 
 -- Index
 CREATE INDEX IF NOT EXISTS idx_payment_position_id ON odp.payment_option (payment_position_id);
-CREATE INDEX IF NOT EXISTS idx_payment_option_inserted_date ON odp.payment_option (inserted_date);
+CREATE INDEX IF NOT EXISTS idx_debtor_fiscal_code ON odp.payment_option (debtor_fiscal_code);
 
 -- Function + Trigger
 CREATE OR REPLACE FUNCTION odp.sync_status_from_position()
@@ -210,7 +212,7 @@ CREATE TABLE IF NOT EXISTS odp.installment (
 );
 
 -- Index
-CREATE INDEX IF NOT EXISTS idx_installment_due_date ON odp.installment (due_date);
+CREATE INDEX IF NOT EXISTS idx_due_date ON odp.installment (due_date);
 CREATE INDEX IF NOT EXISTS idx_payment_option_id_inst ON odp.installment (payment_option_id);
 CREATE INDEX IF NOT EXISTS idx_payment_position_id_inst ON odp.installment (payment_position_id);
 
@@ -235,12 +237,12 @@ CREATE TABLE IF NOT EXISTS odp.transfer (
     stamp_type varchar(255) NULL,
     provincial_residence varchar(255) NULL,
     CONSTRAINT transfer_pkey PRIMARY KEY (id),
-    CONSTRAINT uniquetransfer UNIQUE (iuv, transfer_id, installment_id),
+    CONSTRAINT uniquetransfer UNIQUE (iuv, organization_fiscal_code, transfer_id, installment_id),
     CONSTRAINT fk_installment_id FOREIGN KEY (installment_id) REFERENCES odp.installment(id)
 );
 
 -- Index
-CREATE INDEX IF NOT EXISTS idx_transfer_installment_id ON odp.transfer (installment_id);
+CREATE INDEX IF NOT EXISTS idx_installment_id ON odp.transfer (installment_id);
 
 -- =====================
 -- payment_option_metadata
@@ -281,7 +283,7 @@ CREATE INDEX IF NOT EXISTS idx_transfer_id ON odp.transfer_metadata (transfer_id
 -- =====================
 
 -- see: https://www.springcloud.io/post/2022-07/shedlock/#gsc.tab=0 
-CREATE TABLE IF NOT EXISTS shedlock (
+CREATE TABLE IF NOT EXISTS odp.shedlock (
   name VARCHAR(64),
   lock_until TIMESTAMP(3) NULL,
   locked_at TIMESTAMP(3) NULL,
