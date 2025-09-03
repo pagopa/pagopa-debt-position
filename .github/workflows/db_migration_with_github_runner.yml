@@ -87,6 +87,9 @@ jobs:
         with:
           maven-version: 3.8.2
 
+      - name: Build project (compile resources)
+        run: mvn -B clean compile
+
       # ============================
       # - Run Flyway
       # ============================  
