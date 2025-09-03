@@ -106,20 +106,16 @@ jobs:
             mvn flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
           elif [[ "${{ inputs.schema }}" == "odp" ]]; then
             echo "▶ Running migration for schema ODP..."
-            export SCHEMA_NAME='odp'
-            mvn flyway:migrate \
-                          -Dflyway.configFiles=odpFlywayConfig.conf \
-                          -Dflyway.locations=classpath:db/migration/${SCHEMA_NAME}
+            export SCHEMA_NAME='${{ vars.ODP_SCHEMA_NAME }}'
+            mvn flyway:migrate -Dflyway.configFiles=odpFlywayConfig.conf 
           else
             echo "▶ Running migration for ALL schemas..."
             # APD
             export SCHEMA_NAME='${{ secrets.APD_SCHEMA_NAME }}'
             mvn flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
             # ODP
-            export SCHEMA_NAME='${{ secrets.ODP_SCHEMA_NAME }}'
-            mvn flyway:migrate \
-                           -Dflyway.configFiles=odpFlywayConfig.conf \
-                           -Dflyway.locations=classpath:db/migration/${SCHEMA_NAME}
+            export SCHEMA_NAME='${{ vars.ODP_SCHEMA_NAME }}'
+            mvn flyway:migrate -Dflyway.configFiles=odpFlywayConfig.conf                  
           fi
 
   cleanup_runner:
