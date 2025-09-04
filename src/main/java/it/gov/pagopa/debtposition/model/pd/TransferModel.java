@@ -44,11 +44,16 @@ public class TransferModel implements Serializable {
   private String category; // taxonomy
 
   @Schema(description = "mutual exclusive with stamp", example = "IT0000000000000000000000000")
+  @Size(min = 1, max = 35, message = "The IBAN must not be blank and must not exceed 35 characters.")
+  @Pattern(regexp = "^[A-Za-z0-9]{1,35}$", message = "IBAN must not contain spaces or special characters.")
   private String iban;
 
-  @Schema(
-      description = "optional - can be combined with iban but not with stamp",
-      example = "IT0000000000000000000000000")
+  @Schema(description = "optional - can be combined with iban but not with stamp", example = "IT0000000000000000000000000")
+  @Size(min = 1, max = 35, message = "Postal IBAN is optional, but if provided, it must not be blank and must not exceed 35 characters.")
+  @Pattern(
+		  regexp = "^$|^[A-Za-z0-9]{1,35}$",
+		  message = "Postal IBAN must not contain spaces or special characters."
+		  )
   private String postalIban;
 
   @Schema(description = "mutual exclusive with iban and postalIban")
