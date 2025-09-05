@@ -11,6 +11,7 @@ import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.exception.ValidationException;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -76,12 +77,23 @@ public class DebtPositionValidation {
   public static void checkPaymentPositionAccountability(
       PaymentPosition ppToReport, String iuv, String transferId) {
     // Verifico se la posizione debitoria è in uno stato idoneo alla rendicontazione
-    if (DebtPositionStatus.getPaymentPosNotAccountableStatus().contains(ppToReport.getStatus())) {
-      throw new AppException(
-          AppError.TRANSFER_NOT_ACCOUNTABLE,
-          ppToReport.getOrganizationFiscalCode(),
-          iuv,
-          transferId);
+    if (ppToReport.getServiceType().equals(ServiceType.ACA)) {
+      if (DebtPositionStatus.getPaymentPosACANotAccountableStatus()
+          .contains(ppToReport.getStatus())) {
+        throw new AppException(
+            AppError.TRANSFER_NOT_ACCOUNTABLE,
+            ppToReport.getOrganizationFiscalCode(),
+            iuv,
+            transferId);
+      }
+    } else {
+      if (DebtPositionStatus.getPaymentPosNotAccountableStatus().contains(ppToReport.getStatus())) {
+        throw new AppException(
+            AppError.TRANSFER_NOT_ACCOUNTABLE,
+            ppToReport.getOrganizationFiscalCode(),
+            iuv,
+            transferId);
+      }
     }
     // Verifico se la transazione è rendicontabile
     checkTransferAccountable(ppToReport, iuv, transferId);
@@ -326,8 +338,9 @@ public class DebtPositionValidation {
                       transferId);
                 });
 
-    if (!poToReport.getStatus().equals(PaymentOptionStatus.PO_PAID)
-        && !poToReport.getStatus().equals(PaymentOptionStatus.PO_PARTIALLY_REPORTED)) {
+    if (!ppToReport.getServiceType().equals(ServiceType.ACA)
+        && (!poToReport.getStatus().equals(PaymentOptionStatus.PO_PAID)
+            && !poToReport.getStatus().equals(PaymentOptionStatus.PO_PARTIALLY_REPORTED))) {
       throw new AppException(
           AppError.TRANSFER_NOT_ACCOUNTABLE,
           poToReport.getOrganizationFiscalCode(),
