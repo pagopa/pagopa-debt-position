@@ -85,7 +85,7 @@ CREATE INDEX IF NOT EXISTS idx_iupd ON odp.payment_position (iupd);
 CREATE INDEX IF NOT EXISTS idx_organization_fiscal_code ON odp.payment_position (organization_fiscal_code);
 CREATE INDEX IF NOT EXISTS idx_company_name ON odp.payment_position (company_name);
 CREATE INDEX IF NOT EXISTS idx_payment_date ON odp.payment_position (payment_date);
-CREATE INDEX IF NOT EXISTS idx_status_validity_date ON apd.payment_position (status, validity_date)
+CREATE INDEX IF NOT EXISTS idx_status_validity_date ON odp.payment_position (status, validity_date)
 
 -- Function + Trigger
 CREATE OR REPLACE FUNCTION odp.update_options_on_position_status_change()
@@ -94,7 +94,7 @@ CREATE OR REPLACE FUNCTION odp.update_options_on_position_status_change()
 AS $function$
 BEGIN
   IF NEW.status IS DISTINCT FROM OLD.status THEN
-    UPDATE apd.payment_option
+    UPDATE odp.payment_option
     SET payment_position_status = NEW.status,
         last_updated_date = now()
     WHERE payment_position_id = NEW.id;
@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS odp.payment_option (
     debtor_email varchar(255) NULL,
     debtor_phone varchar(255) NULL,
     CONSTRAINT payment_option_pkey PRIMARY KEY (id),
-    CONSTRAINT uniquepaymentopt UNIQUE (organization_fiscal_code),
+    CONSTRAINT uniquepaymentopt UNIQUE (organization_fiscal_code, payment_position_id),
     CONSTRAINT fk_payment_position_id FOREIGN KEY (payment_position_id) REFERENCES odp.payment_position(id)
 );
 
@@ -158,7 +158,7 @@ DECLARE
   pos_status TEXT;
 BEGIN
   SELECT status INTO pos_status
-  FROM apd.payment_position
+  FROM odp.payment_position
   WHERE id = NEW.payment_position_id;
   IF pos_status IS NOT NULL THEN
     NEW.payment_position_status := pos_status;
