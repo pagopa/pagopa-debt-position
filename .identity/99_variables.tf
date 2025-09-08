@@ -9,6 +9,7 @@ locals {
   location_short = "weu"
   product        = "${var.prefix}-${var.env_short}"
   odp_schema     = "odp"
+  apd_schema     = "apd"
 
   app_name = "github-${local.github.org}-${local.github.repository}-${var.prefix}-${local.domain}-${var.env}-aks"
 

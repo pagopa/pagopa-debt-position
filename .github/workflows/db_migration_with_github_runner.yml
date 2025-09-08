@@ -102,7 +102,7 @@ jobs:
 
           if [[ "${{ inputs.schema }}" == "apd" ]]; then
             echo "▶ Running migration for schema APD..."
-            export SCHEMA_NAME='${{ secrets.APD_SCHEMA_NAME }}'
+            export SCHEMA_NAME='${{ vars.APD_SCHEMA_NAME }}'
             mvn flyway:migrate -Dflyway.configFiles=gpdFlywayConfig.conf
           elif [[ "${{ inputs.schema }}" == "odp" ]]; then
             echo "▶ Running migration for schema ODP..."
@@ -111,7 +111,7 @@ jobs:
           else
             echo "▶ Running migration for ALL schemas..."
             # APD
-            export SCHEMA_NAME='${{ secrets.APD_SCHEMA_NAME }}'
+            export SCHEMA_NAME='${{ vars.APD_SCHEMA_NAME }}'
             mvn flyway:migrate -Dflyway.configFiles=gpdFlywayConfig.conf
             # ODP
             export SCHEMA_NAME='${{ vars.ODP_SCHEMA_NAME }}'
