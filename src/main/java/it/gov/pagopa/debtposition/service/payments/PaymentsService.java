@@ -391,22 +391,8 @@ public class PaymentsService {
             po.getTransfer().stream().filter(t -> t.getIdTransfer().equals(transferId)).findFirst();
 
         if (transferToReport.isEmpty()) {
-          log.error(
-              "Obtained unexpected empty transfer - "
-                  + "[organizationFiscalCode= "
-                  + pp.getOrganizationFiscalCode()
-                  + "; "
-                  + "iupd= "
-                  + pp.getIupd()
-                  + "; "
-                  + "iuv= "
-                  + iuv
-                  + "; "
-                  + "idTransfer= "
-                  + transferId
-                  + "]");
-          throw new AppException(
-              AppError.TRANSFER_REPORTING_FAILED, pp.getOrganizationFiscalCode(), iuv, transferId);
+          String error = String.format("Obtained unexpected empty transfer - [organizationFiscalCode= %s; iupd= %s; iuv= %s; idTransfer= %s]", pp.getOrganizationFiscalCode(), pp.getIupd(), iuv, transferId);
+          throw new AppException(AppError.TRANSFER_REPORTING_FAILED, error);
         }
 
         transferToReport.get().setStatus(TransferStatus.T_REPORTED);

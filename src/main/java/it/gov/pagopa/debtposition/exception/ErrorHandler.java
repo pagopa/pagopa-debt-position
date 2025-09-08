@@ -29,7 +29,7 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
   public static final String INTERNAL_SERVER_ERROR = "INTERNAL SERVER ERROR";
   public static final String BAD_REQUEST = "BAD REQUEST";
   public static final String FOREIGN_KEY_VIOLATION = "23503";
-  public static final List<HttpStatus> infoExLogLevel = List.of(HttpStatus.FORBIDDEN);
+  public static final List<HttpStatus> infoExLogLevel = List.of(HttpStatus.FORBIDDEN, HttpStatus.NOT_FOUND);
 
   /**
    * Handle if the input request is not a valid JSON
