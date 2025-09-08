@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <property name="SAMPLING_RATE" value="10"/>
-    <property name="ERROR_LOG_PATTERN"
-              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"/>
-    <property name="SAMPLED_LOG_PATTERN"
+    <property name="LOG_PATTERN"
               value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m %clr(%mdc){magenta}%n%wEx"/>
 
     <springProfile name="!default">
@@ -15,7 +13,7 @@
 
         <appender name="stdout_sampled" class="ch.qos.logback.core.ConsoleAppender">
             <layout class="ch.qos.logback.classic.PatternLayout">
-                <Pattern>${SAMPLED_LOG_PATTERN}</Pattern>
+                <Pattern>${LOG_PATTERN}</Pattern>
             </layout>
             <filter class="it.gov.pagopa.debtposition.config.SamplingFilter">
                 <rate>${SAMPLING_RATE}</rate>
@@ -31,7 +29,7 @@
         <appender name="stderr_errors" class="ch.qos.logback.core.ConsoleAppender">
             <target>System.ERR</target>
             <layout class="ch.qos.logback.classic.PatternLayout">
-                <Pattern>${ERROR_LOG_PATTERN}</Pattern>
+                <Pattern>${LOG_PATTERN}</Pattern>
             </layout>
             <filter class="ch.qos.logback.classic.filter.LevelFilter">
                 <level>ERROR</level>
