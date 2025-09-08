@@ -238,8 +238,8 @@ public class DebtPositionController implements IDebtPositionController {
                 "updateDebtPosition",
                 String.format(
                         LOG_BASE_PARAMS_DETAIL,
-                        CommonUtil.sanitize(organizationFiscalCode),
-                        CommonUtil.sanitize(iupd))), String.format(IUPD_VALIDATION_ERROR, iupd, paymentPositionModel.getIupd()));
+                        "[" + CommonUtil.sanitize(organizationFiscalCode) + "]",
+                        "[" + CommonUtil.sanitize(iupd) + "]")), String.format(IUPD_VALIDATION_ERROR, CommonUtil.sanitize(iupd), CommonUtil.sanitize(paymentPositionModel.getIupd())));
 
       throw new AppException(
           AppError.DEBT_POSITION_REQUEST_DATA_ERROR,
