@@ -232,17 +232,14 @@ public class DebtPositionController implements IDebtPositionController {
                 CommonUtil.sanitize(iupd))));
     // verifico la congruenza di dati tra lo iupd path variable e lo iupd nel request body
     if (!paymentPositionModel.getIupd().equals(iupd)) {
-      log.error(
-          String.format(
-                  LOG_BASE_HEADER_INFO,
-                  "PUT",
-                  "updateDebtPosition",
-                  String.format(
-                      LOG_BASE_PARAMS_DETAIL,
-                      CommonUtil.sanitize(organizationFiscalCode),
-                      CommonUtil.sanitize(iupd)))
-              + " : "
-              + String.format(IUPD_VALIDATION_ERROR, iupd, paymentPositionModel.getIupd()));
+        log.debug("{} : {}", String.format(
+                LOG_BASE_HEADER_INFO,
+                "PUT",
+                "updateDebtPosition",
+                String.format(
+                        LOG_BASE_PARAMS_DETAIL,
+                        CommonUtil.sanitize(organizationFiscalCode),
+                        CommonUtil.sanitize(iupd))), String.format(IUPD_VALIDATION_ERROR, iupd, paymentPositionModel.getIupd()));
 
       throw new AppException(
           AppError.DEBT_POSITION_REQUEST_DATA_ERROR,

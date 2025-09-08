@@ -383,7 +383,7 @@ public class PaymentPositionCRUDService {
       }
       throw e;
     } catch (Exception e) {
-      // Logga l'errore completo per il debug
+      // Log the entire exception for debugging purposes.
       log.error("Error during debt position update process", e);
       throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
     }
