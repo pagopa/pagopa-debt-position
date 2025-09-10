@@ -39,8 +39,8 @@ export default function () {
   const creditor_institution_code = randomString(11, '0123456789');
   const iupd = makeidMix(35);
   const iuv = makeidMix(35);
-  const due_date = new Date(Date.now() + 30*24*60*60*1000);
-  const retention_date = new Date(Date.now() + 90*24*60*60*1000);
+  const due_date = new Date().addDays(30);
+  const retention_date = new Date().addDays(90);
   const transfer_id = '1';
 
   // ----- STEP 1: Create new debt position -----
