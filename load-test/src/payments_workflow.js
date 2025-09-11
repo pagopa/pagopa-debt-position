@@ -10,7 +10,7 @@ export let options = JSON.parse(open(__ENV.TEST_TYPE));
 // Override JSON thresholds
 options.thresholds = {
   'http_req_duration{name:POST /debtpositions}': ['p(95)<1500', 'p(99)<2000'],
-  //'http_req_duration{name:PUT /paymentoptions/{iuv}/notificationfee}': ['p(95)<1500', 'p(99)<2000'],
+  'http_req_duration{name:PUT /paymentoptions/{iuv}/notificationfee}': ['p(95)<1500', 'p(99)<2000'],
   'http_req_duration{name:POST /debtpositions/{iupd}/publish}': ['p(95)<1500', 'p(99)<2000'],
   'http_req_duration{name:POST /paymentoptions/{iuv}/pay}': ['p(95)<1500', 'p(99)<2000'],
   'http_req_duration{name:POST /paymentoptions/{iuv}/transfers/{id}/report}': ['p(95)<1500', 'p(99)<2000'],
