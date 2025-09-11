@@ -2,7 +2,7 @@
   "environment": [
     {
       "env": "uat",
-      "host": "https://api.uat.platform.pagopa.it/gpd/debt-positions-service/v1/"
+      "host": "https://api.uat.platform.pagopa.it/gpd/debt-positions-service/v1"
     }
   ]
 }
