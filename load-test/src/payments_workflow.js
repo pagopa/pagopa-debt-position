@@ -86,7 +86,7 @@ export default function () {
   });
 
   let r = http.post(url, payload, reqParams('POST /debtpositions'));
-  console.log(`CreateDebtPosition: ${r.timings.duration} ms (status ${r.status})`);
+  //console.log(`CreateDebtPosition: ${r.timings.duration} ms (status ${r.status})`);
 
   check(r, { 'CreateDebtPosition status is 201': (r) => r.status === 201 });
   if (r.status !== 201) return;
