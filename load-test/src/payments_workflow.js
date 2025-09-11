@@ -92,14 +92,13 @@ export default function () {
   if (r.status !== 201) return;
 
   // ----- STEP 2: Update notification fee -----
-  /*
   url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/notificationfee`;
   payload = JSON.stringify({ notificationFee: 150 });
   r = http.put(url, payload, reqParams('PUT /paymentoptions/{iuv}/notificationfee'));
-  console.log(`UpdateNotificationFee: ${r.timings.duration} ms (status ${r.status})`, url, r.status);
+  //console.log(`UpdateNotificationFee: ${r.timings.duration} ms (status ${r.status})`);
 
   check(r, { 'UpdateNotificationFee status is 200/209': (r) => r.status === 200 || r.status === 209 });
-  if (r.status !== 200 && r.status !== 209) return;*/
+  if (r.status !== 200 && r.status !== 209) return;
 
   // ----- STEP 3: Publish debt position -----
   url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions/${iupd}/publish`;
