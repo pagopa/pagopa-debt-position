@@ -1,6 +1,7 @@
 import http from 'k6/http';
 import { check } from 'k6';
 import { SharedArray } from 'k6/data';
+import { sleep } from 'k6';
 import { makeidMix, randomString } from './modules/helpers.js';
 
 // Load options from the file passed in TEST_TYPE
@@ -98,6 +99,9 @@ export default function () {
 
   check(r, { 'UpdateNotificationFee status is 200/209': (r) => r.status === 200 || r.status === 209 });
   if (r.status !== 200 && r.status !== 209) return;
+  
+  // Waiting to ensure the notification fee is consolidated
+  sleep(0.5);
 
   // ----- STEP 3: Publish debt position -----
   url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions/${iupd}/publish`;
@@ -106,6 +110,9 @@ export default function () {
 
   check(r, { 'PublishDebtPosition status is 200': (r) => r.status === 200 });
   if (r.status !== 200) return;
+  
+  // Waiting to ensure that the publish is effective
+  sleep(0.5);
 
   // ----- STEP 4: Pay payment option -----
   url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/pay`;
