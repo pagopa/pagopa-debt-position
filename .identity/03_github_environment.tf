@@ -37,7 +37,7 @@ locals {
     "CLUSTER_RESOURCE_GROUP" : local.aks_cluster.resource_group_name,
     "NAMESPACE" : local.domain,
     "WORKLOAD_IDENTITY_ID": data.azurerm_user_assigned_identity.workload_identity_clientid.client_id,
-    "ODP_SCHEMA_NAME": local.odp_schema",
+    "ODP_SCHEMA_NAME": local.odp_schema,
     "APD_SCHEMA_NAME": local.apd_schema
   }
   repo_secrets = {
