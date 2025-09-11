@@ -86,7 +86,7 @@ export default function () {
   });
 
   let r = http.post(url, payload, reqParams('POST /debtpositions'));
-  //console.log(`CreateDebtPosition: ${r.timings.duration} ms (status ${r.status})`);
+  console.log(`CreateDebtPosition: ${r.timings.duration} ms (status ${r.status})`, url, r);
 
   check(r, { 'CreateDebtPosition status is 201': (r) => r.status === 201 });
   if (r.status !== 201) return;
@@ -95,24 +95,18 @@ export default function () {
   url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/notificationfee`;
   payload = JSON.stringify({ notificationFee: 150 });
   r = http.put(url, payload, reqParams('PUT /paymentoptions/{iuv}/notificationfee'));
-  //console.log(`UpdateNotificationFee: ${r.timings.duration} ms (status ${r.status})`);
+  console.log(`UpdateNotificationFee: ${r.timings.duration} ms (status ${r.status})`, url, r);
 
   check(r, { 'UpdateNotificationFee status is 200/209': (r) => r.status === 200 || r.status === 209 });
   if (r.status !== 200 && r.status !== 209) return;
-  
-  // Waiting to ensure the notification fee is consolidated
-  sleep(0.5);
 
   // ----- STEP 3: Publish debt position -----
   url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions/${iupd}/publish`;
   r = http.post(url, null, reqParams('POST /debtpositions/{iupd}/publish')); // body null!
-  //console.log(`PublishDebtPosition: ${r.timings.duration} ms (status ${r.status})`);
+  console.log(`PublishDebtPosition: ${r.timings.duration} ms (status ${r.status})`);
 
   check(r, { 'PublishDebtPosition status is 200': (r) => r.status === 200 });
   if (r.status !== 200) return;
-  
-  // Waiting to ensure that the publish is effective
-  sleep(0.5);
 
   // ----- STEP 4: Pay payment option -----
   url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/pay`;
@@ -123,7 +117,7 @@ export default function () {
     idReceipt: 'TRN123456789',
   });
   r = http.post(url, payload, reqParams('POST /paymentoptions/{iuv}/pay'));
-  //console.log(`PayPaymentOption: ${r.timings.duration} ms (status ${r.status})`);
+  console.log(`PayPaymentOption: ${r.timings.duration} ms (status ${r.status})`);
 
   check(r, { 'PayPaymentOption status is 200': (r) => r.status === 200 });
   if (r.status !== 200) return;
@@ -131,7 +125,7 @@ export default function () {
   // ----- STEP 5: Report transfer -----
   url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/transfers/${transfer_id}/report`;
   r = http.post(url, null, reqParams('POST /paymentoptions/{iuv}/transfers/{id}/report')); // body null!
-  //console.log(`ReportTransfer: ${r.timings.duration} ms (status ${r.status})`);
+  console.log(`ReportTransfer: ${r.timings.duration} ms (status ${r.status})`);
 
   check(r, { 'ReportTransfer status is 200': (r) => r.status === 200 });
   if (r.status !== 200) return;
@@ -139,7 +133,7 @@ export default function () {
   // ----- STEP 6: Get payment option -----
   url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}`;
   r = http.get(url, reqParams('GET /paymentoptions/{iuv}'));
-  //console.log(`GetOrganizationPaymentOption: ${r.timings.duration} ms (status ${r.status})`);
+  console.log(`GetOrganizationPaymentOption: ${r.timings.duration} ms (status ${r.status})`);
 
   check(r, { 'GetOrganizationPaymentOption status is 200': (r) => r.status === 200 });
   check(r, {
