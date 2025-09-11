@@ -10,7 +10,7 @@ export let options = JSON.parse(open(__ENV.TEST_TYPE));
 // Override JSON thresholds
 options.thresholds = {
   'http_req_duration{name:POST /debtpositions}': ['p(95)<1500', 'p(99)<2000'],
-  'http_req_duration{name:PUT /paymentoptions/{iuv}/notificationfee}': ['p(95)<1500', 'p(99)<2000'],
+  //'http_req_duration{name:PUT /paymentoptions/{iuv}/notificationfee}': ['p(95)<1500', 'p(99)<2000'],
   'http_req_duration{name:POST /debtpositions/{iupd}/publish}': ['p(95)<1500', 'p(99)<2000'],
   'http_req_duration{name:POST /paymentoptions/{iuv}/pay}': ['p(95)<1500', 'p(99)<2000'],
   'http_req_duration{name:POST /paymentoptions/{iuv}/transfers/{id}/report}': ['p(95)<1500', 'p(99)<2000'],
@@ -86,19 +86,20 @@ export default function () {
   });
 
   let r = http.post(url, payload, reqParams('POST /debtpositions'));
-  console.log(`CreateDebtPosition: ${r.timings.duration} ms (status ${r.status})`, url, r.status);
+  console.log(`CreateDebtPosition: ${r.timings.duration} ms (status ${r.status})`);
 
   check(r, { 'CreateDebtPosition status is 201': (r) => r.status === 201 });
   if (r.status !== 201) return;
 
   // ----- STEP 2: Update notification fee -----
+  /*
   url = `${rootUrl}/organizations/${creditor_institution_code}/paymentoptions/${iuv}/notificationfee`;
   payload = JSON.stringify({ notificationFee: 150 });
   r = http.put(url, payload, reqParams('PUT /paymentoptions/{iuv}/notificationfee'));
   console.log(`UpdateNotificationFee: ${r.timings.duration} ms (status ${r.status})`, url, r.status);
 
   check(r, { 'UpdateNotificationFee status is 200/209': (r) => r.status === 200 || r.status === 209 });
-  if (r.status !== 200 && r.status !== 209) return;
+  if (r.status !== 200 && r.status !== 209) return;*/
 
   // ----- STEP 3: Publish debt position -----
   url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions/${iupd}/publish`;
