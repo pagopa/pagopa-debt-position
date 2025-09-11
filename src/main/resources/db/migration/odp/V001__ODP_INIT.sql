@@ -85,7 +85,7 @@ CREATE INDEX IF NOT EXISTS idx_iupd ON odp.payment_position (iupd);
 CREATE INDEX IF NOT EXISTS idx_organization_fiscal_code ON odp.payment_position (organization_fiscal_code);
 CREATE INDEX IF NOT EXISTS idx_company_name ON odp.payment_position (company_name);
 CREATE INDEX IF NOT EXISTS idx_payment_date ON odp.payment_position (payment_date);
-CREATE INDEX IF NOT EXISTS idx_status_validity_date ON odp.payment_position (status, validity_date)
+CREATE INDEX IF NOT EXISTS idx_status_validity_date ON odp.payment_position (status, validity_date);
 
 -- Function + Trigger
 CREATE OR REPLACE FUNCTION odp.update_options_on_position_status_change()
