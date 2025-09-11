@@ -20,6 +20,7 @@ import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.Constants;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,6 +88,8 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
       LocalDate dueDateTo,
       LocalDate paymentDateFrom,
       LocalDate paymentDateTo,
+      LocalDateTime paymentDateTimeFrom,
+      LocalDateTime paymentDateTimeTo,
       DebtPositionStatusV3 status,
       Order.PaymentPositionOrder orderBy,
       Sort.Direction ordering,
@@ -96,6 +99,15 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
             ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
             : null;
 
+    LocalDateTime pDateTimeFrom =
+        paymentDateTimeFrom != null
+            ? paymentDateTimeFrom
+            : (paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : null);
+    LocalDateTime pDateTimeTo =
+        paymentDateTimeTo != null
+            ? paymentDateTimeTo
+            : (paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : null);
+
     // Create filter and order object
     FilterAndOrder filterOrder =
         FilterAndOrder.builder()
@@ -104,10 +116,8 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
                     .organizationFiscalCode(organizationFiscalCode)
                     .dueDateFrom(dueDateFrom != null ? dueDateFrom.atStartOfDay() : null)
                     .dueDateTo(dueDateTo != null ? dueDateTo.atTime(LocalTime.MAX) : null)
-                    .paymentDateFrom(
-                        paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : null)
-                    .paymentDateTo(
-                        paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : null)
+                    .paymentDateFrom(pDateTimeFrom)
+                    .paymentDateTo(pDateTimeTo)
                     .status(status != null ? DebtPositionStatus.valueOf(status.name()) : null)
                     .segregationCodes(segCodesList)
                     .build())
