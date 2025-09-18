@@ -100,6 +100,7 @@ public class CommonUtil {
   }
 
   public static String sanitize(String input) {
-    return input == null ? null : input.replaceAll("[\\n\\r\\t]", "_");
+    // Remove line-breaks, tabs, and anything non-alphanumeric/hyphen/asterisk
+    return input == null ? null : input.replaceAll("[\\n\\r\\t]", "_").replaceAll("[^A-Za-z0-9\\-\\*]", "");
   }
 }
