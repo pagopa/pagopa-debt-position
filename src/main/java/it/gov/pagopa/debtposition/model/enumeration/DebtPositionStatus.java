@@ -48,6 +48,10 @@ public enum DebtPositionStatus {
     return EnumSet.of(DRAFT, PUBLISHED, VALID, INVALID, EXPIRED, REPORTED);
   }
 
+  public static Set<DebtPositionStatus> getPaymentPosACANotAccountableStatus() {
+    return EnumSet.of(DRAFT, PUBLISHED, INVALID, EXPIRED, REPORTED);
+  }
+
   public static PaymentPosition validityCheckAndUpdate(PaymentPosition pp) {
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
     // Validity check on the fly

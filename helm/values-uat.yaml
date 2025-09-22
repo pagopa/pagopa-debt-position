@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.14.13"
+    tag: "0.16.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -116,8 +116,8 @@ microservice-chart:
     SEND_RETRY_MAX_DELAY: "1500"
     SEND_RETRY_MAX_ATTEMPTS: "2"
     LOG_LEVEL: "INFO"
-    SQL_LOG_LEVEL: "INFO"
-    SQL_BINDER_LOG_LEVEL: "INFO"
+    SQL_LOG_LEVEL: "ERROR"
+    SQL_BINDER_LOG_LEVEL: "ERROR"
     MAX_DEBT_POSITIONS: "100"
     SERVICE_NAME: "pagopa-gpd-core"
     OTEL_SERVICE_NAME: "pagopa-gpd-core"

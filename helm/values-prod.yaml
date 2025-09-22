@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.14.13"
+    tag: "0.16.0"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -116,14 +116,15 @@ microservice-chart:
     SEND_RETRY_MAX_DELAY: "1500"
     SEND_RETRY_MAX_ATTEMPTS: "2"
     LOG_LEVEL: "INFO"
-    SQL_LOG_LEVEL: "INFO"
-    SQL_BINDER_LOG_LEVEL: "INFO"
+    SQL_LOG_LEVEL: "ERROR"
+    SQL_BINDER_LOG_LEVEL: "ERROR"
     MAX_DEBT_POSITIONS: "100"
     SERVICE_NAME: "pagopa-gpd-core"
     OTEL_SERVICE_NAME: "pagopa-gpd-core"
     OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=uat"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
-    OTEL_TRACES_SAMPLER: "always_on"
+    OTEL_TRACES_SAMPLER: "traceidratio"
+    OTEL_TRACES_SAMPLER_ARG: "0.5"
     OTEL_TRACES_EXPORTER: otlp
     OTEL_METRICS_EXPORTER: otlp
     OTEL_LOGS_EXPORTER: none
@@ -168,7 +169,7 @@ microservice-chart:
       weightPercent: 0
     image:
       repository: ghcr.io/pagopa/pagopa-debt-position
-      tag: "0.13.7"
+      tag: "0.15.3"
       pullPolicy: Always
     envConfig:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.p.internal.postgresql.pagopa.it:5432/apd?sslmode=require&prepareThreshold=0"

@@ -153,7 +153,7 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
       boolean toPublish,
       String segregationCodes) {
     if (!paymentPositionModel.getIupd().equals(iupd)) {
-      log.error(
+      log.debug(
           "{} : {}",
           String.format(
               LOG_BASE_HEADER_INFO,

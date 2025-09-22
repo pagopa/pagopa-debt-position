@@ -812,6 +812,87 @@ class PaymentsControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
 
+  @Test
+  void markAsPaidPaymentOption_ok() throws Exception {
+    // creo una posizione debitoria (con 'validity date' impostata e nav non valorizzato)
+    mvc.perform(
+            post("/organizations/PAY_200_12345678901/debtpositions")
+                .content(TestUtil.toJson(DebtPositionMock.getMock10()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    // porto in pubblicata lo stato della posizione debitoria
+    mvc.perform(
+            post("/organizations/PAY_200_12345678901/debtpositions/12345678901IUPDMOCK10_markd/publish")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    // effettuo l'aggiornamento della posizione debutoria come già pagata e verifico
+    // l'errore 422 di 'Not in payable state'
+    mvc.perform(
+            post("/organizations/PAY_200_12345678901/paymentoptions/paids/"
+                    + auxDigit
+                    + "123456IUVMOCK10")
+                .content("{}")
+                .queryParam("segregationCodes", "12")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void markAsPaidPaymentOption_ok_withBody() throws Exception {
+    // creo una posizione debitoria (con 'validity date' impostata e nav non valorizzato)
+    mvc.perform(
+            post("/organizations/PAY_422_12345678901/debtpositions")
+                .content(TestUtil.toJson(DebtPositionMock.getMock10()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    // porto in pubblicata lo stato della posizione debitoria
+    mvc.perform(
+            post("/organizations/PAY_422_12345678901/debtpositions/12345678901IUPDMOCK10_markd/publish")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    // effettuo l'aggiornamento della posizione debutoria come già pagata e verifico
+    // l'errore 422 di 'Not in payable state'
+    mvc.perform(
+            post("/organizations/PAY_422_12345678901/paymentoptions/paids/"
+                    + auxDigit
+                    + "123456IUVMOCK10")
+                .content("{\"paymentDate\":\"2025-01-01T10:00:00.000Z\"}")
+                .queryParam("segregationCodes", "12")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void markAsPaidPaymentOption_404() throws Exception {
+    // provo a pagare una payment option che non esiste
+    String url = "/organizations/PAY_400_12345678901/paymentoptions/paids/3123456_NAV_NOTEXIST";
+    mvc.perform(
+            post(url)
+                .queryParam("segregationCodes", "12")
+                .content("{\"paymentDate\":\"2025-01-01T10:00:00.000Z\"}")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isNotFound())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+  }
+
+  @Test
+  void markAsPaidPaymentOption_403() throws Exception {
+    // provo a pagare una payment option su cui non ho i permessi di accedere
+    String url =
+        "/organizations/PAY_422_12345678901/paymentoptions/paids/" + auxDigit + "123456IUVMOCK10";
+    mvc.perform(
+            post(url)
+                .queryParam("segregationCodes", "51")
+                .content("{}")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isForbidden())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+  }
+
   /** REPORT A TRANSFER */
   @Test
   void reportTransfer_200() throws Exception {
@@ -1471,6 +1552,63 @@ class PaymentsControllerTest {
             post("/organizations/REPORT_Multiple_404_12345678901/paymentoptions/123456IUVMULTIPLEMOCK3/transfers/x/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void reportTransfer_ACA_200() throws Exception {
+    // creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato) con una
+    // sola PO e isPartialPayment=false
+    PaymentPositionDTO mock1 = DebtPositionMock.getMock1();
+    mvc.perform(
+            post("/organizations/REPORT_200_12345678902/debtpositions?serviceType=ACA")
+                .content(TestUtil.toJson(mock1))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    // porto in pubblicata/validata lo stato della posizione debitoria
+    mvc.perform(
+            post("/organizations/REPORT_200_12345678902/debtpositions/12345678901IUPDMOCK1/publish")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    // recupero l'intera posizione debitoria e verifico lo stato in paid
+    mvc.perform(
+            get("/organizations/REPORT_200_12345678902/debtpositions/12345678901IUPDMOCK1")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.VALID.toString()));
+
+    // effettuo la rendicontazione per l'unica transazione della PO (si continua ad utilizzare lo
+    // IUV e non il NAV)
+    mvc.perform(
+            post("/organizations/REPORT_200_12345678902/paymentoptions/123456IUVMOCK1/transfers/1/report")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.status").value(TransferStatus.T_REPORTED.toString()));
+
+    // recupero la PO e verifico lo stato in PO_REPORTED
+    String url =
+        "/organizations/REPORT_200_12345678902/paymentoptions/" + auxDigit + "123456IUVMOCK1";
+    mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.status")
+                .value(PaymentOptionStatus.PO_REPORTED.toString()));
+
+    // recupero l'intera posizione debitoria e verifico lo stato in reported
+    mvc.perform(
+            get("/organizations/REPORT_200_12345678902/debtpositions/12345678901IUPDMOCK1")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.status")
+                .value(DebtPositionStatus.REPORTED.toString()));
   }
 
   /** UPDATE PAYMENT OPTION'S NOTIFICATION FEE */

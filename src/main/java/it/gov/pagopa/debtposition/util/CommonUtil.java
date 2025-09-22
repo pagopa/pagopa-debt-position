@@ -79,6 +79,19 @@ public class CommonUtil {
   }
 
   /**
+   *
+   * @param nav
+   * @param segregationCodes
+   * @return
+   */
+  public static boolean isAuthorizedOnNavBySegregationCode(String nav, List<String> segregationCodes) {
+    // It is enough to check only one NAV of the payment position. Here it is assumed that they all
+    // have the same segregation code.
+    String paymentPositionSegregationCode = nav.substring(1, 3);
+    return segregationCodes.contains(paymentPositionSegregationCode);
+  }
+
+  /**
    * @param value value to deNullify.
    * @return return empty string if value is null
    */
@@ -87,6 +100,7 @@ public class CommonUtil {
   }
 
   public static String sanitize(String input) {
-    return input == null ? null : input.replaceAll("[\\n\\r\\t]", "_");
+    // Remove line-breaks, tabs, and anything non-alphanumeric/hyphen/asterisk
+    return input == null ? null : input.replaceAll("[\\n\\r\\t]", "_").replaceAll("[^A-Za-z0-9\\-\\*]", "");
   }
 }

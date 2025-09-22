@@ -31,6 +31,6 @@ public class SchedulerUtils {
     MDC.put(RESPONSE_TIME, getExecutionTime());
     MDC.put(FAULT_CODE, method);
     MDC.put(FAULT_DETAIL, e.getMessage());
-    log.info("An error occurring during a scheduled job");
+    log.error("An error occurring during a scheduled job");
   }
 }

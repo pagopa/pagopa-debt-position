@@ -132,10 +132,13 @@ public class PaymentPositionCRUDService {
   public List<PaymentPosition> getDebtPositionsByIUPDs(
       String organizationFiscalCode, List<String> iupdList, List<String> segCodes) {
     // findAll query by IUPD list
-    PaymentPositionByIUPDList spec = new PaymentPositionByIUPDList(iupdList);
-    Specification<PaymentPosition> specPP = Specification.where(spec);
+    Specification<PaymentPosition> spec =
+            Specification.where(
+                    new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
+                            .and(new PaymentPositionByIUPDList(iupdList)));
+
     Pageable pageable = PageRequest.of(0, iupdList.size());
-    Page<PaymentPosition> result = paymentPositionRepository.findAll(specPP, pageable);
+    Page<PaymentPosition> result = paymentPositionRepository.findAll(spec, pageable);
     List<PaymentPosition> paymentPositions = result.getContent();
 
     if (paymentPositions.isEmpty() || paymentPositions.size() != iupdList.size()) {
@@ -380,7 +383,7 @@ public class PaymentPositionCRUDService {
       }
       throw e;
     } catch (Exception e) {
-      // Logga l'errore completo per il debug
+      // Log the entire exception for debugging purposes.
       log.error("Error during debt position update process", e);
       throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
     }
