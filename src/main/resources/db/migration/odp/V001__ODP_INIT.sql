@@ -83,7 +83,6 @@ CREATE TABLE IF NOT EXISTS odp.payment_position (
 -- Index
 CREATE INDEX IF NOT EXISTS idx_iupd ON odp.payment_position (iupd);
 CREATE INDEX IF NOT EXISTS idx_organization_fiscal_code ON odp.payment_position (organization_fiscal_code);
-CREATE INDEX IF NOT EXISTS idx_company_name ON odp.payment_position (company_name);
 CREATE INDEX IF NOT EXISTS idx_payment_date ON odp.payment_position (payment_date);
 CREATE INDEX IF NOT EXISTS idx_status_validity_date ON odp.payment_position (status, validity_date);
 
@@ -151,7 +150,7 @@ CREATE TABLE IF NOT EXISTS odp.payment_option (
 -- Index
 CREATE INDEX IF NOT EXISTS idx_payment_position_id ON odp.payment_option (payment_position_id);
 CREATE INDEX IF NOT EXISTS idx_debtor_fiscal_code ON odp.payment_option (debtor_fiscal_code);
-CREATE INDEX idx_payment_option_metadata_gin ON odp.payment_option USING GIN (metadata);
+CREATE INDEX IF NOT EXISTS idx_payment_option_metadata_gin ON odp.payment_option USING GIN (metadata);
 
 -- Function + Trigger
 CREATE OR REPLACE FUNCTION odp.sync_status_from_position()
@@ -248,7 +247,7 @@ CREATE TABLE IF NOT EXISTS odp.transfer (
 
 -- Index
 CREATE INDEX IF NOT EXISTS idx_installment_id ON odp.transfer (installment_id);
-CREATE INDEX idx_transfer_metadata_gin ON odp.transfer USING GIN (metadata);
+CREATE INDEX IF NOT EXISTS idx_transfer_metadata_gin ON odp.transfer USING GIN (metadata);
 
 -- =====================
 -- shedlock
