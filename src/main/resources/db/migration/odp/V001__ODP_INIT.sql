@@ -128,6 +128,7 @@ CREATE TABLE IF NOT EXISTS odp.payment_option (
     inserted_date timestamp NOT NULL,
     switch_to_expired bool DEFAULT false NOT NULL,
     option_type varchar(50) NOT NULL, -- SINGLE_OPTION, INSTALLMENT_OPTION
+    metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
     payment_position_status varchar(55) NULL,
     -- Denormalized debtor data
     debtor_fiscal_code varchar(255) NOT NULL,
@@ -150,6 +151,7 @@ CREATE TABLE IF NOT EXISTS odp.payment_option (
 -- Index
 CREATE INDEX IF NOT EXISTS idx_payment_position_id ON odp.payment_option (payment_position_id);
 CREATE INDEX IF NOT EXISTS idx_debtor_fiscal_code ON odp.payment_option (debtor_fiscal_code);
+CREATE INDEX idx_payment_option_metadata_gin ON odp.payment_option USING GIN (metadata);
 
 -- Function + Trigger
 CREATE OR REPLACE FUNCTION odp.sync_status_from_position()
@@ -238,6 +240,7 @@ CREATE TABLE IF NOT EXISTS odp.transfer (
     hash_document varchar(255) NULL,
     stamp_type varchar(255) NULL,
     provincial_residence varchar(255) NULL,
+    metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
     CONSTRAINT transfer_pkey PRIMARY KEY (id),
     CONSTRAINT uniquetransfer UNIQUE (iuv, organization_fiscal_code, transfer_id, installment_id),
     CONSTRAINT fk_installment_id FOREIGN KEY (installment_id) REFERENCES odp.installment(id)
@@ -245,40 +248,7 @@ CREATE TABLE IF NOT EXISTS odp.transfer (
 
 -- Index
 CREATE INDEX IF NOT EXISTS idx_installment_id ON odp.transfer (installment_id);
-
--- =====================
--- payment_option_metadata
--- =====================
-CREATE TABLE IF NOT EXISTS odp.payment_option_metadata (
-    id int8 NOT NULL,
-    "key" varchar(140) NOT NULL,
-    value varchar(140) NULL,
-    payment_option_id int8 NOT NULL,
-    CONSTRAINT payment_option_metadata_pkey PRIMARY KEY (id),
-    CONSTRAINT uniquepaymentoptmetadata UNIQUE (key, payment_option_id),
-    CONSTRAINT fk_payment_option_id FOREIGN KEY (payment_option_id) REFERENCES odp.payment_option(id)
-);
-
--- Index
-CREATE INDEX IF NOT EXISTS idx_payment_option_metadata_payment_option_id ON odp.payment_option_metadata (payment_option_id);
-
-
--- =====================
--- transfer_metadata
--- =====================
-CREATE TABLE IF NOT EXISTS odp.transfer_metadata (
-    id int8 NOT NULL,
-    "key" varchar(140) NOT NULL,
-    value varchar(140) NULL,
-    transfer_id int8 NOT NULL,
-    CONSTRAINT transfer_metadata_pkey PRIMARY KEY (id),
-    CONSTRAINT uniquetransfermetadata UNIQUE (key, transfer_id),
-    CONSTRAINT fk_transfer_id FOREIGN KEY (transfer_id) REFERENCES odp.transfer(id)
-);
-
--- Index
-CREATE INDEX IF NOT EXISTS idx_transfer_id ON odp.transfer_metadata (transfer_id);
-
+CREATE INDEX idx_transfer_metadata_gin ON odp.transfer USING GIN (metadata);
 
 -- =====================
 -- shedlock
