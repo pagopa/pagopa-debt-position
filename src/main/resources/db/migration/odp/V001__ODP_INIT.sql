@@ -12,7 +12,7 @@ CREATE SEQUENCE IF NOT EXISTS odp.payment_pos_seq
 	MINVALUE 1
 	MAXVALUE 9223372036854775807
 	START 1
-	CACHE 1
+	CACHE 20
 	NO CYCLE;
 
 CREATE SEQUENCE IF NOT EXISTS odp.payment_opt_seq
@@ -20,7 +20,7 @@ CREATE SEQUENCE IF NOT EXISTS odp.payment_opt_seq
 	MINVALUE 1
 	MAXVALUE 9223372036854775807
 	START 1
-	CACHE 1
+	CACHE 20
 	NO CYCLE;
 	
 CREATE SEQUENCE IF NOT EXISTS odp.installment_seq
@@ -28,7 +28,7 @@ CREATE SEQUENCE IF NOT EXISTS odp.installment_seq
 	MINVALUE 1
 	MAXVALUE 9223372036854775807
 	START 1
-	CACHE 1
+	CACHE 20
 	NO CYCLE;
 	
 CREATE SEQUENCE IF NOT EXISTS odp.transfer_seq
@@ -36,7 +36,7 @@ CREATE SEQUENCE IF NOT EXISTS odp.transfer_seq
 	MINVALUE 1
 	MAXVALUE 9223372036854775807
 	START 1
-	CACHE 1
+	CACHE 20
 	NO CYCLE;
 	
 CREATE SEQUENCE IF NOT EXISTS odp.payment_opt_metadata_seq
@@ -44,7 +44,7 @@ CREATE SEQUENCE IF NOT EXISTS odp.payment_opt_metadata_seq
 	MINVALUE 1
 	MAXVALUE 9223372036854775807
 	START 1
-	CACHE 1
+	CACHE 20
 	NO CYCLE;
 	
 CREATE SEQUENCE IF NOT EXISTS odp.transfer_metadata_seq
@@ -52,7 +52,7 @@ CREATE SEQUENCE IF NOT EXISTS odp.transfer_metadata_seq
 	MINVALUE 1
 	MAXVALUE 9223372036854775807
 	START 1
-	CACHE 1
+	CACHE 20
 	NO CYCLE;
 	
 -- =====================
@@ -127,6 +127,8 @@ CREATE TABLE IF NOT EXISTS odp.payment_option (
     description varchar(255) NOT NULL,
     inserted_date timestamp NOT NULL,
     switch_to_expired bool DEFAULT false NOT NULL,
+    option_type varchar(50) NOT NULL, -- SINGLE_OPTION, INSTALLMENT_OPTION
+    payment_position_status varchar(55) NULL,
     -- Denormalized debtor data
     debtor_fiscal_code varchar(255) NOT NULL,
     debtor_type varchar(255) NOT NULL,
@@ -203,7 +205,7 @@ CREATE TABLE IF NOT EXISTS odp.installment (
     payment_method varchar(255) NULL,
     psp_company varchar(255) NULL,
     reporting_date timestamp NULL,
-    status varchar(25) NULL,
+    status varchar(25) NOT NULL,
     notification_fee int8 DEFAULT 0 NOT NULL,
     CONSTRAINT installment_pkey PRIMARY KEY (id),
     CONSTRAINT uniqueinstallmentnav UNIQUE (nav, organization_fiscal_code),
