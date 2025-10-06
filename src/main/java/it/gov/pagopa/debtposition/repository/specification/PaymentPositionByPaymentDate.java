@@ -2,7 +2,7 @@ package it.gov.pagopa.debtposition.repository.specification;
 
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import java.time.LocalDateTime;
-import javax.persistence.criteria.*;
+import jakarta.persistence.criteria.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
