@@ -1,4 +1,4 @@
-microservice-chart:
+microservice-chart: &microservice-chart
   namespace: "gps"
   nameOverride: ""
   fullnameOverride: ""
@@ -33,7 +33,7 @@ microservice-chart:
     type: ClusterIP
     ports:
       - 8080
-  ingress:
+  ingress: &ingress
     create: true
     host: "weudev.gps.internal.dev.platform.pagopa.it"
     path: /pagopa-gpd-core/(.*)
@@ -48,14 +48,14 @@ microservice-chart:
       type: RuntimeDefault
   securityContext:
     allowPrivilegeEscalation: false
-  resources:
+  resources: &resources
     requests:
       memory: "512Mi"
       cpu: "0.25"
     limits:
       memory: "640Mi"
       cpu: "0.5"
-  autoscaling:
+  autoscaling: &autoscaling
     enable: true
     minReplica: 1
     maxReplica: 1
@@ -88,7 +88,7 @@ microservice-chart:
               - type: Pods
                 value: 2
                 periodSeconds: 20
-  envConfig:
+  envConfig: &envConfig
     WEBSITE_SITE_NAME: 'pagopa-d-gpd-core-service'
     ENV: 'dev'
     SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.d.internal.postgresql.pagopa.it:6432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true"
@@ -131,7 +131,7 @@ microservice-chart:
     OTEL_TRACES_EXPORTER: otlp
     OTEL_METRICS_EXPORTER: otlp
     OTEL_LOGS_EXPORTER: none
-  envSecret:
+  envSecret: &envSecret
     # required
     APPLICATIONINSIGHTS_CONNECTION_STRING: 'ai-d-connection-string'
     SPRING_DATASOURCE_PASSWORD: "db-apd-user-password"
@@ -169,3 +169,29 @@ microservice-chart:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.d.internal.postgresql.pagopa.it:5432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true"
       SPRING_DATASOURCE_TYPE: "com.zaxxer.hikari.HikariDataSource"
     envSecret: {}
+
+gpd-external:
+  !!merge <<: *microservice-chart
+  fullnameOverride: "gpd-core-external"
+  ingress:
+    !!merge <<: *ingress
+  resources:
+    !!merge <<: *resources
+  envConfig:
+    !!merge <<: *envConfig
+  envSecret:
+    !!merge <<: *envSecret
+gpd-internal:
+  !!merge <<: *microservice-chart
+  fullnameOverride: "gpd-core-internal"
+  ingress:
+    !!merge <<: *ingress
+    path: /pagopa-gpd-core-internal/(.*)
+  resources:
+    !!merge <<: *resources
+  autoscaling:
+    !!merge <<: *autoscaling
+  envConfig:
+    !!merge <<: *envConfig
+  envSecret:
+    !!merge <<: *envSecret

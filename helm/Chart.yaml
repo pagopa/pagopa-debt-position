@@ -8,3 +8,8 @@ dependencies:
   - name: microservice-chart
     version: 7.5.0
     repository: "https://pagopa.github.io/aks-microservice-chart-blueprint"
+    alias: gpd-external
+  - name: microservice-chart
+    version: 7.5.0
+    repository: "https://pagopa.github.io/aks-microservice-chart-blueprint"
+    alias: gpd-internal
