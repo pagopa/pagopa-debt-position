@@ -4,7 +4,7 @@
     "title": "PagoPA API Debt Position ${service}",
     "description": "Progetto Gestione Posizioni Debitorie",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "0.16.0"
+    "version": "0.16.0-2-hikari-switch"
   },
   "servers": [
     {
