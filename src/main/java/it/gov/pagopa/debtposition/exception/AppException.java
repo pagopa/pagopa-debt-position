@@ -1,7 +1,7 @@
 package it.gov.pagopa.debtposition.exception;
 
 import java.util.Formatter;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.springframework.http.HttpStatus;
