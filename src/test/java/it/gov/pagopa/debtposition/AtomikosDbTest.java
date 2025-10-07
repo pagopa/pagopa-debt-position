@@ -17,32 +17,40 @@ import jakarta.persistence.EntityManager;
   classes = it.gov.pagopa.debtposition.DebtPositionApplication.class
 )
 @ActiveProfiles({"test","atomikos-smoke"})
-class AtomikosSmokeTest {
+class AtomikosDbTest {
 
   @Autowired(required = false)
-  JtaTransactionManager jta;
+  JtaTransactionManager jta; // JTA Transaction Manager
   
   @Autowired
-  EntityManager em;
+  EntityManager em; // JPA EntityManager
 
   @Autowired
   JdbcTemplate jdbc;
+  
+  @Autowired org.springframework.transaction.PlatformTransactionManager tm;
 
   @Test
   void jtaPresent() {
     assertThat(jta).as("JtaTransactionManager should be present").isNotNull();
   }
+  
+  // Check that the transaction manager is indeed a JTA one
+  @Test
+  void transactionManagerIsJta() {
+    assertThat(tm).isInstanceOf(JtaTransactionManager.class);
+  }
 
   @Test
   @Transactional 
-  void simpleJTASelect() {
+  void simpleJTA_JDBC_Select() {
     Integer one = jdbc.queryForObject("SELECT 1", Integer.class);
     assertThat(one).isEqualTo(1);
   }
   
   @Test
   @Transactional
-  void simpleNativeSelect() {
+  void simpleJTA_JPA_EM_Select() {
     Object res = em.createNativeQuery("SELECT 1").getSingleResult();
     int one = ((Number) res).intValue();
     assertThat(one).isEqualTo(1);

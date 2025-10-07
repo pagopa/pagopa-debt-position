@@ -254,6 +254,7 @@
 		</plugins>
 	</build>
 
+<!-- starter atomikos >= 3.4 not available on Maven
 	<profiles>
 		<profile>
 			<id>atomikos-smoke</id>
@@ -266,6 +267,6 @@
 			</dependencies>
 		</profile>
 	</profiles>
-
+-->
 
 </project>
