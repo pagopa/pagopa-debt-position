@@ -4,7 +4,7 @@ microservice-chart: &microservice-chart
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.16.0"
+    tag: "0.16.0-1-PAGOPA-3321-internal-pod"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -173,7 +173,6 @@ microservice-chart: &microservice-chart
       SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.d.internal.postgresql.pagopa.it:5432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true"
       SPRING_DATASOURCE_TYPE: "com.zaxxer.hikari.HikariDataSource"
     envSecret: {}
-
 gpd-external:
   !!merge <<: *microservice-chart
   fullnameOverride: "gpd-core-external"
