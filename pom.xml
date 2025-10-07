@@ -130,7 +130,8 @@
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
-			<version>${flyway-version}</version>
+			<version>${flyway-version}</version> <!-- TODO verificare impatti
+				con versione 11.7.2 di spring boot 3.5 -->
 		</dependency>
 		<!-- Feign -->
 		<dependency>
