@@ -3,29 +3,15 @@ package it.gov.pagopa.debtposition.controller.pd.crud.api.v2;
 import static it.gov.pagopa.debtposition.util.Constants.CREATE_ACTION;
 import static it.gov.pagopa.debtposition.util.Constants.UPDATE_ACTION;
 
-import it.gov.pagopa.debtposition.config.ExclusiveParamGroup;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
-import it.gov.pagopa.debtposition.model.filterandorder.Filter;
-import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
-import it.gov.pagopa.debtposition.model.filterandorder.Order;
-import it.gov.pagopa.debtposition.model.filterandorder.Order.PaymentPositionOrder;
 import it.gov.pagopa.debtposition.model.pd.MultipleIUPDModel;
 import it.gov.pagopa.debtposition.model.pd.MultiplePaymentPositionModel;
-import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
-import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
-import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
-import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
-import it.gov.pagopa.debtposition.model.pd.response.UpdateTransferIbanMassiveResponse;
 import it.gov.pagopa.debtposition.service.pd.crud.PaymentPositionCRUDService;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.Constants;
-import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,17 +21,14 @@ import javax.validation.constraints.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
 
 @Controller
 @Slf4j
-public class DebtPositionController implements IDebtPositionController {
+public class DebtPositionControllerv2 implements IDebtPositionControllerv2 {
 
     private static final String LOG_BASE_HEADER_INFO =
             "[RequestMethod: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
@@ -54,7 +37,7 @@ public class DebtPositionController implements IDebtPositionController {
     private final PaymentPositionCRUDService paymentPositionService;
 
     @Autowired
-    public DebtPositionController(
+    public DebtPositionControllerv2(
             ModelMapper modelMapper, PaymentPositionCRUDService paymentPositionService) {
         this.modelMapper = modelMapper;
         this.paymentPositionService = paymentPositionService;

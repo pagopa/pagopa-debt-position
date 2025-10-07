@@ -11,14 +11,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.gov.pagopa.debtposition.model.ProblemJson;
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
-import it.gov.pagopa.debtposition.model.filterandorder.Order;
 import it.gov.pagopa.debtposition.model.pd.*;
-import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
-import it.gov.pagopa.debtposition.model.pd.response.UpdateTransferIbanMassiveResponse;
-import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -26,12 +20,11 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.*;
-import java.time.LocalDate;
 
-@Tag(name = "Debt Positions API")
+@Tag(name = "Debt Positions API - v2")
 @Validated
 @RequestMapping
-public interface IDebtPositionController {
+public interface IDebtPositionControllerv2 {
 
   // Only for gpd-core-internal
   // External client calls the v2 api exposed on APIM through v1 endpoints
