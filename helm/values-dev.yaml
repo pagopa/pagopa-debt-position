@@ -38,6 +38,8 @@ microservice-chart: &microservice-chart
     host: "weudev.gps.internal.dev.platform.pagopa.it"
     path: /pagopa-gpd-core/(.*)
     servicePort: 8080
+    annotations:
+      nginx.ingress.kubernetes.io/canary: 'false'
   serviceAccount:
     name: "gps-workload-identity"
   azure:
@@ -161,6 +163,8 @@ microservice-chart: &microservice-chart
       headerName: X-Canary
       headerValue: canary
       weightPercent: 0
+      annotations:
+        nginx.ingress.kubernetes.io/canary: 'true'
     image:
       repository: ghcr.io/pagopa/pagopa-debt-position
       tag: "0.11.82"
