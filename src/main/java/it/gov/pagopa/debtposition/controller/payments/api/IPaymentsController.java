@@ -68,7 +68,6 @@ public interface IPaymentsController {
           @Parameter(
               description = "Organization fiscal code, the fiscal code of the Organization.",
               required = true)
-          @Pattern(regexp = "^\\d{1,30}$")
           @PathVariable("organizationfiscalcode")
           String organizationFiscalCode,
       @Parameter(
@@ -76,6 +75,7 @@ public interface IPaymentsController {
                   "NAV (notice number) is the unique reference assigned to the payment by a"
                       + " creditor institution.",
               required = true)
+      @Pattern(regexp = "^\\d{1,30}$")
           @PathVariable("nav")
           String nav);
 

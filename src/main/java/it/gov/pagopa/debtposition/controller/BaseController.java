@@ -19,7 +19,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
-import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Size;
+
 import java.util.List;
 
 @RestController()
@@ -129,7 +130,7 @@ public class BaseController {
                                   schema = @Schema(implementation = ProblemJson.class)))
           })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, path = "internal/config/send")
-    public ResponseEntity<String> handleSyncSendConfiguration(@RequestBody @Max(1000) List<Notice> notices) {
+    public ResponseEntity<String> handleSyncSendConfiguration(@RequestBody @Size(max = 100) List<Notice> notices) {
         int updated = sendConfigurator.updateSendSync(notices);
         return ResponseEntity.status(HttpStatus.OK).body("Configuration completed for " + updated + " items");
     }

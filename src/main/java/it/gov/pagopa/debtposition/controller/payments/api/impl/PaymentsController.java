@@ -50,8 +50,8 @@ public class PaymentsController implements IPaymentsController {
 
   @Override
   public ResponseEntity<PaymentOptionWithDebtorInfoModelResponse> getOrganizationPaymentOptionByNAV(
-      @Pattern(regexp = "\\d{1,30}") String organizationFiscalCode,
-      @Pattern(regexp = "^\\d{1,30}$") String nav) {
+      String organizationFiscalCode,
+      String nav) {
     log.debug(
         String.format(
             LOG_BASE_HEADER_INFO,
