@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import java.io.Serializable;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -25,7 +26,7 @@ import lombok.NoArgsConstructor;
     uniqueConstraints = {
       @UniqueConstraint(
           name = "UniqueTransferMetadata",
-          columnNames = {"key", "transfer_id"})
+          columnNames = {"\"key\"", "transfer_id"})
     })
 @Data
 @NoArgsConstructor
@@ -48,8 +49,11 @@ public class TransferMetadata implements Serializable {
       allocationSize = 1)
   private Long id;
 
-  @NotNull private String key;
+  @NotNull
+  @Column(name = "\"key\"", nullable = false)
+  private String key;
 
+  @Column(name = "\"value\"")
   private String value;
 
   @ManyToOne(

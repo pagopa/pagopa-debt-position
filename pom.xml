@@ -18,9 +18,7 @@
 		<java.version>17</java.version>
 		<springdoc-version>2.8.13</springdoc-version>
 		<modelmapper-version>3.1.0</modelmapper-version>
-		<!--<jackson-datatype-jsr310-version>2.13.1</jackson-datatype-jsr310-version>-->
 		<flyway-version>9.22.3</flyway-version>
-		<!--<openfeign-version>3.1.8</openfeign-version>-->
 		<azure.data.table.version>12.3.18</azure.data.table.version>
 		<azure.core.version>1.45.1</azure.core.version>
 		<shedlock.version>5.10.2</shedlock.version>
@@ -51,16 +49,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
-			<!--  Exclusion of the managed version and manual specification of
-			the desired one -->
-			<!--
-            <exclusions>
-               <exclusion>
-                   <groupId>org.flywaydb</groupId>
-                   <artifactId>flyway-core</artifactId>
-               </exclusion>
-            </exclusions>
-            -->
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -142,35 +130,16 @@
 			<version>${mockito-inline.version}</version>
 			<scope>test</scope>
 		</dependency>
-		<!--
-        <dependency>
-            <groupId>org.hibernate.validator</groupId>
-            <artifactId>hibernate-validator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-maven-plugin</artifactId>
-            <version>${flyway-version}</version>
-        </dependency>
-        -->
+        <!-- Flyway -->
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
 			<version>${flyway-version}</version>
 		</dependency>
-		<!-- overriding to use last version -->
-		<!--
-        <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>5.1.0</version>
-        </dependency>
-        -->
 		<!-- Feign -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-openfeign</artifactId>
-			<!--<version>${openfeign-version}</version>-->
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.retry</groupId>
@@ -253,20 +222,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-<!-- starter atomikos >= 3.4 not available on Maven
-	<profiles>
-		<profile>
-			<id>atomikos-smoke</id>
-			<dependencies>
-				<dependency>
-					<groupId>com.atomikos</groupId>
-					<artifactId>transactions-spring-boot3.4-starter</artifactId>
-					<version>${atomikos.version}</version>
-				</dependency>
-			</dependencies>
-		</profile>
-	</profiles>
--->
-
 </project>
