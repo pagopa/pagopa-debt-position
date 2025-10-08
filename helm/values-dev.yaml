@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.16.0"
+    tag: "0.16.1"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -20,8 +20,14 @@ microservice-chart:
     initialDelaySeconds: 90
     failureThreshold: 6
     periodSeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   deployment:
     create: true
+    replicas: 1 # (default) same as HPA minReplica
   service:
     create: true
     type: ClusterIP
@@ -85,8 +91,8 @@ microservice-chart:
   envConfig:
     WEBSITE_SITE_NAME: 'pagopa-d-gpd-core-service'
     ENV: 'dev'
-    SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.d.internal.postgresql.pagopa.it:6432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true"
-    SPRING_DATASOURCE_TYPE: "org.springframework.jdbc.datasource.SimpleDriverDataSource"
+    SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.d.internal.postgresql.pagopa.it:5432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true"
+    SPRING_DATASOURCE_TYPE: "com.zaxxer.hikari.HikariDataSource"
     SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
     SPRING_JPA_HIBERNATE_SHOW_SQL: "false"
     SCHEMA_NAME: "apd"
@@ -157,9 +163,7 @@ microservice-chart:
       weightPercent: 0
     image:
       repository: ghcr.io/pagopa/pagopa-debt-position
-      tag: "0.11.82"
+      tag: "0.16.0-2-hikari-switch"
       pullPolicy: Always
-    envConfig:
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.d.internal.postgresql.pagopa.it:5432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true"
-      SPRING_DATASOURCE_TYPE: "com.zaxxer.hikari.HikariDataSource"
+    envConfig: {}
     envSecret: {}
