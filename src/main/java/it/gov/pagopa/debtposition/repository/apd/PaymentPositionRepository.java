@@ -1,6 +1,6 @@
-package it.gov.pagopa.debtposition.repository;
+package it.gov.pagopa.debtposition.repository.apd;
 
-import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.apd.PaymentPosition;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.payments.OrganizationModelQueryBean;
 import java.time.LocalDateTime;

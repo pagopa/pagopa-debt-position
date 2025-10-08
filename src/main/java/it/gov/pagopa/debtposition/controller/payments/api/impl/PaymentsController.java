@@ -1,8 +1,8 @@
 package it.gov.pagopa.debtposition.controller.payments.api.impl;
 
 import it.gov.pagopa.debtposition.controller.payments.api.IPaymentsController;
-import it.gov.pagopa.debtposition.entity.PaymentOption;
-import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.entity.apd.PaymentOption;
+import it.gov.pagopa.debtposition.entity.apd.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.payments.AlreadyPaidPaymentOptionModel;

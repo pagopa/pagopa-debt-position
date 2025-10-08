@@ -2,7 +2,7 @@ package it.gov.pagopa.debtposition.mapper;
 
 import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.UNDEFINED_DEBTOR;
 
-import it.gov.pagopa.debtposition.entity.*;
+import it.gov.pagopa.debtposition.entity.apd.*;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import it.gov.pagopa.debtposition.model.pd.DebtorModel;
 import it.gov.pagopa.debtposition.model.pd.Stamp;

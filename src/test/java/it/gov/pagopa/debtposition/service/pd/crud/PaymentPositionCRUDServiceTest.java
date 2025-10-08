@@ -6,7 +6,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import it.gov.pagopa.debtposition.DebtPositionApplication;
-import it.gov.pagopa.debtposition.repository.TransferRepository;
+import it.gov.pagopa.debtposition.repository.apd.TransferRepository;
 
 import java.time.LocalDateTime;
 

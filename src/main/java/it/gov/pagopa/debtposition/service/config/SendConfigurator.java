@@ -1,7 +1,7 @@
 package it.gov.pagopa.debtposition.service.config;
 
 import it.gov.pagopa.debtposition.model.config.Notice;
-import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
+import it.gov.pagopa.debtposition.repository.apd.PaymentOptionRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

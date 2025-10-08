@@ -3,7 +3,7 @@ package it.gov.pagopa.debtposition.scheduler;
 import static it.gov.pagopa.debtposition.util.SchedulerUtils.*;
 
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
-import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
+import it.gov.pagopa.debtposition.repository.apd.PaymentPositionRepository;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;

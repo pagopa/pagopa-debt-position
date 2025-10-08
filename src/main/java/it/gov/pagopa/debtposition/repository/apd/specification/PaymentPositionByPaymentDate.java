@@ -1,6 +1,6 @@
-package it.gov.pagopa.debtposition.repository.specification;
+package it.gov.pagopa.debtposition.repository.apd.specification;
 
-import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.apd.PaymentPosition;
 import java.time.LocalDateTime;
 import jakarta.persistence.criteria.*;
 import lombok.AllArgsConstructor;
