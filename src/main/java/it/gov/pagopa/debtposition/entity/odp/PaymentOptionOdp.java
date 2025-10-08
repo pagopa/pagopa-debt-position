@@ -2,7 +2,8 @@ package it.gov.pagopa.debtposition.entity.odp;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatusV3;
+import it.gov.pagopa.debtposition.model.enumeration.OptionType;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -21,9 +22,9 @@ import java.util.List;
 @Entity
 @Table(
         name = "payment_option",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "UniquePaymentOpt", columnNames = {"payment_position_id", "organization_fiscal_code"})
-        },
+//        uniqueConstraints = {
+//                @UniqueConstraint(name = "UniquePaymentOpt", columnNames = {"payment_position_id", "organization_fiscal_code"}) TODO wrong contraint to change
+//        },
         indexes = {
                 @Index(name = "idx_debtor_fiscal_code", columnList = "debtor_fiscal_code"),
                 // @Index(name = "idx_payment_option_metadata_gin", columnList = "payment_position_id"), TODO index metadata
@@ -32,10 +33,7 @@ import java.util.List;
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.IntSequenceGenerator.class,
         property = "@paymentOptionId")
-public class PaymentOption implements Serializable {
-
-    /** generated serialVersionUID */
-    private static final long serialVersionUID = -2800191377721368418L;
+public class PaymentOptionOdp implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "PAYMENT_OPT_SEQ")
@@ -60,10 +58,14 @@ public class PaymentOption implements Serializable {
 
     @NotNull
     @Column(name = "option_type")
-    private String optionType;
+    private OptionType optionType;
 
     @Column(name = "payment_position_status")
-    private DebtPositionStatus paymentPositionStatus;
+    private DebtPositionStatusV3 paymentPositionStatus;
+
+    @NotNull
+    @Column(name = "switch_to_expired")
+    private Boolean switchToExpired;
 
 
     // Debtor properties
@@ -121,29 +123,29 @@ public class PaymentOption implements Serializable {
 
 
     @ManyToOne(
-            targetEntity = PaymentPosition.class,
+            targetEntity = PaymentPositionOdp.class,
             fetch = FetchType.LAZY,
             optional = false,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "payment_position_id", nullable = false)
-    private PaymentPosition paymentPosition;
+    private PaymentPositionOdp paymentPositionOdp;
 
     @Builder.Default
     @OneToMany(
             targetEntity = Installment.class,
             fetch = FetchType.LAZY,
-            mappedBy = "paymentOption",
+            mappedBy = "paymentOptionOdp",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     private List<Installment> installments = new ArrayList<>();
 
     public void addInstallment(Installment i) {
         installments.add(i);
-        i.setPaymentOption(this);
+        i.setPaymentOptionOdp(this);
     }
 
     public void removeInstallment(Installment i) {
         installments.remove(i);
-        i.setPaymentOption(null);
+        i.setPaymentOptionOdp(null);
     }
 }

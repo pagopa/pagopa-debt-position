@@ -2,7 +2,7 @@ package it.gov.pagopa.debtposition.entity.odp;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatusV3;
 import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -34,10 +34,7 @@ import java.util.List;
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.IntSequenceGenerator.class,
         property = "@paymentPositionId")
-public class PaymentPosition implements Serializable {
-
-    /** generated serialVersionUID */
-    private static final long serialVersionUID = -8637183968286214359L;
+public class PaymentPositionOdp implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "PAYMENT_POS_SEQ")
@@ -92,7 +89,7 @@ public class PaymentPosition implements Serializable {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    private DebtPositionStatus status;
+    private DebtPositionStatusV3 status;
 
     @NotNull
     @Column(name = "last_updated_date")
@@ -109,15 +106,15 @@ public class PaymentPosition implements Serializable {
 
     @Builder.Default
     @OneToMany(
-            targetEntity = PaymentOption.class,
+            targetEntity = PaymentOptionOdp.class,
             fetch = FetchType.LAZY,
-            mappedBy = "paymentPosition",
+            mappedBy = "paymentPositionOdp",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
-    private List<PaymentOption> paymentOption = new ArrayList<>();
+    private List<PaymentOptionOdp> paymentOptionOdp = new ArrayList<>();
 
-    public void addPaymentOption(PaymentOption paymentOpt) {
-        paymentOption.add(paymentOpt);
-        paymentOpt.setPaymentPosition(this);
+    public void addPaymentOption(PaymentOptionOdp paymentOpt) {
+        paymentOptionOdp.add(paymentOpt);
+        paymentOpt.setPaymentPositionOdp(this);
     }
 }

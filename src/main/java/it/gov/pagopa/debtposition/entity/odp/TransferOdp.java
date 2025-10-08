@@ -9,7 +9,6 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 
 @Builder(toBuilder = true)
 @Getter
@@ -31,10 +30,7 @@ import java.util.ArrayList;
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.IntSequenceGenerator.class,
         property = "@transferId")
-public class Transfer implements Serializable {
-
-    /** generated serialVersionUID */
-    private static final long serialVersionUID = -886970813082991109L;
+public class TransferOdp implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "TRANSFER_SEQ")

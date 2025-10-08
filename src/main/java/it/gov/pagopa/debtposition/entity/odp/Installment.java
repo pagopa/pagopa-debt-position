@@ -2,13 +2,12 @@ package it.gov.pagopa.debtposition.entity.odp;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import it.gov.pagopa.debtposition.entity.odp.Transfer;
 import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
-import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,12 +32,7 @@ import java.util.List;
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.IntSequenceGenerator.class,
         property = "@installmentId")
-public class Installment {
-
-    /**
-     * generated serialVersionUID
-     */
-    private static final long serialVersionUID = -2800191377721368418L;
+public class Installment implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "INSTALLMENT_SEQ")
@@ -86,6 +80,12 @@ public class Installment {
     @Column(name = "psp_company")
     private String pspCompany;
 
+    @Column(name = "psp_code")
+    private String pspCode;
+
+    @Column(name = "psp_tax_code")
+    private String pspTaxCode;
+
     @Column(name = "receipt_id")
     private String receiptId;
 
@@ -103,33 +103,42 @@ public class Installment {
     @Column(name = "last_updated_date_notification_fee")
     private LocalDateTime lastUpdatedDateNotificationFee;
 
-    @Column(name = "payment_position_id")
-    private Long paymentPositionId;
+    @NotNull
+    @Column(name = "send_sync")
+    private Boolean sendSync;
 
     @ManyToOne(
-            targetEntity = PaymentOption.class,
+            targetEntity = PaymentPositionOdp.class,
+            fetch = FetchType.LAZY,
+            optional = false,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "payment_position_id", nullable = false)
+    private PaymentPositionOdp paymentPositionOdp;
+
+    @ManyToOne(
+            targetEntity = PaymentOptionOdp.class,
             fetch = FetchType.LAZY,
             optional = false,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "payment_option_id", nullable = false)
-    private PaymentOption paymentOption;
+    private PaymentOptionOdp paymentOptionOdp;
 
     @Builder.Default
     @OneToMany(
-            targetEntity = Transfer.class,
+            targetEntity = TransferOdp.class,
             fetch = FetchType.LAZY,
             mappedBy = "installment",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
-    private List<Transfer> transfer = new ArrayList<>();
+    private List<TransferOdp> transferOdp = new ArrayList<>();
 
-    public void addTransfer(Transfer t) {
-        transfer.add(t);
+    public void addTransfer(TransferOdp t) {
+        transferOdp.add(t);
         t.setInstallment(this);
     }
 
-    public void removeTransfer(Transfer t) {
-        transfer.remove(t);
+    public void removeTransfer(TransferOdp t) {
+        transferOdp.remove(t);
         t.setInstallment(null);
     }
 }
