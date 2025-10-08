@@ -205,9 +205,12 @@ CREATE TABLE IF NOT EXISTS odp.installment (
     payment_date timestamp NULL,
     payment_method varchar(255) NULL,
     psp_company varchar(255) NULL,
+    psp_code varchar(50) NULL,  -- idPSP https://github.com/pagopa/pagopa-api/blob/c752179c66da9e3a2a71dd16397fde6b0ad08818/wsdl/xsd/paForNode.xsd#L219 stText35
+    psp_tax_code varchar(70) NULL,  -- pspFiscalCode https://github.com/pagopa/pagopa-api/blob/c752179c66da9e3a2a71dd16397fde6b0ad08818/wsdl/xsd/paForNode.xsd#L220 stText70
     reporting_date timestamp NULL,
     status varchar(25) NOT NULL,
     notification_fee int8 DEFAULT 0 NOT NULL,
+    send_sync boolean DEFAULT false NOT NULL,
     CONSTRAINT installment_pkey PRIMARY KEY (id),
     CONSTRAINT uniqueinstallmentnav UNIQUE (nav, organization_fiscal_code),
     CONSTRAINT uniqueinstallmentiuv UNIQUE (iuv, organization_fiscal_code),
