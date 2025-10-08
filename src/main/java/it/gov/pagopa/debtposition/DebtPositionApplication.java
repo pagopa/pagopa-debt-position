@@ -2,6 +2,7 @@ package it.gov.pagopa.debtposition;
 
 import it.gov.pagopa.debtposition.entity.apd.PaymentOption;
 import it.gov.pagopa.debtposition.entity.apd.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.odp.PaymentPositionOdp;
 import it.gov.pagopa.debtposition.mapper.*;
 import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
@@ -82,6 +83,13 @@ public class DebtPositionApplication {
     modelMapper
         .createTypeMap(PaymentPosition.class, PaymentPositionModelV3.class)
         .setConverter(converterV3PPEntityToModel);
+
+    // Entity PaymentPosition on schema apd to PaymentPosition on schema odp (for V3)
+    Converter<PaymentPosition, PaymentPositionOdp> converterPPEntityToPPOdpEntity =
+            new ConverterPPEntityToPPOdpEntity();
+    modelMapper
+            .createTypeMap(PaymentPosition.class, PaymentPositionOdp.class)
+            .setConverter(converterPPEntityToPPOdpEntity);
 
     return modelMapper;
   }
