@@ -1,4 +1,4 @@
-Feature: Managing a debt position
+Feature: Update and publish a debt position
 
   Background:
     Given GPD running
