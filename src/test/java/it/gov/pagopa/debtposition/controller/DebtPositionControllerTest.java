@@ -69,15 +69,15 @@ class DebtPositionControllerTest {
   void createDebtPosition_201() throws Exception {
     // a debtor position is created with null validationDate and without forcing toPublish
     mvc.perform(
-            post("/organizations/12345678901/debtpositions")
+            post("/organizations/123456789010/debtpositions")
                 .content(TestUtil.toJson(DebtPositionMock.getMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].iuv").value("123456IUVMOCK1"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].iuv").value("1234561"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value(auxDigit + "123456IUVMOCK1"))
+                .value(auxDigit + "1234561"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].companyName")
                 .value("mock company name"))
@@ -97,10 +97,10 @@ class DebtPositionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].iuv").value("123456IUVMOCK1"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].iuv").value("1234561"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value(auxDigit + "123456IUVMOCK1"));
+                .value(auxDigit + "1234561"));
   }
 
   @Test
@@ -111,10 +111,10 @@ class DebtPositionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].iuv").value("123456IUVMOCK1"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].iuv").value("1234561"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value(auxDigit + "123456IUVMOCK1"))
+                .value(auxDigit + "1234561"))
         // il serviceType non deve essere restituito nella risposta
         .andExpect(MockMvcResultMatchers.jsonPath("$.serviceType").doesNotExist());
   }
@@ -178,10 +178,10 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("3123456IUVMULTIPLEMOCK1"))
+                .value("31234561"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[1].nav")
-                .value("3123456IUVMULTIPLEMOCK2"));
+                .value("31234562"));
 
     mvc.perform(
             post("/organizations/12345678901/debtpositions")
@@ -191,13 +191,13 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("3123456IUVMULTIPLEMOCK3"))
+                .value("31234563"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[1].nav")
-                .value("3123456IUVMULTIPLEMOCK4"))
+                .value("31234564"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[2].nav")
-                .value("3123456IUVMULTIPLEMOCK5"));
+                .value("31234565"));
   }
 
   @Test
@@ -213,7 +213,7 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("CUSTOM_" + auxDigit + "123456IUVMOCK1"));
+                .value("CUSTOM_" + auxDigit + "1234561"));
   }
 
   @Test
@@ -366,7 +366,7 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("CUSTOM_" + auxDigit + "123456IUVMOCK1"));
+                .value("CUSTOM_" + auxDigit + "1234561"));
 
     // provo a creare una seconda posizione debitoria per la stessa organizzazione, cambiando lo
     // IUPD e lo IUV ma non il NAV
@@ -427,7 +427,7 @@ class DebtPositionControllerTest {
         .andExpect(status().isCreated())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("3123456IUVMOCK1"));
+            MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("31234561"));
   }
 
   @Test
@@ -452,7 +452,7 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("3123456IUVMETADATAMOCK9"))
+                .value("31234569"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata").isArray())
         .andExpect(
@@ -752,7 +752,7 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value(auxDigit + "123456IUVMOCK1"))
+                .value(auxDigit + "1234561"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].companyName")
                 .value("mock company name"));
@@ -807,7 +807,7 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("3123456IUVMETADATAMOCK9"))
+                .value("31234569"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata").isArray())
         .andExpect(
@@ -824,7 +824,7 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("3123456IUVMETADATAMOCK9"))
+                .value("31234569"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata").isArray())
         .andExpect(
@@ -849,7 +849,7 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("CUSTOM_" + auxDigit + "123456IUVMOCK1"));
+                .value("CUSTOM_" + auxDigit + "1234561"));
 
     String url = "/organizations/200_12345678901_NAV/debtpositions/12345678901IUPDMOCK1";
     mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
@@ -857,7 +857,7 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("CUSTOM_" + auxDigit + "123456IUVMOCK1"));
+                .value("CUSTOM_" + auxDigit + "1234561"));
   }
 
   @Test
@@ -882,7 +882,7 @@ class DebtPositionControllerTest {
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("3123456IUVMOCK1"));
+            MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("31234561"));
   }
 
   @Test
@@ -947,19 +947,19 @@ class DebtPositionControllerTest {
                 .value(Matchers.hasSize(3)))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[0].nav")
-                .value("3123456IUVMULTIPLEMOCK1"))
+                .value("31234561"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[1].nav")
-                .value("3123456IUVMULTIPLEMOCK2"))
+                .value("31234562"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[0].nav")
-                .value("3123456IUVMULTIPLEMOCK3"))
+                .value("31234563"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[1].nav")
-                .value("3123456IUVMULTIPLEMOCK4"))
+                .value("31234564"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[2].nav")
-                .value("3123456IUVMULTIPLEMOCK5"));
+                .value("31234565"));
   }
 
   @Test
@@ -968,7 +968,7 @@ class DebtPositionControllerTest {
     // creo due posizioni debitorie di cui una con il NAV settato in fase di creazione e l'altra con
     // il default <AUX_DIGIT>+IUV
     PaymentPositionDTO ppNav = DebtPositionMock.getMock2();
-    ppNav.getPaymentOption().forEach(po -> po.setNav("CUSTOM_" + auxDigit + po.getIuv()));
+    ppNav.getPaymentOption().forEach(po -> po.setNav("555" + auxDigit + po.getIuv()));
     mvc.perform(
             post("/organizations/LIST_NAV_12345678901/debtpositions")
                 .content(TestUtil.toJson(ppNav))
@@ -1006,19 +1006,19 @@ class DebtPositionControllerTest {
                 .value(Matchers.hasSize(3)))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[0].nav")
-                .value("CUSTOM_" + auxDigit + "123456IUVMULTIPLEMOCK1"))
+                .value("555" + auxDigit + "1234561"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[1].nav")
-                .value("CUSTOM_" + auxDigit + "123456IUVMULTIPLEMOCK2"))
+                .value("555" + auxDigit + "1234562"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[0].nav")
-                .value(auxDigit + "123456IUVMULTIPLEMOCK3"))
+                .value(auxDigit + "1234563"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[1].nav")
-                .value(auxDigit + "123456IUVMULTIPLEMOCK4"))
+                .value(auxDigit + "1234564"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[2].nav")
-                .value(auxDigit + "123456IUVMULTIPLEMOCK5"));
+                .value(auxDigit + "1234565"));
   }
 
   @Test
@@ -1061,29 +1061,29 @@ class DebtPositionControllerTest {
   void getDebtPositionListByPaymentDate() throws Exception {
     // creo la posizione debitoria DRAFT
     mvc.perform(
-            post("/organizations/LIST_12345678902/debtpositions")
-                .content(TestUtil.toJson(DebtPositionMock.getMock2()))
+            post("/organizations/123456789022/debtpositions")
+                .content(TestUtil.toJson(DebtPositionMock.getMock3()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
     // creo la posizione debitoria (senza 'validity date' impostata) che dopo il pagamento sarà PAID
     mvc.perform(
-            post("/organizations/LIST_12345678902/debtpositions")
+            post("/organizations/123456789022/debtpositions")
                 .content(TestUtil.toJson(DebtPositionMock.getMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
     // porto in pubblicata/validata lo stato della posizione debitoria
     mvc.perform(
-            post("/organizations/LIST_12345678902/debtpositions/12345678901IUPDMOCK1/publish")
+            post("/organizations/123456789022/debtpositions/12345678901IUPDMOCK1/publish")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 
     // effettuo la notifica di pagamento
     mvc.perform(
-            post("/organizations/LIST_12345678902/paymentoptions/"
+            post("/organizations/123456789022/paymentoptions/"
                     + auxDigit
-                    + "123456IUVMOCK1/pay")
+                    + "1234561/pay")
                 .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
@@ -1092,7 +1092,7 @@ class DebtPositionControllerTest {
     // effettuo la chiamata GET applicando il filtro sulla payment_date
     DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     String url =
-        "/organizations/LIST_12345678902/debtpositions?page=0"
+        "/organizations/123456789022/debtpositions?page=0"
             + "&payment_date_from="
             + df.format(LocalDateTime.now(ZoneOffset.UTC))
             + "&payment_date_to="
@@ -1108,29 +1108,29 @@ class DebtPositionControllerTest {
   void getDebtPositionListByStatus() throws Exception {
     // creo la posizione debitoria DRAFT
     mvc.perform(
-            post("/organizations/LIST_12345678903/debtpositions")
-                .content(TestUtil.toJson(DebtPositionMock.getMock2()))
+            post("/organizations/123456789030/debtpositions")
+                .content(TestUtil.toJson(DebtPositionMock.getMock3()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
     // creo la posizione debitoria (senza 'validity date' impostata) che sarà PAID dopo il pagamento
     mvc.perform(
-            post("/organizations/LIST_12345678903/debtpositions")
+            post("/organizations/123456789030/debtpositions")
                 .content(TestUtil.toJson(DebtPositionMock.getMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
     // porto in pubblicata/validata lo stato della posizione debitoria
     mvc.perform(
-            post("/organizations/LIST_12345678903/debtpositions/12345678901IUPDMOCK1/publish")
+            post("/organizations/123456789030/debtpositions/12345678901IUPDMOCK1/publish")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 
     // effettuo la notifica di pagamento
     mvc.perform(
-            post("/organizations/LIST_12345678903/paymentoptions/"
+            post("/organizations/123456789030/paymentoptions/"
                     + auxDigit
-                    + "123456IUVMOCK1/pay")
+                    + "1234561/pay")
                 .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
@@ -1138,7 +1138,7 @@ class DebtPositionControllerTest {
     // effettuo la chiamata GET applicando il filtro sullo status
     DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     String url =
-        "/organizations/LIST_12345678903/debtpositions?page=0"
+        "/organizations/123456789030/debtpositions?page=0"
             + "&due_date_from="
             + df.format(LocalDateTime.now(ZoneOffset.UTC))
             + "&due_date_to="
@@ -1421,12 +1421,12 @@ class DebtPositionControllerTest {
     mvc.perform(
             post("/organizations/DEL_409_12345678901/paymentoptions/"
                     + auxDigit
-                    + "123456IUVMOCK1/pay")
+                    + "1234561/pay")
                 .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMOCK1"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("1234561"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.status")
                 .value(PaymentOptionStatus.PO_PAID.toString()));
@@ -1495,7 +1495,7 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value(auxDigit + "123456IUVMOCK1"))
+                .value(auxDigit + "1234561"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.DRAFT.toString()))
         .andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.nullValue()));
@@ -1514,7 +1514,7 @@ class DebtPositionControllerTest {
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].amount").value(1000))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value(auxDigit + "123456IUVMOCK1"))
+                .value(auxDigit + "1234561"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.DRAFT.toString()))
         .andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.nullValue()));
@@ -1543,10 +1543,10 @@ class DebtPositionControllerTest {
             MockMvcResultMatchers.jsonPath("$.paymentOption[1].transfer[0].amount").value(500))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value(auxDigit + "123456IUVMULTIPLEMOCK1"))
+                .value(auxDigit + "1234561"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[1].nav")
-                .value(auxDigit + "123456IUVMULTIPLEMOCK2"))
+                .value(auxDigit + "1234562"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.DRAFT.toString()))
         .andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.nullValue()));
@@ -1563,7 +1563,7 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("3123456IUVMETADATAMOCK9"))
+                .value("31234569"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata").isArray())
         .andExpect(
@@ -1581,7 +1581,7 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("3123456IUVMETADATAMOCK9"))
+                .value("31234569"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata").isArray())
         .andExpect(
@@ -1612,7 +1612,7 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("3123456IUVMETADATAMOCK9"))
+                .value("31234569"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata").isArray())
         .andExpect(
@@ -1635,7 +1635,7 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("3123456IUVMETADATAMOCK9"))
+                .value("31234569"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].paymentOptionMetadata").isArray())
         .andExpect(
@@ -1693,10 +1693,10 @@ class DebtPositionControllerTest {
             MockMvcResultMatchers.jsonPath("$.paymentOption[1].transfer[0].amount").value(500))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("3123456IUVMULTIPLEMOCK1"))
+                .value("31234561"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[1].nav")
-                .value("3123456IUVMULTIPLEMOCK2"));
+                .value("31234562"));
   }
 
   @Test
@@ -1710,7 +1710,7 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value(auxDigit + "123456IUVMOCK1"));
+                .value(auxDigit + "1234561"));
 
     // recupero la posizione debitoria e verifico il contenuto
     mvc.perform(
@@ -1726,7 +1726,7 @@ class DebtPositionControllerTest {
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].amount").value(1000))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value(auxDigit + "123456IUVMOCK1"));
+                .value(auxDigit + "1234561"));
 
     // aggiorno la posizione debitoria con un custom NAV
     PaymentPositionDTO ppNav = DebtPositionMock.getMock1();
@@ -1751,7 +1751,7 @@ class DebtPositionControllerTest {
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].amount").value(1000))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("CUSTOM_" + auxDigit + "123456IUVMOCK1"));
+                .value("CUSTOM_" + auxDigit + "1234561"));
   }
 
   @Test
@@ -2132,12 +2132,12 @@ class DebtPositionControllerTest {
     mvc.perform(
             post("/organizations/UPD409_PAID_12345678901/paymentoptions/"
                     + auxDigit
-                    + "123456IUVMOCK1/pay")
+                    + "1234561/pay")
                 .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("123456IUVMOCK1"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("1234561"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.status")
                 .value(PaymentOptionStatus.PO_PAID.toString()));
@@ -2180,7 +2180,7 @@ class DebtPositionControllerTest {
     // NAV)
     mvc.perform(
             MockMvcRequestBuilders.put(
-                    "/organizations/UPD422_novalidtransfer_12345678901/paymentoptions/123456IUVMOCK1/notificationfee")
+                    "/organizations/UPD422_novalidtransfer_12345678901/paymentoptions/1234561/notificationfee")
                 .content(TestUtil.toJson(DebtPositionMock.createNotificationFeeMock(150L)))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
