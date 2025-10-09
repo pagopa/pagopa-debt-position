@@ -22,7 +22,7 @@
 		<azure.data.table.version>12.3.18</azure.data.table.version>
 		<azure.core.version>1.45.1</azure.core.version>
 		<shedlock.version>5.10.2</shedlock.version>
-		<mockito-inline.version>5.2.0</mockito-inline.version>
+		<!--<mockito-inline.version>5.2.0</mockito-inline.version>-->
 		<logback.ecs.version>1.6.0</logback.ecs.version>
 		<atomikos.version>6.0.0</atomikos.version>
 	</properties>
@@ -120,12 +120,14 @@
 			<scope>test</scope>
 		</dependency>
 		<!-- overriding the managed version of mockito for mocking final classes -->
+		<!--
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-inline</artifactId>
 			<version>${mockito-inline.version}</version>
 			<scope>test</scope>
 		</dependency>
+		-->
         <!-- Flyway -->
 		<dependency>
 			<groupId>org.flywaydb</groupId>

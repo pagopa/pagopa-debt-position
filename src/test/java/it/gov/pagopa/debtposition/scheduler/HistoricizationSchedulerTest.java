@@ -28,7 +28,7 @@ import jakarta.persistence.TypedQuery;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -36,7 +36,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 @SpringJUnitConfig(SchedulerConfig.class)
 class HistoricizationSchedulerTest {
 
-  @MockBean PaymentPositionRepository paymentPositionRepository;
+  @MockitoBean PaymentPositionRepository paymentPositionRepository;
 
   // azure storage params
   @Value("${azure.archive.storage.connection}")

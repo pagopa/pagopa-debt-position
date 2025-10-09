@@ -23,12 +23,13 @@ import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
 import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.service.pd.crud.PaymentPositionCRUDService;
+import it.gov.pagopa.debtposition.util.CommonUtil;
+
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Random;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,8 +40,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -52,11 +53,11 @@ class DebtPositionControllerTest {
 
   @Autowired private MockMvc mvc;
 
-  @SpyBean private PaymentPositionCRUDService paymentPositionService;
+  @MockitoSpyBean private PaymentPositionCRUDService paymentPositionService;
 
   @Mock private ModelMapper modelMapperMock;
 
-  @MockBean private NodeClient nodeClient;
+  @MockitoBean private NodeClient nodeClient;
 
   @Value("${nav.aux.digit}")
   private String auxDigit;
@@ -147,8 +148,8 @@ class DebtPositionControllerTest {
             new Stamp("hash1", "01", "ML"),
             TransferStatus.T_UNREPORTED);
     pp.getPaymentOption().get(0).getTransfer().set(0, t);
-    pp.setIupd(RandomStringUtils.randomNumeric(20));
-    pp.getPaymentOption().get(0).setIuv(RandomStringUtils.randomNumeric(17));
+    pp.setIupd(CommonUtil.randomDigits(20));
+    pp.getPaymentOption().get(0).setIuv(CommonUtil.randomDigits(17));
     mvc.perform(
             post("/organizations/12345678901/debtpositions")
                 .content(TestUtil.toJson(pp))
@@ -564,8 +565,8 @@ class DebtPositionControllerTest {
   @Test
   void getDebtPositionByIUV_200() throws Exception {
     PaymentPositionDTO pp = DebtPositionMock.getMock1();
-    pp.setIupd(RandomStringUtils.randomNumeric(20));
-    String iuv = RandomStringUtils.randomNumeric(17);
+    pp.setIupd(CommonUtil.randomDigits(20));
+    String iuv = CommonUtil.randomDigits(17);
     pp.getPaymentOption().get(0).setIuv(iuv);
     mvc.perform(
             post("/organizations/20077777771/debtpositions")
@@ -595,9 +596,9 @@ class DebtPositionControllerTest {
             new Stamp("hash1", "01", "ML"),
             TransferStatus.T_UNREPORTED);
     pp.getPaymentOption().get(0).getTransfer().set(0, t);
-    String iuv = RandomStringUtils.randomNumeric(17);
+    String iuv = CommonUtil.randomDigits(17);
     pp.getPaymentOption().get(0).setIuv(iuv);
-    pp.setIupd(RandomStringUtils.randomNumeric(20));
+    pp.setIupd(CommonUtil.randomDigits(20));
     mvc.perform(
             post("/organizations/20077777771/debtpositions")
                 .content(TestUtil.toJson(pp))
