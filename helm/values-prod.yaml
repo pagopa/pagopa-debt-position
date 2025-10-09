@@ -92,10 +92,11 @@ microservice-chart:
     WEBSITE_SITE_NAME: 'pagopa-p-gpd-core-service'
     ENV: 'prod'
     SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.p.internal.postgresql.pagopa.it:5432/apd?sslmode=require&prepareThreshold=0"
-    SPRING_DATASOURCE_TYPE: "com.zaxxer.hikari.HikariDataSource"
+    SPRING_DATASOURCE_TYPE: "org.postgresql.xa.PGXADataSource"
     SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
     SPRING_JPA_HIBERNATE_SHOW_SQL: "false"
-    SCHEMA_NAME: "apd"
+    APD_SCHEMA_NAME: "apd"
+    ODP_SCHEMA_NAME: "odp"
     CRON_JOB_SCHEDULE_ENABLED: "true"
     CRON_JOB_SCHEDULE_EXPRESSION_TO_VALID: "0 0 11,21 * * *" # 11, 21 (UTC+00) o'clock of every day.
     CRON_JOB_SCHEDULE_EXPRESSION_TO_EXPIRED: "0 30 11,21 * * *" # 11:30, 21:30 (UTC+00) o'clock of every day.

@@ -34,14 +34,16 @@ public class DataLayerService {
 
     @Transactional
     public PaymentPosition savePaymentPositionFromV1(PaymentPosition paymentPosition){
+        // TODO feature flag
         PaymentPositionOdp paymentPositionOdp = modelMapper.map(paymentPosition, PaymentPositionOdp.class);
-        paymentPositionOdpRepository.save(paymentPositionOdp);
+        paymentPositionOdpRepository.saveAndFlush(paymentPositionOdp);
 
-        return paymentPositionRepository.save(paymentPosition);
+        return paymentPositionRepository.saveAndFlush(paymentPosition);
     }
 
     @Transactional
     public PaymentPositionOdp savePaymentPositionFromV3(PaymentPositionOdp paymentPositionOdp){
+        // TODO feature flag & mapper
         PaymentPosition paymentPosition = modelMapper.map(paymentPositionOdp, PaymentPosition.class);
         paymentPositionRepository.saveAndFlush(paymentPosition);
 
