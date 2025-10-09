@@ -155,8 +155,9 @@ public class DebtPositionValidation {
 
           // Case 3: Action is "update" and due_date < current time
           (!ArrayUtils.isEmpty(action)
-              && UPDATE_ACTION.equalsIgnoreCase(action[0])
-              && po.getDueDate().compareTo(today) < 0)) {
+                  && UPDATE_ACTION.equalsIgnoreCase(action[0])
+                  && po.getDueDate().compareTo(today) < 0)
+              && pp.getSwitchToExpired()) {
         throw new ValidationException(
             String.format(
                 DUE_DATE_VALIDATION_ERROR,
