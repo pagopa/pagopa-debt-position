@@ -52,14 +52,16 @@ docker compose -f ./docker-compose-local.yml -p "${stack_name}" up -d --remove-o
 printf 'Waiting for the service'
 attempt_counter=0
 max_attempts=50
-until curl --silent --fail --output /dev/null http://localhost:8080/actuator/health/liveness; do
-    if [ ${attempt_counter} -eq ${max_attempts} ];then
-      echo "Max attempts reached"
-      exit 1
-    fi
-
-    printf '.'
-    attempt_counter=$((attempt_counter+1))
-    sleep 5
+until curl --head --silent --fail http://localhost:8080/actuator/health; do
+  echo -n '.'
+  sleep 5
+  ((attempts++))
+  if [ $attempts -gt 60 ]; then  # allunga a 5 minuti
+    echo "Max attempts reached"
+    docker compose ps
+    docker logs --tail=200 gpd || true
+    docker logs --tail=100 pgbouncer || true
+    exit 1
+  fi
 done
 echo 'Service Started'

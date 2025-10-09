@@ -15,16 +15,18 @@ RUN java -Djarmode=layertools -jar application.jar extract
 
 
 FROM ghcr.io/pagopa/docker-base-springboot-openjdk17:v2.2.7@sha256:ea58bccaed00c346eea5ed0ad221d8763feb34c8cce620d86cd4370d7df35125
+WORKDIR /app
+
 ADD --chown=spring:spring https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v1.25.1/opentelemetry-javaagent.jar .
 
-COPY --chown=spring:spring  --from=builder dependencies/ ./
-COPY --chown=spring:spring  --from=builder snapshot-dependencies/ ./
-
+COPY --chown=spring:spring  --from=builder dependencies/           /app/dependencies/
+COPY --chown=spring:spring  --from=builder snapshot-dependencies/  /app/snapshot-dependencies/
 # https://github.com/moby/moby/issues/37965#issuecomment-426853382
 RUN true
-COPY --chown=spring:spring  --from=builder spring-boot-loader/ ./
-COPY --chown=spring:spring  --from=builder application/ ./
+COPY --chown=spring:spring  --from=builder spring-boot-loader/     /app/spring-boot-loader/
+COPY --chown=spring:spring  --from=builder application/            /app/application/
 
 EXPOSE 8080
 
-ENTRYPOINT ["java","-javaagent:opentelemetry-javaagent.jar", "--enable-preview", "org.springframework.boot.loader.JarLauncher"]
+# New Spring Boot 3.x launcher: org.springframework.boot.loader.launch.JarLauncher
+ENTRYPOINT ["java","-javaagent:/app/opentelemetry-javaagent.jar","-cp","/app/spring-boot-loader/*:/app/application:/app/dependencies/*:/app/snapshot-dependencies/*","org.springframework.boot.loader.launch.JarLauncher"]
