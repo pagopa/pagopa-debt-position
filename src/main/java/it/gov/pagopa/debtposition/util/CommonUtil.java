@@ -112,6 +112,7 @@ public class CommonUtil {
    * @param len Length of the desired numeric string.
    * @return A random numeric string of the specified length.
    */
+  @SuppressWarnings("java:S2245") // used only for testing/non-sensitive data
   public static String randomDigits(int len) {
 	  ThreadLocalRandom rnd = ThreadLocalRandom.current();
 	  char[] out = new char[len];
