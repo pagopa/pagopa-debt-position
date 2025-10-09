@@ -14,6 +14,7 @@ import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 
 import java.util.HashMap;
+import java.util.UUID;
 
 @Configuration
 @DependsOn("transactionManager")
@@ -33,16 +34,31 @@ public class ApdConfig {
     @Primary
     @Bean(name = "apdDataSource", initMethod = "init", destroyMethod = "close")
     public AtomikosDataSourceBean apdDataSource() {
-        PGXADataSource pgxa = new PGXADataSource();
-        pgxa.setUrl(apdDatasourceProperties.getUrl());
-        pgxa.setUser(apdDatasourceProperties.getUsername());
-        pgxa.setPassword(apdDatasourceProperties.getPassword());
-        pgxa.setCurrentSchema(apdDatasourceProperties.getSchema());
+        String url = apdDatasourceProperties.getUrl();
+        String user = apdDatasourceProperties.getUsername();
+        String password = apdDatasourceProperties.getPassword();
 
         AtomikosDataSourceBean dataSource = new AtomikosDataSourceBean();
         // Configure the data source
-        dataSource.setUniqueResourceName(apdDatasourceProperties.getSchema());
-        dataSource.setXaDataSource(pgxa);
+        if (url != null && url.startsWith("jdbc:h2")) {
+            // H2 for testing
+            java.util.Properties xaProps = new java.util.Properties();
+            xaProps.setProperty("URL", url);
+            xaProps.setProperty("user", user);
+            xaProps.setProperty("password", password);
+            dataSource.setXaDataSourceClassName("org.h2.jdbcx.JdbcDataSource");
+            dataSource.setXaProperties(xaProps);
+            dataSource.setUniqueResourceName(apdDatasourceProperties.getSchema() + UUID.randomUUID());
+        } else {
+            // Postgres for production
+            PGXADataSource pgxa = new PGXADataSource();
+            pgxa.setUrl(apdDatasourceProperties.getUrl());
+            pgxa.setUser(apdDatasourceProperties.getUsername());
+            pgxa.setPassword(apdDatasourceProperties.getPassword());
+            pgxa.setCurrentSchema(apdDatasourceProperties.getSchema());
+            dataSource.setXaDataSource(pgxa);
+            dataSource.setUniqueResourceName(apdDatasourceProperties.getSchema());
+        }
 
         return dataSource;
     }
