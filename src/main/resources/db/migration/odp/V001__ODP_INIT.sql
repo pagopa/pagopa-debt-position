@@ -143,7 +143,6 @@ CREATE TABLE IF NOT EXISTS odp.payment_option (
     debtor_email varchar(255) NULL,
     debtor_phone varchar(255) NULL,
     CONSTRAINT payment_option_pkey PRIMARY KEY (id),
-    CONSTRAINT uniquepaymentopt UNIQUE (organization_fiscal_code, payment_position_id),
     CONSTRAINT fk_payment_position_id FOREIGN KEY (payment_position_id) REFERENCES odp.payment_position(id)
 );
 
