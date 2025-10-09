@@ -7,10 +7,6 @@ on:
         required: true
         description: The name of the environment where to run DB migration
         type: string
-      target:
-        required: true
-        description: The environment target of the job
-        type: string
   workflow_dispatch:
     inputs:
       environment:
@@ -21,16 +17,6 @@ on:
           - dev
           - uat
           - prod
-          - all
-      target:
-        required: true
-        type: choice
-        description: Select the Environment Target
-        options:
-          - dev
-          - uat
-          - prod
-          - all
       schema:                
         required: true
         type: choice
@@ -45,32 +31,9 @@ permissions:
   contents: read
 
 jobs:
-  create_runner:
-    name: Create Runner
-    runs-on: ubuntu-22.04
-    environment:
-      name: ${{ inputs.environment }}
-    if: ${{ inputs.target == inputs.environment || inputs.target == 'all' }}
-    outputs:
-      runner_name: ${{ steps.create_github_runner.outputs.runner_name }}
-    steps:
-      - name: Create GitHub Runner
-        id: create_github_runner
-        # from https://github.com/pagopa/eng-github-actions-iac-template/tree/main/azure/github-self-hosted-runner-azure-create-action
-        uses: pagopa/eng-github-actions-iac-template/azure/github-self-hosted-runner-azure-create-action@159289e1e23d0783533d1dd83e1b7cf0a5a565d9 # v1.24.0
-        with:
-          client_id: ${{ secrets.CLIENT_ID }}
-          tenant_id: ${{ secrets.TENANT_ID }}
-          subscription_id: ${{ secrets.SUBSCRIPTION_ID }}
-          container_app_environment_name: ${{ vars.CONTAINER_APP_ENVIRONMENT_NAME }}
-          resource_group_name: ${{ vars.CONTAINER_APP_ENVIRONMENT_RESOURCE_GROUP_NAME }} # RG of the runner
-          pat_token: ${{ secrets.BOT_TOKEN_GITHUB }}
-          self_hosted_runner_image_tag: "latest"
 
   db_migration:
-    needs: [ create_runner ]
-    runs-on: [ self-hosted, "${{ needs.create_runner.outputs.runner_name }}" ]
-    if: ${{ inputs.target == inputs.environment || inputs.target == 'all' }}
+    runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
     name: DB migration
     environment: ${{ inputs.environment }}
     steps:
@@ -125,23 +88,3 @@ jobs:
                 mvn -B flyway:validate ${COMMON}
                 mvn -B flyway:migrate ${COMMON}
             fi
-
-
-  cleanup_runner:
-    name: Cleanup Runner
-    needs: [ create_runner, db_migration ]
-    if: ${{ success() || failure() && inputs.target == inputs.environment || inputs.target == 'all' }}
-    runs-on: ubuntu-22.04
-    environment: ${{ inputs.environment }}
-    steps:
-      - name: Cleanup GitHub Runner
-        id: cleanup_github_runner
-        # from https://github.com/pagopa/eng-github-actions-iac-template/tree/main/azure/github-self-hosted-runner-azure-cleanup-action
-        uses: pagopa/eng-github-actions-iac-template/azure/github-self-hosted-runner-azure-cleanup-action@0ee2f58fd46d10ac7f00bce4304b98db3dbdbe9a
-        with:
-          client_id: ${{ secrets.CLIENT_ID }}
-          tenant_id: ${{ secrets.TENANT_ID }}
-          subscription_id: ${{ secrets.SUBSCRIPTION_ID }}
-          resource_group_name: ${{ vars.CONTAINER_APP_ENVIRONMENT_RESOURCE_GROUP_NAME }}
-          runner_name: ${{ needs.create_runner.outputs.runner_name }}
-          pat_token: ${{ secrets.BOT_TOKEN_GITHUB }}

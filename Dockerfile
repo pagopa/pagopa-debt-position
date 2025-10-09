@@ -19,11 +19,12 @@ WORKDIR /app
 
 ADD --chown=spring:spring https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v1.25.1/opentelemetry-javaagent.jar .
 
-COPY --chown=spring:spring  --from=builder dependencies/ ./
-COPY --chown=spring:spring  --from=builder snapshot-dependencies/ ./
+COPY --chown=spring:spring  --from=builder dependencies/           /app/dependencies/
+COPY --chown=spring:spring  --from=builder snapshot-dependencies/  /app/snapshot-dependencies/
+# https://github.com/moby/moby/issues/37965#issuecomment-426853382
 RUN true
-COPY --chown=spring:spring  --from=builder spring-boot-loader/ ./
-COPY --chown=spring:spring  --from=builder application/ ./
+COPY --chown=spring:spring  --from=builder spring-boot-loader/     /app/spring-boot-loader/
+COPY --chown=spring:spring  --from=builder application/            /app/application/
 
 EXPOSE 8080
 
