@@ -93,6 +93,21 @@ Example of the naming convention is: V001__INIT.sql
 
 > **NOTE**: In the application.properties the ddl-auto configuration must be validate. This causes Hibernate to validate the schema to see if it matches with what is defined in Java.
 
+### Database migration
+
+Run the validate command to check for inconsistencies between local files and the database history:
+```sh 
+  mvn flyway:validate -Dflyway.configFiles=gpdFlywayConfig.conf
+```
+Compile the sources
+```sh 
+  mvn compile
+```
+Run flyway migration in debug mode with gpdFlywayConfig.conf:
+```sh
+  mvn flyway:migrate -X -Dflyway.configFiles=gpdFlywayConfig.conf
+```
+
 ### Testing 🧪
 
 #### Unit testing
