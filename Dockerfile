@@ -27,4 +27,4 @@ COPY --chown=spring:spring  --from=builder application/ ./
 
 EXPOSE 8080
 # New Spring Boot 3.x launcher: org.springframework.boot.loader.launch.JarLauncher
-ENTRYPOINT ["java","-javaagent:/app/opentelemetry-javaagent.jar","-cp","/app/spring-boot-loader:/app/application:/app/dependencies/*:/app/snapshot-dependencies/*","org.springframework.boot.loader.launch.JarLauncher"]
+ENTRYPOINT ["java","-javaagent:/app/opentelemetry-javaagent.jar","-cp","/app/spring-boot-loader/*:/app/application:/app/dependencies/*:/app/snapshot-dependencies/*","org.springframework.boot.loader.launch.JarLauncher"]
