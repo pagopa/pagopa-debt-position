@@ -31,6 +31,14 @@ on:
           - uat
           - prod
           - all
+      schema:                
+        required: true
+        type: choice
+        description: Select the Schema to migrate
+        options:
+          - apd
+          - odp
+          - all
 
 permissions:
   id-token: write
@@ -49,7 +57,7 @@ jobs:
       - name: Create GitHub Runner
         id: create_github_runner
         # from https://github.com/pagopa/eng-github-actions-iac-template/tree/main/azure/github-self-hosted-runner-azure-create-action
-        uses: pagopa/eng-github-actions-iac-template/azure/github-self-hosted-runner-azure-create-action@main
+        uses: pagopa/eng-github-actions-iac-template/azure/github-self-hosted-runner-azure-create-action@159289e1e23d0783533d1dd83e1b7cf0a5a565d9 # v1.24.0
         with:
           client_id: ${{ secrets.CLIENT_ID }}
           tenant_id: ${{ secrets.TENANT_ID }}
@@ -79,14 +87,45 @@ jobs:
         with:
           maven-version: 3.8.2
 
-      - name: Run flyway::migrate
+      - name: Build project (compile resources)
+        run: mvn -B clean compile
+
+      # ============================
+      # - Run Flyway
+      # ============================  
+      - name: Run Flyway Validate + Migrate
         shell: bash
         run: |
-          export FLYWAY_DATASOURCE_URL='${{ secrets.FLYWAY_DATASOURCE_URL }}'
-          export SPRING_DATASOURCE_USERNAME='${{ secrets.DATASOURCE_USERNAME }}'
-          export SPRING_DATASOURCE_PASSWORD='${{ secrets.DATASOURCE_PASSWORD }}'
-          export GPD_SCHEMA_NAME='${{ secrets.APD_SCHEMA_NAME }}'
-          mvn clean flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
+           set -euo pipefail
+           export FLYWAY_DATASOURCE_URL='${{ secrets.FLYWAY_DATASOURCE_URL }}'
+           export SPRING_DATASOURCE_USERNAME='${{ secrets.DATASOURCE_USERNAME }}'
+           export SPRING_DATASOURCE_PASSWORD='${{ secrets.DATASOURCE_PASSWORD }}'
+           CFG=gpdFlywayConfig.conf
+           COMMON="-Dflyway.configFiles=${CFG} -Dflyway.validateMigrationNaming=true -Dflyway.cleanDisabled=true"
+
+           if [[ "${{ inputs.schema }}" == "apd" ]]; then
+              echo "▶ Running APD: validate..."
+              export SCHEMA_NAME='${{ vars.APD_SCHEMA_NAME }}'
+              mvn -B flyway:validate ${COMMON}
+              echo "▶ Running APD: migrate..."
+              mvn -B flyway:migrate ${COMMON}
+            elif [[ "${{ inputs.schema }}" == "odp" ]]; then
+                echo "▶ Running ODP: validate..."
+                export SCHEMA_NAME='${{ vars.ODP_SCHEMA_NAME }}'
+                mvn -B flyway:validate ${COMMON}
+                echo "▶ Running ODP: migrate..."
+                mvn -B flyway:migrate ${COMMON}
+            else
+                echo "▶ Running ALL: APD first"
+                export SCHEMA_NAME='${{ vars.APD_SCHEMA_NAME }}'
+                mvn -B flyway:validate ${COMMON}
+                mvn -B flyway:migrate ${COMMON}
+                echo "▶ Running ALL: ODP then"
+                export SCHEMA_NAME='${{ vars.ODP_SCHEMA_NAME }}'
+                mvn -B flyway:validate ${COMMON}
+                mvn -B flyway:migrate ${COMMON}
+            fi
+
 
   cleanup_runner:
     name: Cleanup Runner

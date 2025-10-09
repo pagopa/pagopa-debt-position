@@ -136,7 +136,7 @@ public class LoggingAspect {
   @AfterReturning(value = "execution(* *..exception.ErrorHandler.*(..))", returning = "result")
   public void trowingApiInvocation(JoinPoint joinPoint, ResponseEntity<ProblemJson> result) {
     MDC.put(STATUS, "KO");
-    MDC.put(CODE, String.valueOf(result.getStatusCodeValue()));
+    MDC.put(CODE, Integer.toString(result.getStatusCode().value()));
     MDC.put(RESPONSE_TIME, getExecutionTime());
     MDC.put(FAULT_CODE, getTitle(result));
     MDC.put(FAULT_DETAIL, getDetail(result));

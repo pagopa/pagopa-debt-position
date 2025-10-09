@@ -99,7 +99,7 @@ class DebtPositionActionsControllerTest {
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("3123456IUVMOCK1"));
+            MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("31234561"));
 
     // verifico che lo stato sia stato aggiornato a publish (singolo passaggio di stato)
     mvc.perform(
@@ -125,7 +125,7 @@ class DebtPositionActionsControllerTest {
         .andExpect(status().isCreated())
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("CUSTOMNAV_123456IUVMOCK1"));
+                .value("CUSTOMNAV_1234561"));
 
     // recupero la posizione debitoria e verifico lo stato in draft
     mvc.perform(
@@ -154,7 +154,7 @@ class DebtPositionActionsControllerTest {
         .andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty())
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("CUSTOMNAV_123456IUVMOCK1"));
+                .value("CUSTOMNAV_1234561"));
   }
 
   @Test
@@ -393,14 +393,14 @@ class DebtPositionActionsControllerTest {
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.INVALID.toString()))
         .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("3123456IUVMOCK1"));
+            MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("31234561"));
   }
 
   @Test
   void invalidateDebtPosition_Custom_NAV_200() throws Exception {
     // creo una posizione debitoria con un custom NAV (senza 'validity date' impostata)
     PaymentPositionDTO pp = DebtPositionMock.getMock1();
-    pp.getPaymentOption().forEach(po -> po.setNav("CUSTOMNAV_" + po.getIuv()));
+    pp.getPaymentOption().forEach(po -> po.setNav("333" + po.getIuv()));
     mvc.perform(
             post("/organizations/INVALIDATE_NAV_12345678901/debtpositions")
                 .content(TestUtil.toJson(pp))
@@ -408,7 +408,7 @@ class DebtPositionActionsControllerTest {
         .andExpect(status().isCreated())
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("CUSTOMNAV_123456IUVMOCK1"));
+                .value("3331234561"));
 
     // recupero la posizione debitoria e verifico lo stato in draft
     mvc.perform(
@@ -446,7 +446,7 @@ class DebtPositionActionsControllerTest {
             MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.INVALID.toString()))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("CUSTOMNAV_123456IUVMOCK1"));
+                .value("3331234561"));
   }
 
   @Test
@@ -530,7 +530,7 @@ class DebtPositionActionsControllerTest {
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.INVALID.toString()))
         .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("3123456IUVMOCK1"));
+            MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("31234561"));
   }
 
   @Test

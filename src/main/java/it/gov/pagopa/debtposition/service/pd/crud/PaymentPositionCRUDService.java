@@ -2,6 +2,7 @@ package it.gov.pagopa.debtposition.service.pd.crud;
 
 import static it.gov.pagopa.debtposition.service.payments.PaymentsService.findPrimaryTransfer;
 import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
+import static org.springframework.data.jpa.domain.Specification.allOf;
 
 import it.gov.pagopa.debtposition.entity.apd.PaymentOption;
 import it.gov.pagopa.debtposition.entity.apd.PaymentOptionMetadata;
@@ -98,7 +99,7 @@ public class PaymentPositionCRUDService {
       String organizationFiscalCode, String iupd, List<String> segCodes) {
 
     Specification<PaymentPosition> spec =
-        Specification.where(
+    		allOf(
             new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
                 .and(new PaymentPositionByIUPD(iupd)));
 
@@ -133,8 +134,7 @@ public class PaymentPositionCRUDService {
       String organizationFiscalCode, List<String> iupdList, List<String> segCodes) {
     // findAll query by IUPD list
     Specification<PaymentPosition> spec =
-            Specification.where(
-                    new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
+    		allOf(new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
                             .and(new PaymentPositionByIUPDList(iupdList)));
 
     Pageable pageable = PageRequest.of(0, iupdList.size());
@@ -178,7 +178,7 @@ public class PaymentPositionCRUDService {
                             filterAndOrder.getFilter().getPaymentDateTo()))
                     .and(new PaymentPositionByStatus(filterAndOrder.getFilter().getStatus())));
 
-    Specification<PaymentPosition> specPP = Specification.where(paymentPositionSpecification);
+    Specification<PaymentPosition> specPP = allOf(paymentPositionSpecification);
 
     Page<PaymentPosition> page = paymentPositionRepository.findAll(specPP, pageable);
     List<PaymentPosition> positions = page.getContent();
@@ -186,7 +186,7 @@ public class PaymentPositionCRUDService {
     // fetch, are not used by JPA
     for (PaymentPosition pp : positions) {
       Specification<PaymentOption> specPO =
-          Specification.where(
+    		  allOf(
               new PaymentOptionByAttribute(
                   pp,
                   filterAndOrder.getFilter().getDueDateFrom(),

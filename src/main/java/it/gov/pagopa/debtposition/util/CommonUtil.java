@@ -6,6 +6,8 @@ import it.gov.pagopa.debtposition.model.filterandorder.Order;
 import it.gov.pagopa.debtposition.model.filterandorder.OrderType;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
+
 import lombok.experimental.UtilityClass;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -102,5 +104,21 @@ public class CommonUtil {
   public static String sanitize(String input) {
     // Remove line-breaks, tabs, and anything non-alphanumeric/hyphen/asterisk
     return input == null ? null : input.replaceAll("[\\n\\r\\t]", "_").replaceAll("[^A-Za-z0-9\\-\\*]", "");
+  }
+
+  /**
+   * Generate a random numeric string of specified length.
+   *
+   * @param len Length of the desired numeric string.
+   * @return A random numeric string of the specified length.
+   */
+  @SuppressWarnings("java:S2245") // used only for testing/non-sensitive data
+  public static String randomDigits(int len) {
+	  ThreadLocalRandom rnd = ThreadLocalRandom.current();
+	  char[] out = new char[len];
+	  for (int i = 0; i < len; i++) {
+		  out[i] = (char) ('0' + rnd.nextInt(10));
+	  }
+	  return new String(out);
   }
 }
