@@ -21,6 +21,7 @@ ADD --chown=spring:spring https://github.com/open-telemetry/opentelemetry-java-i
 
 COPY --chown=spring:spring  --from=builder dependencies/ ./
 COPY --chown=spring:spring  --from=builder snapshot-dependencies/ ./
+# https://github.com/moby/moby/issues/37965#issuecomment-426853382
 RUN true
 COPY --chown=spring:spring  --from=builder spring-boot-loader/ ./
 COPY --chown=spring:spring  --from=builder application/ ./
