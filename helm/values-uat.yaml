@@ -134,6 +134,9 @@ microservice-chart:
     OTEL_TRACES_EXPORTER: otlp
     OTEL_METRICS_EXPORTER: otlp
     OTEL_LOGS_EXPORTER: none
+    WRITE_ON_OLD_SCHEMA: true
+    WRITE_ON_NEW_SCHEMA: true
+    READ_ON_SCHEMA: apd
   envSecret:
     # required
     APPLICATIONINSIGHTS_CONNECTION_STRING: 'ai-u-connection-string'

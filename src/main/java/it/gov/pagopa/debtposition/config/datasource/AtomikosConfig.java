@@ -27,10 +27,7 @@ public class AtomikosConfig {
 
     @Bean
     public JpaVendorAdapter jpaVendorAdapter() {
-        HibernateJpaVendorAdapter hibernateJpaVendorAdapter = new HibernateJpaVendorAdapter();
-        hibernateJpaVendorAdapter.setShowSql(true);
-        hibernateJpaVendorAdapter.setGenerateDdl(true);
-        return hibernateJpaVendorAdapter;
+        return new HibernateJpaVendorAdapter();
     }
 
     @Bean(name = "userTransaction")
