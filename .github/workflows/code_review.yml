@@ -31,7 +31,7 @@ jobs:
   code-review:
     name: Code Review
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted-job, "dev" ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -47,7 +47,7 @@ jobs:
 
   smoke-test:
     name: Smoke Test
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted-job, "dev" ]
     environment:
       name: dev
     steps:
