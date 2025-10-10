@@ -7,6 +7,10 @@ on:
         required: true
         description: The name of the environment where to run DB migration
         type: string
+    schema:
+       required: true
+       description: Which schema to migrate (apd|odp|all)
+       type: string
   workflow_dispatch:
     inputs:
       environment:
@@ -25,6 +29,7 @@ on:
           - apd
           - odp
           - all
+        default: all
 
 permissions:
   id-token: write
