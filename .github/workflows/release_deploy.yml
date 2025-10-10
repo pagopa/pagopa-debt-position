@@ -26,7 +26,7 @@ on:
            - apd
            - odp
            - all
-         default: ''
+         default: all
       semver:
         required: true
         type: choice
@@ -111,14 +111,14 @@ jobs:
   db_migration:
     name: DB migration
     needs: [ setup, release ]
-    if: ${{ always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && inputs.db_migration }}
+    if: ${{ inputs.db_migration && (needs.setup.outputs.environment == 'all' || matrix.environment == needs.setup.outputs.environment) && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
     strategy:
       matrix:
         environment: [ dev, uat, prod ]
     uses: ./.github/workflows/db_migration_with_github_runner.yml
     with:
       environment: ${{ matrix.environment }}
-      schema: ${{ inputs.schema != '' && inputs.schema || 'all' }}
+      schema: ${{ inputs.schema || 'all' }}
     secrets: inherit
 
 
