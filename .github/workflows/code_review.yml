@@ -31,7 +31,7 @@ jobs:
   code-review:
     name: Code Review
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted-job, dev ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -47,7 +47,7 @@ jobs:
 
   smoke-test:
     name: Smoke Test
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted-job, dev ]
     environment:
       name: dev
     steps:
@@ -70,7 +70,15 @@ jobs:
         run: |
           cd ./docker
           chmod +x ./run_docker.sh
+          chmod +x ./run_docker_smoke.sh
           ./run_docker_smoke.sh
+
+      - name: Setup Node (LTS) + Yarn cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+          cache-dependency-path: ./integration-test/src/yarn.lock
 
       - name: Run Integration Tests
         shell: bash
@@ -78,6 +86,7 @@ jobs:
         run: |
           export CANARY=${{ inputs.canary }}      
           export CUCUMBER_PUBLISH_TOKEN=${{ secrets.CUCUMBER_PUBLISH_TOKEN }}
+          export BASE_URL=http://localhost:8080
           
           cd ./integration-test
           chmod +x ./run_integration_test.sh
@@ -85,7 +94,7 @@ jobs:
 
 
   delete_github_deployments:
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted-job, dev ]
     needs: smoke-test
     if: ${{ always() }}
     steps:
