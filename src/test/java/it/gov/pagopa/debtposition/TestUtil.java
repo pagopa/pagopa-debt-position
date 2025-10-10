@@ -13,12 +13,8 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class TestUtil {
 
-  /**
-   * @param relativePath Path from source root of the json file
-   * @return the Json string read from the file
-   * @throws IOException if an I/O error occurs reading from the file or a malformed or unmappable
-   *     byte sequence is read
-   */
+  // --- METODI ESISTENTI, lasciati invariati ---
+
   public String readJsonFromFile(String relativePath) throws IOException {
     ClassLoader classLoader = TestUtil.class.getClassLoader();
     File file = new File(Objects.requireNonNull(classLoader.getResource(relativePath)).getPath());
@@ -31,24 +27,38 @@ public class TestUtil {
     return new ObjectMapper().readValue(file, clazz);
   }
 
-  /**
-   * @param relativePath Path from source root of the file
-   * @return the requested file
-   */
   public File readFile(String relativePath) {
     ClassLoader classLoader = TestUtil.class.getClassLoader();
     return new File(Objects.requireNonNull(classLoader.getResource(relativePath)).getFile());
   }
 
-  /**
-   * @param object to map into the Json string
-   * @return object as Json string
-   * @throws JsonProcessingException if there is an error during the parsing of the object
-   */
   public String toJson(Object object) throws JsonProcessingException {
     return new ObjectMapper()
         .registerModule(new JavaTimeModule())
         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
         .writeValueAsString(object);
+  }
+
+  // --- Overload with ObjectMapper parameter ---
+
+  // Uses the passed mapper for serialization.
+  public String toJson(Object object, ObjectMapper objectMapper) throws JsonProcessingException {
+    return (objectMapper != null ? objectMapper : new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false))
+        .writeValueAsString(object);
+  }
+
+  // Uses the passed mapper for deserialization.
+  public <T> T readObjectFromFile(String relativePath, Class<T> clazz, ObjectMapper objectMapper)
+		  throws IOException {
+	  ObjectMapper defaultOM =
+			  new ObjectMapper()
+			  .registerModule(new JavaTimeModule())
+			  .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+	  ClassLoader classLoader = TestUtil.class.getClassLoader();
+	  File file = new File(Objects.requireNonNull(classLoader.getResource(relativePath)).getPath());
+	  ObjectMapper om = (objectMapper != null ? objectMapper : defaultOM);
+	  return om.readValue(file, clazz);
   }
 }

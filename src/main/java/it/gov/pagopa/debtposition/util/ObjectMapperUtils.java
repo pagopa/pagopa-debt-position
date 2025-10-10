@@ -1,7 +1,7 @@
 package it.gov.pagopa.debtposition.util;
 
-import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.entity.apd.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.apd.Transfer;
 import it.gov.pagopa.debtposition.mapper.ConverterV3PPEntityToModelResponse;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;

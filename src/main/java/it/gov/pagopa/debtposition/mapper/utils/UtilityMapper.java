@@ -1,9 +1,9 @@
 package it.gov.pagopa.debtposition.mapper.utils;
 
-import it.gov.pagopa.debtposition.entity.PaymentOption;
-import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
-import it.gov.pagopa.debtposition.entity.Transfer;
-import it.gov.pagopa.debtposition.entity.TransferMetadata;
+import it.gov.pagopa.debtposition.entity.apd.PaymentOption;
+import it.gov.pagopa.debtposition.entity.apd.PaymentOptionMetadata;
+import it.gov.pagopa.debtposition.entity.apd.Transfer;
+import it.gov.pagopa.debtposition.entity.apd.TransferMetadata;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import it.gov.pagopa.debtposition.model.pd.DebtorModel;
 import it.gov.pagopa.debtposition.model.pd.Stamp;

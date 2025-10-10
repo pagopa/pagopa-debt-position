@@ -21,8 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest(classes = DebtPositionApplication.class)
@@ -32,7 +32,7 @@ class DebtPositionControllerBulkTest {
 
   @Mock private ModelMapper modelMapperMock;
 
-  @MockBean private NodeClient nodeClient;
+  @MockitoBean private NodeClient nodeClient;
 
   @Value("${nav.aux.digit}")
   private String auxDigit;

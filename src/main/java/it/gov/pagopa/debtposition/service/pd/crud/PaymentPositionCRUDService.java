@@ -2,11 +2,12 @@ package it.gov.pagopa.debtposition.service.pd.crud;
 
 import static it.gov.pagopa.debtposition.service.payments.PaymentsService.findPrimaryTransfer;
 import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
+import static org.springframework.data.jpa.domain.Specification.allOf;
 
-import it.gov.pagopa.debtposition.entity.PaymentOption;
-import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
-import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.entity.apd.PaymentOption;
+import it.gov.pagopa.debtposition.entity.apd.PaymentOptionMetadata;
+import it.gov.pagopa.debtposition.entity.apd.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.apd.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.exception.ValidationException;
@@ -16,20 +17,20 @@ import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
-import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
-import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
-import it.gov.pagopa.debtposition.repository.TransferRepository;
-import it.gov.pagopa.debtposition.repository.specification.*;
+import it.gov.pagopa.debtposition.repository.apd.PaymentOptionRepository;
+import it.gov.pagopa.debtposition.repository.apd.PaymentPositionRepository;
+import it.gov.pagopa.debtposition.repository.apd.TransferRepository;
+import it.gov.pagopa.debtposition.repository.apd.specification.*;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
 import it.gov.pagopa.debtposition.util.PublishPaymentUtil;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.SerializationUtils;
 import org.hibernate.exception.ConstraintViolationException;
@@ -98,7 +99,7 @@ public class PaymentPositionCRUDService {
       String organizationFiscalCode, String iupd, List<String> segCodes) {
 
     Specification<PaymentPosition> spec =
-        Specification.where(
+    		allOf(
             new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
                 .and(new PaymentPositionByIUPD(iupd)));
 
@@ -133,8 +134,7 @@ public class PaymentPositionCRUDService {
       String organizationFiscalCode, List<String> iupdList, List<String> segCodes) {
     // findAll query by IUPD list
     Specification<PaymentPosition> spec =
-            Specification.where(
-                    new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
+    		allOf(new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
                             .and(new PaymentPositionByIUPDList(iupdList)));
 
     Pageable pageable = PageRequest.of(0, iupdList.size());
@@ -178,7 +178,7 @@ public class PaymentPositionCRUDService {
                             filterAndOrder.getFilter().getPaymentDateTo()))
                     .and(new PaymentPositionByStatus(filterAndOrder.getFilter().getStatus())));
 
-    Specification<PaymentPosition> specPP = Specification.where(paymentPositionSpecification);
+    Specification<PaymentPosition> specPP = allOf(paymentPositionSpecification);
 
     Page<PaymentPosition> page = paymentPositionRepository.findAll(specPP, pageable);
     List<PaymentPosition> positions = page.getContent();
@@ -186,7 +186,7 @@ public class PaymentPositionCRUDService {
     // fetch, are not used by JPA
     for (PaymentPosition pp : positions) {
       Specification<PaymentOption> specPO =
-          Specification.where(
+    		  allOf(
               new PaymentOptionByAttribute(
                   pp,
                   filterAndOrder.getFilter().getDueDateFrom(),
