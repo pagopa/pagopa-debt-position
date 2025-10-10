@@ -73,13 +73,6 @@ jobs:
           chmod +x ./run_docker_smoke.sh
           ./run_docker_smoke.sh
 
-      - name: Setup Node (LTS) + Yarn cache
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'yarn'
-          cache-dependency-path: ./integration-test/src/yarn.lock
-
       - name: Run Integration Tests
         shell: bash
         id: run_integration_test
