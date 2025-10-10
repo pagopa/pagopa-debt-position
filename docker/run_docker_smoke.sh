@@ -52,7 +52,7 @@ docker compose -f ./docker-compose-local.yml -p "${stack_name}" up -d --remove-o
 printf 'Waiting for the service'
 attempt_counter=0
 max_attempts=50
-until curl --head --silent --fail http://localhost:8080/actuator/health; do
+until curl --head --silent --fail http://localhost:8080/info; do
   echo -n '.'
   sleep 5
   ((attempts++))
