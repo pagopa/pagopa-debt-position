@@ -47,8 +47,20 @@ docker compose -f ./docker-compose-local.yml -p "${stack_name}" up -d --remove-o
 printf 'Waiting for the service'
 attempts=0
 max_attempts=60
-until curl -fsS "http://localhost:8080/info" >/dev/null; do
-  printf '.'
+while true; do
+  rc=0
+  err="$(curl -fsS -o /dev/null "http://localhost:8080/info" 2>&1)" || rc=$?
+  if [ $rc -eq 0 ]; then
+    echo ' Service Started'
+    break
+  fi
+
+  if [ $rc -eq 56 ] || [[ "$err" == *"Recv failure"* ]]; then
+    echo ' . waiting: app not ready yet (connection reset)'
+  else
+    echo " . waiting: $err"
+  fi
+
   sleep 5
   attempts=$((attempts+1))
   if [ $attempts -ge $max_attempts ]; then
@@ -56,7 +68,8 @@ until curl -fsS "http://localhost:8080/info" >/dev/null; do
     docker compose -f ./docker-compose-local.yml -p "${stack_name}" ps || true
     docker compose -f ./docker-compose-local.yml -p "${stack_name}" logs gpd || true
     docker compose -f ./docker-compose-local.yml -p "${stack_name}" logs pgbouncer || true
+    # final check to show endpoint status
+    curl -i "http://localhost:8080/info" || true
     exit 1
   fi
 done
-echo ' Service Started'

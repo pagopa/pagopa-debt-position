@@ -47,7 +47,7 @@ jobs:
 
   smoke-test:
     name: Smoke Test
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted-job, dev ]
     environment:
       name: dev
     steps:
@@ -79,7 +79,6 @@ jobs:
         run: |
           export CANARY=${{ inputs.canary }}      
           export CUCUMBER_PUBLISH_TOKEN=${{ secrets.CUCUMBER_PUBLISH_TOKEN }}
-          export BASE_URL=http://localhost:8080
           
           cd ./integration-test
           chmod +x ./run_integration_test.sh
