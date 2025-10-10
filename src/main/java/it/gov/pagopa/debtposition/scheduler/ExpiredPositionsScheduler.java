@@ -7,7 +7,7 @@ import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;

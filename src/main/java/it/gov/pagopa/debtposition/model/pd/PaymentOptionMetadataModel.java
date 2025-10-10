@@ -1,8 +1,8 @@
 package it.gov.pagopa.debtposition.model.pd;
 
 import java.io.Serializable;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
