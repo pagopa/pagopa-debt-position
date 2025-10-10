@@ -26,7 +26,8 @@ RUN true
 COPY --chown=spring:spring  --from=builder spring-boot-loader/     /app/spring-boot-loader/
 COPY --chown=spring:spring  --from=builder application/            /app/application/
 
+COPY --chown=spring:spring --from=buildtime /build/target/*.jar /app/app.jar
+
 EXPOSE 8080
 
-# New Spring Boot 3.x launcher: org.springframework.boot.loader.launch.JarLauncher
-ENTRYPOINT ["java","-javaagent:/app/opentelemetry-javaagent.jar","-cp","/app/application:/app/dependencies/*:/app/snapshot-dependencies/*","it.gov.pagopa.debtposition.DebtPositionApplication"]
+ENTRYPOINT ["java","-javaagent:/app/opentelemetry-javaagent.jar","-jar","/app/app.jar"]
