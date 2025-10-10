@@ -11,4 +11,7 @@ public interface PaymentPositionOdpRepository
         extends JpaRepository<PaymentPositionOdp, Long>,
         JpaSpecificationExecutor<PaymentPositionOdp>,
         PagingAndSortingRepository<PaymentPositionOdp, Long> {
+
+    // Derived Query - using method naming convention - get PaymentPosition by iupd
+    PaymentPositionOdp findByIupd(String iupd);
 }

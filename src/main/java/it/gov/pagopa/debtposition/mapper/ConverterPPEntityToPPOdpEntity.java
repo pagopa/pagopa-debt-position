@@ -14,7 +14,10 @@ import it.gov.pagopa.debtposition.model.enumeration.OptionType;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ConverterPPEntityToPPOdpEntity
@@ -45,46 +48,34 @@ public class ConverterPPEntityToPPOdpEntity
         destination.setStatus(sourceStatus.equals(DebtPositionStatus.EXPIRED) || sourceStatus.equals(DebtPositionStatus.INVALID) || sourceStatus.equals(DebtPositionStatus.REPORTED) ? DebtPositionStatusV3.UNPAYABLE : DebtPositionStatusV3.valueOf(source.getStatus().name()));
         destination.setValidityDate(source.getValidityDate());
 
-        mapAndUpdatePaymentOptions(source, destination);
+        List<PaymentOption> paymentOptions = source.getPaymentOption();
+        if (paymentOptions == null || paymentOptions.isEmpty()) {
+            return destination;
+        }
+
+        // Partitioning the payment options into partial and unique POs
+        Map<Boolean, List<PaymentOption>> partitionedPO =
+                paymentOptions.stream()
+                        .collect(Collectors.partitioningBy(PaymentOption::getIsPartialPayment));
+
+        // Extracting the partial and unique POs
+        List<PaymentOption> partialPO = partitionedPO.get(true);
+        List<PaymentOption> uniquePO = partitionedPO.get(false);
+        List<PaymentOptionOdp> paymentOptionsToAdd = new ArrayList<>();
+
+        if (null != partialPO && !partialPO.isEmpty()) {
+            paymentOptionsToAdd.add(this.convertPartialPO(partialPO, destination, source.getSwitchToExpired()));
+        }
+
+        if (null != uniquePO && !uniquePO.isEmpty()) {
+            List<PaymentOptionOdp> pov3List =
+                    uniquePO.stream().map(po -> convertUniquePO(po, destination, source.getSwitchToExpired())).toList();
+            paymentOptionsToAdd.addAll(pov3List);
+        }
+
+        destination.setPaymentOptionOdp(paymentOptionsToAdd);
 
         return destination;
-    }
-
-    private void mapAndUpdatePaymentOptions(PaymentPosition source, PaymentPositionOdp destination) {
-        List<PaymentOption> paymentOptions = source.getPaymentOption();
-        if (paymentOptions != null && !paymentOptions.isEmpty()) {
-            if (destination.getPaymentOptionOdp() == null || destination.getPaymentOptionOdp().isEmpty()) {
-                // Partitioning the payment options into partial and unique POs
-                Map<Boolean, List<PaymentOption>> partitionedPO =
-                        paymentOptions.stream()
-                                .collect(Collectors.partitioningBy(PaymentOption::getIsPartialPayment));
-
-                // Extracting the partial and unique POs
-                List<PaymentOption> partialPO = partitionedPO.get(true);
-                List<PaymentOption> uniquePO = partitionedPO.get(false);
-                List<PaymentOptionOdp> paymentOptionsToAdd = new ArrayList<>();
-
-                if (null != partialPO && !partialPO.isEmpty()) {
-                    paymentOptionsToAdd.add(this.convertPartialPO(partialPO, destination, source.getSwitchToExpired()));
-                }
-
-                if (null != uniquePO && !uniquePO.isEmpty()) {
-                    List<PaymentOptionOdp> pov3List =
-                            uniquePO.stream().map(po -> convertUniquePO(po, destination, source.getSwitchToExpired())).toList();
-                    paymentOptionsToAdd.addAll(pov3List);
-                }
-
-                destination.setPaymentOptionOdp(paymentOptionsToAdd);
-            } else {
-                List<String> listIuvSource = paymentOptions.stream().map(PaymentOption::getIuv).toList();
-                // Delete orphans options
-                destination.getPaymentOptionOdp().removeIf(el -> el.getInstallments().stream().anyMatch(inst -> !listIuvSource.contains(inst.getIuv())));
-
-                destination.getPaymentOptionOdp().forEach(poOdp -> updatePaymentOption(paymentOptions, destination, poOdp, source.getSwitchToExpired()));
-            }
-        } else {
-            destination.setPaymentOptionOdp(null);
-        }
     }
 
 
@@ -137,33 +128,6 @@ public class ConverterPPEntityToPPOdpEntity
                 .build();
     }
 
-    private void updatePaymentOption(List<PaymentOption> poSourceList, PaymentPositionOdp pp, PaymentOptionOdp poOdp, Boolean switchToExpired) {
-        PaymentOption poSource = poSourceList.stream().filter(el -> poOdp.getInstallments().stream().anyMatch(inst -> inst.getIuv().equals(el.getIuv()))).toList().get(0);
-        poOdp.setOrganizationFiscalCode(poSource.getOrganizationFiscalCode());
-        poOdp.setDescription(poSource.getDescription());
-        poOdp.setValidityDate(pp.getValidityDate());
-        poOdp.setRetentionDate(poSource.getRetentionDate());
-        poOdp.setInsertedDate(poSource.getInsertedDate());
-        poOdp.setPaymentPositionOdp(pp);
-        poOdp.setOptionType(poSource.getIsPartialPayment().equals(true) ? OptionType.OPZIONE_RATEALE : OptionType.OPZIONE_UNICA);
-        poOdp.setPaymentPositionStatus(pp.getStatus());
-        poOdp.setSwitchToExpired(switchToExpired);
-        poOdp.setDebtorType(poSource.getDebtorType());
-        poOdp.setDebtorFiscalCode(poSource.getFiscalCode());
-        poOdp.setDebtorFullName(poSource.getFullName());
-        poOdp.setDebtorStreetName(poSource.getStreetName());
-        poOdp.setDebtorCivicNumber(poSource.getCivicNumber());
-        poOdp.setDebtorPostalCode(poSource.getPostalCode());
-        poOdp.setDebtorCity(poSource.getCity());
-        poOdp.setDebtorProvince(poSource.getProvince());
-        poOdp.setDebtorRegion(poSource.getRegion());
-        poOdp.setDebtorCountry(poSource.getCountry());
-        poOdp.setDebtorEmail(poSource.getEmail());
-        poOdp.setDebtorPhone(poSource.getPhone());
-
-        poOdp.getInstallments().forEach(inst -> updateInstallment(poSource, inst));
-    }
-
     private Installment convertInstallment(PaymentOption po, PaymentOptionOdp poOdp, PaymentPositionOdp pp) {
         String poStatus = po.getStatus().name();
         Installment installment = Installment.builder()
@@ -195,33 +159,6 @@ public class ConverterPPEntityToPPOdpEntity
         return installment;
     }
 
-    private void updateInstallment(PaymentOption po, Installment installment) {
-        String poStatus = po.getStatus().name();
-        installment.setNav(po.getNav());
-        installment.setIuv(po.getIuv());
-        installment.setOrganizationFiscalCode(po.getOrganizationFiscalCode());
-        installment.setAmount(po.getAmount());
-        installment.setDescription(po.getDescription());
-        installment.setDueDate(po.getDueDate());
-        installment.setPaymentDate(po.getPaymentDate());
-        installment.setReportingDate(po.getReportingDate());
-        installment.setInsertedDate(po.getInsertedDate());
-        installment.setPaymentMethod(po.getPaymentMethod());
-        installment.setFee(po.getFee());
-        installment.setNotificationFee(po.getNotificationFee());
-        installment.setPspCompany(po.getPspCompany());
-        installment.setPspCode(po.getPspCode());
-        installment.setPspTaxCode(po.getPspTaxCode());
-        installment.setReceiptId(po.getIdReceipt());
-        installment.setFlowReportingId(po.getIdFlowReporting());
-        installment.setStatus(poStatus.startsWith("PO_") ? InstallmentStatus.valueOf(poStatus.substring(3)) : InstallmentStatus.valueOf(poStatus));
-        installment.setLastUpdatedDate(po.getLastUpdatedDate());
-        installment.setLastUpdatedDateNotificationFee(po.getLastUpdatedDateNotificationFee());
-        installment.setSendSync(po.getSendSync());
-
-        installment.getTransferOdp().forEach(transferOdp -> updateTransfer(po.getTransfer(), transferOdp));
-    }
-
     private TransferOdp convertTransfer(Transfer transfer, Installment installment) {
         return TransferOdp.builder()
                 .organizationFiscalCode(transfer.getOrganizationFiscalCode())
@@ -240,23 +177,5 @@ public class ConverterPPEntityToPPOdpEntity
                 .status(transfer.getStatus())
                 .lastUpdatedDate(transfer.getLastUpdatedDate())
                 .build();
-    }
-
-    private void updateTransfer(List<Transfer> transferSourceList, TransferOdp transferOdp) {
-        Transfer transferSource = transferSourceList.stream().filter(el -> Objects.equals(el.getIdTransfer(), transferOdp.getTransferId())).toList().get(0);
-        transferOdp.setOrganizationFiscalCode(transferSource.getOrganizationFiscalCode());
-        transferOdp.setTransferId(transferSource.getIdTransfer());
-        transferOdp.setIuv(transferSource.getIuv());
-        transferOdp.setAmount(transferSource.getAmount());
-        transferOdp.setRemittanceInformation(transferSource.getRemittanceInformation());
-        transferOdp.setCategory(transferSource.getCategory());
-        transferOdp.setIban(transferSource.getIban());
-        transferOdp.setPostalIban(transferSource.getPostalIban());
-        transferOdp.setHashDocument(transferSource.getHashDocument());
-        transferOdp.setStampType(transferSource.getStampType());
-        transferOdp.setProvincialResidence(transferSource.getProvincialResidence());
-        transferOdp.setInsertedDate(transferSource.getInsertedDate());
-        transferOdp.setStatus(transferSource.getStatus());
-        transferOdp.setLastUpdatedDate(transferSource.getLastUpdatedDate());
     }
 }

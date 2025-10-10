@@ -11,12 +11,24 @@ import it.gov.pagopa.debtposition.repository.odp.PaymentPositionOdpRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
 public class DataLayerService {
+    @Value("${datalayer.service.writeOnOldSchema}")
+    private boolean writeOnOldSchema;
+    @Value("${datalayer.service.writeOnNewSchema}")
+    private boolean writeOnNewSchema;
+
+    private enum Schemas {
+        ODP, APD
+    }
+
+    @Value("${datalayer.service.readFromSchema}")
+    private Schemas readFromSchema;
     private final PaymentPositionRepository paymentPositionRepository;
     private final PaymentPositionOdpRepository paymentPositionOdpRepository;
     private final PaymentOptionRepository paymentOptionRepository;
@@ -33,36 +45,44 @@ public class DataLayerService {
     }
 
     @Transactional
-    public PaymentPosition savePaymentPositionFromV1(PaymentPosition paymentPosition){
-        // TODO feature flag
-        PaymentPositionOdp paymentPositionOdp = modelMapper.map(paymentPosition, PaymentPositionOdp.class);
-        paymentPositionOdpRepository.saveAndFlush(paymentPositionOdp);
+    public PaymentPosition saveAndFlushPaymentPosition(PaymentPosition paymentPosition) {
+        PaymentPosition response = paymentPosition;
+        if (Boolean.TRUE.equals(writeOnNewSchema)) {
+            PaymentPositionOdp paymentPositionOdp = modelMapper.map(paymentPosition, PaymentPositionOdp.class);
+            paymentPositionOdpRepository.saveAndFlush(paymentPositionOdp);
+        }
+        if (Boolean.TRUE.equals(writeOnOldSchema) || !writeOnNewSchema) {
+            response = paymentPositionRepository.saveAndFlush(paymentPosition);
+        }
 
-        return paymentPositionRepository.saveAndFlush(paymentPosition);
+        return response;
     }
 
     @Transactional
-    public PaymentPositionOdp savePaymentPositionFromV3(PaymentPositionOdp paymentPositionOdp){
-        // TODO feature flag & mapper
-        PaymentPosition paymentPosition = modelMapper.map(paymentPositionOdp, PaymentPosition.class);
-        paymentPositionRepository.saveAndFlush(paymentPosition);
+    public PaymentPosition updateAndFlushPaymentPosition(PaymentPosition paymentPosition) {
+        PaymentPosition response = paymentPosition;
+        if (Boolean.TRUE.equals(writeOnNewSchema)) {
+            PaymentPositionOdp paymentPositionOdp = paymentPositionOdpRepository.findByIupd(paymentPosition.getIupd());
+            if(paymentPositionOdp != null){
+                paymentPositionOdpRepository.delete(paymentPositionOdp);
+                paymentPositionOdpRepository.flush();
+            }
 
-        return paymentPositionOdpRepository.saveAndFlush(paymentPositionOdp);
+            PaymentPositionOdp updatedPaymentPositionOdp = modelMapper.map(paymentPosition, PaymentPositionOdp.class);
+            paymentPositionOdpRepository.saveAndFlush(updatedPaymentPositionOdp);
+        }
+        if (Boolean.TRUE.equals(writeOnOldSchema) || !writeOnNewSchema) {
+            response = paymentPositionRepository.saveAndFlush(paymentPosition);
+        }
+
+        return response;
     }
 
     @Transactional
-    public PaymentOption savePaymentOptionFromV1(PaymentOption paymentOption){
+    public PaymentOption savePaymentOption(PaymentOption paymentOption) {
         PaymentOptionOdp paymentOptionOdp = modelMapper.map(paymentOption, PaymentOptionOdp.class);
         paymentOptionOdpRepository.saveAndFlush(paymentOptionOdp);
 
         return paymentOptionRepository.saveAndFlush(paymentOption);
-    }
-
-    @Transactional
-    public PaymentOptionOdp savePaymentOptionFromV3(PaymentOptionOdp paymentOptionOdp){
-        PaymentOption paymentOption = modelMapper.map(paymentOptionOdp, PaymentOption.class);
-        paymentOptionRepository.saveAndFlush(paymentOption);
-
-        return paymentOptionOdpRepository.saveAndFlush(paymentOptionOdp);
     }
 }
