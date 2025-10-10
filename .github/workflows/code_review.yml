@@ -31,7 +31,7 @@ jobs:
   code-review:
     name: Code Review
     # The type of runner that the job will run on
-    runs-on: [ self-hosted-job, dev ]
+    runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
