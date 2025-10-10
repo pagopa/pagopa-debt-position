@@ -84,7 +84,7 @@ public class ConverterPPEntityToPPOdpEntity
             PaymentOption po, PaymentPositionOdp paymentPositionOdp, boolean switchToExpired) {
         PaymentOptionOdp paymentOptionOdp = convertPaymentOption(po, paymentPositionOdp, switchToExpired);
         // set installment
-        List<Installment> installments = Collections.singletonList(convertInstallment(po, paymentPositionOdp, switchToExpired));
+        List<Installment> installments = Collections.singletonList(convertInstallment(po, paymentOptionOdp, paymentPositionOdp));
         paymentOptionOdp.setInstallments(installments);
         return paymentOptionOdp;
     }
@@ -96,7 +96,7 @@ public class ConverterPPEntityToPPOdpEntity
         PaymentOptionOdp paymentOptionOdp = convertPaymentOption(partialPOs.get(0), paymentPositionOdp, switchToExpired);
         // Set installments
         List<Installment> installments =
-                partialPOs.stream().map(po -> convertInstallment(po, paymentPositionOdp, switchToExpired)).toList();
+                partialPOs.stream().map(po -> convertInstallment(po, paymentOptionOdp, paymentPositionOdp)).toList();
         paymentOptionOdp.setInstallments(installments);
         return paymentOptionOdp;
     }
@@ -128,7 +128,7 @@ public class ConverterPPEntityToPPOdpEntity
                 .build();
     }
 
-    private Installment convertInstallment(PaymentOption po, PaymentPositionOdp pp, Boolean switchToExpired) {
+    private Installment convertInstallment(PaymentOption po, PaymentOptionOdp poOdp, PaymentPositionOdp pp) {
         String poStatus = po.getStatus().name();
         Installment installment = Installment.builder()
                 .nav(po.getNav())
@@ -137,7 +137,7 @@ public class ConverterPPEntityToPPOdpEntity
                 .amount(po.getAmount())
                 .description(po.getDescription())
                 .dueDate(po.getDueDate())
-                .paymentOptionOdp(convertPaymentOption(po, pp, switchToExpired))
+                .paymentOptionOdp(poOdp)
                 .paymentDate(po.getPaymentDate())
                 .reportingDate(po.getReportingDate())
                 .insertedDate(po.getInsertedDate())
