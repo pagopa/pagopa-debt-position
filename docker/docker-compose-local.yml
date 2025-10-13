@@ -3,7 +3,6 @@ services:
   gpd:
     env_file:
       - ./.env
-    image: 'gpd:latest'
     build:
       context: ../
     ports:
