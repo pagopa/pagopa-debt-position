@@ -47,7 +47,7 @@ jobs:
 
   smoke-test:
     name: Smoke Test
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted-job, "dev" ]
     environment:
       name: dev
     steps:
@@ -69,7 +69,7 @@ jobs:
         id: run_service_docker
         run: |
           cd ./docker
-          chmod +x ./run_docker.sh
+          chmod +x ./run_docker_smoke.sh
           ./run_docker_smoke.sh
 
       - name: Run Integration Tests
