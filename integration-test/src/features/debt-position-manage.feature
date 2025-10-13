@@ -1,4 +1,4 @@
-Feature: Managing a debt position
+Feature: Semantic check about a debt position
 
   Background: 
     Given GPD running
