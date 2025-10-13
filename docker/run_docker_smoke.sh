@@ -39,7 +39,7 @@ for line in $(echo "$secret" | yq -r '. | to_entries[] | select(.key) | "\(.key)
 done
 
 stack_name=$(cd .. && basename "$PWD")
-docker-compose -f ./docker-compose-local.yml -p "${stack_name}" up -d --remove-orphans --force-recreate --build
+docker compose -f ./docker-compose-local.yml -p "${stack_name}" up -d --remove-orphans --force-recreate --build
 
 
 # waiting the containers
