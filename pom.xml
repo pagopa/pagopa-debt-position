@@ -18,13 +18,10 @@
 		<java.version>17</java.version>
 		<springdoc-version>2.8.13</springdoc-version>
 		<modelmapper-version>3.1.0</modelmapper-version>
-		<!--<flyway-version>9.22.3</flyway-version>-->
 		<azure.data.table.version>12.3.18</azure.data.table.version>
 		<azure.core.version>1.45.1</azure.core.version>
 		<shedlock.version>5.10.2</shedlock.version>
-		<!--<mockito-inline.version>5.2.0</mockito-inline.version>-->
 		<logback.ecs.version>1.6.0</logback.ecs.version>
-		<atomikos.version>6.0.0</atomikos.version>
 	</properties>
 
 	<dependencyManagement>
@@ -150,22 +147,6 @@
 			<groupId>co.elastic.logging</groupId>
 			<artifactId>logback-ecs-encoder</artifactId>
 			<version>${logback.ecs.version}</version>
-		</dependency>
-
-		<!-- Atomikos JTA core (Jakarta) -->
-		<dependency>
-			<groupId>com.atomikos</groupId>
-			<artifactId>transactions-jta</artifactId>
-			<version>${atomikos.version}</version>
-			<classifier>jakarta</classifier>
-		</dependency>
-
-		<!-- Atomikos JDBC XA integration (Jakarta) -->
-		<dependency>
-			<groupId>com.atomikos</groupId>
-			<artifactId>transactions-jdbc</artifactId>
-			<version>${atomikos.version}</version>
-			<classifier>jakarta</classifier>
 		</dependency>
 	</dependencies>
 
