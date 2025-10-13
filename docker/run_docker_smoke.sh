@@ -46,7 +46,7 @@ done
 
 
 stack_name=$(cd .. && basename "$PWD")
-docker compose -f ./docker-compose-local.yml -p "${stack_name}" up -d --remove-orphans --force-recreate --build
+docker-compose -f ./docker-compose-local.yml -p "${stack_name}" up -d --remove-orphans --force-recreate --build
 
 # waiting the containers
 printf 'Waiting for the service'
