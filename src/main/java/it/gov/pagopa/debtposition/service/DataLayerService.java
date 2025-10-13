@@ -8,14 +8,13 @@ import it.gov.pagopa.debtposition.repository.apd.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.apd.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.repository.odp.PaymentOptionOdpRepository;
 import it.gov.pagopa.debtposition.repository.odp.PaymentPositionOdpRepository;
+import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -36,17 +35,16 @@ public class DataLayerService {
     private final PaymentPositionOdpRepository paymentPositionOdpRepository;
     private final PaymentOptionRepository paymentOptionRepository;
     private final PaymentOptionOdpRepository paymentOptionOdpRepository;
-    private final ModelMapper modelMapper;
 
     @Autowired
-    public DataLayerService(PaymentPositionRepository paymentPositionRepository, PaymentPositionOdpRepository paymentPositionOdpRepository, PaymentOptionRepository paymentOptionRepository, PaymentOptionOdpRepository paymentOptionOdpRepository, ModelMapper modelMapper) {
+    public DataLayerService(PaymentPositionRepository paymentPositionRepository, PaymentPositionOdpRepository paymentPositionOdpRepository, PaymentOptionRepository paymentOptionRepository, PaymentOptionOdpRepository paymentOptionOdpRepository) {
         this.paymentPositionRepository = paymentPositionRepository;
         this.paymentPositionOdpRepository = paymentPositionOdpRepository;
         this.paymentOptionRepository = paymentOptionRepository;
         this.paymentOptionOdpRepository = paymentOptionOdpRepository;
-        this.modelMapper = modelMapper;
     }
 
+    // Payment Positions
     @Transactional
     public PaymentPosition saveAndFlushPaymentPosition(PaymentPosition paymentPosition) {
         PaymentPosition response = paymentPosition;
@@ -57,7 +55,7 @@ public class DataLayerService {
                 paymentPositionOdpRepository.flush();
             }
 
-            paymentPositionOdp = modelMapper.map(paymentPosition, PaymentPositionOdp.class);
+            paymentPositionOdp = ObjectMapperUtils.map(paymentPosition, PaymentPositionOdp.class);
             paymentPositionOdpRepository.saveAndFlush(paymentPositionOdp);
         }
         if (Boolean.TRUE.equals(writeOnOldSchema) || !writeOnNewSchema) {
@@ -71,20 +69,13 @@ public class DataLayerService {
     public List<PaymentPosition> saveAllAndFlushPaymentPosition(List<PaymentPosition> paymentPositionList) {
         List<PaymentPosition> response = paymentPositionList;
         if (Boolean.TRUE.equals(writeOnNewSchema)) {
-            List<PaymentPositionOdp> paymentPositionOdpToDelete = new ArrayList<>();
-            List<PaymentPositionOdp> paymentPositionOdpToSave = new ArrayList<>();
-            paymentPositionList.forEach(paymentPosition -> {
-                PaymentPositionOdp paymentPositionOdp = paymentPositionOdpRepository.findByIupd(paymentPosition.getIupd());
-                if (paymentPositionOdp != null) {
-                    paymentPositionOdpToDelete.add(paymentPositionOdp);
-                }
-                paymentPositionOdpToSave.add(modelMapper.map(paymentPosition, PaymentPositionOdp.class));
-            });
+            List<PaymentPositionOdp> paymentPositionOdpToDelete = paymentPositionOdpRepository.findAllByIupdIn(paymentPositionList.parallelStream().map(PaymentPosition::getIupd).toList());
             if (!paymentPositionOdpToDelete.isEmpty()) {
                 paymentPositionOdpRepository.deleteAll(paymentPositionOdpToDelete);
                 paymentPositionOdpRepository.flush();
             }
 
+            List<PaymentPositionOdp> paymentPositionOdpToSave = ObjectMapperUtils.mapAll(paymentPositionList, PaymentPositionOdp.class);
             paymentPositionOdpRepository.saveAllAndFlush(paymentPositionOdpToSave);
         }
         if (Boolean.TRUE.equals(writeOnOldSchema) || !writeOnNewSchema) {
@@ -95,16 +86,46 @@ public class DataLayerService {
     }
 
     @Transactional
+    public void deleteAndFlushPaymentPosition(PaymentPosition paymentPosition) {
+        if (Boolean.TRUE.equals(writeOnNewSchema)) {
+            PaymentPositionOdp paymentPositionOdp = paymentPositionOdpRepository.findByIupd(paymentPosition.getIupd());
+            if (paymentPositionOdp != null) {
+                paymentPositionOdpRepository.delete(paymentPositionOdp);
+            }
+        }
+        if (Boolean.TRUE.equals(writeOnOldSchema) || !writeOnNewSchema) {
+            paymentPositionRepository.delete(paymentPosition);
+        }
+    }
+
+    @Transactional
+    public void deleteAllAndFlushPaymentPosition(List<PaymentPosition> paymentPositionList, List<String> multipleIupds) {
+        if (Boolean.TRUE.equals(writeOnNewSchema)) {
+            List<PaymentPositionOdp> paymentPositionOdpList = paymentPositionOdpRepository.findAllByIupdIn(multipleIupds);
+            if (paymentPositionOdpList != null && !paymentPositionOdpList.isEmpty()) {
+                paymentPositionOdpRepository.deleteAll(paymentPositionOdpList);
+                paymentPositionOdpRepository.flush();
+            }
+        }
+        if (Boolean.TRUE.equals(writeOnOldSchema) || !writeOnNewSchema) {
+            paymentPositionRepository.deleteAll(paymentPositionList);
+            paymentPositionRepository.flush();
+        }
+    }
+
+
+    // Payment Options
+    @Transactional
     public PaymentOption saveAndFlushPaymentOption(PaymentOption paymentOption) {
         PaymentOption response = paymentOption;
         if (Boolean.TRUE.equals(writeOnNewSchema)) {
-            PaymentOptionOdp paymentOptionOdp = paymentOptionOdpRepository.findByIuv(paymentOption.getIuv());
+            PaymentOptionOdp paymentOptionOdp = paymentOptionOdpRepository.findByInstallmentsIuv(paymentOption.getIuv());
             if (paymentOptionOdp != null) {
                 paymentOptionOdpRepository.delete(paymentOptionOdp);
                 paymentOptionOdpRepository.flush();
             }
 
-            paymentOptionOdp = modelMapper.map(paymentOption, PaymentOptionOdp.class);
+            paymentOptionOdp = ObjectMapperUtils.map(paymentOption, PaymentOptionOdp.class);
             paymentOptionOdpRepository.saveAndFlush(paymentOptionOdp);
         }
         if (Boolean.TRUE.equals(writeOnOldSchema) || !writeOnNewSchema) {

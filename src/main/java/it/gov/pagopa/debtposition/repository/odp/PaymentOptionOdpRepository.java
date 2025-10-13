@@ -12,5 +12,5 @@ import org.springframework.stereotype.Repository;
 public interface PaymentOptionOdpRepository
         extends JpaRepository<PaymentOptionOdp, Long>, JpaSpecificationExecutor<PaymentOptionOdp> {
     // Derived Query - using method naming convention - get PaymentOption by iuv
-    PaymentOptionOdp findByIuv(String iuv);
+    PaymentOptionOdp findByInstallmentsIuv(String iuv);
 }
