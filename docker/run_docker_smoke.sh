@@ -2,6 +2,10 @@
 
 ENV="local"
 
+sudo add-apt-repository ppa:rmescandon/yq
+sudo apt update
+sudo apt install yq -y
+
 pip3 install yq
 
 image="service-local:latest"
