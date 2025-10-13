@@ -85,7 +85,7 @@ jobs:
 
 
   delete_github_deployments:
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted-job, "dev" ]
     needs: smoke-test
     if: ${{ always() }}
     steps:
