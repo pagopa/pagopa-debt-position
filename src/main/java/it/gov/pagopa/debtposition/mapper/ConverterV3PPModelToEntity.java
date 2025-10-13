@@ -79,12 +79,12 @@ public class ConverterV3PPModelToEntity
 
   private void mapAndUpdateInstallments(
       PaymentPositionModelV3 source, PaymentPosition destination) {
-    Map<String, PaymentOption> managedOptionsByIuv =
+    Map<String, Installment> managedOptionsByIuv =
         destination.getPaymentOption().stream()
-            .collect(Collectors.toMap(PaymentOption::getIuv, po -> po));
+            .collect(Collectors.toMap(Installment::getIuv, po -> po));
 
     List<PaymentOptionModelV3> sourceOptions = source.getPaymentOption();
-    List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
+    List<Installment> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
 
     // Covered cases:
     // - 1 Payment Option with [1:N] Installment (ie Opzione Rateale)
@@ -94,14 +94,14 @@ public class ConverterV3PPModelToEntity
     if (sourceOptions != null) {
       for (PaymentOptionModelV3 sourceOption : sourceOptions) {
         for (InstallmentModel installment : sourceOption.getInstallments()) {
-          PaymentOption managedOpt = managedOptionsByIuv.get(installment.getIuv());
+          Installment managedOpt = managedOptionsByIuv.get(installment.getIuv());
           if (managedOpt != null) {
             // UPDATE: the option
             mapAndUpdateSinglePaymentOption(sourceOption, installment, managedOpt);
             optionsToRemove.remove(managedOpt);
           } else {
             // CREATE: the option
-            PaymentOption po = PaymentOption.builder().build();
+            Installment po = Installment.builder().build();
             po.setSendSync(false);
             mapAndUpdateSinglePaymentOption(sourceOption, installment, po);
             destination.getPaymentOption().add(po);
@@ -119,7 +119,7 @@ public class ConverterV3PPModelToEntity
    * @param destination the output entity
    */
   private void mapAndUpdateSinglePaymentOption(
-      PaymentOptionModelV3 source, InstallmentModel sourceInstallment, PaymentOption destination) {
+      PaymentOptionModelV3 source, InstallmentModel sourceInstallment, Installment destination) {
     DebtorModel debtor = source.getDebtor();
 
     if (debtor != null) {
@@ -152,7 +152,7 @@ public class ConverterV3PPModelToEntity
   }
 
   private void mapAndUpdateTransfers(
-      InstallmentModel sourceInstallment, PaymentOption destination) {
+      InstallmentModel sourceInstallment, Installment destination) {
     Map<String, Transfer> managedTransfersById =
         destination.getTransfer().stream()
             .collect(Collectors.toMap(Transfer::getIdTransfer, t -> t));
@@ -200,19 +200,19 @@ public class ConverterV3PPModelToEntity
   }
 
   private void mapAndUpdateOptionMetadata(
-      InstallmentModel sourceInstallment, PaymentOption destination) {
-    Map<String, PaymentOptionMetadata> managedPaymentOptionMetadataByKey =
+      InstallmentModel sourceInstallment, Installment destination) {
+    Map<String, InstallmentMetadata> managedPaymentOptionMetadataByKey =
         destination.getPaymentOptionMetadata().stream()
-            .collect(Collectors.toMap(PaymentOptionMetadata::getKey, po -> po));
+            .collect(Collectors.toMap(InstallmentMetadata::getKey, po -> po));
 
     List<InstallmentMetadataModel> sourcePaymentOptionMetadata =
         sourceInstallment.getInstallmentMetadata().stream().toList();
-    List<PaymentOptionMetadata> metadataToRemove =
+    List<InstallmentMetadata> metadataToRemove =
         new ArrayList<>(destination.getPaymentOptionMetadata());
 
     if (sourcePaymentOptionMetadata != null) {
       for (InstallmentMetadataModel sourceMetadata : sourcePaymentOptionMetadata) {
-        PaymentOptionMetadata managedMetadata =
+        InstallmentMetadata managedMetadata =
             managedPaymentOptionMetadataByKey.get(sourceMetadata.getKey());
 
         if (managedMetadata != null) {
@@ -221,11 +221,11 @@ public class ConverterV3PPModelToEntity
           metadataToRemove.remove(managedMetadata);
         } else {
           // CREATE:
-          PaymentOptionMetadata md =
-              PaymentOptionMetadata.builder()
+          InstallmentMetadata md =
+              InstallmentMetadata.builder()
                   .key(sourceMetadata.getKey())
                   .value(sourceMetadata.getValue())
-                  .paymentOption(destination)
+                  .installment(destination)
                   .build();
           destination.getPaymentOptionMetadata().add(md);
         }

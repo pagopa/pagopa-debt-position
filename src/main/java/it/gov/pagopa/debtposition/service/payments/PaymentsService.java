@@ -3,7 +3,7 @@ package it.gov.pagopa.debtposition.service.payments;
 import feign.FeignException;
 import it.gov.pagopa.debtposition.client.NodeClient;
 import it.gov.pagopa.debtposition.client.SendClient;
-import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
@@ -60,10 +60,10 @@ public class PaymentsService {
   // TODO #naviuv: temporary regression management --> the nav variable can also be evaluated with
   // iuv. Remove the comment when only nav managment is enabled
   @Transactional
-  public PaymentOption getPaymentOptionByNAV(
+  public Installment getPaymentOptionByNAV(
       @NotBlank String organizationFiscalCode, @NotBlank String nav) {
 
-    Optional<PaymentOption> po =
+    Optional<Installment> po =
         paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
             organizationFiscalCode, nav, organizationFiscalCode, nav);
 
@@ -71,7 +71,7 @@ public class PaymentsService {
       throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav);
     }
 
-    PaymentOption paymentOption = po.get();
+    Installment paymentOption = po.get();
     // Update PaymentPosition instance only in memory
     // PaymentPosition used when converting PaymentOption to POWithDebtor
     DebtPositionStatus.validityCheckAndUpdate(paymentOption);
@@ -97,7 +97,7 @@ public class PaymentsService {
   }
 
   @Transactional
-  public PaymentOption pay(
+  public Installment pay(
       @NotBlank String organizationFiscalCode,
       @NotBlank String nav,
       @NotNull @Valid PaymentOptionModel paymentOptionModel) {
@@ -138,7 +138,7 @@ public class PaymentsService {
   }
 
   @Transactional
-  public boolean updateNotificationFeeSync(PaymentOption paymentOption) {
+  public boolean updateNotificationFeeSync(Installment paymentOption) {
     try {
       // call SEND API to retrieve notification fee amount
       NotificationPriceResponse sendResponse =
@@ -166,19 +166,19 @@ public class PaymentsService {
   }
 
   @Transactional
-  public PaymentOption updateNotificationFee(
+  public Installment updateNotificationFee(
       @NotBlank String organizationFiscalCode, @NotBlank String nav, Long notificationFeeAmount) {
 
     // Check if exists a payment option with the passed IUV related to the organization
     // TODO #naviuv: temporary regression management: search by nav or iuv
-    Optional<PaymentOption> paymentOptionOpt =
+    Optional<Installment> paymentOptionOpt =
         paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
             organizationFiscalCode, nav, organizationFiscalCode, nav);
     if (paymentOptionOpt.isEmpty()) {
       throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav);
     }
     // Check if the retrieved payment option was not already paid and/or reported
-    PaymentOption paymentOption = paymentOptionOpt.get();
+    Installment paymentOption = paymentOptionOpt.get();
     if (!PaymentOptionStatus.PO_UNPAID.equals(paymentOption.getStatus())) {
       throw new AppException(
           AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_NOT_UPDATABLE,
@@ -254,7 +254,7 @@ public class PaymentsService {
   }
 
   public static void updateAmountsWithNotificationFee(
-      PaymentOption paymentOption, String organizationFiscalCode, long notificationFeeAmount) {
+      Installment paymentOption, String organizationFiscalCode, long notificationFeeAmount) {
     // Get the first valid transfer to add the fee
     Transfer validTransfer = findPrimaryTransfer(paymentOption, organizationFiscalCode);
 
@@ -283,7 +283,7 @@ public class PaymentsService {
    * @return the transfer of the primary Creditor Institution
    */
   public static Transfer findPrimaryTransfer(
-      PaymentOption paymentOption, String organizationFiscalCode) {
+      Installment paymentOption, String organizationFiscalCode) {
     List<Transfer> transfers = paymentOption.getTransfer();
     return transfers.stream()
         .sorted(Comparator.comparing(Transfer::getIdTransfer))
@@ -309,11 +309,11 @@ public class PaymentsService {
     return Collections.emptyList();
   }
 
-  private PaymentOption executePaymentFlow(
+  private Installment executePaymentFlow(
       PaymentPosition pp, String nav, PaymentOptionModel paymentOptionModel) {
 
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-    PaymentOption paidPO = null;
+    Installment paidPO = null;
 
     long numberOfPartialPayment =
         pp.getPaymentOption().stream()
@@ -321,7 +321,7 @@ public class PaymentsService {
             .count();
     int countPaidPartialPayment = 0;
 
-    for (PaymentOption po : pp.getPaymentOption()) {
+    for (Installment po : pp.getPaymentOption()) {
 
       // verifico se ci sono pagamenti parziali in stato PO_PAID
       if (Boolean.TRUE.equals(po.getIsPartialPayment())
@@ -376,7 +376,7 @@ public class PaymentsService {
     long countReportedTransfer = 0;
     Transfer reportedTransfer = null;
 
-    for (PaymentOption po : pp.getPaymentOption()) {
+    for (Installment po : pp.getPaymentOption()) {
 
       if (po.getIuv().equals(iuv)) {
         // numero totale dei transfer per la PO

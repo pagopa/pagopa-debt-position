@@ -18,7 +18,7 @@ import it.gov.pagopa.debtposition.client.SendClient;
 import it.gov.pagopa.debtposition.dto.PaymentOptionDTO;
 import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import it.gov.pagopa.debtposition.dto.TransferDTO;
-import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppException;
@@ -2228,7 +2228,7 @@ class PaymentsControllerTest {
   @Test
   void ValidationError_checkPaymentPositionOpen() throws Exception {
     try {
-      PaymentOption localMockPO = new PaymentOption();
+      Installment localMockPO = new Installment();
       PaymentPosition localMockPP = new PaymentPosition();
       localMockPP.setStatus(DebtPositionStatus.VALID);
       localMockPO.setStatus(PaymentOptionStatus.PO_PAID);
@@ -2245,7 +2245,7 @@ class PaymentsControllerTest {
   @Test
   void ValidationError_checkPaymentPositionAccountability_PO() throws Exception {
     try {
-      PaymentOption localMockPO = new PaymentOption();
+      Installment localMockPO = new Installment();
       PaymentPosition localMockPP = new PaymentPosition();
       localMockPP.setStatus(DebtPositionStatus.PAID);
       localMockPO.setStatus(PaymentOptionStatus.PO_PAID);
@@ -2263,7 +2263,7 @@ class PaymentsControllerTest {
   @Test
   void ValidationError_checkPaymentPositionAccountability_Transfer() throws Exception {
     try {
-      PaymentOption localMockPO = new PaymentOption();
+      Installment localMockPO = new Installment();
       PaymentPosition localMockPP = new PaymentPosition();
       Transfer localTransfer = new Transfer();
       localMockPP.setStatus(DebtPositionStatus.PAID);

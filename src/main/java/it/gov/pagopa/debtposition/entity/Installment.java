@@ -17,7 +17,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -39,28 +38,26 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table(
-    name = "payment_option",
+    name = "installment",
     uniqueConstraints = {
       @UniqueConstraint(
-          name = "UniquePaymentOpt",
+          name = "uniqueinstallmentiuv",
           columnNames = {"iuv", "organization_fiscal_code"}),
       @UniqueConstraint(
-          name = "UniquePaymentOptNav",
+          name = "uniqueinstallmentnav",
           columnNames = {"nav", "organization_fiscal_code"}),
-    },
-    indexes =
-        @Index(name = "payment_option_payment_position_id_idx", columnList = "payment_position_id"))
+    })
 @JsonIdentityInfo(
-    generator = ObjectIdGenerators.IntSequenceGenerator.class,
-    property = "@paymentOptionId")
-public class PaymentOption implements Serializable {
+	    generator = ObjectIdGenerators.PropertyGenerator.class,
+	    property = "id")
+public class Installment implements Serializable {
 
   /** generated serialVersionUID */
   private static final long serialVersionUID = -2800191377721368418L;
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "PAYMENT_OPT_SEQ")
-  @SequenceGenerator(name = "PAYMENT_OPT_SEQ", sequenceName = "PAYMENT_OPT_SEQ", allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "INSTALLMENT_SEQ")
+  @SequenceGenerator(name = "INSTALLMENT_SEQ", sequenceName = "INSTALLMENT_SEQ", allocationSize = 1)
   private Long id;
 
   @NotNull private String nav;
@@ -166,7 +163,7 @@ public class PaymentOption implements Serializable {
   @ToString.Exclude private String phone;
 
   @Column(name = "send_sync")
-  private Boolean sendSync = false;
+  @Builder.Default private Boolean sendSync = false;
 
   // flag that identifies if the payment option has a payment in progress (false = no payment in
   // progress)
@@ -191,12 +188,12 @@ public class PaymentOption implements Serializable {
 
   @Builder.Default
   @OneToMany(
-      targetEntity = PaymentOptionMetadata.class,
+      targetEntity = InstallmentMetadata.class,
       fetch = FetchType.LAZY,
-      mappedBy = "paymentOption",
+      mappedBy = "installment",
       cascade = CascadeType.ALL,
       orphanRemoval = true)
-  private List<PaymentOptionMetadata> paymentOptionMetadata = new ArrayList<>();
+  private List<InstallmentMetadata> paymentOptionMetadata = new ArrayList<>();
 
   public void addTransfer(Transfer t) {
     transfer.add(t);
@@ -208,13 +205,13 @@ public class PaymentOption implements Serializable {
     t.setPaymentOption(null);
   }
 
-  public void addPaymentOptionMetadata(PaymentOptionMetadata paymentOptMetadata) {
+  public void addPaymentOptionMetadata(InstallmentMetadata paymentOptMetadata) {
     paymentOptionMetadata.add(paymentOptMetadata);
-    paymentOptMetadata.setPaymentOption(this);
+    paymentOptMetadata.setInstallment(this);
   }
 
-  public void removePaymentOptionMetadata(PaymentOptionMetadata paymentOptMetadata) {
+  public void removePaymentOptionMetadata(InstallmentMetadata paymentOptMetadata) {
     paymentOptionMetadata.remove(paymentOptMetadata);
-    paymentOptMetadata.setPaymentOption(null);
+    paymentOptMetadata.setInstallment(null);
   }
 }

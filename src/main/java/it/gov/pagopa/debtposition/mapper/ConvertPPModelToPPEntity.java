@@ -52,16 +52,16 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
 
   private void mapAndUpdatePaymentOptions(
       PaymentPositionModel source, PaymentPosition destination) {
-    Map<String, PaymentOption> managedOptionsByIuv =
+    Map<String, Installment> managedOptionsByIuv =
         destination.getPaymentOption().stream()
-            .collect(Collectors.toMap(PaymentOption::getIuv, po -> po));
+            .collect(Collectors.toMap(Installment::getIuv, po -> po));
 
     List<PaymentOptionModel> sourceOptions = source.getPaymentOption();
-    List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
+    List<Installment> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
 
     if (sourceOptions != null) {
       for (PaymentOptionModel sourceOpt : sourceOptions) {
-        PaymentOption managedOpt = managedOptionsByIuv.get(sourceOpt.getIuv());
+        Installment managedOpt = managedOptionsByIuv.get(sourceOpt.getIuv());
 
         if (managedOpt != null) {
           // UPDATE
@@ -69,7 +69,7 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
           optionsToRemove.remove(managedOpt);
         } else {
           // CREATE
-          PaymentOption po = PaymentOption.builder().build();
+          Installment po = Installment.builder().build();
           po.setSendSync(false);
           mapAndUpdateSinglePaymentOption(source, sourceOpt, po);
           destination.getPaymentOption().add(po);
@@ -82,7 +82,7 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
   }
 
   private void mapAndUpdateSinglePaymentOption(
-      PaymentPositionModel paymentPosition, PaymentOptionModel source, PaymentOption destination) {
+      PaymentPositionModel paymentPosition, PaymentOptionModel source, Installment destination) {
 
     destination.setAmount(source.getAmount());
     destination.setCity(paymentPosition.getCity());
@@ -109,7 +109,7 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     mapAndUpdateOptionMetadata(source, destination);
   }
 
-  private void mapAndUpdateTransfers(PaymentOptionModel source, PaymentOption destination) {
+  private void mapAndUpdateTransfers(PaymentOptionModel source, Installment destination) {
     Map<String, Transfer> managedTransfersById =
         destination.getTransfer().stream()
             .collect(Collectors.toMap(Transfer::getIdTransfer, t -> t));
@@ -156,19 +156,19 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     mapAndUpdateTransferMetadata(source, destination);
   }
 
-  private void mapAndUpdateOptionMetadata(PaymentOptionModel source, PaymentOption destination) {
-    Map<String, PaymentOptionMetadata> managedPaymentOptionMetadataByKey =
+  private void mapAndUpdateOptionMetadata(PaymentOptionModel source, Installment destination) {
+    Map<String, InstallmentMetadata> managedPaymentOptionMetadataByKey =
         destination.getPaymentOptionMetadata().stream()
-            .collect(Collectors.toMap(PaymentOptionMetadata::getKey, po -> po));
+            .collect(Collectors.toMap(InstallmentMetadata::getKey, po -> po));
 
     List<PaymentOptionMetadataModel> sourcePaymentOptionMetadata =
         source.getPaymentOptionMetadata();
-    List<PaymentOptionMetadata> metadataToRemove =
+    List<InstallmentMetadata> metadataToRemove =
         new ArrayList<>(destination.getPaymentOptionMetadata());
 
     if (sourcePaymentOptionMetadata != null) {
       for (PaymentOptionMetadataModel sourceMetadata : sourcePaymentOptionMetadata) {
-        PaymentOptionMetadata managedMetadata =
+        InstallmentMetadata managedMetadata =
             managedPaymentOptionMetadataByKey.get(sourceMetadata.getKey());
 
         if (managedMetadata != null) {
@@ -177,11 +177,11 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
           metadataToRemove.remove(managedMetadata);
         } else {
           // CREATE
-          PaymentOptionMetadata md =
-              PaymentOptionMetadata.builder()
+          InstallmentMetadata md =
+              InstallmentMetadata.builder()
                   .key(sourceMetadata.getKey())
                   .value(sourceMetadata.getValue())
-                  .paymentOption(destination)
+                  .installment(destination)
                   .build();
           destination.getPaymentOptionMetadata().add(md);
         }

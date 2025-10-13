@@ -4,8 +4,8 @@ import static it.gov.pagopa.debtposition.service.payments.PaymentsService.findPr
 import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
 import static org.springframework.data.jpa.domain.Specification.allOf;
 
-import it.gov.pagopa.debtposition.entity.PaymentOption;
-import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
+import it.gov.pagopa.debtposition.entity.Installment;
+import it.gov.pagopa.debtposition.entity.InstallmentMetadata;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
@@ -120,7 +120,7 @@ public class PaymentPositionCRUDService {
       throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, iuv);
     }
 
-    Optional<PaymentOption> po =
+    Optional<Installment> po =
         paymentOptionRepository.findByOrganizationFiscalCodeAndIuv(organizationFiscalCode, iuv);
 
     if (po.isEmpty()) {
@@ -185,7 +185,7 @@ public class PaymentPositionCRUDService {
     // The retrieval of PaymentOptions is done manually to apply filters which, in the automatic
     // fetch, are not used by JPA
     for (PaymentPosition pp : positions) {
-      Specification<PaymentOption> specPO =
+      Specification<Installment> specPO =
     		  allOf(
               new PaymentOptionByAttribute(
                   pp,
@@ -193,7 +193,7 @@ public class PaymentPositionCRUDService {
                   filterAndOrder.getFilter().getDueDateTo(),
                   filterAndOrder.getFilter().getSegregationCodes()));
 
-      List<PaymentOption> poList = paymentOptionRepository.findAll(specPO);
+      List<Installment> poList = paymentOptionRepository.findAll(specPO);
       pp.setPaymentOption(poList);
     }
 
@@ -482,12 +482,12 @@ public class PaymentPositionCRUDService {
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
     LocalDateTime minDueDate =
         pp.getPaymentOption().stream()
-            .map(PaymentOption::getDueDate)
+            .map(Installment::getDueDate)
             .min(LocalDateTime::compareTo)
             .orElse(currentDate);
     LocalDateTime maxDueDate =
         pp.getPaymentOption().stream()
-            .map(PaymentOption::getDueDate)
+            .map(Installment::getDueDate)
             .max(LocalDateTime::compareTo)
             .orElse(currentDate);
     pp.setMinDueDate(minDueDate);
@@ -499,9 +499,9 @@ public class PaymentPositionCRUDService {
     pp.setStatus(DebtPositionStatus.DRAFT);
     pp.setServiceType(pp.getServiceType());
 
-    for (PaymentOption po : pp.getPaymentOption()) {
+    for (Installment po : pp.getPaymentOption()) {
       // Make sure there isn't reserved metadata
-      for (PaymentOptionMetadata pom : po.getPaymentOptionMetadata()) {
+      for (InstallmentMetadata pom : po.getPaymentOptionMetadata()) {
         if (pom.getKey().equals(NOTIFICATION_FEE_METADATA_KEY)) {
           throw new AppException(
               AppError.PAYMENT_OPTION_RESERVED_METADATA, organizationFiscalCode, pp.getIupd());
@@ -513,7 +513,7 @@ public class PaymentPositionCRUDService {
       po.setLastUpdatedDate(currentDate);
       po.setStatus(PaymentOptionStatus.PO_UNPAID);
       po.setPaymentPosition(pp);
-      po.getPaymentOptionMetadata().forEach(pom -> pom.setPaymentOption(po));
+      po.getPaymentOptionMetadata().forEach(pom -> pom.setInstallment(po));
       po.setNav(Optional.ofNullable(po.getNav()).orElse(auxDigit + po.getIuv()));
 
       for (Transfer t : po.getTransfer()) {
