@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ENV="dev"
+ENV="local"
 
 image="service-local:latest"
 
