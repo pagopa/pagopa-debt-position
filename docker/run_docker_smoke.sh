@@ -2,8 +2,6 @@
 
 ENV="dev"
 
-#pip3 install yq
-
 image="service-local:latest"
 
 export image=${image}
