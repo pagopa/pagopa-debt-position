@@ -20,7 +20,7 @@ for line in $(echo "$config" | yq -r '. | to_entries[] | select(.key) | "\(.key)
 
     # Se la chiave è SPRING_DATASOURCE_URL, assegna il valore specifico
     if [[ "$key" == "SPRING_DATASOURCE_URL" ]]; then
-        value="jdbc:postgresql://pagopa-d-weu-gpd-pgflex.postgres.database.azure.com:6432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true"
+        value="jdbc:postgresql://pagopa-d-weu-gpd-pgflex.postgres.database.azure.com:5432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true"
     fi
 
     # Scrivi la chiave-valore nel file .env
