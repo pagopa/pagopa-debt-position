@@ -1,7 +1,7 @@
 package it.gov.pagopa.debtposition.controller.payments.api.impl;
 
 import it.gov.pagopa.debtposition.controller.payments.api.IPaymentsController;
-import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
@@ -91,7 +91,7 @@ public class PaymentsController implements IPaymentsController {
                 CommonUtil.sanitize(organizationFiscalCode),
                 CommonUtil.sanitize(nav))));
 
-    PaymentOption paidPaymentOption =
+    Installment paidPaymentOption =
         paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
 
     // Convert entity to model
@@ -144,7 +144,7 @@ public class PaymentsController implements IPaymentsController {
                     CommonUtil.sanitize(iuv))
                 + "; notificationFee="
                 + notificationFee));
-    PaymentOption updatedPaymentOption =
+    Installment updatedPaymentOption =
         paymentsService.updateNotificationFee(organizationFiscalCode, iuv, notificationFee);
     if (updatedPaymentOption != null) {
       ResponseEntity.status(
@@ -188,7 +188,7 @@ public class PaymentsController implements IPaymentsController {
     paymentOptionModel.setPspCompany(PO_MARKED_AS_PAID_FIELD_PLACEHOLDER);
     paymentOptionModel.setPaymentDate(alreadyPaidPaymentOptionModel.getPaymentDate());
 
-    PaymentOption paidPaymentOption =
+    Installment paidPaymentOption =
             paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
 
     // Convert entity to model

@@ -2,7 +2,7 @@ package it.gov.pagopa.debtposition.mapper;
 
 import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.UNDEFINED_DEBTOR;
 
-import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionMetadataModelResponse;
@@ -12,12 +12,12 @@ import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
 public class ConvertPOEntityToPOWithDebtor
-    implements Converter<PaymentOption, PaymentOptionWithDebtorInfoModelResponse> {
+    implements Converter<Installment, PaymentOptionWithDebtorInfoModelResponse> {
 
   @Override
   public PaymentOptionWithDebtorInfoModelResponse convert(
-      MappingContext<@NotNull PaymentOption, PaymentOptionWithDebtorInfoModelResponse> context) {
-    PaymentOption source = context.getSource();
+      MappingContext<@NotNull Installment, PaymentOptionWithDebtorInfoModelResponse> context) {
+    Installment source = context.getSource();
     PaymentOptionWithDebtorInfoModelResponse destination =
         new PaymentOptionWithDebtorInfoModelResponse();
 

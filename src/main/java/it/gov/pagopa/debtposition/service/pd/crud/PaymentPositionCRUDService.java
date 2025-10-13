@@ -4,8 +4,8 @@ import static it.gov.pagopa.debtposition.service.payments.PaymentsService.findPr
 import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
 import static org.springframework.data.jpa.domain.Specification.allOf;
 
-import it.gov.pagopa.debtposition.entity.PaymentOption;
-import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
+import it.gov.pagopa.debtposition.entity.Installment;
+import it.gov.pagopa.debtposition.entity.InstallmentMetadata;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
@@ -72,10 +72,13 @@ public class PaymentPositionCRUDService {
     final String ERROR_CREATION_LOG_MSG = "Error during debt position creation: %s";
 
     try {
-      // Inserisce (ed eventualmente porta in stato pubblicato) la posizione debitoria
-      return paymentPositionRepository.saveAndFlush(
-          this.checkAndBuildDebtPositionToSave(
-              debtPosition, organizationFiscalCode, toPublish, segCodes, action));
+    	// Inserts (and possibly brings to published status) the debt position
+    	PaymentPosition toSave =
+    	        this.checkAndBuildDebtPositionToSave(
+    	            debtPosition, organizationFiscalCode, toPublish, segCodes, action);
+    	assignPaymentPlanIds(toSave);
+    	fillTransientSwitchToExpiredIfOptionsLoaded(toSave);
+    	return paymentPositionRepository.saveAndFlush(toSave);
     } catch (DataIntegrityViolationException e) {
       log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
       if (e.getCause() instanceof ConstraintViolationException constraintviolationexception) {
@@ -103,15 +106,23 @@ public class PaymentPositionCRUDService {
             new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
                 .and(new PaymentPositionByIUPD(iupd)));
 
-    Optional<PaymentPosition> pp = paymentPositionRepository.findOne(spec);
-    if (pp.isEmpty()) {
+    Optional<PaymentPosition> ppOptional = paymentPositionRepository.findOne(spec);
+    if (ppOptional.isEmpty()) {
       throw new AppException(AppError.DEBT_POSITION_NOT_FOUND, organizationFiscalCode, iupd);
     }
-    if (segCodes != null && !isAuthorizedBySegregationCode(pp.get(), segCodes)) {
+    
+    PaymentPosition pp = ppOptional.get();
+    
+    if (segCodes != null && !isAuthorizedBySegregationCode(pp, segCodes)) {
       throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, iupd);
     }
+    
+    boolean anyMarkedAsExpired =
+    	      paymentOptionRepository.existsByPaymentPosition_IdAndSwitchToExpiredTrue(pp.getId());
+    
+    pp.setSwitchToExpired(anyMarkedAsExpired); // for response only (transient field)
 
-    return pp.get();
+    return pp;
   }
 
   public PaymentPosition getDebtPositionByIUV(
@@ -120,14 +131,21 @@ public class PaymentPositionCRUDService {
       throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, iuv);
     }
 
-    Optional<PaymentOption> po =
+    Optional<Installment> po =
         paymentOptionRepository.findByOrganizationFiscalCodeAndIuv(organizationFiscalCode, iuv);
 
     if (po.isEmpty()) {
       throw new AppException(AppError.PAYMENT_OPTION_IUV_NOT_FOUND, organizationFiscalCode, iuv);
     }
 
-    return po.get().getPaymentPosition();
+    Installment inst = po.get();
+    PaymentPosition pp = inst.getPaymentPosition();
+    
+    boolean anyMarkedAsExpired =
+    	    paymentOptionRepository.existsByPaymentPosition_IdAndSwitchToExpiredTrue(pp.getId());
+    pp.setSwitchToExpired(anyMarkedAsExpired); // for response only (transient field)
+
+    return pp;
   }
 
   public List<PaymentPosition> getDebtPositionsByIUPDs(
@@ -185,7 +203,7 @@ public class PaymentPositionCRUDService {
     // The retrieval of PaymentOptions is done manually to apply filters which, in the automatic
     // fetch, are not used by JPA
     for (PaymentPosition pp : positions) {
-      Specification<PaymentOption> specPO =
+      Specification<Installment> specPO =
     		  allOf(
               new PaymentOptionByAttribute(
                   pp,
@@ -193,8 +211,14 @@ public class PaymentPositionCRUDService {
                   filterAndOrder.getFilter().getDueDateTo(),
                   filterAndOrder.getFilter().getSegregationCodes()));
 
-      List<PaymentOption> poList = paymentOptionRepository.findAll(specPO);
+      List<Installment> poList = paymentOptionRepository.findAll(specPO);
       pp.setPaymentOption(poList);
+      
+      // Recalculates the PP flag from the installments just fetched from DB
+      pp.setSwitchToExpired(
+    		    poList.stream().anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()))
+      );
+      
     }
 
     return CommonUtil.toPage(positions, page.getNumber(), page.getSize(), page.getTotalElements());
@@ -235,6 +259,9 @@ public class PaymentPositionCRUDService {
 
       // flip model to entity
       modelMapper.map(ppModel, ppToUpdate);
+      
+      // assign/reuse paymentPlanIds
+      assignPaymentPlanIds(ppToUpdate);
 
       // update amounts adding notification fee
       updateAmounts(organizationFiscalCode, ppToUpdate);
@@ -246,6 +273,8 @@ public class PaymentPositionCRUDService {
           this.checkDebtPositionToUpdate(
               ppToUpdate, organizationFiscalCode, toPublish, segregationCodes, action);
 
+      fillTransientSwitchToExpiredIfOptionsLoaded(ppUpdated);
+      
       return paymentPositionRepository.saveAndFlush(ppUpdated);
 
     } catch (ValidationException e) {
@@ -303,11 +332,14 @@ public class PaymentPositionCRUDService {
 
     try {
 
-      for (PaymentPosition debtPosition : debtPositions) {
-        ppToSaveList.add(
-            this.checkDebtPositionToUpdate(
-                debtPosition, organizationFiscalCode, toPublish, segCodes, action));
-      }
+     for (PaymentPosition debtPosition : debtPositions) {
+    		PaymentPosition pp = this.checkDebtPositionToUpdate(
+    				debtPosition, organizationFiscalCode, toPublish, segCodes, action);
+    		assignPaymentPlanIds(pp);
+    		// set the parent switchToExpired flag according to the installments
+            fillTransientSwitchToExpiredIfOptionsLoaded(pp);
+    		ppToSaveList.add(pp);
+     }
 
       // Inserisce il blocco di posizioni debitorie
       return paymentPositionRepository.saveAllAndFlush(ppToSaveList);
@@ -359,9 +391,15 @@ public class PaymentPositionCRUDService {
 
         // map model to entity
         modelMapper.map(inputPaymentPosition, currentPP);
+        
+        // assign/reuse paymentPlanIds
+        assignPaymentPlanIds(currentPP);
 
         // update amounts adding notification fee
         updateAmounts(organizationFiscalCode, currentPP);
+        
+        // set the parent switchToExpired flag according to the installments
+        fillTransientSwitchToExpiredIfOptionsLoaded(currentPP);
 
         // check data
         DebtPositionValidation.checkPaymentPositionInputDataAccuracy(currentPP, action);
@@ -482,12 +520,12 @@ public class PaymentPositionCRUDService {
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
     LocalDateTime minDueDate =
         pp.getPaymentOption().stream()
-            .map(PaymentOption::getDueDate)
+            .map(Installment::getDueDate)
             .min(LocalDateTime::compareTo)
             .orElse(currentDate);
     LocalDateTime maxDueDate =
         pp.getPaymentOption().stream()
-            .map(PaymentOption::getDueDate)
+            .map(Installment::getDueDate)
             .max(LocalDateTime::compareTo)
             .orElse(currentDate);
     pp.setMinDueDate(minDueDate);
@@ -499,21 +537,24 @@ public class PaymentPositionCRUDService {
     pp.setStatus(DebtPositionStatus.DRAFT);
     pp.setServiceType(pp.getServiceType());
 
-    for (PaymentOption po : pp.getPaymentOption()) {
+    for (Installment po : pp.getPaymentOption()) {
       // Make sure there isn't reserved metadata
-      for (PaymentOptionMetadata pom : po.getPaymentOptionMetadata()) {
+      for (InstallmentMetadata pom : po.getPaymentOptionMetadata()) {
         if (pom.getKey().equals(NOTIFICATION_FEE_METADATA_KEY)) {
           throw new AppException(
               AppError.PAYMENT_OPTION_RESERVED_METADATA, organizationFiscalCode, pp.getIupd());
         }
       }
+      
+      // propagates the flag from the parent to the installment
+      po.setSwitchToExpired(Boolean.TRUE.equals(pp.getSwitchToExpired()));
 
       po.setOrganizationFiscalCode(organizationFiscalCode);
       po.setInsertedDate(Objects.requireNonNullElse(pp.getInsertedDate(), currentDate));
       po.setLastUpdatedDate(currentDate);
       po.setStatus(PaymentOptionStatus.PO_UNPAID);
       po.setPaymentPosition(pp);
-      po.getPaymentOptionMetadata().forEach(pom -> pom.setPaymentOption(po));
+      po.getPaymentOptionMetadata().forEach(pom -> pom.setInstallment(po));
       po.setNav(Optional.ofNullable(po.getNav()).orElse(auxDigit + po.getIuv()));
 
       for (Transfer t : po.getTransfer()) {
@@ -562,5 +603,84 @@ public class PaymentPositionCRUDService {
     // have the same segregation code.
     String paymentPositionSegregationCode = iuv.substring(0, 2);
     return segregationCodes.contains(paymentPositionSegregationCode);
+  }
+  
+  private static void fillTransientSwitchToExpiredIfOptionsLoaded(PaymentPosition pp) {
+	  if (pp.getPaymentOption() != null && !pp.getPaymentOption().isEmpty()) {
+		  boolean anyExpired = pp.getPaymentOption().stream()
+				  .anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
+		  pp.setSwitchToExpired(anyExpired);
+	  }
+  }
+  
+  /*
+   * TODO: Multi-plan (future)
+   * ----------------------------------------------------------------------------
+   * Context
+   *  - Today we assume at most ONE installment plan per PaymentPosition.
+   *  - assignPaymentPlanIds(...) assigns a single "1:<uuid>" to all installments (isPartialPayment=true)
+   *    and "0:<uuid>" to each single option (isPartialPayment=false).
+   *
+   * What we’ll need to support MULTIPLE installment plans within the SAME PaymentPosition:
+   *
+   * 1) Introduce in the payload a stable “plan key” per installment (for example one of these):
+   *    - leaderNav: each installment of a plan carries the nav of its plan leader
+   *    - planIdx (1..N per PaymentPosition)
+   *
+   * 2) Change assignPaymentPlanIds(...) to:
+   *    - Group installments by the chosen plan key.
+   *    - For each group: reuse an existing "1:<uuid>" if present (idempotency), otherwise generate a new one.
+   *    - Set that "1:<uuid>" on all installments of the group.
+   *    - Keep singles unchanged ("0:<uuid>" per row).
+   *
+   * Summary
+   *  - Add/receive a plan key (leaderNav or planIdx).
+   *  - Group by that key and assign one "1:<uuid>" per group.
+   *  - Keep singles as "0:<uuid>" per row.
+   */
+  private void assignPaymentPlanIds(PaymentPosition pp) {
+	  if (pp.getPaymentOption() == null || pp.getPaymentOption().isEmpty()) return;
+
+	  // separates singles vs installments
+	  List<Installment> singles = new ArrayList<>();
+	  List<Installment> installments = new ArrayList<>();
+	  for (Installment i : pp.getPaymentOption()) {
+		  if (Boolean.TRUE.equals(i.getIsPartialPayment())) {
+			  installments.add(i);
+		  } else {
+			  singles.add(i);
+		  }
+	  }
+
+	  // 1) SINGLE → "0:<uuid>" for each (only if missing or with wrong prefix)
+	  for (Installment i : singles) {
+		  if (needsUpdate(i.getPaymentPlanId(), "0:")) {
+			  i.setPaymentPlanId("0:" + java.util.UUID.randomUUID());
+		  }
+	  }
+
+	  // 2) INSTALLMENTS → currently only one plan per position: a single "1:<uuid>"
+	  if (!installments.isEmpty()) {
+		  String planId = existingInstallmentPlanId(installments)
+				  .orElse("1:" + java.util.UUID.randomUUID());
+          // check and if necessary normalize all installments to the SAME "1:<uuid>"
+		  for (Installment i : installments) {
+			  if (i.getPaymentPlanId() == null || !i.getPaymentPlanId().equals(planId)) {
+				  i.setPaymentPlanId(planId);
+			  }
+		  }
+	  }
+  }
+
+  private boolean needsUpdate(String current, String requiredPrefix) {
+	  return current == null || !current.startsWith(requiredPrefix);
+  }
+
+  private java.util.Optional<String> existingInstallmentPlanId(List<Installment> installments) {
+	  return installments.stream()
+			  .map(Installment::getPaymentPlanId)
+			  .filter(java.util.Objects::nonNull)
+			  .filter(pid -> pid.startsWith("1:"))
+			  .findFirst();
   }
 }

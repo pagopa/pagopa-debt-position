@@ -39,6 +39,7 @@ public interface PaymentPositionRepository
 
   // Regola 6 - Una posizione va in expired nel momento in cui si raggiunge la max_due_date, il flag
   // switch_to_expired è impostato a TRUE e lo stato è a valid
+  /*
   @Modifying
   @Query(
       "update PaymentPosition pp set pp.status = :status, pp.lastUpdatedDate = :currentDate,"
@@ -46,7 +47,31 @@ public interface PaymentPositionRepository
           + " pp.switchToExpired IS TRUE")
   int updatePaymentPositionStatusToExpired(
       @Param(value = "currentDate") LocalDateTime currentDate,
-      @Param(value = "status") DebtPositionStatus status);
+      @Param(value = "status") DebtPositionStatus status);*/
+  
+  /**
+   * Native is used to avoid two-step recovery:
+   * - SELECT PaymentPosition in join with installment
+   * - UPDATE PaymentPosition pp SET ... WHERE pp.id IN :ids
+   * verbose with two round-trips.
+   */
+	@Modifying
+	@Query(value = """
+			UPDATE payment_position pp
+			SET status = :status,
+			    last_updated_date = :currentDate,
+			    version = pp.version + 1
+			WHERE pp.max_due_date < :currentDate
+			  AND pp.status = 'VALID'
+			  AND EXISTS (
+			      SELECT 1
+			      FROM installment i
+			      WHERE i.payment_position_id = pp.id
+			        AND i.switch_to_expired = true
+			  )
+			""", nativeQuery = true)
+	int updatePaymentPositionStatusToExpired(@Param("currentDate") LocalDateTime currentDate,
+			@Param("status") DebtPositionStatus status);
 
   // Derived Query - using method naming convention - get parent PaymentPosition from child
   // PaymentOption properties

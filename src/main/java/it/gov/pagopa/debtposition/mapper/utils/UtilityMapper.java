@@ -1,7 +1,7 @@
 package it.gov.pagopa.debtposition.mapper.utils;
 
-import it.gov.pagopa.debtposition.entity.PaymentOption;
-import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
+import it.gov.pagopa.debtposition.entity.Installment;
+import it.gov.pagopa.debtposition.entity.InstallmentMetadata;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.entity.TransferMetadata;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
@@ -28,7 +28,7 @@ public class UtilityMapper {
 
   public static final String UNDEFINED_DEBTOR = "NA";
 
-  public static DebtorModel extractDebtor(PaymentOption po) {
+  public static DebtorModel extractDebtor(Installment po) {
     DebtorModel debtor = new DebtorModel();
     // Set default value for Type, FullName and FiscalCode (tax code) if they are null
     debtor.setType(Optional.ofNullable(po.getDebtorType()).orElse(Type.F));
@@ -73,7 +73,7 @@ public class UtilityMapper {
 
   // Payment option metadata to Installment metadata converter
 
-  public static List<InstallmentMetadataModel> convert(List<PaymentOptionMetadata> poMetadata) {
+  public static List<InstallmentMetadataModel> convert(List<InstallmentMetadata> poMetadata) {
     List<InstallmentMetadataModel> installmentsMetadata = new ArrayList<>();
     if (null != poMetadata && !CollectionUtils.isEmpty(poMetadata)) {
       installmentsMetadata =

@@ -1,6 +1,6 @@
 package it.gov.pagopa.debtposition.repository;
 
-import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import java.util.List;
@@ -17,29 +17,31 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface PaymentOptionRepository
-    extends JpaRepository<PaymentOption, Long>, JpaSpecificationExecutor<PaymentOption> {
+    extends JpaRepository<Installment, Long>, JpaSpecificationExecutor<Installment> {
   // Derived Query - using method naming convention
   // Optional<PaymentOption> findByOrganizationFiscalCodeAndNav(String organizationFiscalCode,
   // String nav);  // search only by nav
-  Optional<PaymentOption> findByOrganizationFiscalCodeAndIuv(
+  Optional<Installment> findByOrganizationFiscalCodeAndIuv(
       String organizationFiscalCode, String iuv); // search only by iuv
 
   // TODO #naviuv: temporary regression management: search by nav or iuv
-  Optional<PaymentOption> findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
+  Optional<Installment> findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
       String organizationFiscalCodeIuv, String iuv, String organizationFiscalCodeNav, String nav);
 
   // Derived Query - using method naming convention - get all PaymentOption by payment_position_id
   // and in the specified statuses
-  List<PaymentOption> findByPaymentPositionInAndStatusIn(
+  List<Installment> findByPaymentPositionInAndStatusIn(
       List<PaymentPosition> paymentPositionList, List<PaymentOptionStatus> statusList);
 
   // Configuration Query
   @Modifying
   @Query(
-          "update PaymentOption po set po.sendSync = true " +
-                  "where po.organizationFiscalCode = :organization " +
-                  "and po.nav = :noticeNumber")
+          "update Installment i set i.sendSync = true " +
+                  "where i.organizationFiscalCode = :organization " +
+                  "and i.nav = :noticeNumber")
   int updatePaymentOptionSendSync(
           @Param(value = "organization") String organizationFiscalCode,
           @Param(value = "noticeNumber") String noticeNumber);
+  
+  boolean existsByPaymentPosition_IdAndSwitchToExpiredTrue(Long paymentPositionId);
 }
