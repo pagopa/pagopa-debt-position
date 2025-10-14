@@ -7,10 +7,6 @@ on:
         required: true
         description: The name of the environment where to run DB migration
         type: string
-      target:
-        required: true
-        description: The environment target of the job
-        type: string
   workflow_dispatch:
     inputs:
       environment:
@@ -21,15 +17,13 @@ on:
           - dev
           - uat
           - prod
-          - all
-      target:
+      schema:                
         required: true
         type: choice
-        description: Select the Environment Target
+        description: Select the Schema to migrate
         options:
-          - dev
-          - uat
-          - prod
+          - apd
+          - odp
           - all
 
 permissions:
@@ -37,32 +31,9 @@ permissions:
   contents: read
 
 jobs:
-  create_runner:
-    name: Create Runner
-    runs-on: ubuntu-22.04
-    environment:
-      name: ${{ inputs.environment }}
-    if: ${{ inputs.target == inputs.environment || inputs.target == 'all' }}
-    outputs:
-      runner_name: ${{ steps.create_github_runner.outputs.runner_name }}
-    steps:
-      - name: Create GitHub Runner
-        id: create_github_runner
-        # from https://github.com/pagopa/eng-github-actions-iac-template/tree/main/azure/github-self-hosted-runner-azure-create-action
-        uses: pagopa/eng-github-actions-iac-template/azure/github-self-hosted-runner-azure-create-action@main
-        with:
-          client_id: ${{ secrets.CLIENT_ID }}
-          tenant_id: ${{ secrets.TENANT_ID }}
-          subscription_id: ${{ secrets.SUBSCRIPTION_ID }}
-          container_app_environment_name: ${{ vars.CONTAINER_APP_ENVIRONMENT_NAME }}
-          resource_group_name: ${{ vars.CONTAINER_APP_ENVIRONMENT_RESOURCE_GROUP_NAME }} # RG of the runner
-          pat_token: ${{ secrets.BOT_TOKEN_GITHUB }}
-          self_hosted_runner_image_tag: "latest"
 
   db_migration:
-    needs: [ create_runner ]
-    runs-on: [ self-hosted, "${{ needs.create_runner.outputs.runner_name }}" ]
-    if: ${{ inputs.target == inputs.environment || inputs.target == 'all' }}
+    runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
     name: DB migration
     environment: ${{ inputs.environment }}
     steps:
@@ -79,30 +50,33 @@ jobs:
         with:
           maven-version: 3.8.2
 
-      - name: Run flyway::migrate
+      - name: Build project (compile resources)
+        run: mvn -B clean compile
+
+      # ============================
+      # - Run Flyway
+      # ============================  
+      - name: Run Flyway Migration
         shell: bash
         run: |
           export FLYWAY_DATASOURCE_URL='${{ secrets.FLYWAY_DATASOURCE_URL }}'
           export SPRING_DATASOURCE_USERNAME='${{ secrets.DATASOURCE_USERNAME }}'
           export SPRING_DATASOURCE_PASSWORD='${{ secrets.DATASOURCE_PASSWORD }}'
-          export GPD_SCHEMA_NAME='${{ secrets.APD_SCHEMA_NAME }}'
-          mvn clean flyway:migrate -Dflyway.configFiles=apdFlywayConfig.conf
 
-  cleanup_runner:
-    name: Cleanup Runner
-    needs: [ create_runner, db_migration ]
-    if: ${{ success() || failure() && inputs.target == inputs.environment || inputs.target == 'all' }}
-    runs-on: ubuntu-22.04
-    environment: ${{ inputs.environment }}
-    steps:
-      - name: Cleanup GitHub Runner
-        id: cleanup_github_runner
-        # from https://github.com/pagopa/eng-github-actions-iac-template/tree/main/azure/github-self-hosted-runner-azure-cleanup-action
-        uses: pagopa/eng-github-actions-iac-template/azure/github-self-hosted-runner-azure-cleanup-action@0ee2f58fd46d10ac7f00bce4304b98db3dbdbe9a
-        with:
-          client_id: ${{ secrets.CLIENT_ID }}
-          tenant_id: ${{ secrets.TENANT_ID }}
-          subscription_id: ${{ secrets.SUBSCRIPTION_ID }}
-          resource_group_name: ${{ vars.CONTAINER_APP_ENVIRONMENT_RESOURCE_GROUP_NAME }}
-          runner_name: ${{ needs.create_runner.outputs.runner_name }}
-          pat_token: ${{ secrets.BOT_TOKEN_GITHUB }}
+          if [[ "${{ inputs.schema }}" == "apd" ]]; then
+            echo "▶ Running migration for schema APD..."
+            export SCHEMA_NAME='${{ vars.APD_SCHEMA_NAME }}'
+            mvn flyway:migrate -Dflyway.configFiles=gpdFlywayConfig.conf
+          elif [[ "${{ inputs.schema }}" == "odp" ]]; then
+            echo "▶ Running migration for schema ODP..."
+            export SCHEMA_NAME='${{ vars.ODP_SCHEMA_NAME }}'
+            mvn flyway:migrate -Dflyway.configFiles=gpdFlywayConfig.conf 
+          else
+            echo "▶ Running migration for ALL schemas..."
+            # APD
+            export SCHEMA_NAME='${{ vars.APD_SCHEMA_NAME }}'
+            mvn flyway:migrate -Dflyway.configFiles=gpdFlywayConfig.conf
+            # ODP
+            export SCHEMA_NAME='${{ vars.ODP_SCHEMA_NAME }}'
+            mvn flyway:migrate -Dflyway.configFiles=gpdFlywayConfig.conf                  
+          fi
