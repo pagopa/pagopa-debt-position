@@ -4,10 +4,15 @@ import it.gov.pagopa.debtposition.entity.apd.PaymentOption;
 import it.gov.pagopa.debtposition.entity.apd.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.odp.PaymentOptionOdp;
 import it.gov.pagopa.debtposition.entity.odp.PaymentPositionOdp;
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
+import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.repository.apd.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.apd.PaymentPositionRepository;
+import it.gov.pagopa.debtposition.repository.apd.TransferRepository;
 import it.gov.pagopa.debtposition.repository.odp.PaymentOptionOdpRepository;
 import it.gov.pagopa.debtposition.repository.odp.PaymentPositionOdpRepository;
+import it.gov.pagopa.debtposition.repository.odp.TransferOdpRepository;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +20,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Service
@@ -35,13 +42,17 @@ public class DataLayerService {
     private final PaymentPositionOdpRepository paymentPositionOdpRepository;
     private final PaymentOptionRepository paymentOptionRepository;
     private final PaymentOptionOdpRepository paymentOptionOdpRepository;
+    private final TransferRepository transferRepository;
+    private final TransferOdpRepository transferOdpRepository;
 
     @Autowired
-    public DataLayerService(PaymentPositionRepository paymentPositionRepository, PaymentPositionOdpRepository paymentPositionOdpRepository, PaymentOptionRepository paymentOptionRepository, PaymentOptionOdpRepository paymentOptionOdpRepository) {
+    public DataLayerService(PaymentPositionRepository paymentPositionRepository, PaymentPositionOdpRepository paymentPositionOdpRepository, PaymentOptionRepository paymentOptionRepository, PaymentOptionOdpRepository paymentOptionOdpRepository, TransferRepository transferRepository, TransferOdpRepository transferOdpRepository) {
         this.paymentPositionRepository = paymentPositionRepository;
         this.paymentPositionOdpRepository = paymentPositionOdpRepository;
         this.paymentOptionRepository = paymentOptionRepository;
         this.paymentOptionOdpRepository = paymentOptionOdpRepository;
+        this.transferRepository = transferRepository;
+        this.transferOdpRepository = transferOdpRepository;
     }
 
     // Payment Positions
@@ -133,5 +144,41 @@ public class DataLayerService {
         }
 
         return response;
+    }
+
+    @Transactional
+    public int updateTransferIban(String organizationFiscalCode, String oldIban, String newIban, int limit) {
+        int updatedIbans = 0;
+
+        if (Boolean.TRUE.equals(writeOnNewSchema)) {
+            updatedIbans = transferOdpRepository.updateTransferIban(
+                    organizationFiscalCode,
+                    oldIban,
+                    newIban,
+                    LocalDateTime.now(ZoneOffset.UTC),
+                    List.of(InstallmentStatus.UNPAID.name()),
+                    List.of(
+                            DebtPositionStatus.DRAFT.name(),
+                            DebtPositionStatus.PUBLISHED.name(),
+                            DebtPositionStatus.VALID.name(),
+                            DebtPositionStatus.PARTIALLY_PAID.name()),
+                    limit);
+        }
+        if (Boolean.TRUE.equals(writeOnOldSchema) || !writeOnNewSchema) {
+            updatedIbans = transferRepository.updateTransferIban(
+                    organizationFiscalCode,
+                    oldIban,
+                    newIban,
+                    LocalDateTime.now(ZoneOffset.UTC),
+                    List.of(PaymentOptionStatus.PO_UNPAID.name()),
+                    List.of(
+                            DebtPositionStatus.DRAFT.name(),
+                            DebtPositionStatus.PUBLISHED.name(),
+                            DebtPositionStatus.VALID.name(),
+                            DebtPositionStatus.PARTIALLY_PAID.name()),
+                    limit);
+        }
+
+        return updatedIbans;
     }
 }

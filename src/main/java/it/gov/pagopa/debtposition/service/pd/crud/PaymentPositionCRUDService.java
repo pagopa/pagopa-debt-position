@@ -56,7 +56,6 @@ public class PaymentPositionCRUDService {
     private final PaymentPositionRepository paymentPositionRepository;
     private final PaymentOptionRepository paymentOptionRepository;
     private final ModelMapper modelMapper;
-    private final TransferRepository transferRepository;
     private final DataLayerService dataLayerService;
     @Value("${nav.aux.digit}")
     private String auxDigit;
@@ -66,12 +65,10 @@ public class PaymentPositionCRUDService {
             PaymentPositionRepository paymentPositionRepository,
             PaymentOptionRepository paymentOptionRepository,
             ModelMapper modelMapper,
-            TransferRepository transferRepository,
             DataLayerService dataLayerService) {
         this.paymentPositionRepository = paymentPositionRepository;
         this.paymentOptionRepository = paymentOptionRepository;
         this.modelMapper = modelMapper;
-        this.transferRepository = transferRepository;
         this.dataLayerService = dataLayerService;
     }
 
@@ -458,19 +455,11 @@ public class PaymentPositionCRUDService {
         int numberOfUpdates = 0;
 
         // Update all Transfers that have the specified payment_option_id and oldIban as IBAN
-        numberOfUpdates +=
-                transferRepository.updateTransferIban(
-                        organizationFiscalCode,
-                        oldIban,
-                        newIban,
-                        LocalDateTime.now(ZoneOffset.UTC),
-                        List.of(PaymentOptionStatus.PO_UNPAID.name()),
-                        List.of(
-                                DebtPositionStatus.DRAFT.name(),
-                                DebtPositionStatus.PUBLISHED.name(),
-                                DebtPositionStatus.VALID.name(),
-                                DebtPositionStatus.PARTIALLY_PAID.name()),
-                        limit);
+        numberOfUpdates += dataLayerService.updateTransferIban(
+                organizationFiscalCode,
+                oldIban,
+                newIban,
+                limit);
 
         return numberOfUpdates;
     }
