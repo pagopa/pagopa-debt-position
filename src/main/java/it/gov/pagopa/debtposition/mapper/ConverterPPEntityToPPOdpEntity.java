@@ -27,7 +27,7 @@ public class ConverterPPEntityToPPOdpEntity
     public PaymentPositionOdp convert(
             MappingContext<PaymentPosition, PaymentPositionOdp> context) {
         PaymentPosition source = context.getSource();
-        PaymentPositionOdp destination = new PaymentPositionOdp();
+        PaymentPositionOdp destination = context.getDestination() != null ? context.getDestination() : new PaymentPositionOdp();
 
         destination.setIupd(source.getIupd());
         destination.setOrganizationFiscalCode(source.getOrganizationFiscalCode());
