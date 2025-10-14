@@ -20,14 +20,14 @@ microservice-chart:
     initialDelaySeconds: 60
     failureThreshold: 10
     periodSeconds: 10
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 0
-      maxSurge: 1
   deployment:
     create: true
     replicas: 1 # (default) same as HPA minReplica
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 0
+        maxSurge: 1
   service:
     create: true
     type: ClusterIP
