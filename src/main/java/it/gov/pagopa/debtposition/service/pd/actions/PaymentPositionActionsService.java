@@ -1,6 +1,6 @@
 package it.gov.pagopa.debtposition.service.pd.actions;
 
-import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.apd.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;

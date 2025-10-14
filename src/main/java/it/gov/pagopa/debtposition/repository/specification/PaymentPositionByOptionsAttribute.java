@@ -1,6 +1,6 @@
 package it.gov.pagopa.debtposition.repository.specification;
 
-import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.apd.PaymentPosition;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import java.time.LocalDateTime;
 import java.util.List;

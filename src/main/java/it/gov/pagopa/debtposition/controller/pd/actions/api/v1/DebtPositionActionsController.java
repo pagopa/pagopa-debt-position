@@ -1,6 +1,6 @@
 package it.gov.pagopa.debtposition.controller.pd.actions.api.v1;
 
-import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.apd.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
@@ -23,13 +23,10 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
   private static final String LOG_BASE_HEADER_INFO =
       "[RequestMethod: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
   private static final String LOG_BASE_PARAMS_DETAIL = "organizationFiscalCode= %s; iupd= %s";
-  private final ModelMapper modelMapper;
   private final PaymentPositionActionsService paymentPositionActionsService;
 
   @Autowired
-  public DebtPositionActionsController(
-      ModelMapper modelMapper, PaymentPositionActionsService paymentPositionActionsService) {
-    this.modelMapper = modelMapper;
+  public DebtPositionActionsController(PaymentPositionActionsService paymentPositionActionsService) {
     this.paymentPositionActionsService = paymentPositionActionsService;
   }
 

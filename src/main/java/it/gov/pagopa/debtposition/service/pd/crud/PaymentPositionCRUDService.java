@@ -4,10 +4,10 @@ import static it.gov.pagopa.debtposition.service.payments.PaymentsService.findPr
 import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
 import static org.springframework.data.jpa.domain.Specification.allOf;
 
-import it.gov.pagopa.debtposition.entity.PaymentOption;
-import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
-import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.entity.apd.PaymentOption;
+import it.gov.pagopa.debtposition.entity.apd.PaymentOptionMetadata;
+import it.gov.pagopa.debtposition.entity.apd.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.apd.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.exception.ValidationException;

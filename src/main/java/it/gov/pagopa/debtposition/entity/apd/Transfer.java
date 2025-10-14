@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.entity;
+package it.gov.pagopa.debtposition.entity.apd;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;

@@ -1,8 +1,8 @@
 package it.gov.pagopa.debtposition.controller.payments.api.impl;
 
 import it.gov.pagopa.debtposition.controller.payments.api.IPaymentsController;
-import it.gov.pagopa.debtposition.entity.PaymentOption;
-import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.entity.apd.PaymentOption;
+import it.gov.pagopa.debtposition.entity.apd.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.payments.AlreadyPaidPaymentOptionModel;
@@ -18,7 +18,6 @@ import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.CustomHttpStatus;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;

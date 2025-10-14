@@ -1,6 +1,6 @@
 package it.gov.pagopa.debtposition.mapper;
 
-import it.gov.pagopa.debtposition.entity.*;
+import it.gov.pagopa.debtposition.entity.apd.*;
 import it.gov.pagopa.debtposition.model.pd.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;

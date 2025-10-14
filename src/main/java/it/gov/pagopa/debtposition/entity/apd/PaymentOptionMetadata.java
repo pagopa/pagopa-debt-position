@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.entity;
+package it.gov.pagopa.debtposition.entity.apd;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -22,11 +22,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Table(
-    name = "transfer_metadata",
+    name = "payment_option_metadata",
     uniqueConstraints = {
       @UniqueConstraint(
-          name = "UniqueTransferMetadata",
-          columnNames = {"\"key\"", "transfer_id"})
+          name = "UniquePaymentOptMetadata",
+          columnNames = {"\"key\"", "payment_option_id"})
     })
 @Data
 @NoArgsConstructor
@@ -35,17 +35,17 @@ import lombok.NoArgsConstructor;
 @Builder
 @JsonIdentityInfo(
     generator = ObjectIdGenerators.IntSequenceGenerator.class,
-    property = "@transferMetadataId")
-public class TransferMetadata implements Serializable {
+    property = "@paymentOptionMetadataId")
+public class PaymentOptionMetadata implements Serializable {
 
   /** generated serialVersionUID */
-  private static final long serialVersionUID = -385216542341056723L;
+  private static final long serialVersionUID = -9014105148787448923L;
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "TRANSFER_METADATA_SEQ")
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "PAYMENT_OPT_METADATA_SEQ")
   @SequenceGenerator(
-      name = "TRANSFER_METADATA_SEQ",
-      sequenceName = "TRANSFER_METADATA_SEQ",
+      name = "PAYMENT_OPT_METADATA_SEQ",
+      sequenceName = "PAYMENT_OPT_METADATA_SEQ",
       allocationSize = 1)
   private Long id;
 
@@ -57,10 +57,10 @@ public class TransferMetadata implements Serializable {
   private String value;
 
   @ManyToOne(
-      targetEntity = Transfer.class,
+      targetEntity = PaymentOption.class,
       fetch = FetchType.LAZY,
       optional = false,
       cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-  @JoinColumn(name = "transfer_id")
-  private Transfer transfer;
+  @JoinColumn(name = "payment_option_id")
+  private PaymentOption paymentOption;
 }
