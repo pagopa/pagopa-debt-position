@@ -89,9 +89,12 @@ public class DebtPositionController implements IDebtPositionController {
         paymentPositionService.create(
             debtPosition, organizationFiscalCode, toPublish, segCodes, CREATE_ACTION);
 
-    if (null != createdDebtPos) {
-      PaymentPositionModel paymentPosition =
-          ObjectMapperUtils.map(createdDebtPos, PaymentPositionModel.class);
+	if (null != createdDebtPos) {
+		PaymentPositionModel paymentPosition = ObjectMapperUtils.map(createdDebtPos, PaymentPositionModel.class);
+		// set the switchToExpired flag in the response
+		boolean anyMatchSwitchToExpired = createdDebtPos.getPaymentOption() != null && createdDebtPos.getPaymentOption()
+				.stream().anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
+		paymentPosition.setSwitchToExpired(anyMatchSwitchToExpired);
       return new ResponseEntity<>(paymentPosition, HttpStatus.CREATED);
     }
 
@@ -257,6 +260,10 @@ public class DebtPositionController implements IDebtPositionController {
     if (null != updatedDebtPos) {
       PaymentPositionModel paymentPosition =
           ObjectMapperUtils.map(updatedDebtPos, PaymentPositionModel.class);
+      // set the switchToExpired flag in the response
+   	  boolean anyMatchSwitchToExpired = updatedDebtPos.getPaymentOption() != null && updatedDebtPos.getPaymentOption()
+   				.stream().anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
+   	  paymentPosition.setSwitchToExpired(anyMatchSwitchToExpired);
       return new ResponseEntity<>(paymentPosition, HttpStatus.OK);
     }
 

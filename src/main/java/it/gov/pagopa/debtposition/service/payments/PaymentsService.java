@@ -72,6 +72,7 @@ public class PaymentsService {
     }
 
     Installment paymentOption = po.get();
+    
     // Update PaymentPosition instance only in memory
     // PaymentPosition used when converting PaymentOption to POWithDebtor
     DebtPositionStatus.validityCheckAndUpdate(paymentOption);

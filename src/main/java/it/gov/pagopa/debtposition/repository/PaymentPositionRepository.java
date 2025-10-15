@@ -55,23 +55,30 @@ public interface PaymentPositionRepository
    * - UPDATE PaymentPosition pp SET ... WHERE pp.id IN :ids
    * verbose with two round-trips.
    */
-	@Modifying
-	@Query(value = """
-			UPDATE payment_position pp
-			SET status = :status,
-			    last_updated_date = :currentDate,
-			    version = pp.version + 1
-			WHERE pp.max_due_date < :currentDate
-			  AND pp.status = 'VALID'
-			  AND EXISTS (
-			      SELECT 1
-			      FROM installment i
-			      WHERE i.payment_position_id = pp.id
-			        AND i.switch_to_expired = true
-			  )
-			""", nativeQuery = true)
-	int updatePaymentPositionStatusToExpired(@Param("currentDate") LocalDateTime currentDate,
-			@Param("status") DebtPositionStatus status);
+  @Modifying
+  @Query(value = """
+      UPDATE payment_position pp
+      SET status = 'EXPIRED',
+          last_updated_date = :currentDate,
+          version = pp.version + 1
+      WHERE pp.max_due_date < :currentDate
+        AND pp.status = 'VALID'
+        AND pp.payment_date IS NULL
+        AND EXISTS (
+            SELECT 1
+            FROM installment i
+            WHERE i.payment_position_id = pp.id
+              AND i.switch_to_expired = true
+              AND i.status = 'PO_UNPAID'
+        )
+        AND NOT EXISTS (
+            SELECT 1
+            FROM installment i2
+            WHERE i2.payment_position_id = pp.id
+              AND i2.status <> 'PO_UNPAID'
+        )
+      """, nativeQuery = true)
+  int updatePaymentPositionStatusToExpired(@Param("currentDate") LocalDateTime currentDate);
 
   // Derived Query - using method naming convention - get parent PaymentPosition from child
   // PaymentOption properties

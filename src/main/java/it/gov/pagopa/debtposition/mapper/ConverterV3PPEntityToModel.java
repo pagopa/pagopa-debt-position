@@ -34,7 +34,7 @@ public class ConverterV3PPEntityToModel
     destination.setStatus(DebtPositionStatusV3.valueOf(source.getStatus().name()));
 
     LocalDateTime validityDate = source.getValidityDate();
-    Boolean switchToExpired = source.getSwitchToExpired();
+    //Boolean switchToExpired = source.getSwitchToExpired();
 
     List<Installment> paymentOptions = source.getPaymentOption();
     if (paymentOptions == null || paymentOptions.isEmpty()) {
@@ -52,13 +52,17 @@ public class ConverterV3PPEntityToModel
     List<PaymentOptionModelV3> paymentOptionsToAdd = new ArrayList<>();
 
     if (null != partialPO && !partialPO.isEmpty()) {
-      PaymentOptionModelV3 pov3 = this.convertPartialPO(partialPO, validityDate, switchToExpired);
+      // If at least one of the partial POs is marked as switchToExpired, the whole PO must be
+      boolean partialAnyMarkedExpired = partialPO.stream()
+    	        .anyMatch(i -> Boolean.TRUE.equals(i.getSwitchToExpired()));
+      PaymentOptionModelV3 pov3 = this.convertPartialPO(partialPO, validityDate, partialAnyMarkedExpired);
       paymentOptionsToAdd.add(pov3);
     }
 
     if (null != uniquePO && !uniquePO.isEmpty()) {
-      List<PaymentOptionModelV3> pov3List =
-          uniquePO.stream().map(po -> convertUniquePO(po, validityDate, switchToExpired)).toList();
+      List<PaymentOptionModelV3> pov3List = uniquePO.stream()
+    	        .map(po -> convertUniquePO(po, validityDate, Boolean.TRUE.equals(po.getSwitchToExpired())))
+    	        .toList();
       paymentOptionsToAdd.addAll(pov3List);
     }
 

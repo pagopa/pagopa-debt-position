@@ -139,9 +139,11 @@ public class PaymentPosition implements Serializable {
   @Column(name = "switch_to_expired", columnDefinition = "boolean DEFAULT false")
   private Boolean switchToExpired = false;*/
   
+  // TO: da rimuovere
+  /*
   @Transient
   @Builder.Default
-  private Boolean switchToExpired = false; // used only to propagate to installments
+  private Boolean switchToExpired = false; // used only to propagate to installments*/
 
   @Builder.Default
   @NotNull

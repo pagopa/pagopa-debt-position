@@ -62,18 +62,21 @@ public enum DebtPositionStatus {
     }
     return pp;
   }
-
+  
   public static PaymentPosition expirationCheckAndUpdate(PaymentPosition pp) {
-    LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-    // Expiration check on the fly
-    if (pp.getSwitchToExpired()
-        && pp.getStatus().equals(DebtPositionStatus.VALID)
-        && null != pp.getMaxDueDate()
-        && currentDate.isAfter(pp.getMaxDueDate())) {
-      pp.setStatus(DebtPositionStatus.EXPIRED);
-    }
-    return pp;
+	LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+
+	// switchToExpired = true if at least one installment has switchToExpired = true
+	boolean anySwitchToExpired = pp.getPaymentOption() != null && !pp.getPaymentOption().isEmpty()
+			&& pp.getPaymentOption().stream().anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
+
+	if (anySwitchToExpired && pp.getStatus() == DebtPositionStatus.VALID && pp.getMaxDueDate() != null
+			&& currentDate.isAfter(pp.getMaxDueDate())) {
+		pp.setStatus(DebtPositionStatus.EXPIRED);
+	}
+	return pp;
   }
+
 
   public static PaymentPosition validityCheckAndUpdate(Installment po) {
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
@@ -86,19 +89,23 @@ public enum DebtPositionStatus {
     }
     return pp;
   }
-
+  
   public static PaymentPosition expirationCheckAndUpdate(Installment po) {
-    LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-    // Expiration check on the fly
-    PaymentPosition pp = po.getPaymentPosition();
-    if (pp.getSwitchToExpired()
-        && pp.getStatus().equals(DebtPositionStatus.VALID)
-        && null != pp.getMaxDueDate()
-        && currentDate.isAfter(pp.getMaxDueDate())) {
-      pp.setStatus(DebtPositionStatus.EXPIRED);
-    }
-    return pp;
-  }
+	LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+	PaymentPosition pp = po.getPaymentPosition();
+
+	// switchToExpired = true if at least one installment has switchToExpired = true
+	boolean anySwitchToExpired = pp.getPaymentOption() != null && !pp.getPaymentOption().isEmpty()
+			&& pp.getPaymentOption().stream().anyMatch(i -> Boolean.TRUE.equals(i.getSwitchToExpired()));
+
+	if (anySwitchToExpired && pp.getStatus() == DebtPositionStatus.VALID && pp.getMaxDueDate() != null
+			&& currentDate.isAfter(pp.getMaxDueDate())) {
+		pp.setStatus(DebtPositionStatus.EXPIRED);
+	}
+
+	return pp;
+ }
+
 
   /**
    * Checks if the user is trying to pay the full amount for the payment position but there is an

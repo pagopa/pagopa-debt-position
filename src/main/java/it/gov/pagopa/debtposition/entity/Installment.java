@@ -68,9 +68,8 @@ public class Installment implements Serializable {
   @Column(name = "organization_fiscal_code")
   private String organizationFiscalCode;
   
-  // payment_plan_id ('0:<uuid>' for single, '1:<uuid>' for installment plans)
-  @NotNull
-  @Column(name = "payment_plan_id", nullable = false, length = 50)
+  // payment_plan_id (null for single, '<uuid>' for installment plans)
+  @Column(name = "payment_plan_id", length = 50)
   private String paymentPlanId;
 
   @NotNull private long amount;

@@ -42,6 +42,4 @@ public interface PaymentOptionRepository
   int updatePaymentOptionSendSync(
           @Param(value = "organization") String organizationFiscalCode,
           @Param(value = "noticeNumber") String noticeNumber);
-  
-  boolean existsByPaymentPosition_IdAndSwitchToExpiredTrue(Long paymentPositionId);
 }

@@ -45,8 +45,8 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     destination.setCompanyName(source.getCompanyName());
     destination.setOfficeName(source.getOfficeName());
     destination.setValidityDate(source.getValidityDate());
-    destination.setSwitchToExpired(source.getSwitchToExpired());
-
+    //destination.setSwitchToExpired(source.getSwitchToExpired());
+    
     mapAndUpdatePaymentOptions(source, destination);
   }
 
