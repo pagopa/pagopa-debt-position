@@ -13,12 +13,7 @@ WHERE switch_to_expired IS NULL;
 ALTER TABLE installment
   ALTER COLUMN switch_to_expired SET NOT NULL,
   ALTER COLUMN switch_to_expired SET DEFAULT false;
-
--- 4 indice composito per velocizzare existsByPaymentPosition_IdAndSwitchToExpiredTrue (capire se ha senso aggiungerlo)  
---CREATE INDEX IF NOT EXISTS idx_installment_ppid_switch_expired
---  ON installment(payment_position_id, switch_to_expired)
---  WHERE switch_to_expired = true;
   
--- 5 drop from payment_position
+-- 4 drop from payment_position
 --ALTER TABLE payment_position
 --  DROP COLUMN IF EXISTS switch_to_expired;

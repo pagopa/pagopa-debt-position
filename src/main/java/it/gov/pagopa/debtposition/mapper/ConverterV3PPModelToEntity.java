@@ -42,7 +42,6 @@ public class ConverterV3PPModelToEntity
     destination.setCompanyName(source.getCompanyName());
     destination.setOfficeName(source.getOfficeName());
     destination.setValidityDate(getValidityDate(source.getPaymentOption()));
-    //destination.setSwitchToExpired(getSwitchToExpired(source.getPaymentOption()));
 
     mapAndUpdateInstallments(source, destination);
   }
