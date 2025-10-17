@@ -14,7 +14,10 @@ import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel, PaymentPosition> {
@@ -42,16 +45,46 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
 
         List<PaymentOptionModel> sourcePOs = source.getPaymentOption();
         if (sourcePOs != null && !sourcePOs.isEmpty()) {
-            mapAndUpdatePaymentOptions(source, sourcePOs, destination);
+            mapAndUpdatePaymentOptions(source, destination);
         } else {
-            destination.setPaymentOption(null);
+            destination.setPaymentOption(new ArrayList<>());
         }
     }
 
-    private void mapAndUpdatePaymentOptions(PaymentPositionModel source, List<PaymentOptionModel> sourcePOs, PaymentPosition destination) {
+    private void mapAndUpdatePaymentOptions(
+            PaymentPositionModel source, PaymentPosition destination) {
+        List<String> sourceIUVs = new ArrayList<>(source.getPaymentOption().stream().map(PaymentOptionModel::getIuv).toList());
+
+        // DELETE orphans installments & empty POs
+        for (PaymentOption destinationPo : destination.getPaymentOption()) {
+            List<Installment> installmentsToDelete = destinationPo.getInstallment().stream().filter(inst -> !sourceIUVs.contains(inst.getIuv())).toList();
+
+            destinationPo.getInstallment().removeAll(installmentsToDelete);
+            if (destinationPo.getInstallment().isEmpty()) {
+                destination.getPaymentOption().remove(destinationPo);
+            }
+            sourceIUVs.removeAll(installmentsToDelete.stream().map(Installment::getIuv).toList());
+        }
+
+        // UPDATE existing POs
+        for (PaymentOption destinationPo : destination.getPaymentOption()) {
+            PaymentOptionModel sourcePOByIuv = source.getPaymentOption().stream().filter(
+                    po -> destinationPo.getInstallment().stream().anyMatch(inst -> inst.getIuv().equals(po.getIuv()))).toList().get(0);;
+
+            for (Installment installment : destinationPo.getInstallment()) {
+                sourcePOByIuv = source.getPaymentOption().stream().filter(po -> po.getIuv().equals(installment.getIuv())).toList().get(0);
+
+                mapAndUpdateInstallment(sourcePOByIuv, installment);
+                sourceIUVs.remove(sourcePOByIuv.getIuv());
+            }
+            mapAndUpdateSinglePaymentOption(source, sourcePOByIuv, destinationPo);
+        }
+
+        // CREATE remaining POs
+        List<PaymentOptionModel> remainingSourcePO = source.getPaymentOption().stream().filter(po -> sourceIUVs.contains(po.getIuv())).toList();
         // Partitioning the payment options into partial and unique POs
         Map<Boolean, List<PaymentOptionModel>> partitionedPO =
-                sourcePOs.stream()
+                remainingSourcePO.stream()
                         .collect(Collectors.partitioningBy(PaymentOptionModel::getIsPartialPayment));
 
         // Extracting the partial and unique POs
@@ -60,45 +93,51 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
         List<PaymentOption> paymentOptionsToAdd = new ArrayList<>();
 
         if (null != partialPO && !partialPO.isEmpty()) {
-            paymentOptionsToAdd.add(this.mapAndUpdatePartialPO(source, partialPO, destination));
+            paymentOptionsToAdd.add(this.createPartialPo(source, partialPO));
         }
 
         if (null != uniquePO && !uniquePO.isEmpty()) {
             List<PaymentOption> tempPoList =
-                    uniquePO.stream().map(sourcePO -> mapAndUpdateUniquePO(source, sourcePO, destination)).toList();
+                    uniquePO.stream().map(sourcePO -> this.createUniquePo(source, sourcePO)).toList();
             paymentOptionsToAdd.addAll(tempPoList);
         }
 
-        destination.setPaymentOption(paymentOptionsToAdd);
+        destination.getPaymentOption().addAll(paymentOptionsToAdd);
     }
 
-    // 1 unique PO -> 1 PaymentOption composed by 1 installment
-    private PaymentOption mapAndUpdateUniquePO(
-            PaymentPositionModel source, PaymentOptionModel sourcePO, PaymentPosition destination) {
-        PaymentOption destinationPO = mapAndUpdateSinglePaymentOption(source, sourcePO, destination);
+    private PaymentOption createUniquePo(
+            PaymentPositionModel source, PaymentOptionModel sourcePO) {
+        PaymentOption destinationPO = new PaymentOption();
+        mapAndUpdateSinglePaymentOption(source, sourcePO, destinationPO);
         // set installment
-        List<Installment> installments = Collections.singletonList(convertInstallment(sourcePO, destinationPO));
+        Installment destinationInstallment = new Installment();
+        mapAndUpdateInstallment(sourcePO, destinationInstallment);
+
+        List<Installment> installments = Collections.singletonList(destinationInstallment);
         destinationPO.setInstallment(installments);
         return destinationPO;
     }
 
     // N partial PO -> 1 PaymentOption composed by N installment
-    private PaymentOption mapAndUpdatePartialPO(
-            PaymentPositionModel source, List<PaymentOptionModel> sourcePartialPOs, PaymentPosition destination) {
+    private PaymentOption createPartialPo(
+            PaymentPositionModel source, List<PaymentOptionModel> sourcePartialPOs) {
         // Get only the first to fill common data for partial PO (retentionDate, insertedDate, debtor)
-        PaymentOption destinationPO = mapAndUpdateSinglePaymentOption(source, sourcePartialPOs.get(0), destination);
+        PaymentOption destinationPO = new PaymentOption();
+        mapAndUpdateSinglePaymentOption(source, sourcePartialPOs.get(0), destinationPO);
 
         // Set installments
         List<Installment> installments =
-                sourcePartialPOs.stream().map(sourcePO -> convertInstallment(sourcePO, destinationPO)).toList();
+                sourcePartialPOs.stream().map(sourcePO -> {
+                    Installment destinationInstallment = new Installment();
+                    mapAndUpdateInstallment(sourcePO, destinationInstallment);
+                    return destinationInstallment;
+                }).toList();
         destinationPO.setInstallment(installments);
         return destinationPO;
     }
 
-    private PaymentOption mapAndUpdateSinglePaymentOption(
-            PaymentPositionModel source, PaymentOptionModel sourceOption, PaymentPosition destination) {
-        PaymentOption destinationPo = destination.getPaymentOption().stream().filter(po -> po.getInstallment().stream().anyMatch(inst -> inst.getIuv() == sourceOption.getIuv())).findFirst().orElse(new PaymentOption());
-
+    private void mapAndUpdateSinglePaymentOption(
+            PaymentPositionModel source, PaymentOptionModel sourceOption, PaymentOption destinationPo) {
         destinationPo.setDescription(sourceOption.getDescription());
         destinationPo.setValidityDate(source.getValidityDate());
         destinationPo.setRetentionDate(sourceOption.getRetentionDate());
@@ -116,12 +155,9 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
         destinationPo.setDebtorCountry(source.getCountry());
         destinationPo.setDebtorEmail(source.getEmail());
         destinationPo.setDebtorPhone(source.getPhone());
-
-        return destinationPo;
     }
 
-    private Installment convertInstallment(PaymentOptionModel sourcePO, PaymentOption destinationPo) {
-        Installment destinationInstallment = destinationPo.getInstallment().stream().filter(inst -> Objects.equals(inst.getIuv(), sourcePO.getIuv())).findFirst().orElse(new Installment());
+    private void mapAndUpdateInstallment(PaymentOptionModel sourcePO, Installment destinationInstallment) {
         destinationInstallment.setNav(sourcePO.getNav());
         destinationInstallment.setIuv(sourcePO.getIuv());
         destinationInstallment.setAmount(sourcePO.getAmount());
@@ -130,12 +166,33 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
         destinationInstallment.setFee(sourcePO.getFee());
         destinationInstallment.setLastUpdatedDate(LocalDateTime.now());
 
-        destinationInstallment.setTransfer(sourcePO.getTransfer().stream().map(sourceTr -> mapSingleTransfer(sourceTr, destinationInstallment)).toList());
-        return destinationInstallment;
+        List<String> sourceTransferIdList = new ArrayList<>(sourcePO.getTransfer().stream().map(TransferModel::getIdTransfer).toList());
+
+        // DELETE orphans Transfers
+        List<Transfer> transfersToDelete = destinationInstallment.getTransfer().stream().filter(tr -> !sourceTransferIdList.contains(tr.getTransferId())).toList();
+        destinationInstallment.getTransfer().removeAll(transfersToDelete);
+        sourceTransferIdList.removeAll(transfersToDelete.stream().map(Transfer::getTransferId).toList());
+
+        // UPDATE existing Transfers
+        for (Transfer destinationTransfer : destinationInstallment.getTransfer()) {
+            TransferModel sourceTransfer = sourcePO.getTransfer().stream().filter(
+                    tr -> tr.getIdTransfer().equals(destinationTransfer.getTransferId())).toList().get(0);
+
+            mapAndUpdateSingleTransfer(sourceTransfer, destinationTransfer);
+
+            sourceTransferIdList.remove(sourceTransfer.getIdTransfer());
+        }
+        // CREATE new Transfers
+        List<TransferModel> remainingSourceTr = sourcePO.getTransfer().stream().filter(tr -> sourceTransferIdList.contains(tr.getIdTransfer())).toList();
+        for (TransferModel sourceTransfer : remainingSourceTr) {
+            Transfer destinationTransfer = new Transfer();
+            mapAndUpdateSingleTransfer(sourceTransfer, destinationTransfer);
+
+            destinationInstallment.getTransfer().add(destinationTransfer);
+        }
     }
 
-    private Transfer mapSingleTransfer(TransferModel source, Installment destinationInstallment) {
-        Transfer transferDestination = destinationInstallment.getTransfer().stream().filter(tr -> Objects.equals(tr.getTransferId(), source.getIdTransfer())).findFirst().orElse(new Transfer());
+    private void mapAndUpdateSingleTransfer(TransferModel source, Transfer transferDestination) {
         transferDestination.setAmount(source.getAmount());
         transferDestination.setCategory(source.getCategory());
         // TODO where has it gone  destination.setCompanyName(source.getCompanyName());
@@ -151,9 +208,6 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
             transferDestination.setProvincialResidence(stamp.getProvincialResidence());
             transferDestination.setStampType(stamp.getStampType());
         }
-
-        return transferDestination;
-
         //TODO mapAndUpdateTransferMetadata(source, destination);
     }
 
