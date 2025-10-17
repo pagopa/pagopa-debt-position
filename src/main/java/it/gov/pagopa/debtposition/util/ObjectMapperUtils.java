@@ -1,107 +1,202 @@
 package it.gov.pagopa.debtposition.util;
 
+import it.gov.pagopa.debtposition.entity.Installment;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
-import it.gov.pagopa.debtposition.mapper.ConverterV3PPEntityToModelResponse;
+import it.gov.pagopa.debtposition.mapper.*;
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatusV3;
+import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
+import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
+import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
+import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
+import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
+import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
+import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import it.gov.pagopa.debtposition.model.v3.response.PaymentPositionModelResponseV3;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;
 import org.modelmapper.convention.MatchingStrategies;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class ObjectMapperUtils {
 
-  private static final ModelMapper modelMapper;
+    private static final ModelMapper modelMapper;
 
-  private static final Converter<Transfer, Stamp> stampConverter =
-      context -> {
-        Transfer t = context.getSource();
-        if (t.getHashDocument() == null
-            && t.getStampType() == null
-            && t.getProvincialResidence() == null) {
-          return null;
-        }
-        return new Stamp(t.getHashDocument(), t.getStampType(), t.getProvincialResidence());
-      };
+    private static final Converter<Transfer, Stamp> stampConverter =
+            context -> {
+                Transfer t = context.getSource();
+                if (t.getHashDocument() == null
+                        && t.getStampType() == null
+                        && t.getProvincialResidence() == null) {
+                    return null;
+                }
+                return new Stamp(t.getHashDocument(), t.getStampType(), t.getProvincialResidence());
+            };
 
-  /**
-   * Model mapper property setting are specified in the following block. Default property matching
-   * strategy is set to Strict see {@link MatchingStrategies} Custom mappings are added using {@link
-   * ModelMapper#addMappings(PropertyMap)}
-   */
-  static {
-    modelMapper = new ModelMapper();
-    modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+    /**
+     * Model mapper property setting are specified in the following block. Default property matching
+     * strategy is set to Strict see {@link MatchingStrategies} Custom mappings are added using {@link
+     * ModelMapper#addMappings(PropertyMap)}
+     */
+    static {
+        modelMapper = new ModelMapper();
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
-    // Add custom mapping from Transfer to TransferModel
-    modelMapper.addMappings(
-        new PropertyMap<Transfer, TransferModel>() {
-          @Override
-          protected void configure() {
-            using(stampConverter).map(source, destination.getStamp());
-          }
-        });
+        // Convert PaymentPosition model to PaymentPosition entity
+        Converter<PaymentPositionModel, PaymentPosition> convertPPModelToPPEntity =
+                new ConvertPPModelToPPEntity();
+        modelMapper
+                .createTypeMap(PaymentPositionModel.class, PaymentPosition.class)
+                .setConverter(convertPPModelToPPEntity);
 
-    // Add custom mapping from Transfer to TransferModelResponse
-    modelMapper.addMappings(
-        new PropertyMap<Transfer, TransferModelResponse>() {
-          @Override
-          protected void configure() {
-            using(stampConverter).map(source, destination.getStamp());
-          }
-        });
+        // Convert PaymentPosition entity to PaymentPositionModel
+        Converter<PaymentPosition, PaymentPositionModel> convertPPEntityToPPModel =
+                new ConverterPPEntityToModel();
+        modelMapper
+                .createTypeMap(PaymentPosition.class, PaymentPositionModel.class)
+                .setConverter(convertPPEntityToPPModel);
 
-    // GPD version 3 (also known as OdP API) output mapper
-    Converter<PaymentPosition, PaymentPositionModelResponseV3> convertPPv3EntityToPPv3Response =
-        new ConverterV3PPEntityToModelResponse();
-    modelMapper
-        .createTypeMap(PaymentPosition.class, PaymentPositionModelResponseV3.class)
-        .setConverter(convertPPv3EntityToPPv3Response);
-  }
+        // Convert PaymentPosition entity to PaymentPosition model response
+        Converter<PaymentPosition, PaymentPositionModelBaseResponse> converterPPEntityToModelResponse =
+                new ConverterPPEntityToModelResponse();
+        modelMapper
+                .createTypeMap(PaymentPosition.class, PaymentPositionModelBaseResponse.class)
+                .setConverter(converterPPEntityToModelResponse);
 
-  /** Hide from public usage. */
-  private ObjectMapperUtils() {}
+        // GPD version 1 converter used to return a paid Payment Option data (differs from default
+        // mapping by serviceType adding).
+        Converter<PaymentOption, PaidPaymentOptionModel> convertPOEntityToPaidPOModel =
+                new ConvertPOEntityToPaidPOModel();
+        modelMapper
+                .createTypeMap(PaymentOption.class, PaidPaymentOptionModel.class)
+                .setConverter(convertPOEntityToPaidPOModel);
 
-  /**
-   * Note: outClass object must have default constructor with no arguments
-   *
-   * @param <D> type of result object.
-   * @param <T> type of source object to map from.
-   * @param entity entity that needs to be mapped.
-   * @param outClass class of result object.
-   * @return new object of <code>outClass</code> type.
-   */
-  public static <D, T> D map(final T entity, Class<D> outClass) {
-    return modelMapper.map(entity, outClass);
-  }
+        // GPD version 1 converter used to return a Payment Option with debtor data.
+        Converter<Installment, PaymentOptionWithDebtorInfoModelResponse>
+                convertInstallmentEntityToPOWithDebtor = new ConvertInstallmentEntityToPOWithDebtor();
+        modelMapper
+                .createTypeMap(Installment.class, PaymentOptionWithDebtorInfoModelResponse.class)
+                .setConverter(convertInstallmentEntityToPOWithDebtor);
 
-  /**
-   * Note: outClass object must have default constructor with no arguments
-   *
-   * @param entityList list of entities that needs to be mapped
-   * @param outCLass class of result list element
-   * @param <D> type of objects in result list
-   * @param <T> type of entity in <code>entityList</code>
-   * @return list of mapped object with <code><D></code> type.
-   */
-  public static <D, T> List<D> mapAll(final Collection<T> entityList, Class<D> outCLass) {
-    return entityList.stream().map(entity -> map(entity, outCLass)).collect(Collectors.toList());
-  }
+        // GPD version 3 (also known as OdP API) input mapper
+        Converter<PaymentPositionModelV3, PaymentPosition> convertPPV3ModelToPPEntity =
+                new ConverterV3PPModelToEntity();
+        modelMapper
+                .createTypeMap(PaymentPositionModelV3.class, PaymentPosition.class)
+                .setConverter(convertPPV3ModelToPPEntity);
 
-  /**
-   * Maps {@code source} to {@code destination}.
-   *
-   * @param source object to map from
-   * @param destination object to map to
-   */
-  public static <S, D> D map(final S source, D destination) {
-    modelMapper.map(source, destination);
-    return destination;
-  }
+        // GPD version 3 (also known as OdP API) output mapper response
+        Converter<PaymentPosition, PaymentPositionModelResponseV3> convertPPv3EntityToPPv3Response =
+                new ConverterV3PPEntityToModelResponse();
+        modelMapper
+                .createTypeMap(PaymentPosition.class, PaymentPositionModelResponseV3.class)
+                .setConverter(convertPPv3EntityToPPv3Response);
+
+        // GPD version 3 (also known as OdP API) output mapper
+        Converter<PaymentPosition, PaymentPositionModelV3> converterV3PPEntityToModel =
+                new ConverterV3PPEntityToModel();
+        modelMapper
+                .createTypeMap(PaymentPosition.class, PaymentPositionModelV3.class)
+                .setConverter(converterV3PPEntityToModel);
+
+        // Add custom mapping from Transfer to TransferModel
+        modelMapper.addMappings(
+                new PropertyMap<Transfer, TransferModel>() {
+                    @Override
+                    protected void configure() {
+                        using(stampConverter).map(source, destination.getStamp());
+                    }
+                });
+
+        // Add custom mapping from Transfer to TransferModelResponse
+        modelMapper.addMappings(
+                new PropertyMap<Transfer, TransferModelResponse>() {
+                    @Override
+                    protected void configure() {
+                        using(stampConverter).map(source, destination.getStamp());
+                    }
+                });
+
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        modelMapper.addMappings(
+                new PropertyMap<PaymentPosition, PaymentPosition>() {
+                    @Override
+                    protected void configure() {
+                        skip(destination.getServiceType()); // Skip mapping of the serviceType field
+                        skip(destination.getPaymentOption());
+                    }
+                });
+    }
+
+    public static PaymentOptionStatus mapInstallmentStatusToPoStatus(InstallmentStatus installmentStatus) {
+        return switch (installmentStatus) {
+            case UNPAID, EXPIRED, UNPAYABLE -> PaymentOptionStatus.PO_UNPAID;
+            case PAID -> PaymentOptionStatus.PO_PAID;
+            case PARTIALLY_REPORTED -> PaymentOptionStatus.PO_PARTIALLY_REPORTED;
+            case REPORTED -> PaymentOptionStatus.PO_REPORTED;
+        };
+    }
+
+    public static DebtPositionStatus mapPpStatusV3ToPpStatus(DebtPositionStatusV3 debtPositionStatusV3) {
+        return switch (debtPositionStatusV3) {
+            case DRAFT -> DebtPositionStatus.DRAFT;
+            case PUBLISHED -> DebtPositionStatus.PUBLISHED;
+            case VALID -> DebtPositionStatus.VALID;
+            case UNPAYABLE -> DebtPositionStatus.INVALID;
+            case PARTIALLY_PAID -> DebtPositionStatus.PARTIALLY_PAID;
+            case PAID -> DebtPositionStatus.PAID;
+        };
+    }
+
+    /**
+     * Hide from public usage.
+     */
+    private ObjectMapperUtils() {
+    }
+
+    /**
+     * Note: outClass object must have default constructor with no arguments
+     *
+     * @param <D>      type of result object.
+     * @param <T>      type of source object to map from.
+     * @param entity   entity that needs to be mapped.
+     * @param outClass class of result object.
+     * @return new object of <code>outClass</code> type.
+     */
+    public static <D, T> D map(final T entity, Class<D> outClass) {
+        return modelMapper.map(entity, outClass);
+    }
+
+    /**
+     * Note: outClass object must have default constructor with no arguments
+     *
+     * @param entityList list of entities that needs to be mapped
+     * @param outCLass   class of result list element
+     * @param <D>        type of objects in result list
+     * @param <T>        type of entity in <code>entityList</code>
+     * @return list of mapped object with <code><D></code> type.
+     */
+    public static <D, T> List<D> mapAll(final Collection<T> entityList, Class<D> outCLass) {
+        return entityList.stream().map(entity -> map(entity, outCLass)).collect(Collectors.toList());
+    }
+
+    /**
+     * Maps {@code source} to {@code destination}.
+     *
+     * @param source      object to map from
+     * @param destination object to map to
+     */
+    public static <S, D> D map(final S source, D destination) {
+        modelMapper.map(source, destination);
+        return destination;
+    }
 }

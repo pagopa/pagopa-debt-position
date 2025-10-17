@@ -32,7 +32,7 @@ public class PaymentOptionByAttribute implements Specification<PaymentOption> {
     this.segregationCodes = segregationCodes;
   }
 
-  public Predicate toPredicate(
+  public Predicate toPredicate( // TODO SWITCH TO INSTALLMENT
       Root<PaymentOption> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
 
     Predicate paymentPositionIdPredicate =
