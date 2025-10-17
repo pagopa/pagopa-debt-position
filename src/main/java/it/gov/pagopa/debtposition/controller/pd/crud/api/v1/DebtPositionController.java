@@ -256,7 +256,7 @@ public class DebtPositionController implements IDebtPositionController {
 
     if (null != updatedDebtPos) {
       PaymentPositionModel paymentPosition =
-          ObjectMapperUtils.map(updatedDebtPos, PaymentPositionModel.class);
+          modelMapper.map(updatedDebtPos, PaymentPositionModel.class);
       return new ResponseEntity<>(paymentPosition, HttpStatus.OK);
     }
 
