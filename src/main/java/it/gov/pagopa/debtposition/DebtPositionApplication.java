@@ -41,12 +41,19 @@ public class DebtPositionApplication {
           }
         });
 
-    // Convert PaymentPosition entity to PaymentPositionModel
+    // Convert PaymentPosition model to PaymentPosition entity
     Converter<PaymentPositionModel, PaymentPosition> convertPPModelToPPEntity =
             new ConvertPPModelToPPEntity();
     modelMapper
         .createTypeMap(PaymentPositionModel.class, PaymentPosition.class)
         .setConverter(convertPPModelToPPEntity);
+
+    // Convert PaymentPosition entity to PaymentPositionModel
+    Converter<PaymentPosition, PaymentPositionModel> convertPPEntityToPPModel =
+            new ConverterPPEntityToModel();
+    modelMapper
+            .createTypeMap(PaymentPosition.class, PaymentPositionModel.class)
+            .setConverter(convertPPEntityToPPModel);
 
     // GPD version 1 converter used to return a paid Payment Option data (differs from default
     // mapping by serviceType adding).
