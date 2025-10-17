@@ -1,6 +1,6 @@
 package it.gov.pagopa.debtposition.repository.specification;
 
-import it.gov.pagopa.debtposition.entity.apd.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import java.util.List;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;

@@ -1,7 +1,7 @@
 package it.gov.pagopa.debtposition.repository.specification;
 
-import it.gov.pagopa.debtposition.entity.apd.PaymentOption;
-import it.gov.pagopa.debtposition.entity.apd.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,7 +32,7 @@ public class PaymentOptionByAttribute implements Specification<PaymentOption> {
     this.segregationCodes = segregationCodes;
   }
 
-  public Predicate toPredicate(
+  public Predicate toPredicate( // TODO SWITCH TO INSTALLMENT
       Root<PaymentOption> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
 
     Predicate paymentPositionIdPredicate =

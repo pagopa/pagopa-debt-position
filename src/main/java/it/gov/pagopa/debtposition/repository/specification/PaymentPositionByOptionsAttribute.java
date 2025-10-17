@@ -1,6 +1,6 @@
 package it.gov.pagopa.debtposition.repository.specification;
 
-import it.gov.pagopa.debtposition.entity.apd.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,6 +13,7 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
   private static final long serialVersionUID = 6534338388239897792L;
 
   private static final String PAYMENT_OPT_JOIN = "paymentOption";
+  private static final String INSTALLMENT_JOIN = "installment";
   private static final String DUEDATE_FIELD = "dueDate";
   private static final String IUV_FIELD = "iuv";
 
@@ -27,25 +28,26 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
     this.segregationCodes = segregationCodes;
   }
 
-  public Predicate toPredicate(
+  public Predicate toPredicate( // TODO VERIFY
       Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
 
     Join<?, ?> ppOptionsJoin = root.join(PAYMENT_OPT_JOIN, JoinType.INNER);
+    Join<?, ?> installmentsJoin = root.join(INSTALLMENT_JOIN, JoinType.INNER);
 
     Predicate dueDatePredicate = cb.isTrue(cb.literal(true));
     Predicate segregationCodesPredicate = cb.isTrue(cb.literal(false));
 
     // due date predicate
     if (dateFrom != null && dateTo == null) {
-      dueDatePredicate = cb.greaterThanOrEqualTo(ppOptionsJoin.get(DUEDATE_FIELD), dateFrom);
+      dueDatePredicate = cb.greaterThanOrEqualTo(installmentsJoin.get(DUEDATE_FIELD), dateFrom);
     } else if (dateFrom == null && dateTo != null) {
-      dueDatePredicate = cb.lessThanOrEqualTo(ppOptionsJoin.get(DUEDATE_FIELD), dateTo);
+      dueDatePredicate = cb.lessThanOrEqualTo(installmentsJoin.get(DUEDATE_FIELD), dateTo);
     }
     // The execution proceeds on this branch in only 2 cases: dateFrom and dateTo equal null or both
     // different from null,
     // to check the last case just apply the condition on one of the two dates
     else if (dateFrom != null) {
-      dueDatePredicate = cb.between(ppOptionsJoin.get(DUEDATE_FIELD), dateFrom, dateTo);
+      dueDatePredicate = cb.between(installmentsJoin.get(DUEDATE_FIELD), dateFrom, dateTo);
     }
 
     // segregation code predicate
@@ -55,7 +57,7 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
             cb.or(
                 segregationCodesPredicate,
                 cb.between(
-                    ppOptionsJoin.get(IUV_FIELD),
+                    installmentsJoin.get(IUV_FIELD),
                     segregationCode,
                     CommonUtil.getSegregationCodeEnd(segregationCode)));
       }
