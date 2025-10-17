@@ -21,6 +21,7 @@ import it.gov.pagopa.debtposition.repository.TransferRepository;
 import it.gov.pagopa.debtposition.repository.specification.*;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
+import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import it.gov.pagopa.debtposition.util.PublishPaymentUtil;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -29,7 +30,6 @@ import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.SerializationUtils;
 import org.hibernate.exception.ConstraintViolationException;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -59,18 +59,16 @@ public class PaymentPositionCRUDService {
 
     private final PaymentPositionRepository paymentPositionRepository;
     private final PaymentOptionRepository paymentOptionRepository;
-    private final ModelMapper modelMapper;
     private final TransferRepository transferRepository;
 
     @Value("${nav.aux.digit}")
     private String auxDigit;
 
     @Autowired
-    public PaymentPositionCRUDService(PaymentPositionRepository paymentPositionRepository, PaymentOptionRepository paymentOptionRepository, ModelMapper modelMapper, TransferRepository transferRepository,
+    public PaymentPositionCRUDService(PaymentPositionRepository paymentPositionRepository, PaymentOptionRepository paymentOptionRepository, TransferRepository transferRepository,
                                       InstallmentRepository installmentRepository) {
         this.paymentPositionRepository = paymentPositionRepository;
         this.paymentOptionRepository = paymentOptionRepository;
-        this.modelMapper = modelMapper;
         this.transferRepository = transferRepository;
         this.installmentRepository = installmentRepository;
     }
@@ -246,7 +244,7 @@ public class PaymentPositionCRUDService {
         try {
 
             // flip model to entity
-            modelMapper.map(ppModel, ppToUpdate);
+            ObjectMapperUtils.map(ppModel, ppToUpdate);
 
             // update amounts adding notification fee
             updateAmounts(organizationFiscalCode, ppToUpdate);
@@ -372,7 +370,7 @@ public class PaymentPositionCRUDService {
                 }
 
                 // map model to entity
-                modelMapper.map(inputPaymentPosition, currentPP);
+                ObjectMapperUtils.map(inputPaymentPosition, currentPP);
 
                 // update amounts adding notification fee
                 updateAmounts(organizationFiscalCode, currentPP);

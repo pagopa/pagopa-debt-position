@@ -7,8 +7,9 @@ import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import it.gov.pagopa.debtposition.service.pd.actions.PaymentPositionActionsService;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,13 +19,10 @@ import org.springframework.stereotype.Controller;
 @Slf4j
 public class DebtPositionActionsControllerV3 implements IDebtPositionActionsControllerV3 {
 
-  private final ModelMapper modelMapper;
   private final PaymentPositionActionsService paymentPositionActionsService;
 
   @Autowired
-  public DebtPositionActionsControllerV3(
-      ModelMapper modelMapper, PaymentPositionActionsService paymentPositionActionsService) {
-    this.modelMapper = modelMapper;
+  public DebtPositionActionsControllerV3(PaymentPositionActionsService paymentPositionActionsService) {
     this.paymentPositionActionsService = paymentPositionActionsService;
   }
 
@@ -38,7 +36,7 @@ public class DebtPositionActionsControllerV3 implements IDebtPositionActionsCont
     PaymentPosition ppPublished =
         paymentPositionActionsService.publish(organizationFiscalCode, iupd, segCodes);
     if (null != ppPublished) {
-      PaymentPositionModelV3 ppModelV3 = modelMapper.map(ppPublished, PaymentPositionModelV3.class);
+      PaymentPositionModelV3 ppModelV3 = ObjectMapperUtils.map(ppPublished, PaymentPositionModelV3.class);
       return new ResponseEntity<>(ppModelV3, HttpStatus.OK);
     }
 

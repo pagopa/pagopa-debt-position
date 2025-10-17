@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -42,13 +41,10 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
   private static final String IUPD_VALIDATION_ERROR =
       "IUPD mistmatch error: path variable IUPD [%s] and request body IUPD [%s] must be the same";
 
-  private final ModelMapper modelMapper;
   private final PaymentPositionCRUDService paymentPositionService;
 
   @Autowired
-  public DebtPositionControllerV3(
-      ModelMapper modelMapper, PaymentPositionCRUDService paymentPositionService) {
-    this.modelMapper = modelMapper;
+  public DebtPositionControllerV3(PaymentPositionCRUDService paymentPositionService) {
     this.paymentPositionService = paymentPositionService;
   }
 
@@ -60,7 +56,7 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
       String segregationCodes,
       ServiceType serviceType) {
     // flip model to entity
-    PaymentPosition debtPosition = modelMapper.map(ppInputModelV3, PaymentPosition.class);
+    PaymentPosition debtPosition = ObjectMapperUtils.map(ppInputModelV3, PaymentPosition.class);
     debtPosition.setServiceType(serviceType);
 
     ArrayList<String> segCodes =
@@ -74,7 +70,7 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
     if (null == ppCreated)
       throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
 
-    PaymentPositionModelV3 ppModelV3 = modelMapper.map(ppCreated, PaymentPositionModelV3.class);
+    PaymentPositionModelV3 ppModelV3 = ObjectMapperUtils.map(ppCreated, PaymentPositionModelV3.class);
     return new ResponseEntity<>(ppModelV3, HttpStatus.CREATED);
   }
 
@@ -138,7 +134,7 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
             : null;
     // flip entity to model
     PaymentPositionModelResponseV3 paymentPositionResponse =
-        modelMapper.map(
+        ObjectMapperUtils.map(
             paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segCodes),
             PaymentPositionModelResponseV3.class);
 
@@ -181,7 +177,7 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
             paymentPositionModel, organizationFiscalCode, toPublish, segCodes, UPDATE_ACTION);
 
     if (null != ppUpdated) {
-      PaymentPositionModelV3 ppModelV3 = modelMapper.map(ppUpdated, PaymentPositionModelV3.class);
+      PaymentPositionModelV3 ppModelV3 = ObjectMapperUtils.map(ppUpdated, PaymentPositionModelV3.class);
       return new ResponseEntity<>(ppModelV3, HttpStatus.OK);
     }
 

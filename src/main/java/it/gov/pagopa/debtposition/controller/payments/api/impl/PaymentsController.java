@@ -21,7 +21,6 @@ import it.gov.pagopa.debtposition.util.CustomHttpStatus;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,12 +39,10 @@ public class PaymentsController implements IPaymentsController {
   private static final String LOG_BASE_HEADER_INFO =
       "[RequestMethod: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
   private static final String LOG_BASE_PARAMS_DETAIL = "organizationFiscalCode= %s; nav= %s";
-  private final ModelMapper modelMapper;
   private final PaymentsService paymentsService;
 
   @Autowired
-  public PaymentsController(ModelMapper modelMapper, PaymentsService paymentsService) {
-    this.modelMapper = modelMapper;
+  public PaymentsController(PaymentsService paymentsService) {
     this.paymentsService = paymentsService;
   }
 
@@ -65,7 +62,7 @@ public class PaymentsController implements IPaymentsController {
 
     // flip entity to model
     PaymentOptionWithDebtorInfoModelResponse paymentOptionResponse =
-        modelMapper.map(
+        ObjectMapperUtils.map(
             paymentsService.getInstallmentByNav(organizationFiscalCode, nav),
             PaymentOptionWithDebtorInfoModelResponse.class);
 
@@ -96,7 +93,7 @@ public class PaymentsController implements IPaymentsController {
         paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
 
     // Convert entity to model
-    PaidPaymentOptionModel paidPaymentOptionModel = modelMapper.map(paidPaymentOption, PaidPaymentOptionModel.class);
+    PaidPaymentOptionModel paidPaymentOptionModel = ObjectMapperUtils.map(paidPaymentOption, PaidPaymentOptionModel.class);
 
     if (paidPaymentOptionModel == null) {
       throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, nav);
@@ -189,7 +186,7 @@ public class PaymentsController implements IPaymentsController {
             paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
 
     // Convert entity to model
-    PaymentOptionModelResponse paymentOptionModelResponse = modelMapper.map(paidPaymentOption, PaymentOptionModelResponse.class);
+    PaymentOptionModelResponse paymentOptionModelResponse = ObjectMapperUtils.map(paidPaymentOption, PaymentOptionModelResponse.class);
 
     if (paymentOptionModelResponse == null) {
       throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, nav);
