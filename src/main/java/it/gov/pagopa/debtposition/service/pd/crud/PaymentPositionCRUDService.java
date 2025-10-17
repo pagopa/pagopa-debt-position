@@ -134,9 +134,8 @@ public class PaymentPositionCRUDService {
     }
 
     Installment inst = po.get();
-    PaymentPosition pp = inst.getPaymentPosition();
 
-    return pp;
+    return inst.getPaymentPosition();
   }
 
   public List<PaymentPosition> getDebtPositionsByIUPDs(

@@ -39,16 +39,6 @@ public interface PaymentPositionRepository
 
   // Regola 6 - Una posizione va in expired nel momento in cui si raggiunge la max_due_date, il flag
   // switch_to_expired è impostato a TRUE e lo stato è a valid
-  /*
-  @Modifying
-  @Query(
-      "update PaymentPosition pp set pp.status = :status, pp.lastUpdatedDate = :currentDate,"
-          + " pp.version=pp.version+1 where pp.maxDueDate < :currentDate and pp.status='VALID' and"
-          + " pp.switchToExpired IS TRUE")
-  int updatePaymentPositionStatusToExpired(
-      @Param(value = "currentDate") LocalDateTime currentDate,
-      @Param(value = "status") DebtPositionStatus status);*/
-  
   /**
    * Native is used to avoid two-step recovery:
    * - SELECT PaymentPosition in join with installment
