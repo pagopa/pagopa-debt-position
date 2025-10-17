@@ -1,10 +1,12 @@
 package it.gov.pagopa.debtposition.controller.payments.api.impl;
 
 import it.gov.pagopa.debtposition.controller.payments.api.IPaymentsController;
-import it.gov.pagopa.debtposition.entity.apd.PaymentOption;
-import it.gov.pagopa.debtposition.entity.apd.Transfer;
+import it.gov.pagopa.debtposition.entity.Installment;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
+import it.gov.pagopa.debtposition.model.enumeration.OptionType;
 import it.gov.pagopa.debtposition.model.payments.AlreadyPaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
@@ -64,7 +66,7 @@ public class PaymentsController implements IPaymentsController {
     // flip entity to model
     PaymentOptionWithDebtorInfoModelResponse paymentOptionResponse =
         modelMapper.map(
-            paymentsService.getPaymentOptionByNAV(organizationFiscalCode, nav),
+            paymentsService.getInstallmentByNav(organizationFiscalCode, nav),
             PaymentOptionWithDebtorInfoModelResponse.class);
 
     // Add NOTIFICATION_FEE_METADATA_KEY to response on the fly
@@ -143,18 +145,14 @@ public class PaymentsController implements IPaymentsController {
                     CommonUtil.sanitize(iuv))
                 + "; notificationFee="
                 + notificationFee));
-    PaymentOption updatedPaymentOption =
+    Installment updatedInstallment =
         paymentsService.updateNotificationFee(organizationFiscalCode, iuv, notificationFee);
-    if (updatedPaymentOption != null) {
-      ResponseEntity.status(
-          Boolean.FALSE.equals(updatedPaymentOption.isPaymentInProgress())
-              ? HttpStatus.OK.value()
-              : CustomHttpStatus.IN_PROGRESS.value());
+    if (updatedInstallment != null) {
       return ResponseEntity.status(
-              Boolean.FALSE.equals(updatedPaymentOption.isPaymentInProgress())
+              OptionType.OPZIONE_UNICA.equals(updatedInstallment.getPaymentOption().getOptionType())
                   ? HttpStatus.OK.value()
                   : CustomHttpStatus.IN_PROGRESS.value())
-          .body(ObjectMapperUtils.map(updatedPaymentOption, PaymentOptionModelResponse.class));
+          .body(ObjectMapperUtils.map(updatedInstallment, PaymentOptionModelResponse.class));
     }
     throw new AppException(
         AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_FAILED, organizationFiscalCode, iuv);
