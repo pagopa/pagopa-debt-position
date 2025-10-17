@@ -3,16 +3,15 @@ package it.gov.pagopa.debtposition.util;
 import static it.gov.pagopa.debtposition.util.Constants.CREATE_ACTION;
 import static it.gov.pagopa.debtposition.util.Constants.UPDATE_ACTION;
 
-import it.gov.pagopa.debtposition.entity.apd.PaymentOption;
-import it.gov.pagopa.debtposition.entity.apd.PaymentPosition;
-import it.gov.pagopa.debtposition.entity.apd.Transfer;
+import it.gov.pagopa.debtposition.entity.Installment;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.exception.ValidationException;
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
-import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
-import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
-import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
+import it.gov.pagopa.debtposition.model.enumeration.*;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -64,21 +63,21 @@ public class DebtPositionValidation {
 
   public static void checkPaymentPositionPayability(PaymentPosition ppToPay, String nav) {
     // Verifico se la posizione debitoria è in uno stato idoneo al pagamento
-    if (DebtPositionStatus.getPaymentPosFullyPaidStatus().contains(ppToPay.getStatus())) {
+    if (DebtPositionStatusV3.getPaymentPosFullyPaidStatus().contains(ppToPay.getStatus())) {
       throw new AppException(
           AppError.PAYMENT_OPTION_ALREADY_PAID, ppToPay.getOrganizationFiscalCode(), nav);
     }
     // Verifico se la posizione debitoria è ancora aperta
     checkPaymentPositionOpen(ppToPay, nav);
     // Verifico se l'opzione di pagamento è pagabile
-    checkPaymentOptionPayable(ppToPay, nav);
+    checkInstallmentPayable(ppToPay, nav);
   }
 
   public static void checkPaymentPositionAccountability(
       PaymentPosition ppToReport, String iuv, String transferId) {
     // Verifico se la posizione debitoria è in uno stato idoneo alla rendicontazione
     if (ppToReport.getServiceType().equals(ServiceType.ACA)) {
-      if (DebtPositionStatus.getPaymentPosACANotAccountableStatus()
+      if (DebtPositionStatusV3.getPaymentPosACANotAccountableStatus()
           .contains(ppToReport.getStatus())) {
         throw new AppException(
             AppError.TRANSFER_NOT_ACCOUNTABLE,
@@ -87,7 +86,7 @@ public class DebtPositionValidation {
             transferId);
       }
     } else {
-      if (DebtPositionStatus.getPaymentPosNotAccountableStatus().contains(ppToReport.getStatus())) {
+      if (DebtPositionStatusV3.getPaymentPosNotAccountableStatus().contains(ppToReport.getStatus())) {
         throw new AppException(
             AppError.TRANSFER_NOT_ACCOUNTABLE,
             ppToReport.getOrganizationFiscalCode(),
@@ -143,71 +142,74 @@ public class DebtPositionValidation {
     }
 
     for (PaymentOption po : pp.getPaymentOption()) {
-      // Regola 4 - must be due_date ≥ validity_date || due_date ≥ current time
-      if (
-      // Case 1: validity_date is not null and due_date < validity_date
-      (pp.getValidityDate() != null && po.getDueDate().compareTo(pp.getValidityDate()) < 0)
-          ||
+      for(Installment inst : po.getInstallment()){
+        // Regola 4 - must be due_date ≥ validity_date || due_date ≥ current time
+        if (
+          // Case 1: validity_date is not null and due_date < validity_date
+                (pp.getValidityDate() != null && inst.getDueDate().isBefore(pp.getValidityDate()))
+                        ||
 
-          // Case 2: validity_date is null and due_date < current time
-          (pp.getValidityDate() == null && po.getDueDate().compareTo(today) < 0)
-          ||
+                        // Case 2: validity_date is null and due_date < current time
+                        (pp.getValidityDate() == null && inst.getDueDate().isBefore(today))
+                        ||
 
-          // Case 3: Action is "update" and due_date < current time
-          (!ArrayUtils.isEmpty(action)
-              && UPDATE_ACTION.equalsIgnoreCase(action[0])
-              && po.getDueDate().compareTo(today) < 0)) {
-        throw new ValidationException(
-            String.format(
-                DUE_DATE_VALIDATION_ERROR,
-                dateFormatter.format(po.getDueDate()),
-                (null != pp.getValidityDate() ? dateFormatter.format(pp.getValidityDate()) : null),
-                dateFormatter.format(today)));
+                        // Case 3: Action is "update" and due_date < current time
+                        (!ArrayUtils.isEmpty(action)
+                                && UPDATE_ACTION.equalsIgnoreCase(action[0])
+                                && inst.getDueDate().isBefore(today))) {
+          throw new ValidationException(
+                  String.format(
+                          DUE_DATE_VALIDATION_ERROR,
+                          dateFormatter.format(inst.getDueDate()),
+                          (null != pp.getValidityDate() ? dateFormatter.format(pp.getValidityDate()) : null),
+                          dateFormatter.format(today)));
+        }
+        // must be retention_date ≥ due_date
+        else if (null != po.getRetentionDate()
+                && po.getRetentionDate().isBefore(inst.getDueDate())) {
+          throw new ValidationException(
+                  String.format(
+                          RETENTION_DATE_VALIDATION_ERROR,
+                          dateFormatter.format(po.getRetentionDate()),
+                          dateFormatter.format(inst.getDueDate())));
+        }
+
+        checkInstallmentTransfers(inst);
+
+        checkInstalmmentAmounts(inst);
       }
-      // must be retention_date ≥ due_date
-      else if (null != po.getRetentionDate()
-          && po.getRetentionDate().compareTo(po.getDueDate()) < 0) {
-        throw new ValidationException(
-            String.format(
-                RETENTION_DATE_VALIDATION_ERROR,
-                dateFormatter.format(po.getRetentionDate()),
-                dateFormatter.format(po.getDueDate())));
-      }
 
-      checkPaymentOptionTransfers(po);
-
-      checkPaymentOptionAmounts(po);
     }
   }
 
-  private static void checkPaymentOptionTransfers(final PaymentOption po) {
+  private static void checkInstallmentTransfers(Installment inst) {
     int maxNumberOfTrasfersForPO = TransferId.values().length;
     // verifica numero massimo di transazioni per PO
-    if (po.getTransfer().size() > maxNumberOfTrasfersForPO) {
+    if (inst.getTransfer().size() > maxNumberOfTrasfersForPO) {
       throw new ValidationException(
           String.format(
-              NUM_TRANSFERS_VALIDATION_ERROR, TransferId.values().length, po.getTransfer().size()));
+              NUM_TRANSFERS_VALIDATION_ERROR, TransferId.values().length, inst.getTransfer().size()));
     }
 
     // verifica corretta valorizzazione idTransfer
-    for (Transfer t : po.getTransfer()) {
-      if (null == TransferId.fromValue(t.getIdTransfer())) {
+    for (Transfer t : inst.getTransfer()) {
+      if (null == TransferId.fromValue(t.getTransferId())) {
         throw new ValidationException(
             String.format(
                 TRANSFER_ID_VALIDATION_ERROR,
-                t.getIdTransfer(),
+                t.getTransferId(),
                 Arrays.asList(TransferId.values())));
       }
     }
   }
 
-  private static void checkPaymentOptionAmounts(final PaymentOption po) {
+  private static void checkInstalmmentAmounts(Installment inst) {
     long totalTranfersAmout = 0;
-    long poAmount = po.getAmount();
-    for (Transfer t : po.getTransfer()) {
+    long poAmount = inst.getAmount();
+    for (Transfer t : inst.getTransfer()) {
       checkTransferCategory(t);
       checkTransferIban(t);
-      checkMutualExclusive(po.getIuv(), t);
+      checkMutualExclusive(inst.getIuv(), t);
       totalTranfersAmout += t.getAmount();
     }
 
@@ -227,10 +229,10 @@ public class DebtPositionValidation {
         && Strings.isNotEmpty(t.getProvincialResidence())) {
 
       if (Strings.isEmpty(t.getPostalIban())) i++;
-      else throw new ValidationException(String.format(IBAN_STAMP_MUTUAL, iuv, t.getIdTransfer()));
+      else throw new ValidationException(String.format(IBAN_STAMP_MUTUAL, iuv, t.getTransferId()));
     }
     if (i != 1) {
-      throw new ValidationException(String.format(IBAN_STAMP_MUTUAL, iuv, t.getIdTransfer()));
+      throw new ValidationException(String.format(IBAN_STAMP_MUTUAL, iuv, t.getTransferId()));
     }
   }
 
@@ -254,30 +256,32 @@ public class DebtPositionValidation {
     }
   }
 
-  private static void checkPaymentOptionPayable(PaymentPosition ppToPay, String nav) {
+  private static void checkInstallmentPayable(PaymentPosition ppToPay, String nav) {
     // TODO #naviuv: temporary regression management --> remove "|| po.getIuv().equals(nav)" when
+    // TODO optimize & change errors
     // only nav managment is enabled
-    PaymentOption poToPay =
-        ppToPay.getPaymentOption().stream()
-            .filter(po -> po.getNav().equals(nav) || po.getIuv().equals(nav))
+    Installment installmentToPay = ppToPay.getPaymentOption().parallelStream()
+            .map(PaymentOption::getInstallment)
+            .flatMap(List::parallelStream)
+            .filter(inst -> inst.getNav().equals(nav))
             .findFirst()
             .orElseThrow(
-                () -> {
-                  log.error(
-                      "Obtained unexpected empty payment option - ["
-                          + String.format(
-                              LOG_BASE_PARAMS_DETAIL,
-                              CommonUtil.sanitize(ppToPay.getOrganizationFiscalCode()),
-                              CommonUtil.sanitize(ppToPay.getIupd()),
-                              CommonUtil.sanitize(nav))
-                          + "]");
-                  return new AppException(
-                      AppError.PAYMENT_OPTION_PAY_FAILED, ppToPay.getOrganizationFiscalCode(), nav);
-                });
+                    () -> {
+                      log.error(
+                              "Obtained unexpected empty payment option - ["
+                                      + String.format(
+                                      LOG_BASE_PARAMS_DETAIL,
+                                      CommonUtil.sanitize(ppToPay.getOrganizationFiscalCode()),
+                                      CommonUtil.sanitize(ppToPay.getIupd()),
+                                      CommonUtil.sanitize(nav))
+                                      + "]");
+                      return new AppException(
+                              AppError.PAYMENT_OPTION_PAY_FAILED, ppToPay.getOrganizationFiscalCode(), nav);
+                    });
 
-    if (!poToPay.getStatus().equals(PaymentOptionStatus.PO_UNPAID)) {
+    if (!installmentToPay.getStatus().equals(InstallmentStatus.UNPAID)) {
       throw new AppException(
-          AppError.PAYMENT_OPTION_ALREADY_PAID, poToPay.getOrganizationFiscalCode(), nav);
+          AppError.PAYMENT_OPTION_ALREADY_PAID, installmentToPay.getOrganizationFiscalCode(), nav);
     }
 
     // La posizione debitoria è già in PARTIALLY_PAID ed arriva una richiesta di pagamento su una
@@ -287,8 +291,8 @@ public class DebtPositionValidation {
     // error
     // NOTE: the exception handling has been moved to the get/activate validation
     // (checkAlreadyPaidInstallments)
-    if (ppToPay.getStatus().equals(DebtPositionStatus.PARTIALLY_PAID)
-        && Boolean.FALSE.equals(poToPay.getIsPartialPayment())) {
+    if (ppToPay.getStatus().equals(DebtPositionStatusV3.PARTIALLY_PAID)
+        && OptionType.OPZIONE_UNICA.equals(installmentToPay.getPaymentOption().getOptionType())) {
 
       // log detailed information about this edge case
       log.warn(
@@ -298,59 +302,61 @@ public class DebtPositionValidation {
               + "NAV: {} || "
               + "Position Status: {} || "
               + "Payment Option Status: {} || "
-              + "Is Partial Payment: {} || "
+              + "Option type: {} || "
               + "Timestamp: {}",
           CommonUtil.sanitize(ppToPay.getOrganizationFiscalCode()),
           CommonUtil.sanitize(ppToPay.getIupd()),
           CommonUtil.sanitize(nav),
           ppToPay.getStatus(),
-          poToPay.getStatus(),
-          poToPay.getIsPartialPayment(),
+          installmentToPay.getStatus(),
+          installmentToPay.getPaymentOption().getOptionType(),
           LocalDateTime.now());
     }
   }
 
-  private static boolean isPaid(PaymentOption po) {
-    return !po.getStatus().equals(PaymentOptionStatus.PO_UNPAID)
-        && !po.getIsPartialPayment().equals(true);
+  private static boolean isPaid(PaymentOption po) { // TODO VERIFY
+    return po.getInstallment().stream().noneMatch(inst -> inst.getStatus().equals(InstallmentStatus.UNPAID))
+        && OptionType.OPZIONE_UNICA.equals(po.getOptionType());
   }
 
   private static void checkTransferAccountable(
       PaymentPosition ppToReport, String iuv, String transferId) {
-    PaymentOption poToReport =
-        ppToReport.getPaymentOption().stream()
-            .filter(po -> po.getIuv().equals(iuv))
+    // TODO change error
+    Installment instToReport = ppToReport.getPaymentOption().parallelStream()
+            .map(PaymentOption::getInstallment)
+            .flatMap(List::parallelStream)
+            .filter(inst -> inst.getIuv().equals(iuv))
             .findFirst()
             .orElseThrow(
-                () -> {
-                  log.error(
-                      "Obtained unexpected empty payment option - ["
-                          + String.format(
-                              LOG_BASE_PARAMS_DETAIL,
+                    () -> {
+                      log.error(
+                              "Obtained unexpected empty payment option - ["
+                                      + String.format(
+                                      LOG_BASE_PARAMS_DETAIL,
+                                      ppToReport.getOrganizationFiscalCode(),
+                                      ppToReport.getIupd(),
+                                      iuv)
+                                      + "]");
+                      return new AppException(
+                              AppError.TRANSFER_REPORTING_FAILED,
                               ppToReport.getOrganizationFiscalCode(),
-                              ppToReport.getIupd(),
-                              iuv)
-                          + "]");
-                  return new AppException(
-                      AppError.TRANSFER_REPORTING_FAILED,
-                      ppToReport.getOrganizationFiscalCode(),
-                      iuv,
-                      transferId);
-                });
+                              iuv,
+                              transferId);
+                    });
 
     if (!ppToReport.getServiceType().equals(ServiceType.ACA)
-        && (!poToReport.getStatus().equals(PaymentOptionStatus.PO_PAID)
-            && !poToReport.getStatus().equals(PaymentOptionStatus.PO_PARTIALLY_REPORTED))) {
+        && (!instToReport.getStatus().equals(InstallmentStatus.PAID)
+            && !instToReport.getStatus().equals(InstallmentStatus.PARTIALLY_REPORTED))) {
       throw new AppException(
           AppError.TRANSFER_NOT_ACCOUNTABLE,
-          poToReport.getOrganizationFiscalCode(),
+          instToReport.getOrganizationFiscalCode(),
           iuv,
           transferId);
     }
 
     Transfer transferToReport =
-        poToReport.getTransfer().stream()
-            .filter(t -> t.getIdTransfer().equals(transferId))
+        instToReport.getTransfer().stream()
+            .filter(t -> t.getTransferId().equals(transferId))
             .findFirst()
             .orElseThrow(
                 () -> {
@@ -364,11 +370,11 @@ public class DebtPositionValidation {
                           + "idTransfer= "
                           + transferId
                           + "]");
-                  throw new AppException(
-                      AppError.TRANSFER_REPORTING_FAILED,
-                      ppToReport.getOrganizationFiscalCode(),
-                      iuv,
-                      transferId);
+                  return new AppException(
+                          AppError.TRANSFER_REPORTING_FAILED,
+                          ppToReport.getOrganizationFiscalCode(),
+                          iuv,
+                          transferId);
                 });
 
     if (!transferToReport.getStatus().equals(TransferStatus.T_UNREPORTED)) {
