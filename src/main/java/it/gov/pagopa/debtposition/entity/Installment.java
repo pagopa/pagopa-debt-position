@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.entity.odp;
+package it.gov.pagopa.debtposition.entity;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -105,7 +105,7 @@ public class Installment implements Serializable {
 
     @NotNull
     @Column(name = "send_sync")
-    private Boolean sendSync;
+    private Boolean sendSync = false;
 
     @ManyToOne(
             targetEntity = PaymentPosition.class,
@@ -113,7 +113,7 @@ public class Installment implements Serializable {
             optional = false,
             cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "payment_position_id", nullable = false)
-    private PaymentPosition paymentPositionOdp;
+    private PaymentPosition paymentPosition;
 
     @ManyToOne(
             targetEntity = PaymentOption.class,
@@ -130,15 +130,15 @@ public class Installment implements Serializable {
             mappedBy = "installment",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
-    private List<Transfer> transferOdp = new ArrayList<>();
+    private List<Transfer> transfer = new ArrayList<>();
 
     public void addTransfer(Transfer t) {
-        transferOdp.add(t);
+        transfer.add(t);
         t.setInstallment(this);
     }
 
     public void removeTransfer(Transfer t) {
-        transferOdp.remove(t);
+        transfer.remove(t);
         t.setInstallment(null);
     }
 }

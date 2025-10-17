@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.entity.odp;
+package it.gov.pagopa.debtposition.entity;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -137,15 +137,15 @@ public class PaymentOption implements Serializable {
             mappedBy = "paymentOption",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
-    private List<Installment> installments = new ArrayList<>();
+    private List<Installment> installment = new ArrayList<>();
 
     public void addInstallment(Installment i) {
-        installments.add(i);
+        installment.add(i);
         i.setPaymentOption(this);
     }
 
     public void removeInstallment(Installment i) {
-        installments.remove(i);
+        installment.remove(i);
         i.setPaymentOption(null);
     }
 }

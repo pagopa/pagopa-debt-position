@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.entity.odp;
+package it.gov.pagopa.debtposition.entity;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -108,7 +108,7 @@ public class PaymentPosition implements Serializable {
     @OneToMany(
             targetEntity = PaymentOption.class,
             fetch = FetchType.LAZY,
-            mappedBy = "paymentPositionOdp",
+            mappedBy = "paymentPosition",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     private List<PaymentOption> paymentOption = new ArrayList<>();
