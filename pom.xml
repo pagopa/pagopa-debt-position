@@ -24,7 +24,6 @@
 		<shedlock.version>5.10.2</shedlock.version>
 		<!--<mockito-inline.version>5.2.0</mockito-inline.version>-->
 		<logback.ecs.version>1.6.0</logback.ecs.version>
-		<atomikos.version>6.0.0</atomikos.version>
 	</properties>
 
 	<dependencyManagement>
@@ -150,22 +149,6 @@
 			<groupId>co.elastic.logging</groupId>
 			<artifactId>logback-ecs-encoder</artifactId>
 			<version>${logback.ecs.version}</version>
-		</dependency>
-
-		<!-- Atomikos JTA core (Jakarta) -->
-		<dependency>
-			<groupId>com.atomikos</groupId>
-			<artifactId>transactions-jta</artifactId>
-			<version>${atomikos.version}</version>
-			<classifier>jakarta</classifier>
-		</dependency>
-
-		<!-- Atomikos JDBC XA integration (Jakarta) -->
-		<dependency>
-			<groupId>com.atomikos</groupId>
-			<artifactId>transactions-jdbc</artifactId>
-			<version>${atomikos.version}</version>
-			<classifier>jakarta</classifier>
 		</dependency>
 	</dependencies>
 
