@@ -57,10 +57,12 @@ public class PaymentOption implements Serializable {
     private LocalDateTime insertedDate;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
     @Column(name = "option_type")
     private OptionType optionType;
 
     @Column(name = "payment_position_status")
+    @Enumerated(EnumType.STRING)
     private DebtPositionStatusV3 paymentPositionStatus;
 
     @NotNull
