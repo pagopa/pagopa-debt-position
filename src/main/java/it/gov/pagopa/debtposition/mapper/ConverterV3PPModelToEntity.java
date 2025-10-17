@@ -40,6 +40,18 @@ public class ConverterV3PPModelToEntity
         destination.setOfficeName(source.getOfficeName());
         destination.setValidityDate(getValidityDate(source.getPaymentOption()));
 
+        // TODO verify
+        List<PaymentOptionModelV3> sourcePaymentOptionList = source.getPaymentOption();
+        if(sourcePaymentOptionList != null && !sourcePaymentOptionList.isEmpty()){
+            List<InstallmentModel> sourceInstallment = sourcePaymentOptionList.get(0).getInstallments();
+            if(sourceInstallment != null && !sourceInstallment.isEmpty()){
+                List<TransferModel> sourceTransferList = sourceInstallment.get(0).getTransfer();
+                if(sourceTransferList != null && !sourceTransferList.isEmpty()){
+                    destination.setOrganizationFiscalCode(sourceTransferList.get(0).getOrganizationFiscalCode());
+                }
+            }
+        }
+
         mapAndUpdatePaymentOptions(source, destination);
     }
 
@@ -80,12 +92,12 @@ public class ConverterV3PPModelToEntity
                 PaymentOption managedOpt = managedOptionsByDebtorFiscalCode.get(sourceOption.getDebtor().getFiscalCode());
                 if (managedOpt != null) {
                     // UPDATE: the option
-                    mapAndUpdateSinglePaymentOption(sourceOption, managedOpt);
+                    mapAndUpdateSinglePaymentOption(sourceOption, managedOpt, destination);
                     optionsToRemove.remove(managedOpt);
                 } else {
                     // CREATE: the option
                     PaymentOption po = PaymentOption.builder().build();
-                    mapAndUpdateSinglePaymentOption(sourceOption, po);
+                    mapAndUpdateSinglePaymentOption(sourceOption, po, destination);
                     destination.getPaymentOption().add(po);
                 }
             }
@@ -107,62 +119,63 @@ public class ConverterV3PPModelToEntity
 
     /**
      * @param source      the input model
-     * @param destination the output entity
+     * @param destinationPo the output entity
      */
     private void mapAndUpdateSinglePaymentOption(
-            PaymentOptionModelV3 source, PaymentOption destination) {
+            PaymentOptionModelV3 source, PaymentOption destinationPo, PaymentPosition destination) {
         DebtorModel debtor = source.getDebtor();
 
         if (debtor != null) {
-            destination.setDebtorCity(debtor.getCity());
-            destination.setDebtorCivicNumber(debtor.getCivicNumber());
-            destination.setDebtorCountry(debtor.getCountry());
-            destination.setDebtorType(debtor.getType());
-            destination.setDebtorEmail(debtor.getEmail());
-            destination.setDebtorFiscalCode(debtor.getFiscalCode());
-            destination.setDebtorFullName(debtor.getFullName());
-            destination.setDebtorPhone(debtor.getPhone());
-            destination.setDebtorPostalCode(debtor.getPostalCode());
-            destination.setDebtorProvince(debtor.getProvince());
-            destination.setDebtorRegion(debtor.getRegion());
-            destination.setDebtorStreetName(debtor.getStreetName());
+            destinationPo.setDebtorCity(debtor.getCity());
+            destinationPo.setDebtorCivicNumber(debtor.getCivicNumber());
+            destinationPo.setDebtorCountry(debtor.getCountry());
+            destinationPo.setDebtorType(debtor.getType());
+            destinationPo.setDebtorEmail(debtor.getEmail());
+            destinationPo.setDebtorFiscalCode(debtor.getFiscalCode());
+            destinationPo.setDebtorFullName(debtor.getFullName());
+            destinationPo.setDebtorPhone(debtor.getPhone());
+            destinationPo.setDebtorPostalCode(debtor.getPostalCode());
+            destinationPo.setDebtorProvince(debtor.getProvince());
+            destinationPo.setDebtorRegion(debtor.getRegion());
+            destinationPo.setDebtorStreetName(debtor.getStreetName());
         }
 
-        destination.setDescription(destination.getDescription());
-        destination.setOptionType(source.getInstallments().size() > 1 ? OptionType.OPZIONE_RATEALE : OptionType.OPZIONE_UNICA);
-        destination.setRetentionDate(source.getRetentionDate());
+        destinationPo.setPaymentPosition(destination);
+        destinationPo.setDescription(source.getDescription());
+        destinationPo.setOptionType(source.getInstallments().size() > 1 ? OptionType.OPZIONE_RATEALE : OptionType.OPZIONE_UNICA);
+        destinationPo.setRetentionDate(source.getRetentionDate());
 
-        mapAndUpdateInstallments(source, destination);
+        mapAndUpdateInstallments(source, destinationPo, destination);
     }
 
     private void mapAndUpdateInstallments(
-            PaymentOptionModelV3 source, PaymentOption destination) {
+            PaymentOptionModelV3 source, PaymentOption destinationPo, PaymentPosition destination) {
         Map<String, Installment> managedInstallmentsByIuv =
-                destination.getInstallment().stream()
+                destinationPo.getInstallment().stream()
                         .collect(Collectors.toMap(Installment::getIuv, po -> po));
 
         List<InstallmentModel> sourceInstallments = source.getInstallments();
-        List<Installment> installmentsToRemove = new ArrayList<>(destination.getInstallment());
+        List<Installment> installmentsToRemove = new ArrayList<>(destinationPo.getInstallment());
 
         if (sourceInstallments != null) {
             for (InstallmentModel sourceInstallment : sourceInstallments) {
                 Installment managedInstallment = managedInstallmentsByIuv.get(sourceInstallment.getIuv());
                 if (managedInstallment != null) {
                     // UPDATE: the installment
-                    mapAndUpdateSingleInstallment(sourceInstallment, managedInstallment);
+                    mapAndUpdateSingleInstallment(sourceInstallment, managedInstallment, destinationPo, destination);
                     installmentsToRemove.remove(managedInstallment);
                 } else {
                     // CREATE: the installment
                     Installment inst = Installment.builder().build();
                     inst.setSendSync(false);
-                    mapAndUpdateSingleInstallment(sourceInstallment, inst);
-                    destination.getInstallment().add(inst);
+                    mapAndUpdateSingleInstallment(sourceInstallment, inst, destinationPo, destination);
+                    destinationPo.getInstallment().add(inst);
                 }
             }
         }
 
         // DELETE: remove the orphans installments
-        destination.getInstallment().removeAll(installmentsToRemove);
+        destinationPo.getInstallment().removeAll(installmentsToRemove);
     }
 
     /**
@@ -170,64 +183,67 @@ public class ConverterV3PPModelToEntity
      * @param destination the output entity
      */
     private void mapAndUpdateSingleInstallment(
-            InstallmentModel source, Installment destination) {
-        destination.setNav(source.getNav());
-        destination.setIuv(source.getIuv());
-        destination.setAmount(source.getAmount());
-        destination.setDescription(source.getDescription());
-        destination.setDueDate(source.getDueDate());
-        destination.setFee(source.getFee());
-        destination.setLastUpdatedDate(LocalDateTime.now());
+            InstallmentModel source, Installment destinationInstallment, PaymentOption destinationPo, PaymentPosition destination) {
+        destinationInstallment.setNav(source.getNav());
+        destinationInstallment.setIuv(source.getIuv());
+        destinationInstallment.setAmount(source.getAmount());
+        destinationInstallment.setDescription(source.getDescription());
+        destinationInstallment.setDueDate(source.getDueDate());
+        destinationInstallment.setFee(source.getFee());
+        destinationInstallment.setLastUpdatedDate(LocalDateTime.now());
+        destinationInstallment.setPaymentOption(destinationPo);
+        destinationInstallment.setPaymentPosition(destination);
 
-        mapAndUpdateTransfers(source, destination);
+        mapAndUpdateTransfers(source, destinationInstallment);
         // TODO METADATA mapAndUpdateOptionMetadata(source, destination);
     }
 
     private void mapAndUpdateTransfers(
-            InstallmentModel sourceInstallment, Installment destination) {
+            InstallmentModel sourceInstallment, Installment destinationInstallment) {
         Map<String, Transfer> managedTransfersById =
-                destination.getTransfer().stream()
+                destinationInstallment.getTransfer().stream()
                         .collect(Collectors.toMap(Transfer::getTransferId, t -> t));
 
-        List<Transfer> transfersToRemove = new ArrayList<>(destination.getTransfer());
+        List<Transfer> transfersToRemove = new ArrayList<>(destinationInstallment.getTransfer());
 
         if (sourceInstallment.getTransfer() != null) {
             for (TransferModel sourceTx : sourceInstallment.getTransfer()) {
                 Transfer managedTx = managedTransfersById.get(sourceTx.getIdTransfer());
                 if (managedTx != null) {
                     // UPDATE
-                    mapAndUpdateSingleTransfer(sourceTx, managedTx);
+                    mapAndUpdateSingleTransfer(sourceTx, managedTx, destinationInstallment);
                     transfersToRemove.remove(managedTx);
                 } else {
                     // CREATE
                     Transfer tr = Transfer.builder().build();
-                    mapAndUpdateSingleTransfer(sourceTx, tr);
-                    destination.getTransfer().add(tr);
+                    mapAndUpdateSingleTransfer(sourceTx, tr, destinationInstallment);
+                    destinationInstallment.getTransfer().add(tr);
                 }
             }
         }
         // DELETE
-        destination.getTransfer().removeAll(transfersToRemove);
+        destinationInstallment.getTransfer().removeAll(transfersToRemove);
     }
 
-    private void mapAndUpdateSingleTransfer(TransferModel source, Transfer destination) {
-        destination.setAmount(source.getAmount());
-        destination.setCategory(source.getCategory());
-        // TODO where has it gone  destination.setCompanyName(source.getCompanyName());
-        destination.setIban(source.getIban());
-        destination.setTransferId(source.getIdTransfer());
-        destination.setLastUpdatedDate(LocalDateTime.now());
-        destination.setOrganizationFiscalCode(source.getOrganizationFiscalCode());
-        destination.setPostalIban(source.getPostalIban());
-        destination.setRemittanceInformation(source.getRemittanceInformation());
+    private void mapAndUpdateSingleTransfer(TransferModel source, Transfer destinationTr, Installment destinationInst) {
+        destinationTr.setAmount(source.getAmount());
+        destinationTr.setCategory(source.getCategory());
+        // TODO where has it gone  destinationTr.setCompanyName(source.getCompanyName());
+        destinationTr.setIban(source.getIban());
+        destinationTr.setTransferId(source.getIdTransfer());
+        destinationTr.setLastUpdatedDate(LocalDateTime.now());
+        destinationTr.setOrganizationFiscalCode(source.getOrganizationFiscalCode());
+        destinationTr.setPostalIban(source.getPostalIban());
+        destinationTr.setRemittanceInformation(source.getRemittanceInformation());
         Stamp stamp = source.getStamp();
         if (stamp != null) {
-            destination.setHashDocument(stamp.getHashDocument());
-            destination.setProvincialResidence(stamp.getProvincialResidence());
-            destination.setStampType(stamp.getStampType());
+            destinationTr.setHashDocument(stamp.getHashDocument());
+            destinationTr.setProvincialResidence(stamp.getProvincialResidence());
+            destinationTr.setStampType(stamp.getStampType());
         }
+        destinationTr.setInstallment(destinationInst);
 
-        //TODO mapAndUpdateTransferMetadata(source, destination);
+        //TODO mapAndUpdateTransferMetadata(source, destinationTr);
     }
 
 //    private void mapAndUpdateOptionMetadata(

@@ -66,8 +66,9 @@ public class PaymentOption implements Serializable {
     private DebtPositionStatusV3 paymentPositionStatus;
 
     @NotNull
-    @Column(name = "switch_to_expired")
-    private Boolean switchToExpired;
+    @Builder.Default
+    @Column(name = "switch_to_expired", columnDefinition = "boolean DEFAULT false")
+    private Boolean switchToExpired = false;
 
 
     // Debtor properties
