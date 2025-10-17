@@ -1,6 +1,6 @@
 package it.gov.pagopa.debtposition.repository;
 
-import it.gov.pagopa.debtposition.entity.apd.Transfer;
+import it.gov.pagopa.debtposition.entity.Transfer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,13 +18,13 @@ public interface TransferRepository extends JpaRepository<Transfer, Long> {
     @Transactional
     @Query(
             nativeQuery = true,
-            value = "UPDATE apd.transfer as tr " +
+            value = "UPDATE odp.transfer as tr " +
                     "SET iban = :newIban, last_updated_date = :currentDate " +
                     "where id in (" +
                     "SELECT tr.id " +
-                    "from apd.transfer tr join apd.payment_option AS po ON tr.payment_option_id = po.id " +
-                    "JOIN apd.payment_position AS pp ON po.payment_position_id = pp.id " +
-                    "WHERE tr.iban=:oldIban and po.status in (:poStatus) and " +
+                    "from odp.transfer tr join odp.installment AS inst ON tr.installment_id = inst.id " +
+                    "JOIN odp.payment_position AS pp ON inst.payment_position_id = pp.id " +
+                    "WHERE tr.iban=:oldIban and inst.status in (:instStatus) and " +
                     "pp.organization_fiscal_code = :organizationFiscalCode and pp.status in (:ppStatus) " +
                     "limit :limit)")
     int updateTransferIban(
@@ -32,7 +32,7 @@ public interface TransferRepository extends JpaRepository<Transfer, Long> {
             @Param(value = "oldIban") String oldIban,
             @Param(value = "newIban") String newIban,
             @Param(value = "currentDate") LocalDateTime currentDate,
-            @Param(value = "poStatus") List<String> poStatus,
+            @Param(value = "instStatus") List<String> instStatus,
             @Param(value = "ppStatus") List<String> ppStatus,
             @Param(value = "limit") int limit
     );

@@ -1,7 +1,7 @@
 package it.gov.pagopa.debtposition.repository;
 
-import it.gov.pagopa.debtposition.entity.apd.PaymentPosition;
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatusV3;
 import it.gov.pagopa.debtposition.model.payments.OrganizationModelQueryBean;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,7 +35,7 @@ public interface PaymentPositionRepository
           + " :currentDate and pp.status='PUBLISHED'")
   int updatePaymentPositionStatusToValid(
       @Param(value = "currentDate") LocalDateTime currentDate,
-      @Param(value = "status") DebtPositionStatus status);
+      @Param(value = "status") DebtPositionStatusV3 status);
 
   // Regola 6 - Una posizione va in expired nel momento in cui si raggiunge la max_due_date, il flag
   // switch_to_expired è impostato a TRUE e lo stato è a valid
@@ -43,10 +43,10 @@ public interface PaymentPositionRepository
   @Query(
       "update PaymentPosition pp set pp.status = :status, pp.lastUpdatedDate = :currentDate,"
           + " pp.version=pp.version+1 where pp.maxDueDate < :currentDate and pp.status='VALID' and"
-          + " pp.switchToExpired IS TRUE")
+          + " pp.payStandIn IS TRUE") // TODO CHANGE to switch to expired
   int updatePaymentPositionStatusToExpired(
       @Param(value = "currentDate") LocalDateTime currentDate,
-      @Param(value = "status") DebtPositionStatus status);
+      @Param(value = "status") DebtPositionStatusV3 status);
 
   // Derived Query - using method naming convention - get parent PaymentPosition from child
   // PaymentOption properties
@@ -57,7 +57,7 @@ public interface PaymentPositionRepository
   // see: https://www.baeldung.com/jpa-pessimistic-locking
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   Optional<PaymentPosition>
-      findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvOrPaymentOptionOrganizationFiscalCodeAndPaymentOptionNav(
+  findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionInstallmentIuvOrPaymentOptionOrganizationFiscalCodeAndPaymentOptionInstallmentNav(
           String organizationFiscalCodeIuv,
           String iuv,
           String organizationFiscalCodeNav,
@@ -68,7 +68,7 @@ public interface PaymentPositionRepository
   // see: https://www.baeldung.com/jpa-pessimistic-locking
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   Optional<PaymentPosition>
-      findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
+  findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionInstallmentIuvAndPaymentOptionInstallmentTransferTransferId(
           String organizationFiscalCode, String iuv, String idTransfer);
 
   @Query(
@@ -79,9 +79,4 @@ public interface PaymentPositionRepository
   List<OrganizationModelQueryBean> findDistinctOrganizationsByInsertedDate(LocalDateTime fromDate);
 
   Page<PaymentPosition> findAll(Specification<PaymentPosition> spec, Pageable pageable);
-
-  // Derived Query - using method naming convention - get all PaymentPosition by
-  // organization_fiscal_code and in the specified statuses
-  List<PaymentPosition> findByOrganizationFiscalCodeAndStatusIn(
-      String organizationFiscalCode, List<DebtPositionStatus> statusList);
 }
