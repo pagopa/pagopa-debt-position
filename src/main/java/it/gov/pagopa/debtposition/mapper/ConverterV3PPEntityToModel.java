@@ -1,6 +1,6 @@
 package it.gov.pagopa.debtposition.mapper;
 
-import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
@@ -34,31 +34,34 @@ public class ConverterV3PPEntityToModel
     destination.setStatus(DebtPositionStatusV3.valueOf(source.getStatus().name()));
 
     LocalDateTime validityDate = source.getValidityDate();
-    Boolean switchToExpired = source.getSwitchToExpired();
 
-    List<PaymentOption> paymentOptions = source.getPaymentOption();
+    List<Installment> paymentOptions = source.getPaymentOption();
     if (paymentOptions == null || paymentOptions.isEmpty()) {
       return destination;
     }
 
     // Partitioning the payment options into partial and unique POs
-    Map<Boolean, List<PaymentOption>> partitionedPO =
+    Map<Boolean, List<Installment>> partitionedPO =
         paymentOptions.stream()
-            .collect(Collectors.partitioningBy(PaymentOption::getIsPartialPayment));
+            .collect(Collectors.partitioningBy(Installment::getIsPartialPayment));
 
     // Extracting the partial and unique POs
-    List<PaymentOption> partialPO = partitionedPO.get(true);
-    List<PaymentOption> uniquePO = partitionedPO.get(false);
+    List<Installment> partialPO = partitionedPO.get(true);
+    List<Installment> uniquePO = partitionedPO.get(false);
     List<PaymentOptionModelV3> paymentOptionsToAdd = new ArrayList<>();
 
     if (null != partialPO && !partialPO.isEmpty()) {
-      PaymentOptionModelV3 pov3 = this.convertPartialPO(partialPO, validityDate, switchToExpired);
+      // If at least one of the partial POs is marked as switchToExpired, the whole PO must be
+      boolean partialAnyMarkedExpired = partialPO.stream()
+    	        .anyMatch(i -> Boolean.TRUE.equals(i.getSwitchToExpired()));
+      PaymentOptionModelV3 pov3 = this.convertPartialPO(partialPO, validityDate, partialAnyMarkedExpired);
       paymentOptionsToAdd.add(pov3);
     }
 
     if (null != uniquePO && !uniquePO.isEmpty()) {
-      List<PaymentOptionModelV3> pov3List =
-          uniquePO.stream().map(po -> convertUniquePO(po, validityDate, switchToExpired)).toList();
+      List<PaymentOptionModelV3> pov3List = uniquePO.stream()
+    	        .map(po -> convertUniquePO(po, validityDate, Boolean.TRUE.equals(po.getSwitchToExpired())))
+    	        .toList();
       paymentOptionsToAdd.addAll(pov3List);
     }
 
@@ -69,7 +72,7 @@ public class ConverterV3PPEntityToModel
 
   // 1 unique PO -> 1 PaymentOption composed by 1 installment
   private PaymentOptionModelV3 convertUniquePO(
-      PaymentOption po, LocalDateTime validityDate, boolean switchToExpired) {
+      Installment po, LocalDateTime validityDate, boolean switchToExpired) {
     PaymentOptionModelV3 pov3 = convert(po);
     pov3.setValidityDate(validityDate);
     pov3.setSwitchToExpired(switchToExpired);
@@ -81,7 +84,7 @@ public class ConverterV3PPEntityToModel
 
   // N partial PO -> 1 PaymentOption composed by N installment
   private PaymentOptionModelV3 convertPartialPO(
-      List<PaymentOption> partialPOs, LocalDateTime validityDate, boolean switchToExpired) {
+      List<Installment> partialPOs, LocalDateTime validityDate, boolean switchToExpired) {
     // Get only the first to fill common data for partial PO (retentionDate, insertedDate, debtor)
     PaymentOptionModelV3 pov3 = convert(partialPOs.get(0));
     pov3.setValidityDate(validityDate);
@@ -93,7 +96,7 @@ public class ConverterV3PPEntityToModel
     return pov3;
   }
 
-  private PaymentOptionModelV3 convert(PaymentOption po) {
+  private PaymentOptionModelV3 convert(Installment po) {
     PaymentOptionModelV3 pov3 = new PaymentOptionModelV3();
     pov3.setRetentionDate(po.getRetentionDate());
     pov3.setDebtor(UtilityMapper.extractDebtor(po));
@@ -101,7 +104,7 @@ public class ConverterV3PPEntityToModel
     return pov3;
   }
 
-  private InstallmentModel convertInstallment(PaymentOption po) {
+  private InstallmentModel convertInstallment(Installment po) {
     InstallmentModel inst = new InstallmentModel();
 
     inst.setNav(po.getNav());

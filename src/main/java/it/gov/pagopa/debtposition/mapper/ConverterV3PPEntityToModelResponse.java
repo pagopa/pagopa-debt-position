@@ -45,32 +45,38 @@ public class ConverterV3PPEntityToModelResponse
     destination.setStatus(DebtPositionStatusV3.valueOf(targetStatusV3));
 
     LocalDateTime validityDate = source.getValidityDate();
-    Boolean switchToExpired = source.getSwitchToExpired();
 
-    List<PaymentOption> paymentOptions = source.getPaymentOption();
+    List<Installment> paymentOptions = source.getPaymentOption();
     if (paymentOptions == null || paymentOptions.isEmpty()) {
       return destination;
     }
 
     // Partitioning the payment options into partial and unique POs
-    Map<Boolean, List<PaymentOption>> partitionedPO =
+    Map<Boolean, List<Installment>> partitionedPO =
         paymentOptions.stream()
-            .collect(Collectors.partitioningBy(PaymentOption::getIsPartialPayment));
+            .collect(Collectors.partitioningBy(Installment::getIsPartialPayment));
 
     // Extracting the partial and unique POs
-    List<PaymentOption> partialPO = partitionedPO.get(true);
-    List<PaymentOption> uniquePO = partitionedPO.get(false);
+    List<Installment> partialPO = partitionedPO.get(true);
+    List<Installment> uniquePO = partitionedPO.get(false);
     List<PaymentOptionModelResponseV3> paymentOptionsToAdd = new ArrayList<>();
 
     if (null != partialPO && !partialPO.isEmpty()) {
+      // If at least one of the partial POs is marked as switchToExpired, the whole PO must be
+      boolean partialAnyMarkedExpired = partialPO.stream()
+  		      .anyMatch(i -> Boolean.TRUE.equals(i.getSwitchToExpired()));
       PaymentOptionModelResponseV3 pov3 =
-          this.convertPartialPO(partialPO, validityDate, switchToExpired);
+          this.convertPartialPO(partialPO, validityDate, partialAnyMarkedExpired);
       paymentOptionsToAdd.add(pov3);
     }
 
     if (null != uniquePO && !uniquePO.isEmpty()) {
-      List<PaymentOptionModelResponseV3> pov3List =
-          uniquePO.stream().map(po -> convertUniquePO(po, validityDate, switchToExpired)).toList();
+     List<PaymentOptionModelResponseV3> pov3List = uniquePO.stream()
+    		      .map(po -> convertUniquePO(
+    		          po,
+    		          validityDate,
+    		          Boolean.TRUE.equals(po.getSwitchToExpired())))
+    		      .toList();
       paymentOptionsToAdd.addAll(pov3List);
     }
 
@@ -81,7 +87,7 @@ public class ConverterV3PPEntityToModelResponse
 
   // N partial PO -> 1 PaymentOption composed by N installment
   private PaymentOptionModelResponseV3 convertPartialPO(
-      List<PaymentOption> partialPOs, LocalDateTime validityDate, boolean switchToExpired) {
+      List<Installment> partialPOs, LocalDateTime validityDate, boolean switchToExpired) {
     // Get only the first to fill common data for partial PO (retentionDate, insertedDate, debtor)
     PaymentOptionModelResponseV3 pov3 = convert(partialPOs.get(0));
     pov3.setValidityDate(validityDate);
@@ -95,7 +101,7 @@ public class ConverterV3PPEntityToModelResponse
 
   // 1 unique PO -> 1 PaymentOption composed by 1 installment
   private PaymentOptionModelResponseV3 convertUniquePO(
-      PaymentOption po, LocalDateTime validityDate, boolean switchToExpired) {
+      Installment po, LocalDateTime validityDate, boolean switchToExpired) {
     PaymentOptionModelResponseV3 pov3 = convert(po);
     pov3.setValidityDate(validityDate);
     pov3.setSwitchToExpired(switchToExpired);
@@ -105,7 +111,7 @@ public class ConverterV3PPEntityToModelResponse
     return pov3;
   }
 
-  private PaymentOptionModelResponseV3 convert(PaymentOption po) {
+  private PaymentOptionModelResponseV3 convert(Installment po) {
     PaymentOptionModelResponseV3 pov3 = new PaymentOptionModelResponseV3();
 
     pov3.setRetentionDate(po.getRetentionDate());
@@ -115,7 +121,7 @@ public class ConverterV3PPEntityToModelResponse
     return pov3;
   }
 
-  private InstallmentModelResponse convertInstallment(PaymentOption po) {
+  private InstallmentModelResponse convertInstallment(Installment po) {
     InstallmentModelResponse inst = new InstallmentModelResponse();
 
     inst.setNav(po.getNav());

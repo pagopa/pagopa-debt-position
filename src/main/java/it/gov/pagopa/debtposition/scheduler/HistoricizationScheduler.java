@@ -11,7 +11,7 @@ import com.azure.data.tables.models.TableTransactionFailedException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import java.net.URISyntaxException;
@@ -24,10 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceUnit;
-import javax.transaction.Transactional;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceUnit;
+import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -193,7 +193,7 @@ public class HistoricizationScheduler {
       for (int i = 0; i < organizationPpList.size(); i++) {
         PaymentPosition pp = organizationPpList.get(i);
         for (int j = 0; j < pp.getPaymentOption().size(); j++) {
-          PaymentOption po = pp.getPaymentOption().get(j);
+          Installment po = pp.getPaymentOption().get(j);
           // bulk operation to persist the PO debt position info
           if (numOfBatchOperations < maxBatchOperationSize - 1
               && i < organizationPpList.size() - 1) {

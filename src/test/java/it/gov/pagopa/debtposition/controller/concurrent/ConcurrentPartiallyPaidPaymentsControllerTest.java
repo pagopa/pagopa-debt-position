@@ -44,7 +44,7 @@ class ConcurrentPartiallyPaidPaymentsControllerTest {
     // creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato) con più
     // opzioni di pagamento
     mvc.perform(
-            post("/organizations/PAY_Concurrent_Partially_Paid_12345678901/debtpositions?toPublish=true")
+            post("/organizations/1234567890166666/debtpositions?toPublish=true")
                 .content(TestUtil.toJson(DebtPositionMock.getMock3()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
@@ -64,9 +64,9 @@ class ConcurrentPartiallyPaidPaymentsControllerTest {
     // effettuo la notifica di pagamento di una rata parziale (setIsPartialPayment = true) e
     // verifico lo stato in paid
     mvc.perform(
-            post("/organizations/PAY_Concurrent_Partially_Paid_12345678901/paymentoptions/"
+            post("/organizations/1234567890166666/paymentoptions/"
                     + auxDigit
-                    + "123456IUVMULTIPLEMOCK4/pay")
+                    + "1234564/pay")
                 .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is(oneOf(200, 409)))
@@ -84,9 +84,9 @@ class ConcurrentPartiallyPaidPaymentsControllerTest {
         "checkDebtPosition_after_partially_paid start => " + Thread.currentThread().getName());
     // recupero la PO e verifico lo stato in PO_PARTIALLY_REPORTED
     String url =
-        "/organizations/PAY_Concurrent_Partially_Paid_12345678901/paymentoptions/"
+        "/organizations/1234567890166666/paymentoptions/"
             + auxDigit
-            + "123456IUVMULTIPLEMOCK4";
+            + "1234564";
     mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -96,7 +96,7 @@ class ConcurrentPartiallyPaidPaymentsControllerTest {
 
     // recupero la PP e verifico lo stato sia PARTIALLY_PAID
     mvc.perform(
-            get("/organizations/PAY_Concurrent_Partially_Paid_12345678901/debtpositions/12345678901IUPDMULTIPLEMOCK2")
+            get("/organizations/1234567890166666/debtpositions/12345678901IUPDMULTIPLEMOCK2")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(

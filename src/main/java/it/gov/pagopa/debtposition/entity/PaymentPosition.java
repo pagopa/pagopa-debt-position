@@ -9,8 +9,8 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 /**
@@ -136,10 +136,6 @@ public class PaymentPosition implements Serializable {
   private LocalDateTime paymentDate;
 
   @Builder.Default
-  @Column(name = "switch_to_expired", columnDefinition = "boolean DEFAULT false")
-  private Boolean switchToExpired = false;
-
-  @Builder.Default
   @NotNull
   @Version
   @Column(columnDefinition = "integer DEFAULT 0")
@@ -147,14 +143,14 @@ public class PaymentPosition implements Serializable {
 
   @Builder.Default
   @OneToMany(
-      targetEntity = PaymentOption.class,
+      targetEntity = Installment.class,
       fetch = FetchType.LAZY,
       mappedBy = "paymentPosition",
       cascade = CascadeType.ALL,
       orphanRemoval = true)
-  private List<PaymentOption> paymentOption = new ArrayList<>();
+  private List<Installment> paymentOption = new ArrayList<>();
 
-  public void addPaymentOption(PaymentOption paymentOpt) {
+  public void addPaymentOption(Installment paymentOpt) {
     paymentOption.add(paymentOpt);
     paymentOpt.setPaymentPosition(this);
   }

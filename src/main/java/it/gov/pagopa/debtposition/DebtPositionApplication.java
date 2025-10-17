@@ -1,6 +1,6 @@
 package it.gov.pagopa.debtposition;
 
-import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.mapper.*;
 import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
@@ -49,17 +49,17 @@ public class DebtPositionApplication {
 
     // GPD version 1 converter used to return a paid Payment Option data (differs from default
     // mapping by serviceType adding).
-    Converter<PaymentOption, PaidPaymentOptionModel> convertPOEntityToPaidPOModel =
+    Converter<Installment, PaidPaymentOptionModel> convertPOEntityToPaidPOModel =
         new ConvertPOEntityToPaidPOModel();
     modelMapper
-        .createTypeMap(PaymentOption.class, PaidPaymentOptionModel.class)
+        .createTypeMap(Installment.class, PaidPaymentOptionModel.class)
         .setConverter(convertPOEntityToPaidPOModel);
 
     // GPD version 1 converter used to return a Payment Option with debtor data.
-    Converter<PaymentOption, PaymentOptionWithDebtorInfoModelResponse>
+    Converter<Installment, PaymentOptionWithDebtorInfoModelResponse>
         convertPOEntityToPOWithDebtor = new ConvertPOEntityToPOWithDebtor();
     modelMapper
-        .createTypeMap(PaymentOption.class, PaymentOptionWithDebtorInfoModelResponse.class)
+        .createTypeMap(Installment.class, PaymentOptionWithDebtorInfoModelResponse.class)
         .setConverter(convertPOEntityToPOWithDebtor);
 
     // GPD version 3 (also known as OdP API) input mapper

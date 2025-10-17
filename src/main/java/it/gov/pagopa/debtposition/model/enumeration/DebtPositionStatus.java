@@ -1,6 +1,6 @@
 package it.gov.pagopa.debtposition.model.enumeration;
 
-import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
@@ -62,20 +62,23 @@ public enum DebtPositionStatus {
     }
     return pp;
   }
-
+  
   public static PaymentPosition expirationCheckAndUpdate(PaymentPosition pp) {
-    LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-    // Expiration check on the fly
-    if (pp.getSwitchToExpired()
-        && pp.getStatus().equals(DebtPositionStatus.VALID)
-        && null != pp.getMaxDueDate()
-        && currentDate.isAfter(pp.getMaxDueDate())) {
-      pp.setStatus(DebtPositionStatus.EXPIRED);
-    }
-    return pp;
+	LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+
+	// switchToExpired = true if at least one installment has switchToExpired = true
+	boolean anySwitchToExpired = pp.getPaymentOption() != null && !pp.getPaymentOption().isEmpty()
+			&& pp.getPaymentOption().stream().anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
+
+	if (anySwitchToExpired && pp.getStatus() == DebtPositionStatus.VALID && pp.getMaxDueDate() != null
+			&& currentDate.isAfter(pp.getMaxDueDate())) {
+		pp.setStatus(DebtPositionStatus.EXPIRED);
+	}
+	return pp;
   }
 
-  public static PaymentPosition validityCheckAndUpdate(PaymentOption po) {
+
+  public static PaymentPosition validityCheckAndUpdate(Installment po) {
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
     PaymentPosition pp = po.getPaymentPosition();
     // Validity check on the fly
@@ -86,19 +89,23 @@ public enum DebtPositionStatus {
     }
     return pp;
   }
+  
+  public static PaymentPosition expirationCheckAndUpdate(Installment po) {
+	LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+	PaymentPosition pp = po.getPaymentPosition();
 
-  public static PaymentPosition expirationCheckAndUpdate(PaymentOption po) {
-    LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-    // Expiration check on the fly
-    PaymentPosition pp = po.getPaymentPosition();
-    if (pp.getSwitchToExpired()
-        && pp.getStatus().equals(DebtPositionStatus.VALID)
-        && null != pp.getMaxDueDate()
-        && currentDate.isAfter(pp.getMaxDueDate())) {
-      pp.setStatus(DebtPositionStatus.EXPIRED);
-    }
-    return pp;
-  }
+	// switchToExpired = true if at least one installment has switchToExpired = true
+	boolean anySwitchToExpired = pp.getPaymentOption() != null && !pp.getPaymentOption().isEmpty()
+			&& pp.getPaymentOption().stream().anyMatch(i -> Boolean.TRUE.equals(i.getSwitchToExpired()));
+
+	if (anySwitchToExpired && pp.getStatus() == DebtPositionStatus.VALID && pp.getMaxDueDate() != null
+			&& currentDate.isAfter(pp.getMaxDueDate())) {
+		pp.setStatus(DebtPositionStatus.EXPIRED);
+	}
+
+	return pp;
+ }
+
 
   /**
    * Checks if the user is trying to pay the full amount for the payment position but there is an
@@ -107,7 +114,7 @@ public enum DebtPositionStatus {
    * @param paymentOptionToPay the payment option being paid
    * @param nav the identifier of the notice being paid
    */
-  public static void checkAlreadyPaidInstallments(PaymentOption paymentOptionToPay, String nav) {
+  public static void checkAlreadyPaidInstallments(Installment paymentOptionToPay, String nav) {
 
     PaymentPosition paymentPosition = paymentOptionToPay.getPaymentPosition();
     if (Boolean.FALSE.equals(paymentOptionToPay.getIsPartialPayment())

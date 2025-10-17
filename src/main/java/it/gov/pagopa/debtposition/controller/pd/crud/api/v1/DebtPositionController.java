@@ -30,8 +30,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.validation.Valid;
-import javax.validation.constraints.Pattern;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,9 +89,12 @@ public class DebtPositionController implements IDebtPositionController {
         paymentPositionService.create(
             debtPosition, organizationFiscalCode, toPublish, segCodes, CREATE_ACTION);
 
-    if (null != createdDebtPos) {
-      PaymentPositionModel paymentPosition =
-          ObjectMapperUtils.map(createdDebtPos, PaymentPositionModel.class);
+	if (null != createdDebtPos) {
+		PaymentPositionModel paymentPosition = ObjectMapperUtils.map(createdDebtPos, PaymentPositionModel.class);
+		// set the switchToExpired flag in the response
+		boolean anyMatchSwitchToExpired = createdDebtPos.getPaymentOption() != null && createdDebtPos.getPaymentOption()
+				.stream().anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
+		paymentPosition.setSwitchToExpired(anyMatchSwitchToExpired);
       return new ResponseEntity<>(paymentPosition, HttpStatus.CREATED);
     }
 
@@ -257,6 +260,10 @@ public class DebtPositionController implements IDebtPositionController {
     if (null != updatedDebtPos) {
       PaymentPositionModel paymentPosition =
           ObjectMapperUtils.map(updatedDebtPos, PaymentPositionModel.class);
+      // set the switchToExpired flag in the response
+   	  boolean anyMatchSwitchToExpired = updatedDebtPos.getPaymentOption() != null && updatedDebtPos.getPaymentOption()
+   				.stream().anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
+   	  paymentPosition.setSwitchToExpired(anyMatchSwitchToExpired);
       return new ResponseEntity<>(paymentPosition, HttpStatus.OK);
     }
 

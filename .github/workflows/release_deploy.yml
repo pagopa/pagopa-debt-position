@@ -18,6 +18,15 @@ on:
           - dev
           - uat
           - prod
+      schema:
+         required: false
+         type: choice
+         description: Select the Schema to migrate
+         options:
+           - apd
+           - odp
+           - all
+         default: all
       semver:
         required: true
         type: choice
@@ -109,7 +118,7 @@ jobs:
     uses: ./.github/workflows/db_migration_with_github_runner.yml
     with:
       environment: ${{ matrix.environment }}
-      target: ${{ needs.setup.outputs.environment }}
+      schema: ${{ inputs.schema || 'all' }}
     secrets: inherit
 
 
@@ -155,4 +164,4 @@ jobs:
           footer: 'Linked to <{workflow_url}| workflow file>'
           icon_success: ':white_check_mark:'
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_DEPLOY }}

@@ -1,7 +1,7 @@
 package it.gov.pagopa.debtposition.controller.payments.api.impl;
 
 import it.gov.pagopa.debtposition.controller.payments.api.IPaymentsController;
-import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
@@ -17,8 +17,8 @@ import it.gov.pagopa.debtposition.service.payments.PaymentsService;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.CustomHttpStatus;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
-import javax.validation.Valid;
-import javax.validation.constraints.Pattern;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,8 +50,8 @@ public class PaymentsController implements IPaymentsController {
 
   @Override
   public ResponseEntity<PaymentOptionWithDebtorInfoModelResponse> getOrganizationPaymentOptionByNAV(
-      @Pattern(regexp = "\\d{1,30}") String organizationFiscalCode,
-      @Pattern(regexp = "^\\d{1,30}$") String nav) {
+      String organizationFiscalCode,
+      String nav) {
     log.debug(
         String.format(
             LOG_BASE_HEADER_INFO,
@@ -91,7 +91,7 @@ public class PaymentsController implements IPaymentsController {
                 CommonUtil.sanitize(organizationFiscalCode),
                 CommonUtil.sanitize(nav))));
 
-    PaymentOption paidPaymentOption =
+    Installment paidPaymentOption =
         paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
 
     // Convert entity to model
@@ -144,7 +144,7 @@ public class PaymentsController implements IPaymentsController {
                     CommonUtil.sanitize(iuv))
                 + "; notificationFee="
                 + notificationFee));
-    PaymentOption updatedPaymentOption =
+    Installment updatedPaymentOption =
         paymentsService.updateNotificationFee(organizationFiscalCode, iuv, notificationFee);
     if (updatedPaymentOption != null) {
       ResponseEntity.status(
@@ -188,7 +188,7 @@ public class PaymentsController implements IPaymentsController {
     paymentOptionModel.setPspCompany(PO_MARKED_AS_PAID_FIELD_PLACEHOLDER);
     paymentOptionModel.setPaymentDate(alreadyPaidPaymentOptionModel.getPaymentDate());
 
-    PaymentOption paidPaymentOption =
+    Installment paidPaymentOption =
             paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
 
     // Convert entity to model

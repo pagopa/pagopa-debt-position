@@ -1,8 +1,8 @@
 package it.gov.pagopa.debtposition.controller.pd.validator.v3;
 
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 public class InstallmentsSizeValidator
     implements ConstraintValidator<ValidInstallmentsSize, PaymentPositionModelV3> {
