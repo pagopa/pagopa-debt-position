@@ -135,16 +135,6 @@ public class PaymentPosition implements Serializable {
   @Column(name = "payment_date")
   private LocalDateTime paymentDate;
 
-  /*@Builder.Default
-  @Column(name = "switch_to_expired", columnDefinition = "boolean DEFAULT false")
-  private Boolean switchToExpired = false;*/
-  
-  // TO: da rimuovere
-  /*
-  @Transient
-  @Builder.Default
-  private Boolean switchToExpired = false; // used only to propagate to installments*/
-
   @Builder.Default
   @NotNull
   @Version

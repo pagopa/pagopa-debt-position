@@ -45,7 +45,6 @@ public class ConverterV3PPEntityToModelResponse
     destination.setStatus(DebtPositionStatusV3.valueOf(targetStatusV3));
 
     LocalDateTime validityDate = source.getValidityDate();
-    //Boolean switchToExpired = source.getSwitchToExpired();
 
     List<Installment> paymentOptions = source.getPaymentOption();
     if (paymentOptions == null || paymentOptions.isEmpty()) {
