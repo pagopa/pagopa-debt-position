@@ -32,7 +32,7 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
       Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
 
     Join<?, ?> ppOptionsJoin = root.join(PAYMENT_OPT_JOIN, JoinType.INNER);
-    Join<?, ?> installmentsJoin = root.join(INSTALLMENT_JOIN, JoinType.INNER);
+    Join<?, ?> installmentsJoin = ppOptionsJoin.join(INSTALLMENT_JOIN, JoinType.INNER);
 
     Predicate dueDatePredicate = cb.isTrue(cb.literal(true));
     Predicate segregationCodesPredicate = cb.isTrue(cb.literal(false));
