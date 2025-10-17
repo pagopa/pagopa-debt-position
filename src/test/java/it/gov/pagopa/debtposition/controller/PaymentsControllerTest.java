@@ -18,17 +18,16 @@ import it.gov.pagopa.debtposition.client.SendClient;
 import it.gov.pagopa.debtposition.dto.PaymentOptionDTO;
 import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import it.gov.pagopa.debtposition.dto.TransferDTO;
-import it.gov.pagopa.debtposition.entity.apd.PaymentOption;
-import it.gov.pagopa.debtposition.entity.apd.PaymentPosition;
-import it.gov.pagopa.debtposition.entity.apd.Transfer;
+import it.gov.pagopa.debtposition.entity.Installment;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.mock.DebtPositionMock;
 import it.gov.pagopa.debtposition.model.checkposition.NodeCheckPositionModel;
 import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPositionResponse;
 import it.gov.pagopa.debtposition.model.config.Notice;
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
-import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
-import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
+import it.gov.pagopa.debtposition.model.enumeration.*;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
 import it.gov.pagopa.debtposition.model.send.response.NotificationPriceResponse;
 import it.gov.pagopa.debtposition.service.payments.PaymentsService;
@@ -39,6 +38,8 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.List;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -2230,9 +2231,9 @@ class PaymentsControllerTest {
     try {
       PaymentOption localMockPO = new PaymentOption();
       PaymentPosition localMockPP = new PaymentPosition();
-      localMockPP.setStatus(DebtPositionStatus.VALID);
-      localMockPO.setStatus(PaymentOptionStatus.PO_PAID);
-      localMockPO.setIsPartialPayment(false);
+      localMockPP.setStatus(DebtPositionStatusV3.VALID);
+      localMockPO.setInstallment(List.of(Installment.builder().status(InstallmentStatus.PAID).build()));
+      localMockPO.setOptionType(OptionType.OPZIONE_UNICA);
       localMockPP.addPaymentOption(localMockPO);
       DebtPositionValidation.checkPaymentPositionPayability(localMockPP, "mockIUV");
     } catch (AppException e) {
@@ -2247,10 +2248,11 @@ class PaymentsControllerTest {
     try {
       PaymentOption localMockPO = new PaymentOption();
       PaymentPosition localMockPP = new PaymentPosition();
-      localMockPP.setStatus(DebtPositionStatus.PAID);
-      localMockPO.setStatus(PaymentOptionStatus.PO_PAID);
-      localMockPO.setIsPartialPayment(false);
-      localMockPO.setIuv("iuv");
+      localMockPP.setStatus(DebtPositionStatusV3.PAID);
+      localMockPO.setInstallment(List.of(
+              Installment.builder().iuv("iuv").status(InstallmentStatus.PAID).build()
+      ));
+      localMockPO.setOptionType(OptionType.OPZIONE_UNICA);
       localMockPP.addPaymentOption(localMockPO);
       DebtPositionValidation.checkPaymentPositionAccountability(localMockPP, "mockIUV", "mockTxID");
     } catch (AppException e) {
@@ -2261,17 +2263,19 @@ class PaymentsControllerTest {
   }
 
   @Test
-  void ValidationError_checkPaymentPositionAccountability_Transfer() throws Exception {
+  void ValidationError_checkPaymentPositionAccountability_Transfer() {
     try {
       PaymentOption localMockPO = new PaymentOption();
       PaymentPosition localMockPP = new PaymentPosition();
-      Transfer localTransfer = new Transfer();
-      localMockPP.setStatus(DebtPositionStatus.PAID);
-      localMockPO.setStatus(PaymentOptionStatus.PO_PAID);
-      localTransfer.setIdTransfer("1");
-      localMockPO.addTransfer(localTransfer);
-      localMockPO.setIsPartialPayment(false);
-      localMockPO.setIuv("mockIUV");
+      localMockPP.setStatus(DebtPositionStatusV3.PAID);
+      localMockPO.setInstallment(List.of(
+              Installment.builder()
+                      .iuv("mockIUV")
+                      .status(InstallmentStatus.PAID)
+                      .transfer(List.of(Transfer.builder().transferId("1").build()))
+                      .build()
+      ));
+      localMockPO.setOptionType(OptionType.OPZIONE_UNICA);
       localMockPP.addPaymentOption(localMockPO);
       DebtPositionValidation.checkPaymentPositionAccountability(localMockPP, "mockIUV", "mockTxID");
     } catch (AppException e) {

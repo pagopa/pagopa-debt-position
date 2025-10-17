@@ -3,8 +3,8 @@ package it.gov.pagopa.debtposition.mapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import it.gov.pagopa.debtposition.entity.apd.PaymentOption;
-import it.gov.pagopa.debtposition.entity.apd.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import it.gov.pagopa.debtposition.model.pd.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
@@ -48,22 +48,20 @@ class ConvertPPModelToPPEntityTest {
     PaymentPosition entity = mapper.convert(context);
 
     assertNotNull(entity);
-    assertEquals("Mario Rossi", entity.getFullName());
-    assertEquals("Roma", entity.getCity());
     assertEquals(1, entity.getPaymentOption().size());
 
     PaymentOption po = entity.getPaymentOption().get(0);
-    assertEquals("ABCDEF12G34H567I", po.getFiscalCode());
-    assertEquals("Mario Rossi", po.getFullName());
-    assertEquals("Via Roma", po.getStreetName());
-    assertEquals("10", po.getCivicNumber());
-    assertEquals("00100", po.getPostalCode());
-    assertEquals("Roma", po.getCity());
-    assertEquals("RM", po.getProvince());
-    assertEquals("Lazio", po.getRegion());
-    assertEquals("IT", po.getCountry());
-    assertEquals("mario.rossi@example.com", po.getEmail());
-    assertEquals("1234567890", po.getPhone());
+    assertEquals("ABCDEF12G34H567I", po.getDebtorFiscalCode());
+    assertEquals("Mario Rossi", po.getDebtorFullName());
+    assertEquals("Via Roma", po.getDebtorStreetName());
+    assertEquals("10", po.getDebtorCivicNumber());
+    assertEquals("00100", po.getDebtorPostalCode());
+    assertEquals("Roma", po.getDebtorCity());
+    assertEquals("RM", po.getDebtorProvince());
+    assertEquals("Lazio", po.getDebtorRegion());
+    assertEquals("IT", po.getDebtorCountry());
+    assertEquals("mario.rossi@example.com", po.getDebtorEmail());
+    assertEquals("1234567890", po.getDebtorPhone());
     assertEquals(Type.F, po.getDebtorType());
   }
 
@@ -96,8 +94,8 @@ class ConvertPPModelToPPEntityTest {
     PaymentPosition entity = mapper.convert(context);
 
     assertNotNull(entity);
-    assertEquals("Mario Rossi", entity.getFullName());
-    assertEquals("Roma", entity.getCity());
+    assertEquals("Mario Rossi", entity.getPaymentOption().get(0).getDebtorFullName());
+    assertEquals("Roma", entity.getPaymentOption().get(0).getDebtorCity());
     assertEquals(0, entity.getPaymentOption().size());
   }
 
@@ -135,25 +133,23 @@ class ConvertPPModelToPPEntityTest {
     PaymentPosition entity = mapper.convert(context);
 
     assertNotNull(entity);
-    assertEquals("Mario Rossi", entity.getFullName());
-    assertEquals("Roma", entity.getCity());
     assertEquals(1, entity.getPaymentOption().size());
 
     PaymentOption po = entity.getPaymentOption().get(0);
-    assertEquals("ABCDEF12G34H567I", po.getFiscalCode());
-    assertEquals("Mario Rossi", po.getFullName());
-    assertEquals("Via Roma", po.getStreetName());
-    assertEquals("10", po.getCivicNumber());
-    assertEquals("00100", po.getPostalCode());
-    assertEquals("Roma", po.getCity());
-    assertEquals("RM", po.getProvince());
-    assertEquals("Lazio", po.getRegion());
-    assertEquals("IT", po.getCountry());
-    assertEquals("mario.rossi@example.com", po.getEmail());
-    assertEquals("1234567890", po.getPhone());
+    assertEquals("ABCDEF12G34H567I", po.getDebtorFiscalCode());
+    assertEquals("Mario Rossi", po.getDebtorFullName());
+    assertEquals("Via Roma", po.getDebtorStreetName());
+    assertEquals("10", po.getDebtorCivicNumber());
+    assertEquals("00100", po.getDebtorPostalCode());
+    assertEquals("Roma", po.getDebtorCity());
+    assertEquals("RM", po.getDebtorProvince());
+    assertEquals("Lazio", po.getDebtorRegion());
+    assertEquals("IT", po.getDebtorCountry());
+    assertEquals("mario.rossi@example.com", po.getDebtorEmail());
+    assertEquals("1234567890", po.getDebtorPhone());
     assertEquals(Type.F, po.getDebtorType());
 
-    assertEquals(0, entity.getPaymentOption().get(0).getTransfer().size());
+    assertEquals(0, entity.getPaymentOption().get(0).getInstallment().get(0).getTransfer().size());
   }
 
   @Test
@@ -196,24 +192,22 @@ class ConvertPPModelToPPEntityTest {
     PaymentPosition entity = mapper.convert(context);
 
     assertNotNull(entity);
-    assertEquals("Mario Rossi", entity.getFullName());
-    assertEquals("Roma", entity.getCity());
     assertEquals(1, entity.getPaymentOption().size());
 
     PaymentOption po = entity.getPaymentOption().get(0);
-    assertEquals("ABCDEF12G34H567I", po.getFiscalCode());
-    assertEquals("Mario Rossi", po.getFullName());
-    assertEquals("Via Roma", po.getStreetName());
-    assertEquals("10", po.getCivicNumber());
-    assertEquals("00100", po.getPostalCode());
-    assertEquals("Roma", po.getCity());
-    assertEquals("RM", po.getProvince());
-    assertEquals("Lazio", po.getRegion());
-    assertEquals("IT", po.getCountry());
-    assertEquals("mario.rossi@example.com", po.getEmail());
-    assertEquals("1234567890", po.getPhone());
+    assertEquals("ABCDEF12G34H567I", po.getDebtorFiscalCode());
+    assertEquals("Mario Rossi", po.getDebtorFullName());
+    assertEquals("Via Roma", po.getDebtorStreetName());
+    assertEquals("10", po.getDebtorCivicNumber());
+    assertEquals("00100", po.getDebtorPostalCode());
+    assertEquals("Roma", po.getDebtorCity());
+    assertEquals("RM", po.getDebtorProvince());
+    assertEquals("Lazio", po.getDebtorRegion());
+    assertEquals("IT", po.getDebtorCountry());
+    assertEquals("mario.rossi@example.com", po.getDebtorEmail());
+    assertEquals("1234567890", po.getDebtorPhone());
     assertEquals(Type.F, po.getDebtorType());
 
-    assertEquals(1, entity.getPaymentOption().get(0).getTransfer().size());
+    assertEquals(1, entity.getPaymentOption().get(0).getInstallment().get(0).getTransfer().size());
   }
 }
