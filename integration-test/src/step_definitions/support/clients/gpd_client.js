@@ -1,4 +1,5 @@
 const { get, post, del, put, patch } = require("../utility/axios_common");
+const { toLog  } = require("../utility/helpers");
 const fs = require("fs");
 
 const GPD_HOST = process.env.gpd_host;
@@ -8,7 +9,7 @@ const API_TIMEOUT = process.env.api_timeout;
 
 const GPD_EXTERNAL_HOST = process.env.gpd_external_host;
 
-function gpdHealthCheck() {
+function  gpdHealthCheck() {
     return get(GPD_EXTERNAL_HOST + `/info`, {
         headers: {
             "Ocp-Apim-Subscription-Key": process.env.API_SUBSCRIPTION_KEY
@@ -20,6 +21,8 @@ function createDebtPosition(orgId, body, segCodes, toPublish = false){
 	const params = {}
 	if (segCodes) {params.segregationCodes = segCodes}
     if (toPublish) {params.toPublish = toPublish}
+    toLog("[createDebtPosition] URL:" + GPD_EXTERNAL_HOST + `/organizations/${orgId}/debtpositions`)
+    toLog("[createDebtPosition] BODY:" + JSON.stringify(body))
     return post(GPD_EXTERNAL_HOST + `/organizations/${orgId}/debtpositions`, body, {
         timeout: API_TIMEOUT,
         params,
@@ -119,7 +122,9 @@ function getDebtPosition(orgId, iupd, segCodes) {
 function getDebtPositionByIUV(orgId, iuv, segCodes) {
     const params = {}
     if (segCodes) {params.segregationCodes = segCodes}
-    return get(GPD_EXTERNAL_HOST + `/organizations/${orgId}/paymentoptions/${iuv}/debtposition`, {
+    toLog("[getDebtPositionByIUV] URL:" + GPD_HOST + `/organizations/${orgId}/paymentoptions/${iuv}/debtposition`)
+    toLog("[getDebtPositionByIUV] BODY:" + JSON.stringify(segCodes))
+    return get(GPD_HOST + `/organizations/${orgId}/paymentoptions/${iuv}/debtposition`, {
         timeout: API_TIMEOUT,
         headers: {
             "Ocp-Apim-Subscription-Key": process.env.API_SUBSCRIPTION_KEY,
@@ -171,7 +176,9 @@ function reportTransfer(orgId, iuv, idTransfer) {
     })
 }
 
-function updateNotificationFee(orgId, iuv, body) {
+function  updateNotificationFee(orgId, iuv, body) {
+    toLog("[updateNotificationFee] URL:" + GPD_HOST + `/organizations/${orgId}/paymentoptions/${iuv}/notificationfee`)
+    toLog("[updateNotificationFee] BODY: " + JSON.stringify(body))
     return put(GPD_HOST + `/organizations/${orgId}/paymentoptions/${iuv}/notificationfee`, body, {
         timeout: API_TIMEOUT,
         headers: {

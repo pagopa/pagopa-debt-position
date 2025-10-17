@@ -9,6 +9,7 @@ import org.springframework.beans.TypeMismatchException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -42,10 +43,10 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
    */
   @Override
   public ResponseEntity<Object> handleHttpMessageNotReadable(
-      HttpMessageNotReadableException ex,
-      HttpHeaders headers,
-      HttpStatus status,
-      WebRequest request) {
+		  HttpMessageNotReadableException ex,
+		  HttpHeaders headers,
+		  HttpStatusCode status,
+		  WebRequest request) {
     log.warn("Input not readable: ", ex);
     var errorResponse =
         ProblemJson.builder()
@@ -67,10 +68,10 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
    */
   @Override
   public ResponseEntity<Object> handleMissingServletRequestParameter(
-      MissingServletRequestParameterException ex,
-      HttpHeaders headers,
-      HttpStatus status,
-      WebRequest request) {
+		  MissingServletRequestParameterException ex,
+		  HttpHeaders headers,
+		  HttpStatusCode status,
+		  WebRequest request) {
     log.warn("Missing request parameter: ", ex);
     var errorResponse =
         ProblemJson.builder()
@@ -92,18 +93,26 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
    */
   @Override
   protected ResponseEntity<Object> handleTypeMismatch(
-      TypeMismatchException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-    log.warn("Type mismatch: ", ex);
-    var errorResponse =
-        ProblemJson.builder()
-            .status(HttpStatus.BAD_REQUEST.value())
-            .title(BAD_REQUEST)
-            .detail(
-                String.format(
-                    "Invalid value %s for property %s",
-                    ex.getValue(), ((MethodArgumentTypeMismatchException) ex).getName()))
-            .build();
-    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+		  TypeMismatchException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+	  log.warn("Type mismatch: ", ex);
+
+	  String paramName =
+			  (ex instanceof MethodArgumentTypeMismatchException matme)
+			  ? matme.getName()                
+					  : ex.getPropertyName();          
+
+	  String valueStr = String.valueOf(ex.getValue()); // evita NPE se null
+	  String detail = (paramName != null)
+			  ? String.format("Invalid value %s for property %s", valueStr, paramName)
+					  : String.format("Invalid value %s (type mismatch)", valueStr);
+
+	  var errorResponse = ProblemJson.builder()
+			  .status(HttpStatus.BAD_REQUEST.value())
+			  .title(BAD_REQUEST)
+			  .detail(detail)
+			  .build();
+
+	  return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
   }
 
   /**
@@ -117,10 +126,10 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
    */
   @Override
   protected ResponseEntity<Object> handleMethodArgumentNotValid(
-      MethodArgumentNotValidException ex,
-      HttpHeaders headers,
-      HttpStatus status,
-      WebRequest request) {
+		  MethodArgumentNotValidException ex,
+		  HttpHeaders headers,
+		  HttpStatusCode status,
+		  WebRequest request) {
     List<String> details = new ArrayList<>();
     for (FieldError error : ex.getBindingResult().getFieldErrors()) {
       details.add(error.getField() + ": " + error.getDefaultMessage());
@@ -136,9 +145,9 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
     return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
   }
 
-  @ExceptionHandler(javax.validation.ConstraintViolationException.class)
+  @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
   public ResponseEntity<Object> handleConstraintViolationException(
-      javax.validation.ConstraintViolationException exception, ServletWebRequest webRequest) {
+      jakarta.validation.ConstraintViolationException exception, ServletWebRequest webRequest) {
     String detailsMessage = exception.getMessage();
     log.warn("Input not valid: " + exception.getMessage());
     ProblemJson errorResponse =

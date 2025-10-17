@@ -4,7 +4,7 @@ import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import java.time.LocalDateTime;
 import java.util.List;
-import javax.persistence.criteria.*;
+import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 
 public class PaymentPositionByOptionsAttribute implements Specification<PaymentPosition> {

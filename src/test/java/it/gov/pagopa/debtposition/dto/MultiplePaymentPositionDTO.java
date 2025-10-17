@@ -2,8 +2,8 @@ package it.gov.pagopa.debtposition.dto;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Builder;
 import lombok.Data;
 
