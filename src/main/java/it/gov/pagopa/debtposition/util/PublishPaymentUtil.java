@@ -2,12 +2,14 @@ package it.gov.pagopa.debtposition.util;
 
 import static it.gov.pagopa.debtposition.util.Constants.UPDATE_ACTION;
 
-import it.gov.pagopa.debtposition.entity.apd.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatusV3;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -18,13 +20,13 @@ public class PublishPaymentUtil {
   public void publishProcess(PaymentPosition ppToPublish, String... action) {
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
     ppToPublish.setPublishDate(currentDate);
-    ppToPublish.setStatus(DebtPositionStatus.PUBLISHED);
+    ppToPublish.setStatus(DebtPositionStatusV3.PUBLISHED);
     ppToPublish.setLastUpdatedDate(currentDate);
     // Regola 3 e Regola 4 - se non era stata prevista una data di inizio validità e la data di
     // pubblicazione è < della min_due_date => sovrascrivo lo stato direttamente a VALID
     if (null == ppToPublish.getValidityDate() && ppToPublish.getMinDueDate().isAfter(currentDate)) {
       ppToPublish.setValidityDate(currentDate);
-      ppToPublish.setStatus(DebtPositionStatus.VALID);
+      ppToPublish.setStatus(DebtPositionStatusV3.VALID);
     }
     // Regola 5 - se la richiesta di pubblicazione è avvenuta dopo che una una delle opzioni di
     // pagamento è scaduta (currentDate > min_due_date) viene rilanciato un errore
@@ -73,7 +75,7 @@ public class PublishPaymentUtil {
       }
 
       if (isUpdateAction && ppToPublish.getValidityDate().isBefore(currentDate)) {
-        ppToPublish.setStatus(DebtPositionStatus.VALID);
+        ppToPublish.setStatus(DebtPositionStatusV3.VALID);
       }
     }
   }
