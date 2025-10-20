@@ -68,7 +68,7 @@ public class ObjectMapperUtils {
 
         // Convert PaymentPosition entity to PaymentPosition model response
         Converter<PaymentPosition, PaymentPositionModelBaseResponse> converterPPEntityToModelResponse =
-                new ConverterPPEntityToModelResponse();
+                new ConvertPPEntityToModelResponse();
         modelMapper
                 .createTypeMap(PaymentPosition.class, PaymentPositionModelBaseResponse.class)
                 .setConverter(converterPPEntityToModelResponse);
@@ -97,21 +97,21 @@ public class ObjectMapperUtils {
 
         // GPD version 3 (also known as OdP API) input mapper
         Converter<PaymentPositionModelV3, PaymentPosition> convertPPV3ModelToPPEntity =
-                new ConverterV3PPModelToEntity();
+                new ConvertPPV3ModelToEntity();
         modelMapper
                 .createTypeMap(PaymentPositionModelV3.class, PaymentPosition.class)
                 .setConverter(convertPPV3ModelToPPEntity);
 
         // GPD version 3 (also known as OdP API) output mapper response
         Converter<PaymentPosition, PaymentPositionModelResponseV3> convertPPv3EntityToPPv3Response =
-                new ConverterV3PPEntityToModelResponse();
+                new ConvertPPEntityToModelResponseV3();
         modelMapper
                 .createTypeMap(PaymentPosition.class, PaymentPositionModelResponseV3.class)
                 .setConverter(convertPPv3EntityToPPv3Response);
 
         // GPD version 3 (also known as OdP API) output mapper
         Converter<PaymentPosition, PaymentPositionModelV3> converterV3PPEntityToModel =
-                new ConverterV3PPEntityToModel();
+                new ConvertPPEntityToModelV3();
         modelMapper
                 .createTypeMap(PaymentPosition.class, PaymentPositionModelV3.class)
                 .setConverter(converterV3PPEntityToModel);

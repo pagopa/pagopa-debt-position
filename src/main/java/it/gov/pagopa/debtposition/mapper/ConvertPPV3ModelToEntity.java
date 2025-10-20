@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ConverterV3PPModelToEntity
+public class ConvertPPV3ModelToEntity
         implements Converter<PaymentPositionModelV3, PaymentPosition> {
 
     @Override

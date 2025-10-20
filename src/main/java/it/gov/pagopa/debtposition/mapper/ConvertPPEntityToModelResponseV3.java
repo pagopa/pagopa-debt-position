@@ -15,7 +15,7 @@ import org.modelmapper.spi.MappingContext;
 
 import java.util.ArrayList;
 
-public class ConverterV3PPEntityToModelResponse
+public class ConvertPPEntityToModelResponseV3
         implements Converter<PaymentPosition, PaymentPositionModelResponseV3> {
 
   @Override

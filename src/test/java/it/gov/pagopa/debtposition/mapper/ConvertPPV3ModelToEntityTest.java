@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.modelmapper.spi.MappingContext;
 
-class ConverterV3PPModelToEntityTest {
+class ConvertPPV3ModelToEntityTest {
 
   @Test
   void poNull() {
@@ -25,7 +25,7 @@ class ConverterV3PPModelToEntityTest {
 
     model.setPaymentOption(null);
 
-    ConverterV3PPModelToEntity mapper = new ConverterV3PPModelToEntity();
+    ConvertPPV3ModelToEntity mapper = new ConvertPPV3ModelToEntity();
 
     MappingContext<PaymentPositionModelV3, PaymentPosition> context =
         Mockito.mock(MappingContext.class);
@@ -50,7 +50,7 @@ class ConverterV3PPModelToEntityTest {
 
     model.setPaymentOption(Collections.singletonList(paymentOptionModelV3));
 
-    ConverterV3PPModelToEntity mapper = new ConverterV3PPModelToEntity();
+    ConvertPPV3ModelToEntity mapper = new ConvertPPV3ModelToEntity();
 
     MappingContext<PaymentPositionModelV3, PaymentPosition> context =
         Mockito.mock(MappingContext.class);
@@ -82,7 +82,7 @@ class ConverterV3PPModelToEntityTest {
 
     model.setPaymentOption(Collections.singletonList(paymentOptionModelV3));
 
-    ConverterV3PPModelToEntity mapper = new ConverterV3PPModelToEntity();
+    ConvertPPV3ModelToEntity mapper = new ConvertPPV3ModelToEntity();
 
     MappingContext<PaymentPositionModelV3, PaymentPosition> context =
         Mockito.mock(MappingContext.class);
@@ -121,7 +121,7 @@ class ConverterV3PPModelToEntityTest {
 
     model.setPaymentOption(Collections.singletonList(paymentOptionModelV3));
 
-    ConverterV3PPModelToEntity mapper = new ConverterV3PPModelToEntity();
+    ConvertPPV3ModelToEntity mapper = new ConvertPPV3ModelToEntity();
 
     MappingContext<PaymentPositionModelV3, PaymentPosition> context =
         Mockito.mock(MappingContext.class);
@@ -167,7 +167,7 @@ class ConverterV3PPModelToEntityTest {
 
     model.setPaymentOption(Collections.singletonList(paymentOptionModelV3));
 
-    ConverterV3PPModelToEntity mapper = new ConverterV3PPModelToEntity();
+    ConvertPPV3ModelToEntity mapper = new ConvertPPV3ModelToEntity();
 
     MappingContext<PaymentPositionModelV3, PaymentPosition> context =
         Mockito.mock(MappingContext.class);
@@ -220,7 +220,7 @@ class ConverterV3PPModelToEntityTest {
 
     model.setPaymentOption(Collections.singletonList(paymentOptionModelV3));
 
-    ConverterV3PPModelToEntity mapper = new ConverterV3PPModelToEntity();
+    ConvertPPV3ModelToEntity mapper = new ConvertPPV3ModelToEntity();
 
     MappingContext<PaymentPositionModelV3, PaymentPosition> context =
         Mockito.mock(MappingContext.class);
