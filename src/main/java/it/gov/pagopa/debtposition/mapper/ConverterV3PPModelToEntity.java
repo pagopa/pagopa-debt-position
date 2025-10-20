@@ -79,16 +79,19 @@ public class ConverterV3PPModelToEntity
     private void mapAndUpdatePaymentOptions(PaymentPositionModelV3 source, PaymentPosition destination) {
         // DELETE orphans installments & empty POs
         List<String> sourceIUVs = new ArrayList<>(source.getPaymentOption().stream().map(PaymentOptionModelV3::getInstallments).flatMap(List::stream).map(InstallmentModel::getIuv).toList());
+        List<PaymentOption> paymentOptionsToDelete = new ArrayList<>();
         for (PaymentOption destinationPo : destination.getPaymentOption()) {
             List<Installment> installmentsToDelete = destinationPo.getInstallment().stream().filter(inst -> !sourceIUVs.contains(inst.getIuv())).toList();
 
             destinationPo.getInstallment().removeAll(installmentsToDelete);
             if (destinationPo.getInstallment().isEmpty()) {
-                destination.getPaymentOption().remove(destinationPo);
+                paymentOptionsToDelete.add(destinationPo);
             } else if(destinationPo.getInstallment().size() == 1){
                 destinationPo.setOptionType(OptionType.OPZIONE_UNICA);
             }
-            sourceIUVs.removeAll(installmentsToDelete.stream().map(Installment::getIuv).toList());
+        }
+        if(!paymentOptionsToDelete.isEmpty()){
+            destination.getPaymentOption().removeAll(paymentOptionsToDelete);
         }
 
         // UPDATE or CREATE POs

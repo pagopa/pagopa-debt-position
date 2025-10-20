@@ -56,14 +56,17 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
         List<String> sourceIUVs = new ArrayList<>(source.getPaymentOption().stream().map(PaymentOptionModel::getIuv).toList());
 
         // DELETE orphans installments & empty POs
+        List<PaymentOption> paymentOptionsToDelete = new ArrayList<>();
         for (PaymentOption destinationPo : destination.getPaymentOption()) {
             List<Installment> installmentsToDelete = destinationPo.getInstallment().stream().filter(inst -> !sourceIUVs.contains(inst.getIuv())).toList();
 
             destinationPo.getInstallment().removeAll(installmentsToDelete);
             if (destinationPo.getInstallment().isEmpty()) {
-                destination.getPaymentOption().remove(destinationPo);
+                paymentOptionsToDelete.add(destinationPo);
             }
-            sourceIUVs.removeAll(installmentsToDelete.stream().map(Installment::getIuv).toList());
+        }
+        if(!paymentOptionsToDelete.isEmpty()){
+            destination.getPaymentOption().removeAll(paymentOptionsToDelete);
         }
 
         // UPDATE existing POs
