@@ -70,7 +70,7 @@ jobs:
           message_format: '{emoji} <{workflow_url}|{workflow}> {status_message} in <{repo_url}|{repo}>'
           footer: 'Linked to Repo <{repo_url}|{repo}>'
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_INTEGRATION_TEST }}
 
   delete_github_deployments:
     runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
