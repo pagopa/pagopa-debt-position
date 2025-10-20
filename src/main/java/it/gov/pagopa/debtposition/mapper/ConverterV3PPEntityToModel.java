@@ -1,6 +1,6 @@
 package it.gov.pagopa.debtposition.mapper;
 
-import it.gov.pagopa.debtposition.entity.Installment;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
@@ -35,19 +35,19 @@ public class ConverterV3PPEntityToModel
 
     LocalDateTime validityDate = source.getValidityDate();
 
-    List<Installment> paymentOptions = source.getPaymentOption();
+    List<PaymentOption> paymentOptions = source.getPaymentOption();
     if (paymentOptions == null || paymentOptions.isEmpty()) {
       return destination;
     }
 
     // Partitioning the payment options into partial and unique POs
-    Map<Boolean, List<Installment>> partitionedPO =
+    Map<Boolean, List<PaymentOption>> partitionedPO =
         paymentOptions.stream()
-            .collect(Collectors.partitioningBy(Installment::getIsPartialPayment));
+            .collect(Collectors.partitioningBy(PaymentOption::getIsPartialPayment));
 
     // Extracting the partial and unique POs
-    List<Installment> partialPO = partitionedPO.get(true);
-    List<Installment> uniquePO = partitionedPO.get(false);
+    List<PaymentOption> partialPO = partitionedPO.get(true);
+    List<PaymentOption> uniquePO = partitionedPO.get(false);
     List<PaymentOptionModelV3> paymentOptionsToAdd = new ArrayList<>();
 
     if (null != partialPO && !partialPO.isEmpty()) {
@@ -72,7 +72,7 @@ public class ConverterV3PPEntityToModel
 
   // 1 unique PO -> 1 PaymentOption composed by 1 installment
   private PaymentOptionModelV3 convertUniquePO(
-      Installment po, LocalDateTime validityDate, boolean switchToExpired) {
+      PaymentOption po, LocalDateTime validityDate, boolean switchToExpired) {
     PaymentOptionModelV3 pov3 = convert(po);
     pov3.setValidityDate(validityDate);
     pov3.setSwitchToExpired(switchToExpired);
@@ -84,7 +84,7 @@ public class ConverterV3PPEntityToModel
 
   // N partial PO -> 1 PaymentOption composed by N installment
   private PaymentOptionModelV3 convertPartialPO(
-      List<Installment> partialPOs, LocalDateTime validityDate, boolean switchToExpired) {
+      List<PaymentOption> partialPOs, LocalDateTime validityDate, boolean switchToExpired) {
     // Get only the first to fill common data for partial PO (retentionDate, insertedDate, debtor)
     PaymentOptionModelV3 pov3 = convert(partialPOs.get(0));
     pov3.setValidityDate(validityDate);
@@ -96,7 +96,7 @@ public class ConverterV3PPEntityToModel
     return pov3;
   }
 
-  private PaymentOptionModelV3 convert(Installment po) {
+  private PaymentOptionModelV3 convert(PaymentOption po) {
     PaymentOptionModelV3 pov3 = new PaymentOptionModelV3();
     pov3.setRetentionDate(po.getRetentionDate());
     pov3.setDebtor(UtilityMapper.extractDebtor(po));
@@ -104,7 +104,7 @@ public class ConverterV3PPEntityToModel
     return pov3;
   }
 
-  private InstallmentModel convertInstallment(Installment po) {
+  private InstallmentModel convertInstallment(PaymentOption po) {
     InstallmentModel inst = new InstallmentModel();
 
     inst.setNav(po.getNav());

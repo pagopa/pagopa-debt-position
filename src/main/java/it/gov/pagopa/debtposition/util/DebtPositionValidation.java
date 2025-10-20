@@ -3,7 +3,7 @@ package it.gov.pagopa.debtposition.util;
 import static it.gov.pagopa.debtposition.util.Constants.CREATE_ACTION;
 import static it.gov.pagopa.debtposition.util.Constants.UPDATE_ACTION;
 
-import it.gov.pagopa.debtposition.entity.Installment;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
@@ -142,7 +142,7 @@ public class DebtPositionValidation {
               dateFormatter.format(today)));
     }
 
-    for (Installment po : pp.getPaymentOption()) {
+    for (PaymentOption po : pp.getPaymentOption()) {
       // Regola 4 - must be due_date ≥ validity_date || due_date ≥ current time
       if (
       // Case 1: validity_date is not null and due_date < validity_date
@@ -180,7 +180,7 @@ public class DebtPositionValidation {
     }
   }
 
-  private static void checkPaymentOptionTransfers(final Installment po) {
+  private static void checkPaymentOptionTransfers(final PaymentOption po) {
     int maxNumberOfTrasfersForPO = TransferId.values().length;
     // verifica numero massimo di transazioni per PO
     if (po.getTransfer().size() > maxNumberOfTrasfersForPO) {
@@ -201,7 +201,7 @@ public class DebtPositionValidation {
     }
   }
 
-  private static void checkPaymentOptionAmounts(final Installment po) {
+  private static void checkPaymentOptionAmounts(final PaymentOption po) {
     long totalTranfersAmout = 0;
     long poAmount = po.getAmount();
     for (Transfer t : po.getTransfer()) {
@@ -246,7 +246,7 @@ public class DebtPositionValidation {
   }
 
   private static void checkPaymentPositionOpen(PaymentPosition ppToPay, String nav) {
-    for (Installment po : ppToPay.getPaymentOption()) {
+    for (PaymentOption po : ppToPay.getPaymentOption()) {
       if (isPaid(po)) {
         throw new AppException(
             AppError.PAYMENT_OPTION_ALREADY_PAID, po.getOrganizationFiscalCode(), nav);
@@ -257,7 +257,7 @@ public class DebtPositionValidation {
   private static void checkPaymentOptionPayable(PaymentPosition ppToPay, String nav) {
     // TODO #naviuv: temporary regression management --> remove "|| po.getIuv().equals(nav)" when
     // only nav managment is enabled
-    Installment poToPay =
+    PaymentOption poToPay =
         ppToPay.getPaymentOption().stream()
             .filter(po -> po.getNav().equals(nav) || po.getIuv().equals(nav))
             .findFirst()
@@ -310,14 +310,14 @@ public class DebtPositionValidation {
     }
   }
 
-  private static boolean isPaid(Installment po) {
+  private static boolean isPaid(PaymentOption po) {
     return !po.getStatus().equals(PaymentOptionStatus.PO_UNPAID)
         && !po.getIsPartialPayment().equals(true);
   }
 
   private static void checkTransferAccountable(
       PaymentPosition ppToReport, String iuv, String transferId) {
-    Installment poToReport =
+    PaymentOption poToReport =
         ppToReport.getPaymentOption().stream()
             .filter(po -> po.getIuv().equals(iuv))
             .findFirst()
