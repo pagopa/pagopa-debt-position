@@ -26,7 +26,7 @@ on:
            - apd
            - odp
            - all
-         default: all
+         default: apd
       semver:
         required: true
         type: choice
