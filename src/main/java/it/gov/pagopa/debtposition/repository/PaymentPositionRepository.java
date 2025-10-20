@@ -71,6 +71,12 @@ public interface PaymentPositionRepository
   findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionInstallmentIuvAndPaymentOptionInstallmentTransferTransferId(
           String organizationFiscalCode, String iuv, String idTransfer);
 
+  // Derived Query - using method naming convention - get parent PaymentPosition from child
+  // PaymentOption and Installment properties
+  Optional<PaymentPosition>
+  findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionInstallmentIuv(
+          String organizationFiscalCode, String iuv);
+
   @Query(
       "SELECT DISTINCT new"
           + " it.gov.pagopa.debtposition.model.payments.OrganizationModelQueryBean(pp.organizationFiscalCode"

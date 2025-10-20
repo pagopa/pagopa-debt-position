@@ -130,14 +130,14 @@ public class PaymentPositionCRUDService {
             throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, iuv);
         }
 
-        Optional<Installment> inst =
-                installmentRepository.findByOrganizationFiscalCodeAndIuv(organizationFiscalCode, iuv);
+        Optional<PaymentPosition> pp =
+                paymentPositionRepository.findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionInstallmentIuv(organizationFiscalCode, iuv);
 
-        if (inst.isEmpty()) { // TODO change error
+        if (pp.isEmpty()) { // TODO change error
             throw new AppException(AppError.PAYMENT_OPTION_IUV_NOT_FOUND, organizationFiscalCode, iuv);
         }
 
-        return inst.get().getPaymentPosition();
+        return pp.get();
     }
 
     public List<PaymentPosition> getDebtPositionsByIUPDs(
