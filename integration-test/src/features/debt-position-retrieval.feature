@@ -1,6 +1,6 @@
 Feature: Retrieve a debt position
 
-  Background: 
+  Background:
     Given GPD running
 
   Scenario: Get Debt Position by IUV
