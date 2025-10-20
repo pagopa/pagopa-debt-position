@@ -5,9 +5,7 @@ import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.model.enumeration.OptionType;
-import it.gov.pagopa.debtposition.model.pd.DebtorModel;
-import it.gov.pagopa.debtposition.model.pd.Stamp;
-import it.gov.pagopa.debtposition.model.pd.TransferModel;
+import it.gov.pagopa.debtposition.model.pd.*;
 import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
@@ -34,6 +32,7 @@ public class ConverterV3PPModelToEntity
 
     public void mapAndUpdatePaymentPosition(
             PaymentPositionModelV3 source, PaymentPosition destination) {
+
         destination.setIupd(source.getIupd());
         destination.setPayStandIn(source.isPayStandIn());
         destination.setCompanyName(source.getCompanyName());
@@ -51,8 +50,11 @@ public class ConverterV3PPModelToEntity
                 }
             }
         }
-
-        mapAndUpdatePaymentOptions(source, destination);
+        if (sourcePaymentOptionList != null && !sourcePaymentOptionList.isEmpty()) {
+            mapAndUpdatePaymentOptions(source, destination);
+        } else {
+            destination.getPaymentOption().removeAll(destination.getPaymentOption());
+        }
     }
 
     private LocalDateTime getValidityDate(List<PaymentOptionModelV3> paymentOptions) {
@@ -75,53 +77,54 @@ public class ConverterV3PPModelToEntity
     }
 
     private void mapAndUpdatePaymentOptions(PaymentPositionModelV3 source, PaymentPosition destination) {
-        Map<String, PaymentOption> managedOptionsByDebtorFiscalCode =
-                destination.getPaymentOption().stream()
-                        .collect(Collectors.toMap(PaymentOption::getDebtorFiscalCode, po -> po));
+        // DELETE orphans installments & empty POs
+        List<String> sourceIUVs = new ArrayList<>(source.getPaymentOption().stream().map(PaymentOptionModelV3::getInstallments).flatMap(List::stream).map(InstallmentModel::getIuv).toList());
+        for (PaymentOption destinationPo : destination.getPaymentOption()) {
+            List<Installment> installmentsToDelete = destinationPo.getInstallment().stream().filter(inst -> !sourceIUVs.contains(inst.getIuv())).toList();
 
-        List<PaymentOptionModelV3> sourceOptions = source.getPaymentOption();
-        List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
-
-        // Covered cases:
-        // - 1 Payment Option with [1:N] Installment (ie Opzione Rateale)
-        // - [1:N] Payment Option with 1 Installment (ie Opzione Multipla)
-        // - [1:N] Payment Option with 1 Installment and 1 Payment Option with [1:N] Installment (ie
-        // Opzione Unica + Opzione Rateale)
-        if (sourceOptions != null) {
-            for (PaymentOptionModelV3 sourceOption : sourceOptions) {
-                PaymentOption managedOpt = managedOptionsByDebtorFiscalCode.get(sourceOption.getDebtor().getFiscalCode());
-                if (managedOpt != null) {
-                    // UPDATE: the option
-                    mapAndUpdateSinglePaymentOption(sourceOption, managedOpt, destination);
-                    optionsToRemove.remove(managedOpt);
-                } else {
-                    // CREATE: the option
-                    PaymentOption po = PaymentOption.builder().build();
-                    mapAndUpdateSinglePaymentOption(sourceOption, po, destination);
-                    destination.getPaymentOption().add(po);
-                }
+            destinationPo.getInstallment().removeAll(installmentsToDelete);
+            if (destinationPo.getInstallment().isEmpty()) {
+                destination.getPaymentOption().remove(destinationPo);
+            } else if(destinationPo.getInstallment().size() == 1){
+                destinationPo.setOptionType(OptionType.OPZIONE_UNICA);
             }
+            sourceIUVs.removeAll(installmentsToDelete.stream().map(Installment::getIuv).toList());
         }
-        // DELETE: remove the orphans options
-        destination.getPaymentOption().removeAll(optionsToRemove);
-    }
 
-    private boolean getSwitchToExpired(List<PaymentOptionModelV3> paymentOptions) {
-        if (paymentOptions == null) {
-            return false;
+        // UPDATE or CREATE POs
+        for(PaymentOptionModelV3 sourcePO : source.getPaymentOption()){
+            List<String> sourceIuvList = sourcePO.getInstallments().stream().map(InstallmentModel::getIuv).toList();
+            List<PaymentOption> filteredDestinationPOs = destination.getPaymentOption().stream().filter(po -> po.getInstallment().stream().anyMatch(inst -> sourceIuvList.contains(inst.getIuv()))).toList();
+
+            PaymentOption destinationPo;
+            if(filteredDestinationPOs.isEmpty()){
+                destinationPo = new PaymentOption();
+                destination.getPaymentOption().add(destinationPo);
+            } else {
+                destinationPo = filteredDestinationPOs.get(0);
+            }
+            for (InstallmentModel sourceInstallment : sourcePO.getInstallments()) {
+                List<Installment> filteredDestinationInstallment = destinationPo.getInstallment().stream().filter(inst -> inst.getIuv().equals(sourceInstallment.getIuv())).toList();
+                Installment destinationInstallment;
+                if(filteredDestinationInstallment.isEmpty()){
+                    destinationInstallment = new Installment();
+                    destinationPo.getInstallment().add(destinationInstallment);
+                } else {
+                    destinationInstallment = filteredDestinationInstallment.get(0);
+                }
+
+                mapAndUpdateInstallment(sourceInstallment, destinationInstallment, destinationPo, destination);
+            }
+
+            mapAndUpdatePaymentOption(sourcePO, destinationPo, destination);
         }
-        // Check if any PaymentOptionModelV3 has switchToExpired as true
-        // OR operation for the boolean field
-        return paymentOptions.stream()
-                .filter(Objects::nonNull)
-                .anyMatch(PaymentOptionModelV3::getSwitchToExpired);
     }
 
     /**
      * @param source      the input model
      * @param destinationPo the output entity
      */
-    private void mapAndUpdateSinglePaymentOption(
+    private void mapAndUpdatePaymentOption(
             PaymentOptionModelV3 source, PaymentOption destinationPo, PaymentPosition destination) {
         DebtorModel debtor = source.getDebtor();
 
@@ -140,49 +143,17 @@ public class ConverterV3PPModelToEntity
             destinationPo.setDebtorStreetName(debtor.getStreetName());
         }
 
+        destinationPo.setSwitchToExpired(source.getSwitchToExpired());
         destinationPo.setPaymentPosition(destination);
         destinationPo.setDescription(source.getDescription());
         destinationPo.setOptionType(source.getInstallments().size() > 1 ? OptionType.OPZIONE_RATEALE : OptionType.OPZIONE_UNICA);
         destinationPo.setRetentionDate(source.getRetentionDate());
-
-        mapAndUpdateInstallments(source, destinationPo, destination);
     }
-
-    private void mapAndUpdateInstallments(
-            PaymentOptionModelV3 source, PaymentOption destinationPo, PaymentPosition destination) {
-        Map<String, Installment> managedInstallmentsByIuv =
-                destinationPo.getInstallment().stream()
-                        .collect(Collectors.toMap(Installment::getIuv, po -> po));
-
-        List<InstallmentModel> sourceInstallments = source.getInstallments();
-        List<Installment> installmentsToRemove = new ArrayList<>(destinationPo.getInstallment());
-
-        if (sourceInstallments != null) {
-            for (InstallmentModel sourceInstallment : sourceInstallments) {
-                Installment managedInstallment = managedInstallmentsByIuv.get(sourceInstallment.getIuv());
-                if (managedInstallment != null) {
-                    // UPDATE: the installment
-                    mapAndUpdateSingleInstallment(sourceInstallment, managedInstallment, destinationPo, destination);
-                    installmentsToRemove.remove(managedInstallment);
-                } else {
-                    // CREATE: the installment
-                    Installment inst = Installment.builder().build();
-                    inst.setSendSync(false);
-                    mapAndUpdateSingleInstallment(sourceInstallment, inst, destinationPo, destination);
-                    destinationPo.getInstallment().add(inst);
-                }
-            }
-        }
-
-        // DELETE: remove the orphans installments
-        destinationPo.getInstallment().removeAll(installmentsToRemove);
-    }
-
     /**
      * @param source      the input model
      * @param destination the output entity
      */
-    private void mapAndUpdateSingleInstallment(
+    private void mapAndUpdateInstallment(
             InstallmentModel source, Installment destinationInstallment, PaymentOption destinationPo, PaymentPosition destination) {
         destinationInstallment.setNav(source.getNav());
         destinationInstallment.setIuv(source.getIuv());
