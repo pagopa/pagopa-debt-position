@@ -100,7 +100,7 @@ public class PaymentsService {
     }
 
     @Transactional
-    public PaymentOption pay(
+    public Installment pay(
             @NotBlank String organizationFiscalCode,
             @NotBlank String nav,
             @NotNull @Valid PaymentOptionModel paymentOptionModel) {
@@ -312,27 +312,30 @@ public class PaymentsService {
         return Collections.emptyList();
     }
 
-    private PaymentOption executePaymentFlow(
+    private Installment executePaymentFlow(
             PaymentPosition pp, String nav, PaymentOptionModel paymentOptionModel) {
 
         LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
         PaymentOption paidPO = null;
+        Installment paidInst = null;
 
         long numberOfPartialPayment =
                 pp.getPaymentOption().stream()
                         .filter(po -> OptionType.OPZIONE_RATEALE.equals(po.getOptionType()))
-                        .count();
-        int countPaidPartialPayment = 0;
+                        .map(PaymentOption::getInstallment)
+                        .mapToLong(List::size)
+                        .sum();
+        // verifico se ci sono pagamenti parziali in stato PAID
+        long countPaidPartialPayment = pp.getPaymentOption().stream()
+                .filter(po -> OptionType.OPZIONE_RATEALE.equals(po.getOptionType()))
+                .map(PaymentOption::getInstallment)
+                .flatMap(List::stream)
+                .filter(inst -> InstallmentStatus.PAID.equals(inst.getStatus()))
+                .count();
 
         for (PaymentOption po : pp.getPaymentOption()) {
             for (Installment inst : po.getInstallment()) {
-                // verifico se ci sono pagamenti parziali in stato PO_PAID
-                if (OptionType.OPZIONE_RATEALE.equals(po.getOptionType())
-                        && inst.getStatus().equals(InstallmentStatus.PAID)) {
-                    countPaidPartialPayment++;
-                }
-
-                // aggiorno le proprietà per la payment option oggetto dell'attuale pagamento
+                // aggiorno le proprietà per l'installment oggetti dell'attuale pagamento
                 // TODO #naviuv: temporary regression management --> remove "|| po.getIuv().equals(nav)" when
                 // only nav managment is enabled
                 if (inst.getNav().equals(nav) || inst.getIuv().equals(nav)) {
@@ -349,9 +352,11 @@ public class PaymentsService {
                     if (OptionType.OPZIONE_RATEALE.equals(po.getOptionType())) {
                         countPaidPartialPayment++;
                     }
+
+                    paidInst = inst;
+                    paidPO = po;
                 }
             }
-            paidPO = po;
         }
 
         // aggiorno lo stato della payment position
@@ -370,7 +375,7 @@ public class PaymentsService {
 
         // salvo l'aggiornamento del pagamento
         paymentPositionRepository.saveAndFlush(pp);
-        return paidPO;
+        return paidInst;
     }
 
     private Transfer updateTransferStatus(PaymentPosition pp, String iuv, String transferId) {
@@ -414,7 +419,7 @@ public class PaymentsService {
             }
         }
 
-    this.setPaymentPositionStatus(pp);
+        this.setPaymentPositionStatus(pp);
         pp.setLastUpdatedDate(currentDate);
         // salvo l'aggiornamento della rendicontazione
         paymentPositionRepository.saveAndFlush(pp);
@@ -422,35 +427,35 @@ public class PaymentsService {
         return reportedTransfer;
     }
 
-  private void setPaymentPositionStatus(PaymentPosition pp) {
-        List<Installment> installmentList =         pp.getPaymentOption().parallelStream()
+    private void setPaymentPositionStatus(PaymentPosition pp) {
+        List<Installment> installmentList = pp.getPaymentOption().parallelStream()
                 .map(PaymentOption::getInstallment)
                 .flatMap(List::parallelStream).toList();
-    // numero totale degli installments in opzione di pagamento in unica rata in stato REPORTED
-    long numberInstallmentReportedNoPartial =
-            installmentList.parallelStream()
-            .filter(
-                inst ->
-                    (inst.getStatus().equals(InstallmentStatus.REPORTED)
-                        && OptionType.OPZIONE_UNICA.equals(inst.getPaymentOption().getOptionType())))
-            .count();
-    // numero totale degli installments rateizzati
-    long totalNumberPartialInstallment =
-            installmentList.parallelStream()
-            .filter(inst -> OptionType.OPZIONE_RATEALE.equals(inst.getPaymentOption().getOptionType()))
-            .count();
-    // numero degli installments rateizzati in stato REPORTED
-    long numberPOReportedPartial =
-            installmentList.parallelStream()
-            .filter(
-                inst ->
-                    (inst.getStatus().equals(InstallmentStatus.REPORTED)
-                        && OptionType.OPZIONE_RATEALE.equals(inst.getPaymentOption().getOptionType())))
-            .count();
+        // numero totale degli installments in opzione di pagamento in unica rata in stato REPORTED
+        long numberInstallmentReportedNoPartial =
+                installmentList.parallelStream()
+                        .filter(
+                                inst ->
+                                        (inst.getStatus().equals(InstallmentStatus.REPORTED)
+                                                && OptionType.OPZIONE_UNICA.equals(inst.getPaymentOption().getOptionType())))
+                        .count();
+        // numero totale degli installments rateizzati
+        long totalNumberPartialInstallment =
+                installmentList.parallelStream()
+                        .filter(inst -> OptionType.OPZIONE_RATEALE.equals(inst.getPaymentOption().getOptionType()))
+                        .count();
+        // numero degli installments rateizzati in stato REPORTED
+        long numberPOReportedPartial =
+                installmentList.parallelStream()
+                        .filter(
+                                inst ->
+                                        (inst.getStatus().equals(InstallmentStatus.REPORTED)
+                                                && OptionType.OPZIONE_RATEALE.equals(inst.getPaymentOption().getOptionType())))
+                        .count();
 
-    if (numberInstallmentReportedNoPartial > 0
-        || (totalNumberPartialInstallment > 0 && totalNumberPartialInstallment == numberPOReportedPartial)) {
-      pp.setStatus(DebtPositionStatusV3.PAID);
+        if (numberInstallmentReportedNoPartial > 0
+                || (totalNumberPartialInstallment > 0 && totalNumberPartialInstallment == numberPOReportedPartial)) {
+            pp.setStatus(DebtPositionStatusV3.PAID);
+        }
     }
-  }
 }
