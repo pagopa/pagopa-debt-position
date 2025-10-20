@@ -10,6 +10,7 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatusV3;
 import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
+import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
@@ -60,7 +61,7 @@ public class ObjectMapperUtils {
 
         // Convert PaymentPosition entity to PaymentPositionModel
         Converter<PaymentPosition, PaymentPositionModel> convertPPEntityToPPModel =
-                new ConverterPPEntityToModel();
+                new ConvertPPEntityToModel();
         modelMapper
                 .createTypeMap(PaymentPosition.class, PaymentPositionModel.class)
                 .setConverter(convertPPEntityToPPModel);
@@ -71,6 +72,13 @@ public class ObjectMapperUtils {
         modelMapper
                 .createTypeMap(PaymentPosition.class, PaymentPositionModelBaseResponse.class)
                 .setConverter(converterPPEntityToModelResponse);
+
+        // GPD version 1 converter used to return a Payment Option model response.
+        Converter<Installment, PaymentOptionModelResponse>
+                convertInstallmentEntityToPOModelResponse = new ConvertInstallmentEntityToPOModelResponse();
+        modelMapper
+                .createTypeMap(Installment.class, PaymentOptionModelResponse.class)
+                .setConverter(convertInstallmentEntityToPOModelResponse);
 
         // GPD version 1 converter used to return a paid Payment Option data (differs from default
         // mapping by serviceType adding).
