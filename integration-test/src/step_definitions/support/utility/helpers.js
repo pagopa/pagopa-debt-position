@@ -6,7 +6,7 @@ function addDays(days) {
 
 function addSeconds(seconds) {
   var date = new Date();
-  date.setSeconds(date.getSeconds() + seconds); 
+  date.setSeconds(date.getSeconds() + seconds);
   return date
 }
 
@@ -45,6 +45,12 @@ function makeidNumber(length) {
  return result;
 }
 
+function toLog(message) {
+    if (process.env.debug_enabled) {
+        console.log(message);
+    }
+}
+
 module.exports = {
   addSeconds,
   addDays,
@@ -52,4 +58,5 @@ module.exports = {
   buildStringFromDate,
   makeidMix,
   makeidNumber,
+  toLog
 }
