@@ -1,6 +1,6 @@
 package it.gov.pagopa.debtposition.model.enumeration;
 
-import it.gov.pagopa.debtposition.entity.Installment;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
@@ -78,7 +78,7 @@ public enum DebtPositionStatus {
   }
 
 
-  public static PaymentPosition validityCheckAndUpdate(Installment po) {
+  public static PaymentPosition validityCheckAndUpdate(PaymentOption po) {
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
     PaymentPosition pp = po.getPaymentPosition();
     // Validity check on the fly
@@ -90,7 +90,7 @@ public enum DebtPositionStatus {
     return pp;
   }
   
-  public static PaymentPosition expirationCheckAndUpdate(Installment po) {
+  public static PaymentPosition expirationCheckAndUpdate(PaymentOption po) {
 	LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
 	PaymentPosition pp = po.getPaymentPosition();
 
@@ -114,7 +114,7 @@ public enum DebtPositionStatus {
    * @param paymentOptionToPay the payment option being paid
    * @param nav the identifier of the notice being paid
    */
-  public static void checkAlreadyPaidInstallments(Installment paymentOptionToPay, String nav) {
+  public static void checkAlreadyPaidInstallments(PaymentOption paymentOptionToPay, String nav) {
 
     PaymentPosition paymentPosition = paymentOptionToPay.getPaymentPosition();
     if (Boolean.FALSE.equals(paymentOptionToPay.getIsPartialPayment())

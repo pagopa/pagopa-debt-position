@@ -3,7 +3,7 @@ package it.gov.pagopa.debtposition.mapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import it.gov.pagopa.debtposition.entity.Installment;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import it.gov.pagopa.debtposition.model.pd.PaymentOptionModel;
@@ -52,7 +52,7 @@ class ConvertPPModelToPPEntityTest {
     assertEquals("Roma", entity.getCity());
     assertEquals(1, entity.getPaymentOption().size());
 
-    Installment po = entity.getPaymentOption().get(0);
+    PaymentOption po = entity.getPaymentOption().get(0);
     assertEquals("ABCDEF12G34H567I", po.getFiscalCode());
     assertEquals("Mario Rossi", po.getFullName());
     assertEquals("Via Roma", po.getStreetName());
@@ -139,7 +139,7 @@ class ConvertPPModelToPPEntityTest {
     assertEquals("Roma", entity.getCity());
     assertEquals(1, entity.getPaymentOption().size());
 
-    Installment po = entity.getPaymentOption().get(0);
+    PaymentOption po = entity.getPaymentOption().get(0);
     assertEquals("ABCDEF12G34H567I", po.getFiscalCode());
     assertEquals("Mario Rossi", po.getFullName());
     assertEquals("Via Roma", po.getStreetName());
@@ -200,7 +200,7 @@ class ConvertPPModelToPPEntityTest {
     assertEquals("Roma", entity.getCity());
     assertEquals(1, entity.getPaymentOption().size());
 
-    Installment po = entity.getPaymentOption().get(0);
+    PaymentOption po = entity.getPaymentOption().get(0);
     assertEquals("ABCDEF12G34H567I", po.getFiscalCode());
     assertEquals("Mario Rossi", po.getFullName());
     assertEquals("Via Roma", po.getStreetName());

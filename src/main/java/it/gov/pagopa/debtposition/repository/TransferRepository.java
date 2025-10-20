@@ -25,10 +25,10 @@ public interface TransferRepository extends JpaRepository<Transfer, Long> {
             WHERE tr.id IN (
                 SELECT tr2.id
                 FROM transfer tr2
-                JOIN installment i ON tr2.payment_option_id = i.id
-                JOIN payment_position pp ON i.payment_position_id = pp.id
+                JOIN payment_option po ON tr2.payment_option_id = po.id
+                JOIN payment_position pp ON po.payment_position_id = pp.id
                 WHERE tr2.iban = :oldIban
-                  AND i.status IN (:poStatus)
+                  AND po.status IN (:poStatus)
                   AND pp.organization_fiscal_code = :organizationFiscalCode
                   AND pp.status IN (:ppStatus)
                 LIMIT :limit

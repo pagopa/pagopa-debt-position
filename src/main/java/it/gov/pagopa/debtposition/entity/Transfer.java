@@ -109,12 +109,12 @@ public class Transfer implements Serializable {
   private LocalDateTime lastUpdatedDate;
 
   @ManyToOne(
-      targetEntity = Installment.class,
+      targetEntity = PaymentOption.class,
       fetch = FetchType.LAZY,
       optional = false,
       cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @JoinColumn(name = "payment_option_id")
-  private Installment paymentOption;
+  private PaymentOption paymentOption;
 
   @Builder.Default
   @OneToMany(

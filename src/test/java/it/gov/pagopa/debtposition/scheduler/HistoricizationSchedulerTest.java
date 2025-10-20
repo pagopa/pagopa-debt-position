@@ -17,7 +17,7 @@ import com.azure.data.tables.models.TableTransactionFailedException;
 import com.azure.data.tables.models.TableTransactionResult;
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.config.SchedulerConfig;
-import it.gov.pagopa.debtposition.entity.Installment;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import java.time.LocalDateTime;
@@ -59,8 +59,8 @@ class HistoricizationSchedulerTest {
     when(mockedQuery.setParameter(anyInt(), any())).thenReturn(mockedQuery);
 
     List<PaymentPosition> expected = new ArrayList<>();
-    Installment po =
-        Installment.builder().iuv("mockIuv").paymentDate(LocalDateTime.now()).build();
+    PaymentOption po =
+        PaymentOption.builder().iuv("mockIuv").paymentDate(LocalDateTime.now()).build();
     PaymentPosition pp =
         PaymentPosition.builder()
             .organizationFiscalCode("77777777777")
@@ -105,8 +105,8 @@ class HistoricizationSchedulerTest {
     when(mockedCountQuery.setParameter(anyInt(), any())).thenReturn(mockedCountQuery);
 
     List<PaymentPosition> expected = new ArrayList<>();
-    Installment po =
-        Installment.builder().iuv("mockIuv").paymentDate(LocalDateTime.now()).build();
+    PaymentOption po =
+        PaymentOption.builder().iuv("mockIuv").paymentDate(LocalDateTime.now()).build();
     PaymentPosition pp1 =
         PaymentPosition.builder()
             .organizationFiscalCode("77777777777")
@@ -165,8 +165,8 @@ class HistoricizationSchedulerTest {
     when(mockedCountQuery.setParameter(anyInt(), any())).thenReturn(mockedCountQuery);
 
     List<PaymentPosition> expected = new ArrayList<>();
-    Installment po =
-        Installment.builder().iuv("mockIuv").paymentDate(LocalDateTime.now()).build();
+    PaymentOption po =
+        PaymentOption.builder().iuv("mockIuv").paymentDate(LocalDateTime.now()).build();
     PaymentPosition pp =
         PaymentPosition.builder()
             .organizationFiscalCode("77777777777")
@@ -211,8 +211,8 @@ class HistoricizationSchedulerTest {
     when(mockedCountQuery.setParameter(anyInt(), any())).thenReturn(mockedCountQuery);
 
     List<PaymentPosition> expected = new ArrayList<>();
-    Installment po =
-        Installment.builder().iuv("mockIuv").paymentDate(LocalDateTime.now()).build();
+    PaymentOption po =
+        PaymentOption.builder().iuv("mockIuv").paymentDate(LocalDateTime.now()).build();
     PaymentPosition pp =
         PaymentPosition.builder()
             .organizationFiscalCode("77777777777")

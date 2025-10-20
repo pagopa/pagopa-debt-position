@@ -38,26 +38,26 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table(
-    name = "installment",
+    name = "payment_option",
     uniqueConstraints = {
       @UniqueConstraint(
-          name = "uniqueinstallmentiuv",
+          name = "UniquePaymentOpt",
           columnNames = {"iuv", "organization_fiscal_code"}),
       @UniqueConstraint(
-          name = "uniqueinstallmentnav",
+          name = "UniquePaymentOptNav",
           columnNames = {"nav", "organization_fiscal_code"}),
     })
 @JsonIdentityInfo(
 	    generator = ObjectIdGenerators.PropertyGenerator.class,
 	    property = "id")
-public class Installment implements Serializable {
+public class PaymentOption implements Serializable {
 
   /** generated serialVersionUID */
   private static final long serialVersionUID = -2800191377721368418L;
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "INSTALLMENT_SEQ")
-  @SequenceGenerator(name = "INSTALLMENT_SEQ", sequenceName = "INSTALLMENT_SEQ", allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "PAYMENT_OPT_SEQ")
+  @SequenceGenerator(name = "PAYMENT_OPT_SEQ", sequenceName = "PAYMENT_OPT_SEQ", allocationSize = 1)
   private Long id;
 
   @NotNull private String nav;
@@ -196,12 +196,12 @@ public class Installment implements Serializable {
 
   @Builder.Default
   @OneToMany(
-      targetEntity = InstallmentMetadata.class,
+      targetEntity = PaymentOptionMetadata.class,
       fetch = FetchType.LAZY,
-      mappedBy = "installment",
+      mappedBy = "paymentOption",
       cascade = CascadeType.ALL,
       orphanRemoval = true)
-  private List<InstallmentMetadata> paymentOptionMetadata = new ArrayList<>();
+  private List<PaymentOptionMetadata> paymentOptionMetadata = new ArrayList<>();
 
   public void addTransfer(Transfer t) {
     transfer.add(t);
@@ -213,13 +213,13 @@ public class Installment implements Serializable {
     t.setPaymentOption(null);
   }
 
-  public void addPaymentOptionMetadata(InstallmentMetadata paymentOptMetadata) {
+  public void addPaymentOptionMetadata(PaymentOptionMetadata paymentOptMetadata) {
     paymentOptionMetadata.add(paymentOptMetadata);
-    paymentOptMetadata.setInstallment(this);
+    paymentOptMetadata.setPaymentOption(this);
   }
 
-  public void removePaymentOptionMetadata(InstallmentMetadata paymentOptMetadata) {
+  public void removePaymentOptionMetadata(PaymentOptionMetadata paymentOptMetadata) {
     paymentOptionMetadata.remove(paymentOptMetadata);
-    paymentOptMetadata.setInstallment(null);
+    paymentOptMetadata.setPaymentOption(null);
   }
 }

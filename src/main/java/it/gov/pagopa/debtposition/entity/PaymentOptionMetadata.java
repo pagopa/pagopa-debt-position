@@ -22,11 +22,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Table(
-    name = "installment_metadata",
+    name = "payment_option_metadata",
     uniqueConstraints = {
       @UniqueConstraint(
-          name = "uniqueinstallmentmetadata",
-          columnNames = {"\"key\"", "installment_id"})
+          name = "UniquePaymentOptMetadata",
+          columnNames = {"\"key\"", "payment_option_id"})
     })
 @Data
 @NoArgsConstructor
@@ -36,16 +36,16 @@ import lombok.NoArgsConstructor;
 @JsonIdentityInfo(
 	    generator = ObjectIdGenerators.PropertyGenerator.class,
 	    property = "id")
-public class InstallmentMetadata implements Serializable {
+public class PaymentOptionMetadata implements Serializable {
 
   /** generated serialVersionUID */
   private static final long serialVersionUID = -9014105148787448923L;
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "INSTALLMENT_METADATA_SEQ")
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "PAYMENT_OPT_METADATA_SEQ")
   @SequenceGenerator(
-      name = "INSTALLMENT_METADATA_SEQ",
-      sequenceName = "INSTALLMENT_METADATA_SEQ",
+      name = "PAYMENT_OPT_METADATA_SEQ",
+      sequenceName = "PAYMENT_OPT_METADATA_SEQ",
       allocationSize = 1)
   private Long id;
 
@@ -57,10 +57,10 @@ public class InstallmentMetadata implements Serializable {
   private String value;
 
   @ManyToOne(
-      targetEntity = Installment.class,
+      targetEntity = PaymentOption.class,
       fetch = FetchType.LAZY,
       optional = false,
       cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-  @JoinColumn(name = "installment_id")
-  private Installment installment;
+  @JoinColumn(name = "payment_option_id")
+  private PaymentOption paymentOption;
 }

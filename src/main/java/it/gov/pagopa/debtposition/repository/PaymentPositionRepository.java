@@ -41,7 +41,7 @@ public interface PaymentPositionRepository
   // switch_to_expired è impostato a TRUE e lo stato è a valid
   /**
    * Native is used to avoid two-step recovery:
-   * - SELECT PaymentPosition in join with installment
+   * - SELECT PaymentPosition in join with PaymentOption
    * - UPDATE PaymentPosition pp SET ... WHERE pp.id IN :ids
    * verbose with two round-trips.
    */
@@ -56,16 +56,16 @@ public interface PaymentPositionRepository
         AND pp.payment_date IS NULL
         AND EXISTS (
             SELECT 1
-            FROM installment i
-            WHERE i.payment_position_id = pp.id
-              AND i.switch_to_expired = true
-              AND i.status = 'PO_UNPAID'
+            FROM payment_option po
+            WHERE po.payment_position_id = pp.id
+              AND po.switch_to_expired = true
+              AND po.status = 'PO_UNPAID'
         )
         AND NOT EXISTS (
             SELECT 1
-            FROM installment i2
-            WHERE i2.payment_position_id = pp.id
-              AND i2.status <> 'PO_UNPAID'
+            FROM payment_option po2
+            WHERE po2.payment_position_id = pp.id
+              AND po2.status <> 'PO_UNPAID'
         )
       """, nativeQuery = true)
   int updatePaymentPositionStatusToExpired(@Param("currentDate") LocalDateTime currentDate);

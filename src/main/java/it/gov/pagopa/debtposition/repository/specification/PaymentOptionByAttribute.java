@@ -1,6 +1,6 @@
 package it.gov.pagopa.debtposition.repository.specification;
 
-import it.gov.pagopa.debtposition.entity.Installment;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import java.time.LocalDateTime;
@@ -8,7 +8,7 @@ import java.util.List;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 
-public class PaymentOptionByAttribute implements Specification<Installment> {
+public class PaymentOptionByAttribute implements Specification<PaymentOption> {
 
   /** generated serialVersionUID */
   private static final long serialVersionUID = 6534338388239897792L;
@@ -33,7 +33,7 @@ public class PaymentOptionByAttribute implements Specification<Installment> {
   }
 
   public Predicate toPredicate(
-      Root<Installment> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+      Root<PaymentOption> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
 
     Predicate paymentPositionIdPredicate =
         cb.equal(root.get("paymentPosition"), this.paymentPosition);

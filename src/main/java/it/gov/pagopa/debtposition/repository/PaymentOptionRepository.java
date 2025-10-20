@@ -1,6 +1,6 @@
 package it.gov.pagopa.debtposition.repository;
 
-import it.gov.pagopa.debtposition.entity.Installment;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import java.util.List;
@@ -17,26 +17,26 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface PaymentOptionRepository
-    extends JpaRepository<Installment, Long>, JpaSpecificationExecutor<Installment> {
+    extends JpaRepository<PaymentOption, Long>, JpaSpecificationExecutor<PaymentOption> {
   // Derived Query - using method naming convention
   // Optional<PaymentOption> findByOrganizationFiscalCodeAndNav(String organizationFiscalCode,
   // String nav);  // search only by nav
-  Optional<Installment> findByOrganizationFiscalCodeAndIuv(
+  Optional<PaymentOption> findByOrganizationFiscalCodeAndIuv(
       String organizationFiscalCode, String iuv); // search only by iuv
 
   // TODO #naviuv: temporary regression management: search by nav or iuv
-  Optional<Installment> findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
+  Optional<PaymentOption> findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
       String organizationFiscalCodeIuv, String iuv, String organizationFiscalCodeNav, String nav);
 
   // Derived Query - using method naming convention - get all PaymentOption by payment_position_id
   // and in the specified statuses
-  List<Installment> findByPaymentPositionInAndStatusIn(
+  List<PaymentOption> findByPaymentPositionInAndStatusIn(
       List<PaymentPosition> paymentPositionList, List<PaymentOptionStatus> statusList);
 
   // Configuration Query
   @Modifying
   @Query(
-          "update Installment i set i.sendSync = true " +
+          "update PaymentOption i set i.sendSync = true " +
                   "where i.organizationFiscalCode = :organization " +
                   "and i.nav = :noticeNumber")
   int updatePaymentOptionSendSync(

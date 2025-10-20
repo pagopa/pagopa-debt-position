@@ -4,8 +4,8 @@ import static it.gov.pagopa.debtposition.service.payments.PaymentsService.findPr
 import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
 import static org.springframework.data.jpa.domain.Specification.allOf;
 
-import it.gov.pagopa.debtposition.entity.Installment;
-import it.gov.pagopa.debtposition.entity.InstallmentMetadata;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
@@ -126,14 +126,14 @@ public class PaymentPositionCRUDService {
       throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, iuv);
     }
 
-    Optional<Installment> po =
+    Optional<PaymentOption> po =
         paymentOptionRepository.findByOrganizationFiscalCodeAndIuv(organizationFiscalCode, iuv);
 
     if (po.isEmpty()) {
       throw new AppException(AppError.PAYMENT_OPTION_IUV_NOT_FOUND, organizationFiscalCode, iuv);
     }
 
-    Installment inst = po.get();
+    PaymentOption inst = po.get();
 
     return inst.getPaymentPosition();
   }
@@ -193,7 +193,7 @@ public class PaymentPositionCRUDService {
     // The retrieval of PaymentOptions is done manually to apply filters which, in the automatic
     // fetch, are not used by JPA
     for (PaymentPosition pp : positions) {
-      Specification<Installment> specPO =
+      Specification<PaymentOption> specPO =
     		  allOf(
               new PaymentOptionByAttribute(
                   pp,
@@ -201,7 +201,7 @@ public class PaymentPositionCRUDService {
                   filterAndOrder.getFilter().getDueDateTo(),
                   filterAndOrder.getFilter().getSegregationCodes()));
 
-      List<Installment> poList = paymentOptionRepository.findAll(specPO);
+      List<PaymentOption> poList = paymentOptionRepository.findAll(specPO);
       pp.setPaymentOption(poList);
       
     }
@@ -499,12 +499,12 @@ public class PaymentPositionCRUDService {
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
     LocalDateTime minDueDate =
         pp.getPaymentOption().stream()
-            .map(Installment::getDueDate)
+            .map(PaymentOption::getDueDate)
             .min(LocalDateTime::compareTo)
             .orElse(currentDate);
     LocalDateTime maxDueDate =
         pp.getPaymentOption().stream()
-            .map(Installment::getDueDate)
+            .map(PaymentOption::getDueDate)
             .max(LocalDateTime::compareTo)
             .orElse(currentDate);
     pp.setMinDueDate(minDueDate);
@@ -516,9 +516,9 @@ public class PaymentPositionCRUDService {
     pp.setStatus(DebtPositionStatus.DRAFT);
     pp.setServiceType(pp.getServiceType());
 
-    for (Installment po : pp.getPaymentOption()) {
+    for (PaymentOption po : pp.getPaymentOption()) {
       // Make sure there isn't reserved metadata
-      for (InstallmentMetadata pom : po.getPaymentOptionMetadata()) {
+      for (PaymentOptionMetadata pom : po.getPaymentOptionMetadata()) {
         if (pom.getKey().equals(NOTIFICATION_FEE_METADATA_KEY)) {
           throw new AppException(
               AppError.PAYMENT_OPTION_RESERVED_METADATA, organizationFiscalCode, pp.getIupd());
@@ -530,7 +530,7 @@ public class PaymentPositionCRUDService {
       po.setLastUpdatedDate(currentDate);
       po.setStatus(PaymentOptionStatus.PO_UNPAID);
       po.setPaymentPosition(pp);
-      po.getPaymentOptionMetadata().forEach(pom -> pom.setInstallment(po));
+      po.getPaymentOptionMetadata().forEach(pom -> pom.setPaymentOption(po));
       po.setNav(Optional.ofNullable(po.getNav()).orElse(auxDigit + po.getIuv()));
 
       for (Transfer t : po.getTransfer()) {
@@ -585,20 +585,20 @@ public class PaymentPositionCRUDService {
    * TODO: Multi-plan (future)
    * ----------------------------------------------------------------------------
    * Context
-   *  - Today we assume at most ONE installment plan per PaymentPosition.
-   *  - assignPaymentPlanIds(...) sets a single plain UUID (no prefix) on all installments
+   *  - Today we assume at most ONE PaymentOption plan per PaymentPosition.
+   *  - assignPaymentPlanIds(...) sets a single plain UUID (no prefix) on all PaymentOptions
    *    (isPartialPayment=true) and NULL on each single option (isPartialPayment=false).
    *
-   * What we’ll need to support MULTIPLE installment plans within the SAME PaymentPosition:
+   * What we’ll need to support MULTIPLE PaymentOption plans within the SAME PaymentPosition:
    *
-   * 1) Introduce in the payload a stable “plan key” per installment (for example):
-   *    - leaderNav: each installment of a plan carries the nav of its plan leader
+   * 1) Introduce in the payload a stable “plan key” per PaymentOption (for example):
+   *    - leaderNav: each PaymentOption of a plan carries the nav of its plan leader
    *    - planIdx (1..N per PaymentPosition)
    *
    * 2) Change assignPaymentPlanIds(...) to:
-   *    - Group installments by the chosen plan key.
+   *    - Group PaymentOptions by the chosen plan key.
    *    - For each group: reuse an existing plain UUID if present (idempotency), otherwise generate a new one.
-   *    - Set that UUID on all installments of the group.
+   *    - Set that UUID on all PaymentOptions of the group.
    *    - Keep singles with NULL payment_plan_id.
    *
    * Summary
@@ -610,26 +610,26 @@ public class PaymentPositionCRUDService {
 		if (pp.getPaymentOption() == null || pp.getPaymentOption().isEmpty())
 			return;
 
-		List<Installment> singles = new ArrayList<>();
-		List<Installment> installments = new ArrayList<>();
-		for (Installment i : pp.getPaymentOption()) {
+		List<PaymentOption> singles = new ArrayList<>();
+		List<PaymentOption> paymentoptions = new ArrayList<>();
+		for (PaymentOption i : pp.getPaymentOption()) {
 			if (Boolean.TRUE.equals(i.getIsPartialPayment()))
-				installments.add(i);
+				paymentoptions.add(i);
 			else
 				singles.add(i);
 		}
 
 		// Singles → force NULL
-		for (Installment i : singles) {
+		for (PaymentOption i : singles) {
 			if (i.getPaymentPlanId() != null)
 				i.setPaymentPlanId(null);
 		}
 
-		// Installments → a single shared UUID (no prefix) for the whole PaymentPosition
+		// PaymentOptions → a single shared UUID (no prefix) for the whole PaymentPosition
 		// (today)
-		if (!installments.isEmpty()) {
-			String planId = existingInstallmentPlanUuid(installments).orElse(java.util.UUID.randomUUID().toString());
-			for (Installment i : installments) {
+		if (!paymentoptions.isEmpty()) {
+			String planId = existingPaymentOptionPlanUuid(paymentoptions).orElse(java.util.UUID.randomUUID().toString());
+			for (PaymentOption i : paymentoptions) {
 				if (!planId.equals(i.getPaymentPlanId()))
 					i.setPaymentPlanId(planId);
 			}
@@ -637,8 +637,8 @@ public class PaymentPositionCRUDService {
 	}
 
 	// Reuse only a valid plain UUID
-	private Optional<String> existingInstallmentPlanUuid(List<Installment> installments) {
-		return installments.stream().map(Installment::getPaymentPlanId).filter(Objects::nonNull).filter(this::isUuid)
+	private Optional<String> existingPaymentOptionPlanUuid(List<PaymentOption> paymentoptions) {
+		return paymentoptions.stream().map(PaymentOption::getPaymentPlanId).filter(Objects::nonNull).filter(this::isUuid)
 				.findFirst();
 	}
 
