@@ -6,7 +6,7 @@ function addDays(days) {
 
 function addSeconds(seconds) {
   var date = new Date();
-  date.setSeconds(date.getSeconds() + seconds); 
+  date.setSeconds(date.getSeconds() + seconds);
   return date
 }
 
