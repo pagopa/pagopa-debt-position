@@ -107,6 +107,12 @@ public class Installment implements Serializable {
     @Column(name = "send_sync")
     private Boolean sendSync = false;
 
+    // flag that identifies if the installment has a payment in progress (false = no payment in
+    // progress)
+    @Builder.Default
+    @Transient
+    private boolean paymentInProgress = false;
+
     @ManyToOne(
             targetEntity = PaymentPosition.class,
             fetch = FetchType.LAZY,
