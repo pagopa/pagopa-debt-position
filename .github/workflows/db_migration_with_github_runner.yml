@@ -74,10 +74,8 @@ jobs:
           set -euo pipefail
           CFG=gpdFlywayConfig.conf
           COMMON="-Dflyway.configFiles=${CFG} -Dflyway.validateMigrationNaming=true -Dflyway.cleanDisabled=true"
-          echo "▶ Running APD: validate..."
-          mvn -B flyway:validate ${COMMON}
-          echo "▶ Running APD: migrate..."
-          mvn -B flyway:migrate ${COMMON}
+          echo "▶ Running APD: validate on migrate"
+          mvn -B flyway:migrate -Dflyway.validateOnMigrate=true ${COMMON}
 
       - name: Run Flyway (ODP)
         if: ${{ inputs.schema == 'odp' || inputs.schema == 'all' }}
@@ -91,8 +89,6 @@ jobs:
           set -euo pipefail
           CFG=gpdFlywayConfig.conf
           COMMON="-Dflyway.configFiles=${CFG} -Dflyway.validateMigrationNaming=true -Dflyway.cleanDisabled=true"
-          echo "▶ Running ODP: validate..."
-          mvn -B flyway:validate ${COMMON}
-          echo "▶ Running ODP: migrate..."
-          mvn -B flyway:migrate ${COMMON}
+          echo "▶ Running ODP: validate on migrate"
+          mvn -B flyway:migrate -Dflyway.validateOnMigrate=true ${COMMON}
 
