@@ -29,12 +29,6 @@ import lombok.*;
       @UniqueConstraint(
           name = "UniquePaymentPos",
           columnNames = {"iupd", "organization_fiscal_code"})
-    },
-    indexes = {
-      @Index(
-          name = "payment_position_status_validity_date_idx",
-          columnList = "status, validity_date"),
-      @Index(name = "idx_fiscal_code", columnList = "fiscal_code")
     })
 @JsonIdentityInfo(
     generator = ObjectIdGenerators.IntSequenceGenerator.class,
@@ -113,8 +107,9 @@ public class PaymentPosition implements Serializable {
   @Column(name = "publish_date")
   private LocalDateTime publishDate;
 
+  /*
   @Column(name = "validity_date")
-  private LocalDateTime validityDate;
+  private LocalDateTime validityDate;*/
 
   @NotNull
   @Column(name = "min_due_date")

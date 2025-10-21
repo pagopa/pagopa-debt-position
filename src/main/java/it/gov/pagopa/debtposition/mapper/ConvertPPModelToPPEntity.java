@@ -45,7 +45,6 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     destination.setPhone(source.getPhone());
     destination.setCompanyName(source.getCompanyName());
     destination.setOfficeName(source.getOfficeName());
-    destination.setValidityDate(source.getValidityDate());
     
     mapAndUpdatePaymentOptions(source, destination);
   }
@@ -116,6 +115,7 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     destination.setPostalCode(paymentPosition.getPostalCode());
     destination.setProvince(paymentPosition.getProvince());
     destination.setRegion(paymentPosition.getRegion());
+    destination.setValidityDate(paymentPosition.getValidityDate());
     destination.setRetentionDate(source.getRetentionDate());
     destination.setStreetName(paymentPosition.getStreetName());
     

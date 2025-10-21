@@ -4,6 +4,8 @@ import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
+import it.gov.pagopa.debtposition.util.CommonUtil;
+
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.EnumSet;
@@ -54,11 +56,13 @@ public enum DebtPositionStatus {
 
   public static PaymentPosition validityCheckAndUpdate(PaymentPosition pp) {
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+    // calculate the min validity date among the installments
+    LocalDateTime minValidity = CommonUtil.resolveMinValidity(pp);
     // Validity check on the fly
     if (pp.getStatus().equals(DebtPositionStatus.PUBLISHED)
-        && null != pp.getValidityDate()
-        && currentDate.isAfter(pp.getValidityDate())) {
-      pp.setStatus(DebtPositionStatus.VALID);
+    		&& minValidity != null
+    		&& currentDate.isAfter(minValidity)) {
+    	pp.setStatus(DebtPositionStatus.VALID);
     }
     return pp;
   }
@@ -81,11 +85,12 @@ public enum DebtPositionStatus {
   public static PaymentPosition validityCheckAndUpdate(PaymentOption po) {
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
     PaymentPosition pp = po.getPaymentPosition();
+    LocalDateTime minValidity = CommonUtil.resolveMinValidity(pp);
     // Validity check on the fly
     if (pp.getStatus().equals(DebtPositionStatus.PUBLISHED)
-        && null != pp.getValidityDate()
-        && currentDate.isAfter(pp.getValidityDate())) {
-      pp.setStatus(DebtPositionStatus.VALID);
+    		&& minValidity != null
+    		&& currentDate.isAfter(minValidity)) {
+    	pp.setStatus(DebtPositionStatus.VALID);
     }
     return pp;
   }

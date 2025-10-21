@@ -41,28 +41,8 @@ public class ConverterV3PPModelToEntity
     destination.setFullName(UNDEFINED_DEBTOR);
     destination.setCompanyName(source.getCompanyName());
     destination.setOfficeName(source.getOfficeName());
-    destination.setValidityDate(getValidityDate(source.getPaymentOption()));
 
     mapAndUpdateInstallments(source, destination);
-  }
-
-  private LocalDateTime getValidityDate(List<PaymentOptionModelV3> paymentOptions) {
-
-    if (paymentOptions == null) {
-      return null;
-    }
-
-    LocalDateTime validityDate = null;
-    // Find the minimum validityDate
-    Optional<LocalDateTime> minValidityDate =
-        paymentOptions.stream()
-            .map(PaymentOptionModelV3::getValidityDate)
-            .filter(Objects::nonNull) // Ensure we only deal with non-null values
-            .min(Comparator.naturalOrder());
-
-    if (minValidityDate.isPresent()) validityDate = minValidityDate.get();
-
-    return validityDate;
   }
   
   private void mapAndUpdateInstallments(
@@ -148,6 +128,7 @@ public class ConverterV3PPModelToEntity
     destination.setIuv(sourceInstallment.getIuv());
     destination.setLastUpdatedDate(LocalDateTime.now());
     destination.setNav(sourceInstallment.getNav());
+    destination.setValidityDate(source.getValidityDate());
     destination.setRetentionDate(source.getRetentionDate());
     
     destination.setSwitchToExpired(Boolean.TRUE.equals(source.getSwitchToExpired()));

@@ -29,13 +29,23 @@ public interface PaymentPositionRepository
         PagingAndSortingRepository<PaymentPosition, Long> {
 
   @Modifying
-  @Query(
-      "update PaymentPosition pp set pp.status = :status, pp.lastUpdatedDate = :currentDate,"
-          + " pp.version=pp.version+1 where pp.validityDate IS NOT NULL and pp.validityDate <="
-          + " :currentDate and pp.status='PUBLISHED'")
+  @Query("""
+    update PaymentPosition pp
+       set pp.status = :status,
+           pp.lastUpdatedDate = :currentDate,
+           pp.version = pp.version + 1
+     where pp.status = 'PUBLISHED'
+       and exists (
+             select 1
+               from PaymentOption po
+              where po.paymentPosition = pp
+                and po.validityDate is not null
+                and po.validityDate <= :currentDate
+       )
+  """)
   int updatePaymentPositionStatusToValid(
-      @Param(value = "currentDate") LocalDateTime currentDate,
-      @Param(value = "status") DebtPositionStatus status);
+      @Param("currentDate") LocalDateTime currentDate,
+      @Param("status") DebtPositionStatus status);
 
   // Regola 6 - Una posizione va in expired nel momento in cui si raggiunge la max_due_date, il flag
   // switch_to_expired è impostato a TRUE e lo stato è a valid

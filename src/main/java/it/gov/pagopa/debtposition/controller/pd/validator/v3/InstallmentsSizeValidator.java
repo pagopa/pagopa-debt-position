@@ -21,24 +21,10 @@ implements ConstraintValidator<ValidInstallmentsSize, PaymentPositionModelV3> {
 	    ctx.disableDefaultConstraintViolation();
 
 	    boolean ok = true;
-	    ok &= validateOptionInstallments(options, ctx);
 	    ok &= validateGlobalIuvUniqueness(options, ctx);
 	    return ok;
 	}
-
-	private boolean validateOptionInstallments(List<PaymentOptionModelV3> options,
-	                                           ConstraintValidatorContext ctx) {
-		// Each paymentOption must have at least 1 installment
-	    boolean ok = true;
-	    for (int i = 0; i < options.size(); i++) {
-	        if (hasNoInstallments(options.get(i))) {
-	            addViolation(ctx, "paymentOption[" + i + "].installments must contain at least 1 item");
-	            ok = false;
-	        }
-	    }
-	    return ok;
-	}
-
+    
 	private boolean validateGlobalIuvUniqueness(List<PaymentOptionModelV3> options,
 	                                            ConstraintValidatorContext ctx) {
 		// Global uniqueness of IUVs across all installments
@@ -62,10 +48,6 @@ implements ConstraintValidator<ValidInstallmentsSize, PaymentPositionModelV3> {
 	        }
 	    }
 	    return ok;
-	}
-
-	private boolean hasNoInstallments(PaymentOptionModelV3 po) {
-	    return po == null || po.getInstallments() == null || po.getInstallments().isEmpty();
 	}
 
 	private void addViolation(ConstraintValidatorContext ctx, String msg) {

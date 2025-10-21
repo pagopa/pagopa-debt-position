@@ -78,6 +78,9 @@ public class PaymentOption implements Serializable {
   @NotNull
   @Column(name = "is_partial_payment")
   private Boolean isPartialPayment;
+  
+  @Column(name = "validity_date")
+  private LocalDateTime validityDate;
 
   @NotNull
   @Column(name = "due_date")
