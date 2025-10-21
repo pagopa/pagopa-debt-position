@@ -81,7 +81,7 @@ class DebtPositionControllerTest {
                 .value(auxDigit + "1234561"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].companyName")
-                .value("mock company name"))
+                .value("Comune di Firenze"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.DRAFT.toString()))
         .andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.nullValue()));
@@ -756,7 +756,7 @@ class DebtPositionControllerTest {
                 .value(auxDigit + "1234561"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].companyName")
-                .value("mock company name"));
+                .value("Comune di Firenze"));
   }
 
   @Test

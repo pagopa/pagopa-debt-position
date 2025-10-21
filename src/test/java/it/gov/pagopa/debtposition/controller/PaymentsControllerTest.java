@@ -2231,7 +2231,7 @@ class PaymentsControllerTest {
     try {
       PaymentOption localMockPO = new PaymentOption();
       PaymentPosition localMockPP = new PaymentPosition();
-      localMockPP.setStatus(DebtPositionStatusV3.VALID);
+      localMockPP.setStatus(DebtPositionStatus.VALID);
       localMockPO.setInstallment(List.of(Installment.builder().status(InstallmentStatus.PAID).build()));
       localMockPO.setOptionType(OptionType.OPZIONE_UNICA);
       localMockPP.addPaymentOption(localMockPO);
@@ -2248,7 +2248,7 @@ class PaymentsControllerTest {
     try {
       PaymentOption localMockPO = new PaymentOption();
       PaymentPosition localMockPP = new PaymentPosition();
-      localMockPP.setStatus(DebtPositionStatusV3.PAID);
+      localMockPP.setStatus(DebtPositionStatus.PAID);
       localMockPO.setInstallment(List.of(
               Installment.builder().iuv("iuv").status(InstallmentStatus.PAID).build()
       ));
@@ -2267,7 +2267,7 @@ class PaymentsControllerTest {
     try {
       PaymentOption localMockPO = new PaymentOption();
       PaymentPosition localMockPP = new PaymentPosition();
-      localMockPP.setStatus(DebtPositionStatusV3.PAID);
+      localMockPP.setStatus(DebtPositionStatus.PAID);
       localMockPO.setInstallment(List.of(
               Installment.builder()
                       .iuv("mockIUV")
