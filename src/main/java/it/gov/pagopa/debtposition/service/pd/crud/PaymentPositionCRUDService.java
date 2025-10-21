@@ -14,7 +14,6 @@ import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.repository.InstallmentRepository;
-import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.repository.TransferRepository;
 import it.gov.pagopa.debtposition.repository.specification.*;
@@ -49,6 +48,7 @@ import static org.springframework.data.jpa.domain.Specification.allOf;
 @Service
 @Slf4j
 public class PaymentPositionCRUDService {
+    private final InstallmentRepository installmentRepository;
     private static final String UNIQUE_KEY_VIOLATION = "23505";
 
     @Value("${max.days.interval}")
@@ -61,9 +61,11 @@ public class PaymentPositionCRUDService {
     private String auxDigit;
 
     @Autowired
-    public PaymentPositionCRUDService(PaymentPositionRepository paymentPositionRepository, TransferRepository transferRepository) {
+    public PaymentPositionCRUDService(PaymentPositionRepository paymentPositionRepository, TransferRepository transferRepository,
+                                      InstallmentRepository installmentRepository) {
         this.paymentPositionRepository = paymentPositionRepository;
         this.transferRepository = transferRepository;
+        this.installmentRepository = installmentRepository;
     }
 
     public PaymentPosition create(
@@ -187,19 +189,26 @@ public class PaymentPositionCRUDService {
         List<PaymentPosition> positions = page.getContent();
         // The retrieval of PaymentOptions is done manually to apply filters which, in the automatic
         // fetch, are not used by JPA
-        // TODO VERIFY useless
-//        for (PaymentPosition pp : positions) {
-//            Specification<PaymentOption> specPO =
-//                    allOf(
-//                            new PaymentOptionByAttribute(
-//                                    pp,
-//                                    filterAndOrder.getFilter().getDueDateFrom(),
-//                                    filterAndOrder.getFilter().getDueDateTo(),
-//                                    filterAndOrder.getFilter().getSegregationCodes()));
-//
-//            List<PaymentOption> poList = paymentOptionRepository.findAll(specPO);
-//            pp.setPaymentOption(poList);
-//        }
+        for (PaymentPosition pp : positions) {
+            List<PaymentOption> poToAdd = new ArrayList<>();
+            for(PaymentOption po : pp.getPaymentOption()){
+                Specification<Installment> specInst =
+                        allOf(
+                                new InstallmentByAttribute(
+                                        po,
+                                        filterAndOrder.getFilter().getDueDateFrom(),
+                                        filterAndOrder.getFilter().getDueDateTo(),
+                                        filterAndOrder.getFilter().getSegregationCodes()));
+
+                List<Installment> instList = installmentRepository.findAll(specInst);
+
+                if(!instList.isEmpty()){
+                    po.setInstallment(instList);
+                    poToAdd.add(po);
+                }
+            }
+            pp.setPaymentOption(poToAdd);
+        }
 
         return CommonUtil.toPage(positions, page.getNumber(), page.getSize(), page.getTotalElements());
     }
