@@ -191,6 +191,20 @@ class DebtPositionControllerV3Test {
         .andExpect(jsonPath("$.title").value("BAD REQUEST"))
         .andExpect(jsonPath("$.status").value(400));
   }
+  
+  @Test
+  void createDebtPosition_400_noInstallments() throws Exception {
+    // given: 1 payment option and 0 installments
+    String uri = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
+    PaymentPositionModelV3 ppNoInst = createPaymentPositionV3(1, 0); // <-- 0 installments
+
+    mvc.perform(
+            post(uri)
+                .content(TestUtil.toJson(ppNoInst))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.detail").value(containsString("installments")));
+  }
 
   @Test
   void updateDebtPosition_200_1() throws Exception {
