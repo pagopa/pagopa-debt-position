@@ -382,39 +382,43 @@ public class PaymentsService {
         long countReportedTransfer = 0;
         Transfer reportedTransfer = null;
 
-        for (PaymentOption po : pp.getPaymentOption()) {
-            for (Installment inst : po.getInstallment()) {
-                if (inst.getIuv().equals(iuv)) {
-                    // numero totale dei transfer per la PO
-                    numberPOTransfers = inst.getTransfer().size();
-                    // numero dei transfer della PO in stato T_REPORTED
-                    countReportedTransfer =
-                            inst.getTransfer().stream()
-                                    .filter(t -> t.getStatus().equals(TransferStatus.T_REPORTED))
-                                    .count();
-                    // recupero il transfer oggetto di rendicontazione
-                    Optional<Transfer> transferToReport =
-                            inst.getTransfer().stream().filter(t -> t.getTransferId().equals(transferId)).findFirst();
+        Optional<Installment> installmentToReport = pp.getPaymentOption().stream()
+                .map(PaymentOption::getInstallment)
+                .flatMap(List::stream)
+                .filter(inst -> inst.getIuv().equals(iuv))
+                .findFirst();
 
-                    if (transferToReport.isEmpty()) {
-                        String error = String.format("Obtained unexpected empty transfer - [organizationFiscalCode= %s; iupd= %s; iuv= %s; idTransfer= %s]", pp.getOrganizationFiscalCode(), pp.getIupd(), iuv, transferId);
-                        throw new AppException(AppError.TRANSFER_REPORTING_FAILED, error);
-                    }
+        if (installmentToReport.isPresent()) {
+            Installment inst = installmentToReport.get();
 
-                    transferToReport.get().setStatus(TransferStatus.T_REPORTED);
-                    transferToReport.get().setLastUpdatedDate(currentDate);
-                    countReportedTransfer++;
-                    // update installment status
-                    if (countReportedTransfer < numberPOTransfers) {
-                        inst.setStatus(InstallmentStatus.PARTIALLY_REPORTED);
-                    } else {
-                        inst.setStatus(InstallmentStatus.REPORTED);
-                    }
-                    inst.setLastUpdatedDate(currentDate);
+            // numero totale dei transfer per la PO
+            numberPOTransfers = inst.getTransfer().size();
+            // numero dei transfer della PO in stato T_REPORTED
+            countReportedTransfer =
+                    inst.getTransfer().stream()
+                            .filter(t -> t.getStatus().equals(TransferStatus.T_REPORTED))
+                            .count();
+            // recupero il transfer oggetto di rendicontazione
+            Optional<Transfer> transferToReport =
+                    inst.getTransfer().stream().filter(t -> t.getTransferId().equals(transferId)).findFirst();
 
-                    reportedTransfer = transferToReport.get();
-                }
+            if (transferToReport.isEmpty()) {
+                String error = String.format("Obtained unexpected empty transfer - [organizationFiscalCode= %s; iupd= %s; iuv= %s; idTransfer= %s]", pp.getOrganizationFiscalCode(), pp.getIupd(), iuv, transferId);
+                throw new AppException(AppError.TRANSFER_REPORTING_FAILED, error);
             }
+
+            reportedTransfer = transferToReport.get();
+
+            reportedTransfer.setStatus(TransferStatus.T_REPORTED);
+            reportedTransfer.setLastUpdatedDate(currentDate);
+            countReportedTransfer++;
+            // update installment status
+            if (countReportedTransfer < numberPOTransfers) {
+                inst.setStatus(InstallmentStatus.PARTIALLY_REPORTED);
+            } else {
+                inst.setStatus(InstallmentStatus.REPORTED);
+            }
+            inst.setLastUpdatedDate(currentDate);
         }
 
         this.setPaymentPositionStatus(pp);

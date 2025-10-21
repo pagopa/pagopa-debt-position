@@ -5,7 +5,6 @@ import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
-import it.gov.pagopa.debtposition.model.enumeration.OptionType;
 import it.gov.pagopa.debtposition.model.payments.AlreadyPaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;

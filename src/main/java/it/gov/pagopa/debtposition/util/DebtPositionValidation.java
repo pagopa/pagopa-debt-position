@@ -301,9 +301,9 @@ public class DebtPositionValidation {
     private static void checkTransferAccountable(
             PaymentPosition ppToReport, String iuv, String transferId) {
         // TODO change error
-        Installment instToReport = ppToReport.getPaymentOption().parallelStream()
+        Installment instToReport = ppToReport.getPaymentOption().stream()
                 .map(PaymentOption::getInstallment)
-                .flatMap(List::parallelStream)
+                .flatMap(List::stream)
                 .filter(inst -> inst.getIuv().equals(iuv))
                 .findFirst()
                 .orElseThrow(
