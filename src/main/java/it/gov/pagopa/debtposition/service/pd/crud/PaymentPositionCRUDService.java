@@ -49,27 +49,21 @@ import static org.springframework.data.jpa.domain.Specification.allOf;
 @Service
 @Slf4j
 public class PaymentPositionCRUDService {
-    private final InstallmentRepository installmentRepository;
-
     private static final String UNIQUE_KEY_VIOLATION = "23505";
 
     @Value("${max.days.interval}")
     private String maxDaysInterval;
 
     private final PaymentPositionRepository paymentPositionRepository;
-    private final PaymentOptionRepository paymentOptionRepository;
     private final TransferRepository transferRepository;
 
     @Value("${nav.aux.digit}")
     private String auxDigit;
 
     @Autowired
-    public PaymentPositionCRUDService(PaymentPositionRepository paymentPositionRepository, PaymentOptionRepository paymentOptionRepository, TransferRepository transferRepository,
-                                      InstallmentRepository installmentRepository) {
+    public PaymentPositionCRUDService(PaymentPositionRepository paymentPositionRepository, TransferRepository transferRepository) {
         this.paymentPositionRepository = paymentPositionRepository;
-        this.paymentOptionRepository = paymentOptionRepository;
         this.transferRepository = transferRepository;
-        this.installmentRepository = installmentRepository;
     }
 
     public PaymentPosition create(
@@ -464,7 +458,7 @@ public class PaymentPositionCRUDService {
                         oldIban,
                         newIban,
                         LocalDateTime.now(ZoneOffset.UTC),
-                        List.of(InstallmentStatus.UNPAID.name()),
+                        List.of(InstallmentStatus.UNPAID.name(), InstallmentStatus.DRAFT.name()),
                         List.of(
                                 DebtPositionStatus.DRAFT.name(),
                                 DebtPositionStatus.PUBLISHED.name(),
@@ -526,7 +520,7 @@ public class PaymentPositionCRUDService {
                 inst.setOrganizationFiscalCode(organizationFiscalCode);
                 inst.setInsertedDate(Objects.requireNonNullElse(pp.getInsertedDate(), currentDate));
                 inst.setLastUpdatedDate(currentDate);
-                inst.setStatus(InstallmentStatus.UNPAID);
+                inst.setStatus(InstallmentStatus.DRAFT);
                 inst.setPaymentPosition(pp);
                 // po.getPaymentOptionMetadata().forEach(pom -> pom.setPaymentOption(po));
                 inst.setNav(Optional.ofNullable(inst.getNav()).orElse(auxDigit + inst.getIuv()));

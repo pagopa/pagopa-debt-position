@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -22,6 +23,8 @@ public class PublishPaymentUtil {
     ppToPublish.setPublishDate(currentDate);
     ppToPublish.setStatus(DebtPositionStatus.PUBLISHED);
     ppToPublish.setLastUpdatedDate(currentDate);
+    //TODO VERIFY Change all installments from DRAFT to UNPAID
+    ppToPublish.getPaymentOption().forEach(po -> po.getInstallment().forEach(inst -> inst.setStatus(InstallmentStatus.UNPAID)));
     // Regola 3 e Regola 4 - se non era stata prevista una data di inizio validità e la data di
     // pubblicazione è < della min_due_date => sovrascrivo lo stato direttamente a VALID
     if (null == ppToPublish.getValidityDate() && ppToPublish.getMinDueDate().isAfter(currentDate)) {

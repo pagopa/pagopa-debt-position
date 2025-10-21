@@ -83,7 +83,7 @@ public class PaymentsService {
 
         // Synchronous update of notification fees
         if (Boolean.TRUE.equals(installment.getSendSync())) {
-            boolean result = updateNotificationFeeSync(installment);
+            boolean result = this.updateNotificationFeeSync(installment);
             if (result)
                 log.info(
                         "Notification fee amount of Installment with NAV {} has been updated with"
@@ -140,8 +140,7 @@ public class PaymentsService {
         return this.updateTransferStatus(ppToReport.get(), iuv, transferId);
     }
 
-    @Transactional
-    public boolean updateNotificationFeeSync(Installment installment) {
+    private boolean updateNotificationFeeSync(Installment installment) {
         try {
             // call SEND API to retrieve notification fee amount
             NotificationPriceResponse sendResponse =
@@ -182,7 +181,7 @@ public class PaymentsService {
         }
         // Check if the retrieved payment option was not already paid and/or reported
         Installment installment = installmentOpt.get();
-        if (!InstallmentStatus.UNPAID.equals(installment.getStatus())) {
+        if (InstallmentStatus.getInstallmentPaidStatus().contains(installment.getStatus())) {
             throw new AppException(
                     AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_NOT_UPDATABLE,
                     organizationFiscalCode,
@@ -207,8 +206,8 @@ public class PaymentsService {
                             NodeCheckPositionModel.builder()
                                     .positionslist(Collections.singletonList(position))
                                     .build());
-//      TODO       installment.setPaymentInProgress(
-//                    "OK".equalsIgnoreCase(chkPositionRes.getOutcome()) ? Boolean.FALSE : Boolean.TRUE);
+            installment.setPaymentInProgress(
+                    "OK".equalsIgnoreCase(chkPositionRes.getOutcome()) ? Boolean.FALSE : Boolean.TRUE);
         } catch (FeignException.BadRequest e) {
             // 2. if the first call fails with a bad request error --> try with a nav call
             NodePosition position =
@@ -219,8 +218,8 @@ public class PaymentsService {
                                 NodeCheckPositionModel.builder()
                                         .positionslist(Collections.singletonList(position))
                                         .build());
-//     TODO           installment.setPaymentInProgress(
-//                        "OK".equalsIgnoreCase(chkPositionRes.getOutcome()) ? Boolean.FALSE : Boolean.TRUE);
+                installment.setPaymentInProgress(
+                        "OK".equalsIgnoreCase(chkPositionRes.getOutcome()) ? Boolean.FALSE : Boolean.TRUE);
             } catch (Exception ex) {
                 log.error(
                         "Error checking the position on the node for PO with fiscalCode "
@@ -232,7 +231,7 @@ public class PaymentsService {
                                 + nav,
                         ex);
                 // By business rules it is expected to treat the error as if the node had responded KO
-//      TODO           installment.setPaymentInProgress(Boolean.TRUE);
+                installment.setPaymentInProgress(Boolean.TRUE);
             }
         } catch (Exception e) {
             log.error(
@@ -245,7 +244,7 @@ public class PaymentsService {
                             + nav,
                     e);
             // By business rules it is expected to treat the error as if the node had responded KO
-//   TODO         installment.setPaymentInProgress(Boolean.TRUE);
+            installment.setPaymentInProgress(Boolean.TRUE);
         }
 
         // Updated to track the PO update
@@ -406,7 +405,7 @@ public class PaymentsService {
                     transferToReport.get().setStatus(TransferStatus.T_REPORTED);
                     transferToReport.get().setLastUpdatedDate(currentDate);
                     countReportedTransfer++;
-                    // aggiorno lo stato della PO
+                    // update installment status
                     if (countReportedTransfer < numberPOTransfers) {
                         inst.setStatus(InstallmentStatus.PARTIALLY_REPORTED);
                     } else {

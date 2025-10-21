@@ -146,7 +146,7 @@ public class PaymentsController implements IPaymentsController {
                 paymentsService.updateNotificationFee(organizationFiscalCode, iuv, notificationFee);
         if (updatedInstallment != null) {
             return ResponseEntity.status(
-                            OptionType.OPZIONE_UNICA.equals(updatedInstallment.getPaymentOption().getOptionType())
+                            Boolean.FALSE.equals(updatedInstallment.isPaymentInProgress())
                                     ? HttpStatus.OK.value()
                                     : CustomHttpStatus.IN_PROGRESS.value())
                     .body(ObjectMapperUtils.map(updatedInstallment, PaymentOptionModelResponse.class));

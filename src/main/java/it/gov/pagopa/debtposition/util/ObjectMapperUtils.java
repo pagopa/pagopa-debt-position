@@ -144,7 +144,7 @@ public class ObjectMapperUtils {
 
     public static PaymentOptionStatus mapInstallmentStatusToPoStatus(InstallmentStatus installmentStatus) {
         return switch (installmentStatus) {
-            case UNPAID, EXPIRED, UNPAYABLE -> PaymentOptionStatus.PO_UNPAID;
+            case DRAFT, UNPAID, EXPIRED, UNPAYABLE, INVALID -> PaymentOptionStatus.PO_UNPAID;
             case PAID -> PaymentOptionStatus.PO_PAID;
             case PARTIALLY_REPORTED -> PaymentOptionStatus.PO_PARTIALLY_REPORTED;
             case REPORTED -> PaymentOptionStatus.PO_REPORTED;
