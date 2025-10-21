@@ -12,7 +12,7 @@ import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.checkposition.NodeCheckPositionModel;
 import it.gov.pagopa.debtposition.model.checkposition.NodePosition;
 import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPositionResponse;
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatusV3;
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
 import it.gov.pagopa.debtposition.model.enumeration.OptionType;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
@@ -77,9 +77,9 @@ public class PaymentsService {
         Installment installment = installmentOpt.get();
         // Update PaymentPosition instance only in memory
         // PaymentPosition used when converting PaymentOption to POWithDebtor
-        DebtPositionStatusV3.validityCheckAndUpdate(installment);
-        DebtPositionStatusV3.expirationCheckAndUpdate(installment);
-        DebtPositionStatusV3.checkAlreadyPaidInstallments(installment.getPaymentOption(), nav);
+        DebtPositionStatus.validityCheckAndUpdate(installment);
+        DebtPositionStatus.expirationCheckAndUpdate(installment);
+        DebtPositionStatus.checkAlreadyPaidInstallments(installment.getPaymentOption(), nav);
 
         // Synchronous update of notification fees
         if (Boolean.TRUE.equals(installment.getSendSync())) {
@@ -116,7 +116,7 @@ public class PaymentsService {
         PaymentPosition paymentPositionToPay = paymentPositionToPayOpt.get();
 
         // Update PaymentPosition instance only in memory
-        DebtPositionStatusV3.validityCheckAndUpdate(paymentPositionToPay);
+        DebtPositionStatus.validityCheckAndUpdate(paymentPositionToPay);
         DebtPositionValidation.checkPaymentPositionPayability(paymentPositionToPay, nav);
 
         return this.executePaymentFlow(paymentPositionToPay, nav, paymentOptionModel);
@@ -365,9 +365,9 @@ public class PaymentsService {
         if (countPaidPartialPayment > 0
                 && countPaidPartialPayment < numberOfPartialPayment
                 && OptionType.OPZIONE_RATEALE.equals(Objects.requireNonNull(paidPO).getOptionType())) {
-            pp.setStatus(DebtPositionStatusV3.PARTIALLY_PAID);
+            pp.setStatus(DebtPositionStatus.PARTIALLY_PAID);
         } else {
-            pp.setStatus(DebtPositionStatusV3.PAID);
+            pp.setStatus(DebtPositionStatus.PAID);
             pp.setPaymentDate(paymentOptionModel.getPaymentDate());
         }
 
@@ -455,7 +455,7 @@ public class PaymentsService {
 
         if (numberInstallmentReportedNoPartial > 0
                 || (totalNumberPartialInstallment > 0 && totalNumberPartialInstallment == numberPOReportedPartial)) {
-            pp.setStatus(DebtPositionStatusV3.PAID);
+            pp.setStatus(DebtPositionStatus.REPORTED);
         }
     }
 }

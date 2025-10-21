@@ -31,7 +31,7 @@ public class ConvertPPEntityToModel
         destination.setOfficeName(source.getOfficeName());
         destination.setValidityDate(source.getValidityDate());
         destination.setPaymentDate(source.getPaymentDate());
-        destination.setStatus(ObjectMapperUtils.mapPpStatusV3ToPpStatus(source.getStatus()));
+        destination.setStatus(source.getStatus());
 
         if(source.getPaymentOption() != null){
             PaymentOption sourceFirstPO = source.getPaymentOption().get(0);

@@ -2,7 +2,7 @@ package it.gov.pagopa.debtposition.entity;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatusV3;
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.OptionType;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import jakarta.persistence.*;
@@ -63,7 +63,7 @@ public class PaymentOption implements Serializable {
 
     @Column(name = "payment_position_status")
     @Enumerated(EnumType.STRING)
-    private DebtPositionStatusV3 paymentPositionStatus;
+    private DebtPositionStatus paymentPositionStatus;
 
     @NotNull
     @Builder.Default

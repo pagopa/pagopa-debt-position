@@ -1,12 +1,9 @@
 package it.gov.pagopa.debtposition.util;
 
 import it.gov.pagopa.debtposition.entity.Installment;
-import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.mapper.*;
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatusV3;
 import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
@@ -97,7 +94,7 @@ public class ObjectMapperUtils {
 
         // GPD version 3 (also known as OdP API) input mapper
         Converter<PaymentPositionModelV3, PaymentPosition> convertPPV3ModelToPPEntity =
-                new ConvertPPV3ModelToEntity();
+                new ConvertPPModelV3ToEntity();
         modelMapper
                 .createTypeMap(PaymentPositionModelV3.class, PaymentPosition.class)
                 .setConverter(convertPPV3ModelToPPEntity);
@@ -151,17 +148,6 @@ public class ObjectMapperUtils {
             case PAID -> PaymentOptionStatus.PO_PAID;
             case PARTIALLY_REPORTED -> PaymentOptionStatus.PO_PARTIALLY_REPORTED;
             case REPORTED -> PaymentOptionStatus.PO_REPORTED;
-        };
-    }
-
-    public static DebtPositionStatus mapPpStatusV3ToPpStatus(DebtPositionStatusV3 debtPositionStatusV3) {
-        return switch (debtPositionStatusV3) {
-            case DRAFT -> DebtPositionStatus.DRAFT;
-            case PUBLISHED -> DebtPositionStatus.PUBLISHED;
-            case VALID -> DebtPositionStatus.VALID;
-            case UNPAYABLE -> DebtPositionStatus.INVALID;
-            case PARTIALLY_PAID -> DebtPositionStatus.PARTIALLY_PAID;
-            case PAID -> DebtPositionStatus.PAID;
         };
     }
 

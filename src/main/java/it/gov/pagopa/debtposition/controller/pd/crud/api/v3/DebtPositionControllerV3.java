@@ -7,7 +7,6 @@ import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatusV3;
 import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.filterandorder.Filter;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
@@ -83,7 +82,7 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
       LocalDate dueDateTo,
       LocalDate paymentDateFrom,
       LocalDate paymentDateTo,
-      DebtPositionStatusV3 status,
+      DebtPositionStatus status,
       Order.PaymentPositionOrder orderBy,
       Sort.Direction ordering,
       String segregationCodes) {
@@ -104,7 +103,7 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
                         paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : null)
                     .paymentDateTo(
                         paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : null)
-                    .status(status != null ? DebtPositionStatus.valueOf(status.name()) : null)
+                    .status(status)
                     .segregationCodes(segCodesList)
                     .build())
             .order(Order.builder().orderBy(orderBy).ordering(ordering).build())

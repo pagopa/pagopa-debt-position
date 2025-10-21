@@ -63,7 +63,7 @@ public class DebtPositionValidation {
 
   public static void checkPaymentPositionPayability(PaymentPosition ppToPay, String nav) {
     // Verifico se la posizione debitoria è in uno stato idoneo al pagamento
-    if (DebtPositionStatusV3.getPaymentPosFullyPaidStatus().contains(ppToPay.getStatus())) {
+    if (DebtPositionStatus.getPaymentPosFullyPaidStatus().contains(ppToPay.getStatus())) {
       throw new AppException(
           AppError.PAYMENT_OPTION_ALREADY_PAID, ppToPay.getOrganizationFiscalCode(), nav);
     }
@@ -77,7 +77,7 @@ public class DebtPositionValidation {
       PaymentPosition ppToReport, String iuv, String transferId) {
     // Verifico se la posizione debitoria è in uno stato idoneo alla rendicontazione
     if (ppToReport.getServiceType().equals(ServiceType.ACA)) {
-      if (DebtPositionStatusV3.getPaymentPosACANotAccountableStatus()
+      if (DebtPositionStatus.getPaymentPosACANotAccountableStatus()
           .contains(ppToReport.getStatus())) {
         throw new AppException(
             AppError.TRANSFER_NOT_ACCOUNTABLE,
@@ -86,7 +86,7 @@ public class DebtPositionValidation {
             transferId);
       }
     } else {
-      if (DebtPositionStatusV3.getPaymentPosNotAccountableStatus().contains(ppToReport.getStatus())) {
+      if (DebtPositionStatus.getPaymentPosNotAccountableStatus().contains(ppToReport.getStatus())) {
         throw new AppException(
             AppError.TRANSFER_NOT_ACCOUNTABLE,
             ppToReport.getOrganizationFiscalCode(),
@@ -291,7 +291,7 @@ public class DebtPositionValidation {
     // error
     // NOTE: the exception handling has been moved to the get/activate validation
     // (checkAlreadyPaidInstallments)
-    if (ppToPay.getStatus().equals(DebtPositionStatusV3.PARTIALLY_PAID)
+    if (ppToPay.getStatus().equals(DebtPositionStatus.PARTIALLY_PAID)
         && OptionType.OPZIONE_UNICA.equals(installmentToPay.getPaymentOption().getOptionType())) {
 
       // log detailed information about this edge case

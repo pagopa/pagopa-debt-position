@@ -2,7 +2,7 @@ package it.gov.pagopa.debtposition.scheduler;
 
 import static it.gov.pagopa.debtposition.util.SchedulerUtils.*;
 
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatusV3;
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -43,7 +43,7 @@ public class ExpiredPositionsScheduler {
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
     int numAffectedRows =
         paymentPositionRepository.updatePaymentPositionStatusToValid(
-            currentDate, DebtPositionStatusV3.VALID);
+            currentDate, DebtPositionStatus.VALID);
     log.debug(
         String.format(
             LOG_BASE_HEADER_INFO,
@@ -70,7 +70,7 @@ public class ExpiredPositionsScheduler {
       LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
       int numAffectedRows =
           paymentPositionRepository.updatePaymentPositionStatusToExpired(
-              currentDate, DebtPositionStatusV3.UNPAYABLE);
+              currentDate, DebtPositionStatus.EXPIRED);
       log.debug(
           String.format(
               LOG_BASE_HEADER_INFO,

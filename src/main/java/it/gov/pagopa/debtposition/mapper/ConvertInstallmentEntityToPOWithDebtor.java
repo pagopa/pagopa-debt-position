@@ -68,7 +68,7 @@ public class ConvertInstallmentEntityToPOWithDebtor
         destination.setCompanyName(source.getPaymentPosition().getCompanyName());
         destination.setOfficeName(source.getPaymentPosition().getOfficeName());
 
-        destination.setDebtPositionStatus(ObjectMapperUtils.mapPpStatusV3ToPpStatus(source.getPaymentPosition().getStatus()));
+        destination.setDebtPositionStatus(source.getPaymentPosition().getStatus());
 
         if (source.getTransfer() != null) {
             destination.setTransfer(source.getTransfer().stream().map(this::convertTransfer).toList());
