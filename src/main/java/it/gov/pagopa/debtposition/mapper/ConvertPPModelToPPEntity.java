@@ -145,7 +145,7 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
         destinationPo.setValidityDate(source.getValidityDate());
         destinationPo.setRetentionDate(sourceOption.getRetentionDate());
         destinationPo.setOptionType(Boolean.TRUE.equals(sourceOption.getIsPartialPayment()) ? OptionType.OPZIONE_RATEALE : OptionType.OPZIONE_UNICA);
-        destinationPo.setSwitchToExpired(false); // TODO VERIFY
+        destinationPo.setSwitchToExpired(source.getSwitchToExpired());
         destinationPo.setDebtorType(source.getType());
         destinationPo.setDebtorFiscalCode(source.getFiscalCode());
         destinationPo.setDebtorFullName(source.getFullName());
