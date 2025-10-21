@@ -65,6 +65,7 @@ public class ConverterV3PPModelToEntity
     return validityDate;
   }
 
+  /*
   private void mapAndUpdateInstallments(
       PaymentPositionModelV3 source, PaymentPosition destination) {
     Map<String, PaymentOption> managedOptionsByIuv =
@@ -99,7 +100,54 @@ public class ConverterV3PPModelToEntity
     }
     // DELETE: remove the orphans options
     destination.getPaymentOption().removeAll(optionsToRemove);
+  }*/
+  
+  private void mapAndUpdateInstallments(
+		  PaymentPositionModelV3 source, PaymentPosition destination) {
+
+	  Map<String, PaymentOption> managedOptionsByIuv =
+			  destination.getPaymentOption().stream()
+			  .collect(Collectors.toMap(PaymentOption::getIuv, po -> po));
+
+	  List<PaymentOptionModelV3> sourceOptions = source.getPaymentOption();
+	  List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
+
+	  if (sourceOptions != null) {
+		  for (PaymentOptionModelV3 sourceOption : sourceOptions) {
+			  boolean isPartial = sourceOption.getInstallments().size() > 1;
+
+			  // 1) Determine the planId for THIS paymentOption (plan):
+			  // - for single → null
+			  // - for plan → reuse an existing UUID among existing iuvs, otherwise generate a new one
+			  String planIdForThisOption = null;
+			  if (isPartial) {
+				  planIdForThisOption =
+						  findExistingPlanUuidAmongManaged(sourceOption.getInstallments(), managedOptionsByIuv)
+						  .orElseGet(() -> java.util.UUID.randomUUID().toString());
+			  }
+
+			  // 2) Cicla le rate e mappa/crea/aggiorna
+			  for (InstallmentModel installment : sourceOption.getInstallments()) {
+				  PaymentOption managedOpt = managedOptionsByIuv.get(installment.getIuv());
+				  if (managedOpt != null) {
+					  // UPDATE
+					  mapAndUpdateSinglePaymentOption(sourceOption, installment, managedOpt, planIdForThisOption);
+					  optionsToRemove.remove(managedOpt);
+				  } else {
+					  // CREATE
+					  PaymentOption po = PaymentOption.builder().build();
+					  po.setSendSync(false);
+					  mapAndUpdateSinglePaymentOption(sourceOption, installment, po, planIdForThisOption);
+					  destination.getPaymentOption().add(po);
+				  }
+			  }
+		  }
+	  }
+
+	  // DELETE: rimuovi gli orfani
+	  destination.getPaymentOption().removeAll(optionsToRemove);
   }
+
 
   /**
    * @param source the input model
@@ -107,7 +155,11 @@ public class ConverterV3PPModelToEntity
    * @param destination the output entity
    */
   private void mapAndUpdateSinglePaymentOption(
-      PaymentOptionModelV3 source, InstallmentModel sourceInstallment, PaymentOption destination) {
+		    PaymentOptionModelV3 source,
+		    InstallmentModel sourceInstallment,
+		    PaymentOption destination,
+		    String planIdForThisOption) {
+
     DebtorModel debtor = source.getDebtor();
 
     if (debtor != null) {
@@ -136,6 +188,20 @@ public class ConverterV3PPModelToEntity
     destination.setRetentionDate(source.getRetentionDate());
     
     destination.setSwitchToExpired(Boolean.TRUE.equals(source.getSwitchToExpired()));
+    
+    // Assign paymentPlanId
+    if (source.getInstallments().size() > 1) {
+    	// installment plan
+    	if (!Objects.equals(destination.getPaymentPlanId(), planIdForThisOption)) {
+    		destination.setPaymentPlanId(planIdForThisOption);
+    	}
+    } else {
+    	// single option
+    	if (destination.getPaymentPlanId() != null) {
+    		destination.setPaymentPlanId(null);
+    	}
+    }
+
 
     mapAndUpdateTransfers(sourceInstallment, destination);
     mapAndUpdateOptionMetadata(sourceInstallment, destination);
@@ -257,4 +323,31 @@ public class ConverterV3PPModelToEntity
     // DELETE:
     destination.getTransferMetadata().removeAll(metadataToRemove);
   }
+  
+  private Optional<String> findExistingPlanUuidAmongManaged(
+		  List<InstallmentModel> installments,
+		  Map<String, PaymentOption> managedByIuv) {
+
+	  for (InstallmentModel inst : installments) {
+		  PaymentOption existing = managedByIuv.get(inst.getIuv());
+		  if (existing != null) {
+			  String pid = existing.getPaymentPlanId();
+			  if (pid != null && isUuid(pid)) {
+				  return Optional.of(pid);
+			  }
+		  }
+	  }
+	  return Optional.empty();
+  }
+
+  // valid UUID (case-insensitive)
+  private boolean isUuid(String s) {
+	  try {
+		  java.util.UUID.fromString(s);
+		  return true;
+	  } catch (IllegalArgumentException e) {
+		  return false;
+	  }
+  }
+
 }

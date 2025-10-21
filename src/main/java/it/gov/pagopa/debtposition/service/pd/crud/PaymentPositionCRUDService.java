@@ -76,7 +76,6 @@ public class PaymentPositionCRUDService {
     	PaymentPosition toSave =
     	        this.checkAndBuildDebtPositionToSave(
     	            debtPosition, organizationFiscalCode, toPublish, segCodes, action);
-    	assignPaymentPlanIds(toSave);
     	
     	return paymentPositionRepository.saveAndFlush(toSave);
     } catch (DataIntegrityViolationException e) {
@@ -244,9 +243,6 @@ public class PaymentPositionCRUDService {
 
       // flip model to entity
       modelMapper.map(ppModel, ppToUpdate);
-      
-      // assign/reuse paymentPlanIds
-      assignPaymentPlanIds(ppToUpdate);
 
       // update amounts adding notification fee
       updateAmounts(organizationFiscalCode, ppToUpdate);
@@ -318,7 +314,6 @@ public class PaymentPositionCRUDService {
      for (PaymentPosition debtPosition : debtPositions) {
     		PaymentPosition pp = this.checkDebtPositionToUpdate(
     				debtPosition, organizationFiscalCode, toPublish, segCodes, action);
-    		assignPaymentPlanIds(pp);
     		
     		ppToSaveList.add(pp);
      }
@@ -373,9 +368,6 @@ public class PaymentPositionCRUDService {
 
         // map model to entity
         modelMapper.map(inputPaymentPosition, currentPP);
-        
-        // assign/reuse paymentPlanIds
-        assignPaymentPlanIds(currentPP);
 
         // update amounts adding notification fee
         updateAmounts(organizationFiscalCode, currentPP);
@@ -580,71 +572,4 @@ public class PaymentPositionCRUDService {
     String paymentPositionSegregationCode = iuv.substring(0, 2);
     return segregationCodes.contains(paymentPositionSegregationCode);
   }
-  
-  /*
-   * TODO: Multi-plan (future)
-   * ----------------------------------------------------------------------------
-   * Context
-   *  - Today we assume at most ONE PaymentOption plan per PaymentPosition.
-   *  - assignPaymentPlanIds(...) sets a single plain UUID (no prefix) on all PaymentOptions
-   *    (isPartialPayment=true) and NULL on each single option (isPartialPayment=false).
-   *
-   * What we’ll need to support MULTIPLE PaymentOption plans within the SAME PaymentPosition:
-   *
-   * 1) Introduce in the payload a stable “plan key” per PaymentOption (for example):
-   *    - leaderNav: each PaymentOption of a plan carries the nav of its plan leader
-   *    - planIdx (1..N per PaymentPosition)
-   *
-   * 2) Change assignPaymentPlanIds(...) to:
-   *    - Group PaymentOptions by the chosen plan key.
-   *    - For each group: reuse an existing plain UUID if present (idempotency), otherwise generate a new one.
-   *    - Set that UUID on all PaymentOptions of the group.
-   *    - Keep singles with NULL payment_plan_id.
-   *
-   * Summary
-   *  - Add/receive a plan key (leaderNav or planIdx).
-   *  - Group by that key and assign one UUID per group.
-   *  - Keep singles as NULL.
-   */
-	private void assignPaymentPlanIds(PaymentPosition pp) {
-		if (pp.getPaymentOption() == null || pp.getPaymentOption().isEmpty())
-			return;
-
-		List<PaymentOption> singles = new ArrayList<>();
-		List<PaymentOption> paymentoptions = new ArrayList<>();
-		for (PaymentOption i : pp.getPaymentOption()) {
-			if (Boolean.TRUE.equals(i.getIsPartialPayment()))
-				paymentoptions.add(i);
-			else
-				singles.add(i);
-		}
-
-		// Singles → force NULL
-		for (PaymentOption i : singles) {
-			if (i.getPaymentPlanId() != null)
-				i.setPaymentPlanId(null);
-		}
-
-		// PaymentOptions → a single shared UUID (no prefix) for the whole PaymentPosition
-		// (today)
-		if (!paymentoptions.isEmpty()) {
-			String planId = existingPaymentOptionPlanUuid(paymentoptions).orElse(java.util.UUID.randomUUID().toString());
-			for (PaymentOption i : paymentoptions) {
-				if (!planId.equals(i.getPaymentPlanId()))
-					i.setPaymentPlanId(planId);
-			}
-		}
-	}
-
-	// Reuse only a valid plain UUID
-	private Optional<String> existingPaymentOptionPlanUuid(List<PaymentOption> paymentoptions) {
-		return paymentoptions.stream().map(PaymentOption::getPaymentPlanId).filter(Objects::nonNull).filter(this::isUuid)
-				.findFirst();
-	}
-
-	// Accept canonical UUID format (case-insensitive)
-	private boolean isUuid(String s) {
-		try {java.util.UUID.fromString(s); return true;} 
-		catch (IllegalArgumentException e) {return false;}
-	}
 }
