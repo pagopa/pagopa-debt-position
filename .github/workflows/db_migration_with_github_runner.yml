@@ -30,7 +30,7 @@ on:
           - apd
           - odp
           - all
-        default: all
+        default: apd
 
 permissions:
   id-token: write
