@@ -16,7 +16,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.Test;
@@ -363,10 +362,14 @@ class DebtPositionControllerV3Test {
 	}
 	
 	private static String randomAlphaNum(int len) {
-		String s = UUID.randomUUID().toString().replace("-", "");
+		if (len <= 0)
+			return "";
+
+		String s = java.util.UUID.randomUUID().toString().replace("-", "");
 		if (s.length() >= len) {
 			return s.substring(0, len);
 		}
-		return String.format("%1$-*s", s, len).replace(' ', '0');
+		String formatSpec = String.format("%%-%ss", String.valueOf(len));
+		return String.format(formatSpec, s).replace(' ', '0');
 	}
 }
