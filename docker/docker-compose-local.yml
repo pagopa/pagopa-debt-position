@@ -1,11 +1,8 @@
-version: '3.8'
-
 services:
 
   gpd:
     env_file:
       - ./.env
-    image: 'gpd:latest'
     build:
       context: ../
     ports:
@@ -32,14 +29,14 @@ services:
       - gpd-net
 
 
-  pgbouncer:
-    environment:
-      - 'DATABASE_URL=postgres://postgres_user_test:postgres_pwd_test@postgres/apd'
-    ports:
-      - '6432:5432'
-    image: edoburu/pgbouncer@sha256:85d39ce8231675cdc534e9382b56b7dfc2b4bcc83338092e0cb393e842297ed3
-    networks:
-      - gpd-net
+#  pgbouncer:
+#    environment:
+#      - 'DATABASE_URL=postgres://postgres_user_test:postgres_pwd_test@postgres/apd'
+#    ports:
+#      - '6432:5432'
+#    image: edoburu/pgbouncer@sha256:85d39ce8231675cdc534e9382b56b7dfc2b4bcc83338092e0cb393e842297ed3
+#    networks:
+#      - gpd-net
 
 
 networks:

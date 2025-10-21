@@ -1,4 +1,5 @@
 const assert = require("assert");
+const {toLog} = require("../utility/helpers");
 
 const auxDigit = process.env.aux_digit
 
@@ -17,6 +18,10 @@ async function assertOutcome(bundle, outcome) {
 }
 
 async function assertStatusCode(bundle, statusCode) {
+    if(bundle.responseToCheck.status != statusCode) {
+        toLog("[assertStatusCode] executed request: " + JSON.stringify(bundle.responseToCheck.request.path))
+        toLog("[assertStatusCode] failed response: " + JSON.stringify(bundle.responseToCheck.data))
+    }
     assert.strictEqual(bundle.responseToCheck.status, statusCode);
 }
 

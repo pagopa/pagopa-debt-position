@@ -28,7 +28,7 @@ permissions:
 jobs:
   integration_test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
     environment: ${{(github.event.inputs == null && 'uat') || inputs.environment }}
     steps:
       - name: Checkout
@@ -55,7 +55,7 @@ jobs:
 
   notify:
     needs: [ integration_test ]
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
     name: Notify
     if: ${{ always() && inputs.environment == 'uat' }}
     steps:
@@ -70,10 +70,10 @@ jobs:
           message_format: '{emoji} <{workflow_url}|{workflow}> {status_message} in <{repo_url}|{repo}>'
           footer: 'Linked to Repo <{repo_url}|{repo}>'
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_INTEGRATION_TEST }}
 
   delete_github_deployments:
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
     needs: integration_test
     if: ${{ always() }}
     steps:
