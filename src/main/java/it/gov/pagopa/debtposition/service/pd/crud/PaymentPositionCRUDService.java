@@ -9,7 +9,6 @@ import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.exception.ValidationException;
 import it.gov.pagopa.debtposition.model.IPaymentPositionModel;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatusV3;
 import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
@@ -194,18 +193,19 @@ public class PaymentPositionCRUDService {
         List<PaymentPosition> positions = page.getContent();
         // The retrieval of PaymentOptions is done manually to apply filters which, in the automatic
         // fetch, are not used by JPA
-        for (PaymentPosition pp : positions) {
-            Specification<PaymentOption> specPO =
-                    allOf(
-                            new PaymentOptionByAttribute(
-                                    pp,
-                                    filterAndOrder.getFilter().getDueDateFrom(),
-                                    filterAndOrder.getFilter().getDueDateTo(),
-                                    filterAndOrder.getFilter().getSegregationCodes()));
-
-            List<PaymentOption> poList = paymentOptionRepository.findAll(specPO);
-            pp.setPaymentOption(poList);
-        }
+        // TODO VERIFY useless
+//        for (PaymentPosition pp : positions) {
+//            Specification<PaymentOption> specPO =
+//                    allOf(
+//                            new PaymentOptionByAttribute(
+//                                    pp,
+//                                    filterAndOrder.getFilter().getDueDateFrom(),
+//                                    filterAndOrder.getFilter().getDueDateTo(),
+//                                    filterAndOrder.getFilter().getSegregationCodes()));
+//
+//            List<PaymentOption> poList = paymentOptionRepository.findAll(specPO);
+//            pp.setPaymentOption(poList);
+//        }
 
         return CommonUtil.toPage(positions, page.getNumber(), page.getSize(), page.getTotalElements());
     }
@@ -217,7 +217,7 @@ public class PaymentPositionCRUDService {
             List<String> segregationCodes) {
         PaymentPosition ppToRemove =
                 this.getDebtPositionByIUPD(organizationFiscalCode, iupd, segregationCodes);
-        if (DebtPositionStatusV3.getPaymentPosAlreadyPaidStatus().contains(ppToRemove.getStatus())) {
+        if (DebtPositionStatus.getPaymentPosAlreadyPaidStatus().contains(ppToRemove.getStatus())) {
             throw new AppException(AppError.DEBT_POSITION_PAYMENT_FOUND, organizationFiscalCode, iupd);
         }
         paymentPositionRepository.delete(ppToRemove);
@@ -236,7 +236,7 @@ public class PaymentPositionCRUDService {
         PaymentPosition ppToUpdate =
                 this.getDebtPositionByIUPD(organizationFiscalCode, ppModel.getIupd(), segregationCodes);
 
-        if (DebtPositionStatusV3.getPaymentPosNotUpdatableStatus().contains(ppToUpdate.getStatus())) {
+        if (DebtPositionStatus.getPaymentPosNotUpdatableStatus().contains(ppToUpdate.getStatus())) {
             throw new AppException(
                     AppError.DEBT_POSITION_NOT_UPDATABLE, organizationFiscalCode, ppModel.getIupd());
         }
@@ -362,7 +362,7 @@ public class PaymentPositionCRUDService {
             for (PaymentPosition currentPP : managedPositions) {
                 PaymentPositionModel inputPaymentPosition = inPositionsMap.get(currentPP.getIupd());
 
-                if (DebtPositionStatusV3.getPaymentPosNotUpdatableStatus().contains(currentPP.getStatus())) {
+                if (DebtPositionStatus.getPaymentPosNotUpdatableStatus().contains(currentPP.getStatus())) {
                     throw new AppException(
                             AppError.DEBT_POSITION_NOT_UPDATABLE,
                             organizationFiscalCode,
@@ -411,7 +411,7 @@ public class PaymentPositionCRUDService {
 
         readPositions.forEach(
                 ppToRemove -> {
-                    if (DebtPositionStatusV3.getPaymentPosAlreadyPaidStatus()
+                    if (DebtPositionStatus.getPaymentPosAlreadyPaidStatus()
                             .contains(ppToRemove.getStatus())) {
                         throw new AppException(
                                 AppError.DEBT_POSITION_PAYMENT_FOUND, organizationFiscalCode, ppToRemove.getIupd());
@@ -509,7 +509,7 @@ public class PaymentPositionCRUDService {
         pp.setLastUpdatedDate(currentDate);
         pp.setPublishDate(null);
         pp.setOrganizationFiscalCode(organizationFiscalCode);
-        pp.setStatus(DebtPositionStatusV3.DRAFT);
+        pp.setStatus(DebtPositionStatus.DRAFT);
         pp.setServiceType(pp.getServiceType());
 
         for (PaymentOption po : pp.getPaymentOption()) {
