@@ -64,43 +64,6 @@ public class ConverterV3PPModelToEntity
 
     return validityDate;
   }
-
-  /*
-  private void mapAndUpdateInstallments(
-      PaymentPositionModelV3 source, PaymentPosition destination) {
-    Map<String, PaymentOption> managedOptionsByIuv =
-        destination.getPaymentOption().stream()
-            .collect(Collectors.toMap(PaymentOption::getIuv, po -> po));
-
-    List<PaymentOptionModelV3> sourceOptions = source.getPaymentOption();
-    List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
-
-    // Covered cases:
-    // - 1 Payment Option with [1:N] Installment (ie Opzione Rateale)
-    // - [1:N] Payment Option with 1 Installment (ie Opzione Multipla)
-    // - [1:N] Payment Option with 1 Installment and 1 Payment Option with [1:N] Installment (ie
-    // Opzione Unica + Opzione Rateale)
-    if (sourceOptions != null) {
-      for (PaymentOptionModelV3 sourceOption : sourceOptions) {
-        for (InstallmentModel installment : sourceOption.getInstallments()) {
-          PaymentOption managedOpt = managedOptionsByIuv.get(installment.getIuv());
-          if (managedOpt != null) {
-            // UPDATE: the option
-            mapAndUpdateSinglePaymentOption(sourceOption, installment, managedOpt);
-            optionsToRemove.remove(managedOpt);
-          } else {
-            // CREATE: the option
-            PaymentOption po = PaymentOption.builder().build();
-            po.setSendSync(false);
-            mapAndUpdateSinglePaymentOption(sourceOption, installment, po);
-            destination.getPaymentOption().add(po);
-          }
-        }
-      }
-    }
-    // DELETE: remove the orphans options
-    destination.getPaymentOption().removeAll(optionsToRemove);
-  }*/
   
   private void mapAndUpdateInstallments(
 		  PaymentPositionModelV3 source, PaymentPosition destination) {

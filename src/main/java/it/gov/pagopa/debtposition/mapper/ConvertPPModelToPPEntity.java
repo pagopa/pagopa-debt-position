@@ -49,40 +49,7 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     
     mapAndUpdatePaymentOptions(source, destination);
   }
-  
-  /*
-
-  private void mapAndUpdatePaymentOptions(
-      PaymentPositionModel source, PaymentPosition destination) {
-    Map<String, PaymentOption> managedOptionsByIuv =
-        destination.getPaymentOption().stream()
-            .collect(Collectors.toMap(PaymentOption::getIuv, po -> po));
-
-    List<PaymentOptionModel> sourceOptions = source.getPaymentOption();
-    List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
-
-    if (sourceOptions != null) {
-      for (PaymentOptionModel sourceOpt : sourceOptions) {
-        PaymentOption managedOpt = managedOptionsByIuv.get(sourceOpt.getIuv());
-
-        if (managedOpt != null) {
-          // UPDATE
-          mapAndUpdateSinglePaymentOption(source, sourceOpt, managedOpt);
-          optionsToRemove.remove(managedOpt);
-        } else {
-          // CREATE
-          PaymentOption po = PaymentOption.builder().build();
-          po.setSendSync(false);
-          mapAndUpdateSinglePaymentOption(source, sourceOpt, po);
-          destination.getPaymentOption().add(po);
-        }
-      }
-    }
-
-    // DELETE
-    destination.getPaymentOption().removeAll(optionsToRemove);
-  } */
-  
+ 
   private void mapAndUpdatePaymentOptions(
 		  PaymentPositionModel source, PaymentPosition destination) {
 
