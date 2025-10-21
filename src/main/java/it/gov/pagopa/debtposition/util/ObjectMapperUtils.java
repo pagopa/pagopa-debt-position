@@ -82,10 +82,10 @@ public class ObjectMapperUtils {
 
         // GPD version 1 converter used to return a paid Payment Option data (differs from default
         // mapping by serviceType adding).
-        Converter<PaymentOption, PaidPaymentOptionModel> convertPOEntityToPaidPOModel =
-                new ConvertPOEntityToPaidPOModel();
+        Converter<Installment, PaidPaymentOptionModel> convertPOEntityToPaidPOModel =
+                new ConvertInstallmentEntityToPaidPOModel();
         modelMapper
-                .createTypeMap(PaymentOption.class, PaidPaymentOptionModel.class)
+                .createTypeMap(Installment.class, PaidPaymentOptionModel.class)
                 .setConverter(convertPOEntityToPaidPOModel);
 
         // GPD version 1 converter used to return a Payment Option with debtor data.
