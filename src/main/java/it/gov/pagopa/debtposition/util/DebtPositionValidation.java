@@ -243,13 +243,13 @@ public class DebtPositionValidation {
     }
 
     private static void checkInstallmentPayable(PaymentPosition ppToPay, String nav) {
-        // TODO #naviuv: temporary regression management --> remove "|| po.getIuv().equals(nav)" when
-        // TODO optimize & change errors
+        // TODO #naviuv: temporary regression management --> remove "|| inst.getIuv().equals(nav)" when
         // only nav managment is enabled
+        // TODO optimize & change errors
         Installment installmentToPay = ppToPay.getPaymentOption().parallelStream()
                 .map(PaymentOption::getInstallment)
                 .flatMap(List::parallelStream)
-                .filter(inst -> inst.getNav().equals(nav))
+                .filter(inst -> inst.getNav().equals(nav) || inst.getIuv().equals(nav))
                 .findFirst()
                 .orElseThrow(
                         () -> {

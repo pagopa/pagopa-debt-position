@@ -61,7 +61,6 @@ public class PaymentsService {
 
     // TODO #naviuv: temporary regression management --> the nav variable can also be evaluated with
     // iuv. Remove the comment when only nav managment is enabled
-    // TODO VERIFY
     @Transactional
     public Installment getInstallmentByNav(
             @NotBlank String organizationFiscalCode, @NotBlank String nav) {

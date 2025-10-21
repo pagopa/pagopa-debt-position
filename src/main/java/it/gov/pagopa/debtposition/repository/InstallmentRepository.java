@@ -16,7 +16,7 @@ public interface InstallmentRepository extends JpaRepository<Installment, Long>,
     Optional<Installment> findByOrganizationFiscalCodeAndIuv(
             String organizationFiscalCode, String iuv);
 
-    // TODO #naviuv: temporary regression management: search by nav or iuv VERIFY
+    // TODO #naviuv: temporary regression management: search by nav or iuv
     Optional<Installment> findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
             String organizationFiscalCodeIuv, String iuv, String organizationFiscalCodeNav, String nav);
 
