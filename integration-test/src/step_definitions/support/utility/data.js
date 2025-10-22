@@ -31,7 +31,7 @@ let gpdSessionBundle = {
         transferDate: undefined
     },
     payer: {
-        name: "Michele Ventimiglia",
+        fullName: "Michele Ventimiglia",
         fiscalCode: "VNTMHL76M09H501D",
         streetName: "via Washington",
         civicNumber: "11",

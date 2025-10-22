@@ -5,9 +5,9 @@ Feature: Semantic check about a debt position
 
   Scenario: Debt position creation
     Given a random iupd
-    When the debt position is created
+    When the debt position is created using "v1" API
     Then the debt position gets the status code 201
-    And the organization gets the nav value after creation
+    And the organization gets the nav value from "payment_option" after creation
     # Debt position notification fee update
     When the notification fee of the debt position is updated
     Then the organization gets the status code 209
@@ -15,29 +15,29 @@ Feature: Semantic check about a debt position
     # Debt position filter list by status and due date
     Given the filter made by status "DRAFT"
     And the filter made by due date from today to 10 days
-    When we ask the list of organizations debt positions
+    When we ask the list of organizations debt positions using "v1" API
     Then we get the status code 200
     # Debt position filter list by payment date
     Given the filter made by payment date from today to 20 days
-    When we ask the list of organizations debt positions
+    When we ask the list of organizations debt positions using "v1" API
     Then we get the status code 200
     # Debt position update
-    When the debt position is updated
+    When the debt position is updated using "v1" API
     Then the organization gets the update status code 200
-    And the organization gets the nav value after update
+    And the organization gets the nav value from "payment_option" after update
     # Debt position get
-    When we get the debt position
+    When we get the debt position using "v1" API
     Then the company name is "Testing S.p.A."
-    And the organization get the nav value
+    And the organization get the nav value from "payment_option"
     # Debt position deleted
-    When the debt position is deleted
+    When the debt position is deleted using "v1" API
     Then the debt position gets the status code 200
 
 
   Scenario: Debt position filter list: exclusive param violation
     Given the filter made by due date from today to 10 days
     And the filter made by payment date from today to 20 days
-    When we ask the list of organizations debt positions
+    When we ask the list of organizations debt positions using "v1" API
     Then we get the status code 400
 
   # DISABLED because it's a flaky test
@@ -45,10 +45,10 @@ Feature: Semantic check about a debt position
   #   Given a random iupd
   #   When a node OK result debt position is created
   #   Then the debt position gets the status code 201
-  #   And the organization gets the nav value after creation
+  #   And the organization gets the nav value from "payment_option" after creation
   #   When a node KO result debt position is created
   #   Then the debt position gets the status code 201
-  #   And the organization gets the nav value after creation
+  #   And the organization gets the nav value from "payment_option" after creation
   #   When the notification fee of the debt position is updated using an OK position on the node
   #   Then the organization gets the status code 200
   #   And the organization gets the updated amounts
@@ -62,13 +62,13 @@ Feature: Semantic check about a debt position
     Given a random iupd
     When the debt position using segregation codes is created
     Then the debt position gets the status code 201
-    And the organization gets the nav value after creation
+    And the organization gets the nav value from "payment_option" after creation
     When the debt position using segregation codes is updated
     Then the organization gets the update status code 200
-    And the organization gets the nav value after update
+    And the organization gets the nav value from "payment_option" after update
     When the organization gets the debt position using segregation codes
     Then the company name is "Testing S.p.A."
-    And the organization get the nav value
+    And the organization get the nav value from "payment_option"
     When the organization gets the list of debt positions using segregation codes
     Then we get the status code 200
     And the debt positions list size is greater than 1

@@ -1,5 +1,6 @@
 const assert = require("assert");
 const {toLog} = require("../utility/helpers");
+const {log}=require("console");
 
 const auxDigit = process.env.aux_digit
 
@@ -53,8 +54,12 @@ async function assertNotificationFeeUpdatedDateNotificationFee(createdDebtPositi
 	assert.notEqual(lastUpdatedDateNotificationFee, null);
 }
 
-async function assertNav(debtPosition, response) {
+async function assertNav(debtPosition, response, fromComponent = "payment_option") {
     // nav = auxDigit + iuv
+    if (fromComponent === "installment") {
+        assert.strictEqual(response.paymentOption[0].installments[0].nav, auxDigit + debtPosition.paymentOption[0].installments[0].iuv);
+        return;
+    }
     assert.strictEqual(response.paymentOption[0].nav, auxDigit + debtPosition.paymentOption[0].iuv);
 }
 
