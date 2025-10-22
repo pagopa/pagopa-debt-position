@@ -42,4 +42,13 @@ public interface PaymentOptionRepository
   int updatePaymentOptionSendSync(
           @Param(value = "organization") String organizationFiscalCode,
           @Param(value = "noticeNumber") String noticeNumber);
+  
+   // lock for update to avoid race condition with cross-payment cases
+   @Query(value = """ 
+			select *
+			from payment_option
+			where payment_position_id = :ppId
+			for update
+			""", nativeQuery = true)
+   List<PaymentOption> lockAllByPaymentPositionId(@Param("ppId") Long ppId);
 }

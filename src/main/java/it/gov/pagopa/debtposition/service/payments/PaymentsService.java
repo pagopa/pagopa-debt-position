@@ -28,7 +28,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +41,6 @@ public class PaymentsService {
   private final NodeClient nodeClient;
   private final SendClient sendClient;
 
-  @Autowired
   public PaymentsService(
       PaymentPositionRepository paymentPositionRepository,
       PaymentOptionRepository paymentOptionRepository,
@@ -77,7 +75,7 @@ public class PaymentsService {
     // PaymentPosition used when converting PaymentOption to POWithDebtor
     DebtPositionStatus.validityCheckAndUpdate(paymentOption);
     DebtPositionStatus.expirationCheckAndUpdate(paymentOption);
-    DebtPositionStatus.checkAlreadyPaidInstallments(paymentOption, nav);
+    DebtPositionStatus.checkAlreadyPaidInstallments(paymentOption, nav, paymentOptionRepository);
 
     // Synchronous update of notification fees
     if (paymentOption.getSendSync()) {
@@ -117,6 +115,13 @@ public class PaymentsService {
     DebtPositionStatus.validityCheckAndUpdate(paymentPositionToPay);
     DebtPositionValidation.checkPaymentPositionPayability(paymentPositionToPay, nav);
 
+    PaymentOption poToPay = paymentPositionToPay.getPaymentOption().stream()
+    	    .filter(po -> nav.equals(po.getNav()) || nav.equals(po.getIuv()))
+    	    .findFirst()
+    	    .orElseThrow(() -> new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav));
+    
+    DebtPositionStatus.checkAlreadyPaidInstallments(poToPay, nav, paymentOptionRepository);
+    
     return this.executePaymentFlow(paymentPositionToPay, nav, paymentOptionModel);
   }
 
@@ -134,6 +139,14 @@ public class PaymentsService {
     }
 
     DebtPositionValidation.checkPaymentPositionAccountability(ppToReport.get(), iuv, transferId);
+    
+    PaymentOption poToReport = ppToReport.get().getPaymentOption().stream()
+    	    .filter(po -> iuv.equals(po.getIuv()))
+    	    .findFirst()
+    	    .orElseThrow(() -> new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, iuv));
+    
+    // It will not do anything because the report operates on a PO already paid, but it is checked for consistency
+    DebtPositionStatus.checkAlreadyPaidInstallments(poToReport, poToReport.getNav(), paymentOptionRepository);
 
     return this.updateTransferStatus(ppToReport.get(), iuv, transferId);
   }
