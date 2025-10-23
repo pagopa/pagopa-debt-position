@@ -134,7 +134,7 @@ class DebtPositionControllerV3Test {
     String uri = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
     mvc.perform(
             post(uri)
-                .content(TestUtil.toJson(createPaymentPositionV3(1, 1)))
+                .content(TestUtil.toJson(createPaymentPositionV3(numberOfPO, numberOfInstallment)))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
