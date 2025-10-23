@@ -111,7 +111,7 @@ jobs:
   db_migration:
     name: DB migration
     needs: [ setup, release ]
-    if: ${{ always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && inputs.db_migration }}
+    if: ${{ always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && inputs.db_migration && (needs.setup.outputs.environment == 'all' || matrix.environment == needs.setup.outputs.environment) }}
     strategy:
       matrix:
         environment: [ dev, uat, prod ]
