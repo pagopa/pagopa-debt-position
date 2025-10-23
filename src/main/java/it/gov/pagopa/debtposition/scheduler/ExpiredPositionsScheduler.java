@@ -3,6 +3,7 @@ package it.gov.pagopa.debtposition.scheduler;
 import static it.gov.pagopa.debtposition.util.SchedulerUtils.*;
 
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.repository.InstallmentRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -26,8 +27,16 @@ public class ExpiredPositionsScheduler {
   private static final String LOG_BASE_HEADER_INFO =
       "[OperationType: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
   private static final String CRON_JOB = "CRON JOB";
-  @Autowired private PaymentPositionRepository paymentPositionRepository;
+  public static final String METHOD = "changeDebtPositionStatusToExpired";
+  private final PaymentPositionRepository paymentPositionRepository;
+  private final InstallmentRepository installmentRepository;
   private Thread threadOfExecution;
+
+  @Autowired
+  ExpiredPositionsScheduler(PaymentPositionRepository paymentPositionRepository, InstallmentRepository installmentRepository){
+    this.paymentPositionRepository = paymentPositionRepository;
+    this.installmentRepository = installmentRepository;
+  }
 
   @Scheduled(cron = "${cron.job.schedule.expression.valid.status}")
   @Async
@@ -44,6 +53,8 @@ public class ExpiredPositionsScheduler {
     int numAffectedRows =
         paymentPositionRepository.updatePaymentPositionStatusToValid(
             currentDate, DebtPositionStatus.VALID);
+    installmentRepository.updateInstallmentStatusToUnpaid(currentDate);
+
     log.debug(
         String.format(
             LOG_BASE_HEADER_INFO,
@@ -57,13 +68,13 @@ public class ExpiredPositionsScheduler {
   @Async
   @Transactional
   public void changeDebtPositionStatusToExpired() {
-    updateMDCForStartExecution("changeDebtPositionStatusToExpired", "");
+    updateMDCForStartExecution(METHOD, "");
     try {
       log.debug(
           String.format(
               LOG_BASE_HEADER_INFO,
               CRON_JOB,
-              "changeDebtPositionStatusToExpired",
+                  METHOD,
               "Running at "
                   + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
                       .format(LocalDateTime.now())));
@@ -71,11 +82,13 @@ public class ExpiredPositionsScheduler {
       int numAffectedRows =
           paymentPositionRepository.updatePaymentPositionStatusToExpired(
               currentDate, DebtPositionStatus.EXPIRED);
+      installmentRepository.updateInstallmentStatusToExpired(currentDate);
+
       log.debug(
           String.format(
               LOG_BASE_HEADER_INFO,
               CRON_JOB,
-              "changeDebtPositionStatusToExpired",
+                  METHOD,
               "Number of updated rows " + numAffectedRows));
       this.threadOfExecution = Thread.currentThread();
       updateMDCForEndExecution();
