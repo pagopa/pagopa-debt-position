@@ -56,6 +56,7 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
       ServiceType serviceType) {
     // flip model to entity
     PaymentPosition debtPosition = ObjectMapperUtils.map(ppInputModelV3, PaymentPosition.class);
+    debtPosition.setOrganizationFiscalCode(organizationFiscalCode);
     debtPosition.setServiceType(serviceType);
 
     ArrayList<String> segCodes =

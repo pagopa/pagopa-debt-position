@@ -248,6 +248,7 @@ public class PaymentPositionCRUDService {
 
             // flip model to entity
             ObjectMapperUtils.map(ppModel, ppToUpdate);
+            ppToUpdate.setOrganizationFiscalCode(organizationFiscalCode);
 
             // update amounts adding notification fee
             updateAmounts(organizationFiscalCode, ppToUpdate);
@@ -517,7 +518,7 @@ public class PaymentPositionCRUDService {
 
         for (PaymentOption po : pp.getPaymentOption()) {
             // Make sure there isn't reserved metadata
-            // TODO
+            // TODO metadata
 //      for (PaymentOptionMetadata pom : po.getPaymentOptionMetadata()) {
 //        if (pom.getKey().equals(NOTIFICATION_FEE_METADATA_KEY)) {
 //          throw new AppException(
