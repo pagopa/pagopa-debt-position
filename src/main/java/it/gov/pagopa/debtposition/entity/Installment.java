@@ -6,6 +6,8 @@ import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -114,8 +116,9 @@ public class Installment implements Serializable {
     @Transient
     private boolean paymentInProgress = false;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private String metadata;
+    private List<Metadata> metadata;
 
     @ManyToOne(
             targetEntity = PaymentPosition.class,

@@ -1,15 +1,14 @@
 package it.gov.pagopa.debtposition.mapper;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
-import it.gov.pagopa.debtposition.exception.AppError;
-import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.pd.DebtorModel;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
+import it.gov.pagopa.debtposition.model.pd.TransferMetadataModel;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
+import it.gov.pagopa.debtposition.model.v3.InstallmentMetadataModel;
 import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
@@ -93,11 +92,9 @@ public class ConvertPPEntityToModelV3
         } else {
             installmentModel.setTransfer(new ArrayList<>());
         }
-        try {
-            installmentModel.setInstallmentMetadata(ObjectMapperUtils.readValueList(installment.getMetadata()));
-        } catch (JsonProcessingException e) {
-            throw new AppException(AppError.UNPROCESSABLE_ENTITY);
-        }
+
+        installmentModel.setInstallmentMetadata(ObjectMapperUtils.mapAll(installment.getMetadata(), InstallmentMetadataModel.class));
+
 
         return installmentModel;
     }
@@ -127,11 +124,8 @@ public class ConvertPPEntityToModelV3
         }
 
         destination.setCompanyName(t.getInstallment().getPaymentPosition().getCompanyName());
-        try {
-            destination.setTransferMetadata(ObjectMapperUtils.readValueList(t.getMetadata()));
-        } catch (JsonProcessingException e) {
-            throw new AppException(AppError.UNPROCESSABLE_ENTITY);
-        }
+
+        destination.setTransferMetadata(ObjectMapperUtils.mapAll(t.getMetadata(), TransferMetadataModel.class));
 
         return destination;
     }

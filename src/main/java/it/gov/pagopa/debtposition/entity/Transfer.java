@@ -6,9 +6,12 @@ import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Builder(toBuilder = true)
 @Getter
@@ -87,8 +90,9 @@ public class Transfer implements Serializable {
     @Column(name = "last_updated_date")
     private LocalDateTime lastUpdatedDate;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private String metadata;
+    private List<Metadata> metadata;
 
     @ManyToOne(
             targetEntity = Installment.class,

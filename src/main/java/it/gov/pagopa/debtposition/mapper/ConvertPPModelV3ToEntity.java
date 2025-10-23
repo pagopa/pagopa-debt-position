@@ -1,16 +1,9 @@
 package it.gov.pagopa.debtposition.mapper;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import it.gov.pagopa.debtposition.entity.Installment;
-import it.gov.pagopa.debtposition.entity.PaymentOption;
-import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import it.gov.pagopa.debtposition.entity.Transfer;
-import it.gov.pagopa.debtposition.exception.AppError;
-import it.gov.pagopa.debtposition.exception.AppException;
+import it.gov.pagopa.debtposition.entity.*;
 import it.gov.pagopa.debtposition.model.enumeration.OptionType;
-import it.gov.pagopa.debtposition.model.pd.DebtorModel;
-import it.gov.pagopa.debtposition.model.pd.Stamp;
-import it.gov.pagopa.debtposition.model.pd.TransferModel;
+import it.gov.pagopa.debtposition.model.pd.*;
+import it.gov.pagopa.debtposition.model.v3.InstallmentMetadataModel;
 import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
@@ -30,7 +23,6 @@ public class ConvertPPModelV3ToEntity
         PaymentPositionModelV3 source = context.getSource();
         PaymentPosition destination =
                 context.getDestination() != null ? context.getDestination() : new PaymentPosition();
-
         mapAndUpdatePaymentPosition(source, destination);
 
         return destination;
@@ -102,7 +94,7 @@ public class ConvertPPModelV3ToEntity
                 destinationPo = filteredDestinationPOs.get(0);
             }
             for (InstallmentModel sourceInstallment : sourcePO.getInstallments()) {
-                if(sourceInstallment.getIuv() != null){
+                if (sourceInstallment.getIuv() != null) {
                     List<Installment> filteredDestinationInstallment = destinationPo.getInstallment().stream().filter(inst -> inst.getIuv().equals(sourceInstallment.getIuv())).toList();
                     Installment destinationInstallment;
                     if (filteredDestinationInstallment.isEmpty()) {
@@ -116,7 +108,7 @@ public class ConvertPPModelV3ToEntity
                 }
             }
 
-            if(!destinationPo.getInstallment().isEmpty()){
+            if (!destinationPo.getInstallment().isEmpty()) {
                 mapAndUpdatePaymentOption(sourcePO, destinationPo, destination);
             }
         }
@@ -168,11 +160,9 @@ public class ConvertPPModelV3ToEntity
         destinationInstallment.setPaymentOption(destinationPo);
         destinationInstallment.setPaymentPosition(destination);
 
-        try {
-            destinationInstallment.setMetadata(ObjectMapperUtils.writeValueAsString(source.getInstallmentMetadata()));
-        } catch (JsonProcessingException e) {
-            throw new AppException(AppError.UNPROCESSABLE_ENTITY);
-        }
+        List<InstallmentMetadataModel> metadata = source.getInstallmentMetadata();
+        destinationInstallment.setMetadata(metadata == null || metadata.isEmpty() ?
+                new ArrayList<>() : ObjectMapperUtils.mapAll(metadata, Metadata.class));
 
         mapAndUpdateTransfers(source, destinationInstallment);
     }
@@ -220,11 +210,12 @@ public class ConvertPPModelV3ToEntity
             destinationTr.setProvincialResidence(stamp.getProvincialResidence());
             destinationTr.setStampType(stamp.getStampType());
         }
-        try {
-            destinationTr.setMetadata(ObjectMapperUtils.writeValueAsString(source.getTransferMetadata()));
-        } catch (JsonProcessingException e) {
-            throw new AppException(AppError.UNPROCESSABLE_ENTITY);
-        }
+
+        destinationTr.setMetadata(ObjectMapperUtils.mapAll(source.getTransferMetadata(), Metadata.class));
+
+        List<TransferMetadataModel> metadata = source.getTransferMetadata();
+        destinationTr.setMetadata(metadata == null || metadata.isEmpty() ?
+                new ArrayList<>() : ObjectMapperUtils.mapAll(metadata, Metadata.class));
 
         destinationTr.setInstallment(destinationInst);
     }

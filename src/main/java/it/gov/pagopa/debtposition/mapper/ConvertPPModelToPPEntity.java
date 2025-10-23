@@ -1,17 +1,8 @@
 package it.gov.pagopa.debtposition.mapper;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import it.gov.pagopa.debtposition.entity.Installment;
-import it.gov.pagopa.debtposition.entity.PaymentOption;
-import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import it.gov.pagopa.debtposition.entity.Transfer;
-import it.gov.pagopa.debtposition.exception.AppError;
-import it.gov.pagopa.debtposition.exception.AppException;
+import it.gov.pagopa.debtposition.entity.*;
 import it.gov.pagopa.debtposition.model.enumeration.OptionType;
-import it.gov.pagopa.debtposition.model.pd.PaymentOptionModel;
-import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
-import it.gov.pagopa.debtposition.model.pd.Stamp;
-import it.gov.pagopa.debtposition.model.pd.TransferModel;
+import it.gov.pagopa.debtposition.model.pd.*;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import jakarta.validation.constraints.NotNull;
 import org.modelmapper.Converter;
@@ -169,14 +160,13 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
         destinationInstallment.setDueDate(sourcePO.getDueDate());
         destinationInstallment.setFee(sourcePO.getFee());
         destinationInstallment.setLastUpdatedDate(LocalDateTime.now());
-        try {
-            destinationInstallment.setMetadata(ObjectMapperUtils.writeValueAsString(sourcePO.getPaymentOptionMetadata()));
-        } catch (JsonProcessingException e) {
-            throw new AppException(AppError.UNPROCESSABLE_ENTITY);
-        }
+
+        List<PaymentOptionMetadataModel> metadata = sourcePO.getPaymentOptionMetadata();
+        destinationInstallment.setMetadata(metadata == null || metadata.isEmpty()
+                ? new ArrayList<>() : ObjectMapperUtils.mapAll(metadata, Metadata.class));
 
         List<TransferModel> sourceTransferFiltered = sourcePO.getTransfer() == null ? List.of() : sourcePO.getTransfer().stream().filter(Objects::nonNull).toList();
-        if(!sourceTransferFiltered.isEmpty()){
+        if (!sourceTransferFiltered.isEmpty()) {
             List<String> sourceTransferIdList = new ArrayList<>(sourceTransferFiltered.stream().map(TransferModel::getIdTransfer).toList());
 
             // DELETE orphans Transfers
@@ -220,10 +210,9 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
             transferDestination.setProvincialResidence(stamp.getProvincialResidence());
             transferDestination.setStampType(stamp.getStampType());
         }
-        try {
-            transferDestination.setMetadata(ObjectMapperUtils.writeValueAsString(source.getTransferMetadata()));
-        } catch (JsonProcessingException e) {
-            throw new AppException(AppError.UNPROCESSABLE_ENTITY);
-        }
+
+        List<TransferMetadataModel> metadata = source.getTransferMetadata();
+        transferDestination.setMetadata(metadata == null || metadata.isEmpty() ?
+                new ArrayList<>() : ObjectMapperUtils.mapAll(metadata, Metadata.class));
     }
 }

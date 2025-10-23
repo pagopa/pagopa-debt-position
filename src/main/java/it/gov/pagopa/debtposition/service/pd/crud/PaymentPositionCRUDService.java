@@ -483,7 +483,7 @@ public class PaymentPositionCRUDService {
             String organizationFiscalCode,
             boolean toPublish,
             List<String> segCodes,
-            String... action) throws JsonProcessingException {
+            String... action) {
 
         if (segCodes != null && !isAuthorizedBySegregationCode(pp, segCodes)) {
             throw new AppException(
@@ -518,9 +518,8 @@ public class PaymentPositionCRUDService {
         for (PaymentOption po : pp.getPaymentOption()) {
             for (Installment inst : po.getInstallment()) {
                 // Make sure there isn't reserved metadata
-                List<HashMap<String, String>> poMetadata = ObjectMapperUtils.readValueList(inst.getMetadata());
-                for (HashMap<String, String> pom : poMetadata) {
-                    if (pom.get(NOTIFICATION_FEE_METADATA_KEY) != null) {
+                for (Metadata pom : inst.getMetadata()) {
+                    if (pom.getKey().equals(NOTIFICATION_FEE_METADATA_KEY)) {
                         throw new AppException(
                                 AppError.PAYMENT_OPTION_RESERVED_METADATA, organizationFiscalCode, pp.getIupd());
                     }
@@ -562,7 +561,7 @@ public class PaymentPositionCRUDService {
             String organizationFiscalCode,
             boolean toPublish,
             List<String> segCodes,
-            String... action) throws JsonProcessingException {
+            String... action) {
 
         PaymentPosition pp = SerializationUtils.clone(debtPosition);
         return checkDebtPositionToUpdate(pp, organizationFiscalCode, toPublish, segCodes, action);
