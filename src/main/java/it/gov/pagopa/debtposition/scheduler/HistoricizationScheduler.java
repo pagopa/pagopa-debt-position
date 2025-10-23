@@ -85,11 +85,11 @@ public class HistoricizationScheduler {
     @Value("${azure.archive.storage.batch.operation.size:100}")
     private short maxBatchOperationSize;
 
-    @Autowired
     private PaymentPositionRepository paymentPositionRepository;
     @PersistenceUnit
     private EntityManagerFactory emf;
 
+    @Autowired
     public HistoricizationScheduler(PaymentPositionRepository paymentPositionRepository) {
         super();
         this.paymentPositionRepository = paymentPositionRepository;
@@ -102,7 +102,7 @@ public class HistoricizationScheduler {
             lockAtLeastFor = "${cron.job.schedule.history.shedlock.lockatleastfor}")
     public void manageDebtPositionsToHistoricize()
             throws JsonProcessingException, InvalidKeyException, URISyntaxException {
-        updateMDCForStartExecution("manageDebtPositionsToHistoricize", "");
+        updateMDCForStartExecution(METHOD, "");
         try {
             log.debug(
                     String.format(
@@ -194,7 +194,7 @@ public class HistoricizationScheduler {
         var transactionActions = new ArrayList<TableTransactionAction>();
 
         short numOfBatchOperations = 0;
-        try { // TODO VERIFY
+        try {
             for (int i = 0; i < organizationPpList.size(); i++) {
                 PaymentPosition pp = organizationPpList.get(i);
                 for (PaymentOption po : pp.getPaymentOption()) {

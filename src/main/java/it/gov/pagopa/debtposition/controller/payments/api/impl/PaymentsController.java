@@ -93,7 +93,6 @@ public class PaymentsController implements IPaymentsController {
         // Convert entity to model
         PaidPaymentOptionModel paidPaymentOptionModel = ObjectMapperUtils.map(paidInstallment, PaidPaymentOptionModel.class);
 
-        // TODO change error
         if (paidPaymentOptionModel == null) {
             throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, nav);
         }
@@ -187,7 +186,6 @@ public class PaymentsController implements IPaymentsController {
         // Convert entity to model
         PaymentOptionModelResponse paymentOptionModelResponse = ObjectMapperUtils.map(paidInstallment, PaymentOptionModelResponse.class);
 
-        // TODO change error
         if (paymentOptionModelResponse == null) {
             throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, nav);
         }

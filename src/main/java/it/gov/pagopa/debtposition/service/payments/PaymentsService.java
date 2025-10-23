@@ -69,7 +69,7 @@ public class PaymentsService {
                 installmentRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
                         organizationFiscalCode, nav, organizationFiscalCode, nav);
 
-        if (installmentOpt.isEmpty()) { // TODO change error
+        if (installmentOpt.isEmpty()) {
             throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav);
         }
 
@@ -167,8 +167,7 @@ public class PaymentsService {
     }
 
     @Transactional
-    public Installment updateNotificationFee( // TODO verify errors
-                                              @NotBlank String organizationFiscalCode, @NotBlank String nav, Long notificationFeeAmount) {
+    public Installment updateNotificationFee(@NotBlank String organizationFiscalCode, @NotBlank String nav, Long notificationFeeAmount) {
 
         // Check if exists a payment option with the passed IUV related to the organization
         // TODO #naviuv: temporary regression management: search by nav or iuv
