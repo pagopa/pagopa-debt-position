@@ -67,6 +67,7 @@ Given('GPD running', () => executeHealthCheckForGPD());
  */
 Given('a random iupd', async function () {
     iupd = randomIupd();
+    gpdSessionBundle.debtPosition.iupd = iupd;
     // precondition -> deletion possible dirty data
     await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd);
 });
