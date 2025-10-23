@@ -93,7 +93,7 @@
           "required" : false,
           "schema" : {
             "type" : "string",
-            "enum" : [ "DRAFT", "PUBLISHED", "VALID", "UNPAYABLE", "PARTIALLY_PAID", "PAID" ]
+            "enum" : [ "DRAFT", "PUBLISHED", "VALID", "PARTIALLY_PAID", "PAID", "REPORTED", "EXPIRED", "INVALID" ]
           }
         }, {
           "name" : "orderby",
@@ -1022,7 +1022,7 @@
           },
           "status" : {
             "type" : "string",
-            "enum" : [ "UNPAID", "PAID", "PARTIALLY_REPORTED", "REPORTED", "UNPAYABLE", "EXPIRED" ],
+            "enum" : [ "DRAFT", "UNPAID", "PAID", "PARTIALLY_REPORTED", "REPORTED", "UNPAYABLE", "INVALID", "EXPIRED" ],
             "readOnly" : true
           },
           "transfer" : {
@@ -1112,7 +1112,7 @@
           },
           "status" : {
             "type" : "string",
-            "enum" : [ "DRAFT", "PUBLISHED", "VALID", "UNPAYABLE", "PARTIALLY_PAID", "PAID" ],
+            "enum" : [ "DRAFT", "PUBLISHED", "VALID", "PARTIALLY_PAID", "PAID", "REPORTED", "EXPIRED", "INVALID" ],
             "readOnly" : true
           },
           "paymentOption" : {
@@ -1306,7 +1306,7 @@
           },
           "status" : {
             "type" : "string",
-            "enum" : [ "UNPAID", "PAID", "PARTIALLY_REPORTED", "REPORTED", "UNPAYABLE", "EXPIRED" ]
+            "enum" : [ "DRAFT", "UNPAID", "PAID", "PARTIALLY_REPORTED", "REPORTED", "UNPAYABLE", "INVALID", "EXPIRED" ]
           },
           "lastUpdatedDate" : {
             "type" : "string",
@@ -1410,7 +1410,7 @@
           },
           "status" : {
             "type" : "string",
-            "enum" : [ "DRAFT", "PUBLISHED", "VALID", "UNPAYABLE", "PARTIALLY_PAID", "PAID" ]
+            "enum" : [ "DRAFT", "PUBLISHED", "VALID", "PARTIALLY_PAID", "PAID", "REPORTED", "EXPIRED", "INVALID" ]
           },
           "lastUpdatedDate" : {
             "type" : "string",

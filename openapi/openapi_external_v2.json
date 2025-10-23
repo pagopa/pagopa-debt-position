@@ -823,7 +823,7 @@
           },
           "status" : {
             "type" : "string",
-            "enum" : [ "DRAFT", "PUBLISHED", "VALID", "INVALID", "EXPIRED", "PARTIALLY_PAID", "PAID", "REPORTED" ],
+            "enum" : [ "DRAFT", "PUBLISHED", "VALID", "PARTIALLY_PAID", "PAID", "REPORTED", "EXPIRED", "INVALID" ],
             "readOnly" : true
           },
           "paymentOption" : {
@@ -1282,7 +1282,7 @@
           },
           "status" : {
             "type" : "string",
-            "enum" : [ "DRAFT", "PUBLISHED", "VALID", "INVALID", "EXPIRED", "PARTIALLY_PAID", "PAID", "REPORTED" ]
+            "enum" : [ "DRAFT", "PUBLISHED", "VALID", "PARTIALLY_PAID", "PAID", "REPORTED", "EXPIRED", "INVALID" ]
           },
           "lastUpdatedDate" : {
             "type" : "string",
