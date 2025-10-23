@@ -36,6 +36,7 @@ class ConvertPPModelToPPEntityTest {
     PaymentOptionModel poModel = new PaymentOptionModel();
     poModel.setAmount(10L);
     poModel.setIuv("123456IUV");
+    poModel.setIsPartialPayment(false);
     model.setPaymentOption(Collections.singletonList(poModel));
 
     ConvertPPModelToPPEntity mapper = new ConvertPPModelToPPEntity();
@@ -94,8 +95,6 @@ class ConvertPPModelToPPEntityTest {
     PaymentPosition entity = mapper.convert(context);
 
     assertNotNull(entity);
-    assertEquals("Mario Rossi", entity.getPaymentOption().get(0).getDebtorFullName());
-    assertEquals("Roma", entity.getPaymentOption().get(0).getDebtorCity());
     assertEquals(0, entity.getPaymentOption().size());
   }
 
@@ -119,6 +118,7 @@ class ConvertPPModelToPPEntityTest {
     PaymentOptionModel poModel = new PaymentOptionModel();
     poModel.setAmount(10L);
     poModel.setIuv("123456IUV");
+    poModel.setIsPartialPayment(false);
     poModel.setTransfer(null);
     poModel.setPaymentOptionMetadata(null);
     model.setPaymentOption(Collections.singletonList(poModel));
@@ -172,6 +172,7 @@ class ConvertPPModelToPPEntityTest {
     PaymentOptionModel poModel = new PaymentOptionModel();
     poModel.setAmount(10L);
     poModel.setIuv("123456IUV");
+    poModel.setIsPartialPayment(false);
 
     TransferModel transferModel = new TransferModel();
     transferModel.setIdTransfer("1");

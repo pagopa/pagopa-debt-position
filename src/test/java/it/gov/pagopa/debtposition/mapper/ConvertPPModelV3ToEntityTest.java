@@ -62,7 +62,8 @@ class ConvertPPModelV3ToEntityTest {
     assertNotNull(entity);
     assertEquals("Comune", entity.getCompanyName());
 
-    assertEquals(0, entity.getPaymentOption().size());
+    assertEquals(1, entity.getPaymentOption().size());
+    assertEquals(0, entity.getPaymentOption().get(0).getInstallment().size());
   }
 
   @Test
