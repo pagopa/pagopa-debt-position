@@ -1,9 +1,7 @@
 package it.gov.pagopa.debtposition.service.pd.crud;
 
-import it.gov.pagopa.debtposition.entity.Installment;
-import it.gov.pagopa.debtposition.entity.PaymentOption;
-import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import it.gov.pagopa.debtposition.entity.Transfer;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import it.gov.pagopa.debtposition.entity.*;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.exception.ValidationException;
@@ -43,6 +41,7 @@ import java.time.ZoneOffset;
 import java.util.*;
 
 import static it.gov.pagopa.debtposition.service.payments.PaymentsService.findPrimaryTransfer;
+import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
 import static org.springframework.data.jpa.domain.Specification.allOf;
 
 @Service
@@ -128,7 +127,7 @@ public class PaymentPositionCRUDService {
         Optional<PaymentPosition> pp =
                 paymentPositionRepository.findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionInstallmentIuv(organizationFiscalCode, iuv);
 
-        if (pp.isEmpty()) { // TODO change error
+        if (pp.isEmpty()) {
             throw new AppException(AppError.PAYMENT_OPTION_IUV_NOT_FOUND, organizationFiscalCode, iuv);
         }
 
@@ -484,7 +483,7 @@ public class PaymentPositionCRUDService {
             String organizationFiscalCode,
             boolean toPublish,
             List<String> segCodes,
-            String... action) {
+            String... action) throws JsonProcessingException {
 
         if (segCodes != null && !isAuthorizedBySegregationCode(pp, segCodes)) {
             throw new AppException(
@@ -517,22 +516,21 @@ public class PaymentPositionCRUDService {
         pp.setServiceType(pp.getServiceType());
 
         for (PaymentOption po : pp.getPaymentOption()) {
-            // Make sure there isn't reserved metadata
-            // TODO metadata
-//      for (PaymentOptionMetadata pom : po.getPaymentOptionMetadata()) {
-//        if (pom.getKey().equals(NOTIFICATION_FEE_METADATA_KEY)) {
-//          throw new AppException(
-//              AppError.PAYMENT_OPTION_RESERVED_METADATA, organizationFiscalCode, pp.getIupd());
-//        }
-//      }
-// TODO verify mapping
             for (Installment inst : po.getInstallment()) {
+                // Make sure there isn't reserved metadata
+                List<Metadata> poMetadata = ObjectMapperUtils.readValueList(inst.getMetadata());
+                for (Metadata pom : poMetadata) {
+                    if (pom.getKey().equals(NOTIFICATION_FEE_METADATA_KEY)) {
+                        throw new AppException(
+                                AppError.PAYMENT_OPTION_RESERVED_METADATA, organizationFiscalCode, pp.getIupd());
+                    }
+                }
+
                 inst.setOrganizationFiscalCode(organizationFiscalCode);
                 inst.setInsertedDate(Objects.requireNonNullElse(pp.getInsertedDate(), currentDate));
                 inst.setLastUpdatedDate(currentDate);
                 inst.setStatus(InstallmentStatus.DRAFT);
                 inst.setPaymentPosition(pp);
-                // po.getPaymentOptionMetadata().forEach(pom -> pom.setPaymentOption(po));
                 inst.setNav(Optional.ofNullable(inst.getNav()).orElse(auxDigit + inst.getIuv()));
 
                 for (Transfer t : inst.getTransfer()) {
@@ -543,7 +541,6 @@ public class PaymentPositionCRUDService {
                     t.setLastUpdatedDate(currentDate);
                     t.setStatus(TransferStatus.T_UNREPORTED);
                     t.setInstallment(inst);
-                    // TODO t.getTransferMetadata().forEach(tm -> tm.setTransfer(t));
                 }
                 inst.setPaymentOption(po);
             }
@@ -565,7 +562,7 @@ public class PaymentPositionCRUDService {
             String organizationFiscalCode,
             boolean toPublish,
             List<String> segCodes,
-            String... action) {
+            String... action) throws JsonProcessingException {
 
         PaymentPosition pp = SerializationUtils.clone(debtPosition);
         return checkDebtPositionToUpdate(pp, organizationFiscalCode, toPublish, segCodes, action);
