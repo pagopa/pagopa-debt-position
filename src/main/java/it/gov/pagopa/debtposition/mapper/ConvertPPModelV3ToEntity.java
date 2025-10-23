@@ -1,14 +1,20 @@
 package it.gov.pagopa.debtposition.mapper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.exception.AppError;
+import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.enumeration.OptionType;
-import it.gov.pagopa.debtposition.model.pd.*;
+import it.gov.pagopa.debtposition.model.pd.DebtorModel;
+import it.gov.pagopa.debtposition.model.pd.Stamp;
+import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
+import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
@@ -41,11 +47,11 @@ public class ConvertPPModelV3ToEntity
 
         // TODO verify
         List<PaymentOptionModelV3> sourcePaymentOptionList = source.getPaymentOption();
-        if(sourcePaymentOptionList != null && !sourcePaymentOptionList.isEmpty()){
+        if (sourcePaymentOptionList != null && !sourcePaymentOptionList.isEmpty()) {
             List<InstallmentModel> sourceInstallment = sourcePaymentOptionList.get(0).getInstallments();
-            if(sourceInstallment != null && !sourceInstallment.isEmpty()){
+            if (sourceInstallment != null && !sourceInstallment.isEmpty()) {
                 List<TransferModel> sourceTransferList = sourceInstallment.get(0).getTransfer();
-                if(sourceTransferList != null && !sourceTransferList.isEmpty()){
+                if (sourceTransferList != null && !sourceTransferList.isEmpty()) {
                     destination.setOrganizationFiscalCode(sourceTransferList.get(0).getOrganizationFiscalCode());
                 }
             }
@@ -86,21 +92,21 @@ public class ConvertPPModelV3ToEntity
             destinationPo.getInstallment().removeAll(installmentsToDelete);
             if (destinationPo.getInstallment().isEmpty()) {
                 paymentOptionsToDelete.add(destinationPo);
-            } else if(destinationPo.getInstallment().size() == 1){
+            } else if (destinationPo.getInstallment().size() == 1) {
                 destinationPo.setOptionType(OptionType.OPZIONE_UNICA);
             }
         }
-        if(!paymentOptionsToDelete.isEmpty()){
+        if (!paymentOptionsToDelete.isEmpty()) {
             destination.getPaymentOption().removeAll(paymentOptionsToDelete);
         }
 
         // UPDATE or CREATE POs
-        for(PaymentOptionModelV3 sourcePO : source.getPaymentOption()){
+        for (PaymentOptionModelV3 sourcePO : source.getPaymentOption()) {
             List<String> sourceIuvList = sourcePO.getInstallments().stream().map(InstallmentModel::getIuv).toList();
             List<PaymentOption> filteredDestinationPOs = destination.getPaymentOption().stream().filter(po -> po.getInstallment().stream().anyMatch(inst -> sourceIuvList.contains(inst.getIuv()))).toList();
 
             PaymentOption destinationPo;
-            if(filteredDestinationPOs.isEmpty()){
+            if (filteredDestinationPOs.isEmpty()) {
                 destinationPo = new PaymentOption();
                 destination.getPaymentOption().add(destinationPo);
             } else {
@@ -109,7 +115,7 @@ public class ConvertPPModelV3ToEntity
             for (InstallmentModel sourceInstallment : sourcePO.getInstallments()) {
                 List<Installment> filteredDestinationInstallment = destinationPo.getInstallment().stream().filter(inst -> inst.getIuv().equals(sourceInstallment.getIuv())).toList();
                 Installment destinationInstallment;
-                if(filteredDestinationInstallment.isEmpty()){
+                if (filteredDestinationInstallment.isEmpty()) {
                     destinationInstallment = new Installment();
                     destinationPo.getInstallment().add(destinationInstallment);
                 } else {
@@ -124,7 +130,7 @@ public class ConvertPPModelV3ToEntity
     }
 
     /**
-     * @param source      the input model
+     * @param source        the input model
      * @param destinationPo the output entity
      */
     private void mapAndUpdatePaymentOption(
@@ -152,6 +158,7 @@ public class ConvertPPModelV3ToEntity
         destinationPo.setOptionType(source.getInstallments().size() > 1 ? OptionType.OPZIONE_RATEALE : OptionType.OPZIONE_UNICA);
         destinationPo.setRetentionDate(source.getRetentionDate());
     }
+
     /**
      * @param source      the input model
      * @param destination the output entity
@@ -168,8 +175,13 @@ public class ConvertPPModelV3ToEntity
         destinationInstallment.setPaymentOption(destinationPo);
         destinationInstallment.setPaymentPosition(destination);
 
+        try {
+            destinationInstallment.setMetadata(ObjectMapperUtils.writeValueAsString(source.getInstallmentMetadata()));
+        } catch (JsonProcessingException e) {
+            throw new AppException(AppError.UNPROCESSABLE_ENTITY);
+        }
+
         mapAndUpdateTransfers(source, destinationInstallment);
-        // TODO METADATA mapAndUpdateOptionMetadata(source, destination);
     }
 
     private void mapAndUpdateTransfers(
@@ -215,77 +227,12 @@ public class ConvertPPModelV3ToEntity
             destinationTr.setProvincialResidence(stamp.getProvincialResidence());
             destinationTr.setStampType(stamp.getStampType());
         }
+        try {
+            destinationTr.setMetadata(ObjectMapperUtils.writeValueAsString(source.getTransferMetadata()));
+        } catch (JsonProcessingException e) {
+            throw new AppException(AppError.UNPROCESSABLE_ENTITY);
+        }
+
         destinationTr.setInstallment(destinationInst);
-
-        //TODO mapAndUpdateTransferMetadata(source, destinationTr);
     }
-
-//    private void mapAndUpdateOptionMetadata(
-//            InstallmentModel sourceInstallment, PaymentOption destination) {
-//        Map<String, PaymentOptionMetadata> managedPaymentOptionMetadataByKey =
-//                destination.getPaymentOptionMetadata().stream()
-//                        .collect(Collectors.toMap(PaymentOptionMetadata::getKey, po -> po));
-//
-//        List<InstallmentMetadataModel> sourcePaymentOptionMetadata =
-//                sourceInstallment.getInstallmentMetadata().stream().toList();
-//        List<PaymentOptionMetadata> metadataToRemove =
-//                new ArrayList<>(destination.getPaymentOptionMetadata());
-//
-//        if (sourcePaymentOptionMetadata != null) {
-//            for (InstallmentMetadataModel sourceMetadata : sourcePaymentOptionMetadata) {
-//                PaymentOptionMetadata managedMetadata =
-//                        managedPaymentOptionMetadataByKey.get(sourceMetadata.getKey());
-//
-//                if (managedMetadata != null) {
-//                    // UPDATE:
-//                    sourceMetadata.setValue(managedMetadata.getValue());
-//                    metadataToRemove.remove(managedMetadata);
-//                } else {
-//                    // CREATE:
-//                    PaymentOptionMetadata md =
-//                            PaymentOptionMetadata.builder()
-//                                    .key(sourceMetadata.getKey())
-//                                    .value(sourceMetadata.getValue())
-//                                    .paymentOption(destination)
-//                                    .build();
-//                    destination.getPaymentOptionMetadata().add(md);
-//                }
-//            }
-//        }
-//        // DELETE:the orphans metadata are removed
-//        destination.getPaymentOptionMetadata().removeAll(metadataToRemove);
-//    }
-//
-//    private void mapAndUpdateTransferMetadata(TransferModel source, Transfer destination) {
-//        Map<String, TransferMetadata> managedTransferMetadataByKey =
-//                destination.getTransferMetadata().stream()
-//                        .collect(Collectors.toMap(TransferMetadata::getKey, po -> po));
-//
-//        List<TransferMetadataModel> sourceTransferMetadata = source.getTransferMetadata();
-//        List<TransferMetadata> metadataToRemove = new ArrayList<>(destination.getTransferMetadata());
-//
-//        if (sourceTransferMetadata != null) {
-//            for (TransferMetadataModel sourceMetadata : sourceTransferMetadata) {
-//                TransferMetadata managedMetadata =
-//                        managedTransferMetadataByKey.get(sourceMetadata.getKey());
-//
-//                if (managedMetadata != null) {
-//                    // UPDATE:
-//                    sourceMetadata.setValue(managedMetadata.getValue());
-//                    metadataToRemove.remove(managedMetadata);
-//                } else {
-//                    // CREATE:
-//                    TransferMetadata md =
-//                            TransferMetadata.builder()
-//                                    .key(sourceMetadata.getKey())
-//                                    .value(sourceMetadata.getValue())
-//                                    .transfer(destination)
-//                                    .build();
-//                    destination.getTransferMetadata().add(md);
-//                }
-//            }
-//        }
-//        // DELETE:
-//        destination.getTransferMetadata().removeAll(metadataToRemove);
-//    }
 }

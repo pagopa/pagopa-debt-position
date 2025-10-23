@@ -1,9 +1,12 @@
 package it.gov.pagopa.debtposition.mapper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.exception.AppError;
+import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.enumeration.OptionType;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionModelResponse;
@@ -35,11 +38,11 @@ public class ConvertPPEntityToModelResponse
         destination.setPaymentDate(source.getPaymentDate());
         destination.setStatus(source.getStatus());
         destination.setLastUpdatedDate(source.getLastUpdatedDate());
-        
-        if(source.getPaymentOption() != null){
+
+        if (source.getPaymentOption() != null) {
             PaymentOption sourceFirstPO = source.getPaymentOption().get(0);
             destination.setType(sourceFirstPO.getDebtorType());
-   
+
             destination.setPaymentOption(convertPaymentOptions(source.getPaymentOption()));
         } else {
             destination.setPaymentOption(new ArrayList<>());
@@ -51,8 +54,8 @@ public class ConvertPPEntityToModelResponse
     private List<PaymentOptionModelResponse> convertPaymentOptions(List<PaymentOption> sourcePoList) {
         List<PaymentOptionModelResponse> destinationPoList = new ArrayList<>();
 
-        for(PaymentOption sourcePO : sourcePoList){
-            for(Installment sourceInst : sourcePO.getInstallment()){
+        for (PaymentOption sourcePO : sourcePoList) {
+            for (Installment sourceInst : sourcePO.getInstallment()) {
                 PaymentOptionModelResponse destinationPO = new PaymentOptionModelResponse();
 
                 destinationPO.setNav(sourceInst.getNav());
@@ -74,21 +77,25 @@ public class ConvertPPEntityToModelResponse
                 destinationPO.setIdFlowReporting(sourceInst.getFlowReportingId());
                 destinationPO.setStatus(ObjectMapperUtils.mapInstallmentStatusToPoStatus(sourceInst.getStatus()));
                 destinationPO.setLastUpdatedDate(sourceInst.getLastUpdatedDate());
+                try {
+                    destinationPO.setPaymentOptionMetadata(ObjectMapperUtils.readValueList(sourceInst.getMetadata()));
+                } catch (JsonProcessingException e) {
+                    throw new AppException(AppError.UNPROCESSABLE_ENTITY);
+                }
 
                 destinationPO.setTransfer(sourceInst.getTransfer().stream().map(this::convertTransfer).toList());
 
                 destinationPoList.add(destinationPO);
             }
         }
-        // TODO metadata
-
         return destinationPoList;
     }
 
     private TransferModelResponse convertTransfer(Transfer sourceTransfer) {
+        if (null == sourceTransfer) return null; // TODO VERIFY
+
         TransferModelResponse destination = new TransferModelResponse();
 
-        if (null == sourceTransfer) return destination;
         destination.setOrganizationFiscalCode(sourceTransfer.getOrganizationFiscalCode());
         destination.setCompanyName(sourceTransfer.getInstallment().getPaymentPosition().getCompanyName());
         destination.setIdTransfer(sourceTransfer.getTransferId());
@@ -112,13 +119,11 @@ public class ConvertPPEntityToModelResponse
         destination.setInsertedDate(sourceTransfer.getInsertedDate());
         destination.setStatus(sourceTransfer.getStatus());
         destination.setLastUpdatedDate(sourceTransfer.getLastUpdatedDate());
-        // TODO
-//    destination.setTransferMetadata(
-//        ObjectMapperUtils.mapAll(sourceTransfer.getTransferMetadata(), TransferMetadataModel.class));
-//
-//    List<TransferMetadataModel> transferMetadataModelResponses =
-//        convertTransferMetadata(sourceTransfer.getTransferMetadata());
-//    destination.setTransferMetadata(transferMetadataModelResponses);
+        try {
+            destination.setTransferMetadata(ObjectMapperUtils.readValueList(sourceTransfer.getMetadata()));
+        } catch (JsonProcessingException e) {
+            throw new AppException(AppError.UNPROCESSABLE_ENTITY);
+        }
 
         return destination;
     }

@@ -1,5 +1,8 @@
 package it.gov.pagopa.debtposition.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
@@ -28,6 +31,7 @@ import java.util.stream.Collectors;
 public class ObjectMapperUtils {
 
     private static final ModelMapper modelMapper;
+    private static final ObjectMapper objectMapper;
 
     private static final Converter<Transfer, Stamp> stampConverter =
             context -> {
@@ -46,6 +50,7 @@ public class ObjectMapperUtils {
      * ModelMapper#addMappings(PropertyMap)}
      */
     static {
+        objectMapper = new ObjectMapper();
         modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
@@ -112,6 +117,13 @@ public class ObjectMapperUtils {
         modelMapper
                 .createTypeMap(PaymentPosition.class, PaymentPositionModelV3.class)
                 .setConverter(converterV3PPEntityToModel);
+
+        // Transfer entity to transfer model response
+        Converter<Transfer, TransferModelResponse> convertTransferEntityToTransferModeResponse =
+                new ConvertTransferEntityToTransferModeResponse();
+        modelMapper
+                .createTypeMap(Transfer.class, TransferModelResponse.class)
+                .setConverter(convertTransferEntityToTransferModeResponse);
 
         // Add custom mapping from Transfer to TransferModel
         modelMapper.addMappings(
@@ -192,5 +204,18 @@ public class ObjectMapperUtils {
     public static <S, D> D map(final S source, D destination) {
         modelMapper.map(source, destination);
         return destination;
+    }
+
+    public static String writeValueAsString(Object source) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(source);
+    }
+
+    public static <T> List<T> readValueList(String source) throws JsonProcessingException {
+        source = source.replaceAll("\\\\+\"+", "\"");
+        int startIndex = source.indexOf("[");
+        int endIndex = source.indexOf("]");
+
+        return objectMapper.readValue(source.substring(startIndex, endIndex + 1), new TypeReference<>() {
+        });
     }
 }

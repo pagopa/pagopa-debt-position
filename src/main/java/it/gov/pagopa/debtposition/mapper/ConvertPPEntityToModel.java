@@ -1,14 +1,17 @@
 package it.gov.pagopa.debtposition.mapper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.exception.AppError;
+import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.enumeration.OptionType;
-import it.gov.pagopa.debtposition.model.pd.Stamp;
-import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
+import it.gov.pagopa.debtposition.model.pd.Stamp;
+import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
@@ -33,7 +36,7 @@ public class ConvertPPEntityToModel
         destination.setPaymentDate(source.getPaymentDate());
         destination.setStatus(source.getStatus());
 
-        if(source.getPaymentOption() != null){
+        if (source.getPaymentOption() != null) {
             PaymentOption sourceFirstPO = source.getPaymentOption().get(0);
             destination.setType(sourceFirstPO.getDebtorType());
             destination.setFiscalCode(sourceFirstPO.getDebtorFiscalCode());
@@ -60,8 +63,8 @@ public class ConvertPPEntityToModel
     private List<PaymentOptionModel> convertPaymentOptions(List<PaymentOption> sourcePoList) {
         List<PaymentOptionModel> destinationPoList = new ArrayList<>();
 
-        for(PaymentOption sourcePO : sourcePoList){
-            for(Installment sourceInst : sourcePO.getInstallment()){
+        for (PaymentOption sourcePO : sourcePoList) {
+            for (Installment sourceInst : sourcePO.getInstallment()) {
                 PaymentOptionModel destinationPO = new PaymentOptionModel();
 
                 destinationPO.setNav(sourceInst.getNav());
@@ -73,6 +76,11 @@ public class ConvertPPEntityToModel
                 destinationPO.setRetentionDate(sourcePO.getRetentionDate());
                 destinationPO.setFee(sourceInst.getFee());
                 destinationPO.setNotificationFee(sourceInst.getNotificationFee());
+                try {
+                    destinationPO.setPaymentOptionMetadata(ObjectMapperUtils.readValueList(sourceInst.getMetadata()));
+                } catch (JsonProcessingException e) {
+                    throw new AppException(AppError.UNPROCESSABLE_ENTITY);
+                }
 
                 destinationPO.setTransfer(sourceInst.getTransfer().stream().map(this::convertTransfer).toList());
 
@@ -84,9 +92,9 @@ public class ConvertPPEntityToModel
     }
 
     private TransferModel convertTransfer(Transfer t) {
-        TransferModel destination = new TransferModel();
+        if (null == t) return null; // TODO VERIFY
 
-        if (null == t) return destination;
+        TransferModel destination = new TransferModel();
 
         destination.setIdTransfer(t.getTransferId());
         destination.setAmount(t.getAmount());
@@ -108,14 +116,11 @@ public class ConvertPPEntityToModel
         }
 
         destination.setCompanyName(t.getInstallment().getPaymentPosition().getCompanyName());
-
-        // TODO
-//    destination.setTransferMetadata(
-//        ObjectMapperUtils.mapAll(t.getTransferMetadata(), TransferMetadataModel.class));
-//
-//    List<TransferMetadataModel> transferMetadataModelResponses =
-//        convertTransferMetadata(t.getTransferMetadata());
-//    destination.setTransferMetadata(transferMetadataModelResponses);
+        try {
+            destination.setTransferMetadata(ObjectMapperUtils.readValueList(t.getMetadata()));
+        } catch (JsonProcessingException e) {
+            throw new AppException(AppError.UNPROCESSABLE_ENTITY);
+        }
 
         return destination;
     }

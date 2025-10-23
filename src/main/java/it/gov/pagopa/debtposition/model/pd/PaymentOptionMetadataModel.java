@@ -3,12 +3,11 @@ package it.gov.pagopa.debtposition.model.pd;
 import java.io.Serializable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Model representing a metadata entry for a payment option.
+ * Model representing a metadata property for a installment.
  * <p>
  * This class is aligned with the PagoPA SANP specification
  * at:
@@ -26,11 +25,11 @@ public class PaymentOptionMetadataModel implements Serializable {
   /** generated serialVersionUID */
   private static final long serialVersionUID = 4575041445781686511L;
 
-  @NotBlank(message = "key is required")
-  @Size(max = 140, message = "key must not exceed 140 characters")
-  private String key;
+    @NotBlank(message = "key is required")
+    @Size(max = 140, message = "key must not exceed 140 characters")
+    private String key;
 
-  @NotBlank(message = "value is required")
-  @Size(max = 140, message = "value must not exceed 140 characters")
-  private String value;
+    @NotBlank(message = "value is required")
+    @Size(max = 140, message = "value must not exceed 140 characters")
+    private String value;
 }

@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
         },
         indexes = {
                 @Index(name = "idx_installment_id", columnList = "installment_id"),
-                // @Index(name = "idx_transfer_metadata_gin", columnList = "payment_position_id"), TODO index metadata
+                @Index(name = "idx_transfer_metadata_gin", columnList = "metadata"),
         })
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.IntSequenceGenerator.class,
@@ -83,6 +83,9 @@ public class Transfer implements Serializable {
     @NotNull
     @Column(name = "last_updated_date")
     private LocalDateTime lastUpdatedDate;
+
+    @Column(columnDefinition = "jsonb")
+    private String metadata;
 
     @ManyToOne(
             targetEntity = Installment.class,

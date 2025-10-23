@@ -1,15 +1,19 @@
 package it.gov.pagopa.debtposition.mapper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.exception.AppError;
+import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.pd.DebtorModel;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
+import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
@@ -31,7 +35,7 @@ public class ConvertPPEntityToModelV3
         destination.setPaymentDate(source.getPaymentDate());
         destination.setStatus(source.getStatus());
 
-        if(source.getPaymentOption() != null){
+        if (source.getPaymentOption() != null) {
             destination.setPaymentOption(source.getPaymentOption().stream().map(this::convertPaymentOption).toList());
         } else {
             destination.setPaymentOption(new ArrayList<>());
@@ -41,9 +45,9 @@ public class ConvertPPEntityToModelV3
     }
 
     private PaymentOptionModelV3 convertPaymentOption(PaymentOption po) {
-        PaymentOptionModelV3 pov3 = new PaymentOptionModelV3();
+        if (po == null) return null; // TODO VERIFY
 
-        if(po == null) return pov3; // TODO VERIFY
+        PaymentOptionModelV3 pov3 = new PaymentOptionModelV3();
 
         pov3.setDescription(po.getDescription());
         pov3.setValidityDate(po.getValidityDate());
@@ -65,7 +69,7 @@ public class ConvertPPEntityToModelV3
         debtor.setPhone(po.getDebtorPhone());
         pov3.setDebtor(debtor);
 
-        if(po.getInstallment() != null){
+        if (po.getInstallment() != null) {
             pov3.setInstallments(po.getInstallment().stream().map(this::convertInstallment).toList());
         } else {
             pov3.setInstallments(new ArrayList<>());
@@ -75,9 +79,9 @@ public class ConvertPPEntityToModelV3
     }
 
     private InstallmentModel convertInstallment(Installment installment) {
-        InstallmentModel installmentModel = new InstallmentModel();
+        if (null == installment) return null; // TODO VERIFY
 
-        if (null == installment) return installmentModel; // TODO VERIFY
+        InstallmentModel installmentModel = new InstallmentModel();
 
         installmentModel.setNav(installment.getNav());
         installmentModel.setIuv(installment.getIuv());
@@ -87,20 +91,24 @@ public class ConvertPPEntityToModelV3
         installmentModel.setFee(installment.getFee());
         installmentModel.setNotificationFee(installment.getNotificationFee());
         installmentModel.setStatus(installment.getStatus());
-        //TODO metadata
-        if(installment.getTransfer() != null){
+        if (installment.getTransfer() != null) {
             installmentModel.setTransfer(installment.getTransfer().stream().map(this::convertTransfer).toList());
         } else {
             installmentModel.setTransfer(new ArrayList<>());
+        }
+        try {
+            installmentModel.setInstallmentMetadata(ObjectMapperUtils.readValueList(installment.getMetadata()));
+        } catch (JsonProcessingException e) {
+            throw new AppException(AppError.UNPROCESSABLE_ENTITY);
         }
 
         return installmentModel;
     }
 
     private TransferModel convertTransfer(Transfer t) {
-        TransferModel destination = new TransferModel();
+        if (null == t) return null;
 
-        if (null == t) return destination;
+        TransferModel destination = new TransferModel();
 
         destination.setIdTransfer(t.getTransferId());
         destination.setAmount(t.getAmount());
@@ -122,14 +130,11 @@ public class ConvertPPEntityToModelV3
         }
 
         destination.setCompanyName(t.getInstallment().getPaymentPosition().getCompanyName());
-
-        // TODO
-//    destination.setTransferMetadata(
-//        ObjectMapperUtils.mapAll(t.getTransferMetadata(), TransferMetadataModel.class));
-//
-//    List<TransferMetadataModel> transferMetadataModelResponses =
-//        convertTransferMetadata(t.getTransferMetadata());
-//    destination.setTransferMetadata(transferMetadataModelResponses);
+        try {
+            destination.setTransferMetadata(ObjectMapperUtils.readValueList(t.getMetadata()));
+        } catch (JsonProcessingException e) {
+            throw new AppException(AppError.UNPROCESSABLE_ENTITY);
+        }
 
         return destination;
     }

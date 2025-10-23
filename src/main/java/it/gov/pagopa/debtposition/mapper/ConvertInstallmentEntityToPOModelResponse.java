@@ -1,7 +1,10 @@
 package it.gov.pagopa.debtposition.mapper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.exception.AppError;
+import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.enumeration.OptionType;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
@@ -40,7 +43,11 @@ public class ConvertInstallmentEntityToPOModelResponse implements Converter<Inst
         destination.setLastUpdatedDate(source.getLastUpdatedDate());
         destination.setLastUpdatedDateNotificationFee(source.getLastUpdatedDateNotificationFee());
 
-        // TODO set metadata
+        try {
+            destination.setPaymentOptionMetadata(ObjectMapperUtils.readValueList(source.getMetadata()));
+        } catch (JsonProcessingException e) {
+            throw new AppException(AppError.UNPROCESSABLE_ENTITY);
+        }
         if (source.getTransfer() != null) {
             destination.setTransfer(source.getTransfer().stream().map(this::convertTransfer).toList());
         } else {
@@ -52,9 +59,9 @@ public class ConvertInstallmentEntityToPOModelResponse implements Converter<Inst
 
     //TODO verify duplicated code
     private TransferModelResponse convertTransfer(Transfer t) {
-        TransferModelResponse destination = new TransferModelResponse();
+        if (null == t) return null; // TODO VERIFY
 
-        if (null == t) return destination;
+        TransferModelResponse destination = new TransferModelResponse();
 
         destination.setOrganizationFiscalCode(t.getOrganizationFiscalCode());
         destination.setCompanyName(t.getInstallment().getPaymentPosition().getCompanyName());
@@ -79,14 +86,11 @@ public class ConvertInstallmentEntityToPOModelResponse implements Converter<Inst
         destination.setInsertedDate(t.getInsertedDate());
         destination.setStatus(t.getStatus());
         destination.setLastUpdatedDate(t.getLastUpdatedDate());
-
-        // TODO metadata transferModel
-//    destination.setTransferMetadata(
-//        ObjectMapperUtils.mapAll(t.getTransferMetadata(), TransferMetadataModel.class));
-//
-//    List<TransferMetadataModel> transferMetadataModelResponses =
-//        convertTransferMetadata(t.getTransferMetadata());
-//    destination.setTransferMetadata(transferMetadataModelResponses);
+        try {
+            destination.setTransferMetadata(ObjectMapperUtils.readValueList(t.getMetadata()));
+        } catch (JsonProcessingException e) {
+            throw new AppException(AppError.UNPROCESSABLE_ENTITY);
+        }
 
         return destination;
     }

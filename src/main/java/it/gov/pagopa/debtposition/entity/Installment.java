@@ -28,6 +28,7 @@ import java.util.List;
                 @Index(name = "idx_due_date", columnList = "debtor_fiscal_code"),
                 @Index(name = "idx_payment_option_id_inst", columnList = "payment_option_id"),
                 @Index(name = "idx_payment_position_id_inst", columnList = "payment_position_id"),
+                @Index(name = "idx_installment_metadata_gin", columnList = "metadata")
         })
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.IntSequenceGenerator.class,
@@ -112,6 +113,9 @@ public class Installment implements Serializable {
     @Builder.Default
     @Transient
     private boolean paymentInProgress = false;
+
+    @Column(columnDefinition = "jsonb")
+    private String metadata;
 
     @ManyToOne(
             targetEntity = PaymentPosition.class,
