@@ -113,7 +113,7 @@ public class PaymentsController implements IPaymentsController {
                                 CommonUtil.sanitize(organizationFiscalCode),
                                 CommonUtil.sanitize(iuv))
                                 + "; transferId="
-                                + transferId));
+                                + CommonUtil.sanitize(transferId)));
         Transfer reportedTransfer = paymentsService.report(organizationFiscalCode, iuv, transferId);
         if (null != reportedTransfer) {
             return new ResponseEntity<>(
