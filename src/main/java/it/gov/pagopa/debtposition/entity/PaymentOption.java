@@ -22,12 +22,8 @@ import java.util.List;
 @Entity
 @Table(
         name = "payment_option",
-//        uniqueConstraints = {
-//                @UniqueConstraint(name = "UniquePaymentOpt", columnNames = {"payment_position_id", "organization_fiscal_code"}) TODO wrong contraint to change
-//        },
         indexes = {
                 @Index(name = "idx_debtor_fiscal_code", columnList = "debtor_fiscal_code"),
-                // @Index(name = "idx_payment_option_metadata_gin", columnList = "payment_position_id"), TODO index metadata
                 @Index(name = "idx_payment_position_id", columnList = "payment_position_id")
         })
 @JsonIdentityInfo(
