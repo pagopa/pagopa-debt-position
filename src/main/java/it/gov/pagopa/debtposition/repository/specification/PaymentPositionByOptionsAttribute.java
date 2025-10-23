@@ -8,18 +8,14 @@ import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 
 public class PaymentPositionByOptionsAttribute implements Specification<PaymentPosition> {
-
-  /** generated serialVersionUID */
-  private static final long serialVersionUID = 6534338388239897792L;
-
   private static final String PAYMENT_OPT_JOIN = "paymentOption";
   private static final String INSTALLMENT_JOIN = "installment";
   private static final String DUEDATE_FIELD = "dueDate";
   private static final String IUV_FIELD = "iuv";
 
-  private LocalDateTime dateFrom;
-  private LocalDateTime dateTo;
-  private List<String> segregationCodes;
+  private final LocalDateTime dateFrom;
+  private final LocalDateTime dateTo;
+  private final List<String> segregationCodes;
 
   public PaymentPositionByOptionsAttribute(
       LocalDateTime dateFrom, LocalDateTime dateTo, List<String> segregationCodes) {
@@ -28,7 +24,7 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
     this.segregationCodes = segregationCodes;
   }
 
-  public Predicate toPredicate( // TODO VERIFY
+  public Predicate toPredicate(
       Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
 
     Join<?, ?> ppOptionsJoin = root.join(PAYMENT_OPT_JOIN, JoinType.INNER);
