@@ -328,52 +328,51 @@ public class PaymentsService {
 
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
     PaymentOption paidPO = null;
-
-    long numberOfPartialPayment =
-        pp.getPaymentOption().stream()
-            .filter(po -> Boolean.TRUE.equals(po.getIsPartialPayment()))
-            .count();
-    int countPaidPartialPayment = 0;
-
+    
     for (PaymentOption po : pp.getPaymentOption()) {
-
-      // verifico se ci sono pagamenti parziali in stato PO_PAID
-      if (Boolean.TRUE.equals(po.getIsPartialPayment())
-          && po.getStatus().equals(PaymentOptionStatus.PO_PAID)) {
-        countPaidPartialPayment++;
-      }
-
-      // aggiorno le proprietà per la payment option oggetto dell'attuale pagamento
-      // TODO #naviuv: temporary regression management --> remove "|| po.getIuv().equals(nav)" when
-      // only nav managment is enabled
-      if (po.getNav().equals(nav) || po.getIuv().equals(nav)) {
-        po.setLastUpdatedDate(currentDate);
-        po.setPaymentDate(paymentOptionModel.getPaymentDate());
-        po.setPaymentMethod(paymentOptionModel.getPaymentMethod());
-        po.setPspCode(paymentOptionModel.getPspCode());
-        po.setPspTaxCode(paymentOptionModel.getPspTaxCode());
-        po.setPspCompany(paymentOptionModel.getPspCompany());
-        po.setIdReceipt(paymentOptionModel.getIdReceipt());
-        po.setFee(Long.parseLong(paymentOptionModel.getFee()));
-        po.setStatus(PaymentOptionStatus.PO_PAID);
-        // se la payment option è di tipo partial incremento il contatore
-        if (Boolean.TRUE.equals(po.getIsPartialPayment())) {
-          countPaidPartialPayment++;
-        }
-        paidPO = po;
-      }
+    	// TODO #naviuv: temporary regression management --> remove "|| po.getIuv().equals(nav)" when
+        // only nav managment is enabled
+    	if (po.getNav().equals(nav) || po.getIuv().equals(nav)) {
+    		po.setLastUpdatedDate(currentDate);
+    		po.setPaymentDate(paymentOptionModel.getPaymentDate());
+    		po.setPaymentMethod(paymentOptionModel.getPaymentMethod());
+    		po.setPspCode(paymentOptionModel.getPspCode());
+    		po.setPspTaxCode(paymentOptionModel.getPspTaxCode());
+    		po.setPspCompany(paymentOptionModel.getPspCompany());
+    		po.setIdReceipt(paymentOptionModel.getIdReceipt());
+    		po.setFee(Long.parseLong(paymentOptionModel.getFee()));
+    		po.setStatus(PaymentOptionStatus.PO_PAID);
+    		paidPO = po;
+    		break; // IMPORTANTE
+    	}
+    }
+    if (paidPO == null) {
+    	throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, pp.getOrganizationFiscalCode(), nav);
     }
 
-    // aggiorno lo stato della payment position
-    // PIDM-42 if paying the full amount when there is already a paid partial payment
-    // then update the payment position status to PAID
-    if (countPaidPartialPayment > 0
-        && countPaidPartialPayment < numberOfPartialPayment
-        && Boolean.TRUE.equals(Objects.requireNonNull(paidPO).getIsPartialPayment())) {
-      pp.setStatus(DebtPositionStatus.PARTIALLY_PAID);
+    if (Boolean.TRUE.equals(paidPO.getIsPartialPayment())) {
+    	final String planId = paidPO.getPaymentPlanId();
+
+    	long totalInPlan = pp.getPaymentOption().stream()
+    			.filter(x -> Boolean.TRUE.equals(x.getIsPartialPayment()))
+    			.filter(x -> java.util.Objects.equals(planId, x.getPaymentPlanId()))
+    			.count();
+
+    	long paidInPlan = pp.getPaymentOption().stream()
+    			.filter(x -> Boolean.TRUE.equals(x.getIsPartialPayment()))
+    			.filter(x -> java.util.Objects.equals(planId, x.getPaymentPlanId()))
+    			.filter(x -> x.getStatus() == PaymentOptionStatus.PO_PAID)
+    			.count();
+
+    	if (paidInPlan < totalInPlan) {
+    		pp.setStatus(DebtPositionStatus.PARTIALLY_PAID);
+    	} else {
+    		pp.setStatus(DebtPositionStatus.PAID);
+    		pp.setPaymentDate(paymentOptionModel.getPaymentDate());
+    	}
     } else {
-      pp.setStatus(DebtPositionStatus.PAID);
-      pp.setPaymentDate(paymentOptionModel.getPaymentDate());
+    	pp.setStatus(DebtPositionStatus.PAID);
+    	pp.setPaymentDate(paymentOptionModel.getPaymentDate());
     }
 
     pp.setLastUpdatedDate(currentDate);
