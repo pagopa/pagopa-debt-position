@@ -41,6 +41,9 @@ public class Transfer implements Serializable {
     @Column(name = "organization_fiscal_code")
     private String organizationFiscalCode;
 
+    @Column(name = "company_name")
+    private String companyName; // es. Comune di Roma
+
     @NotNull
     @Column(name = "transfer_id")
     private String transferId;
