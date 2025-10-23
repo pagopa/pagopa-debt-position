@@ -39,22 +39,6 @@ CREATE SEQUENCE IF NOT EXISTS odp.transfer_seq
 	CACHE 20
 	NO CYCLE;
 	
-CREATE SEQUENCE IF NOT EXISTS odp.payment_opt_metadata_seq
-	INCREMENT BY 1
-	MINVALUE 1
-	MAXVALUE 9223372036854775807
-	START 1
-	CACHE 20
-	NO CYCLE;
-	
-CREATE SEQUENCE IF NOT EXISTS odp.transfer_metadata_seq
-	INCREMENT BY 1
-	MINVALUE 1
-	MAXVALUE 9223372036854775807
-	START 1
-	CACHE 20
-	NO CYCLE;
-	
 -- =====================
 -- payment_position
 -- =====================
@@ -127,7 +111,6 @@ CREATE TABLE IF NOT EXISTS odp.payment_option (
     inserted_date timestamp NOT NULL,
     switch_to_expired bool DEFAULT false NOT NULL,
     option_type varchar(50) NOT NULL, -- SINGLE_OPTION, INSTALLMENT_OPTION
-    metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
     payment_position_status varchar(55) NULL,
     -- Denormalized debtor data
     debtor_fiscal_code varchar(255) NOT NULL,
@@ -149,7 +132,6 @@ CREATE TABLE IF NOT EXISTS odp.payment_option (
 -- Index
 CREATE INDEX IF NOT EXISTS idx_payment_position_id ON odp.payment_option (payment_position_id);
 CREATE INDEX IF NOT EXISTS idx_debtor_fiscal_code ON odp.payment_option (debtor_fiscal_code);
-CREATE INDEX IF NOT EXISTS idx_payment_option_metadata_gin ON odp.payment_option USING GIN (metadata);
 
 -- Function + Trigger
 CREATE OR REPLACE FUNCTION odp.sync_status_from_position()
@@ -210,6 +192,7 @@ CREATE TABLE IF NOT EXISTS odp.installment (
     status varchar(25) NOT NULL,
     notification_fee int8 DEFAULT 0 NOT NULL,
     send_sync boolean DEFAULT false NOT NULL,
+    metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
     CONSTRAINT installment_pkey PRIMARY KEY (id),
     CONSTRAINT uniqueinstallmentnav UNIQUE (nav, organization_fiscal_code),
     CONSTRAINT uniqueinstallmentiuv UNIQUE (iuv, organization_fiscal_code),
@@ -220,6 +203,7 @@ CREATE TABLE IF NOT EXISTS odp.installment (
 CREATE INDEX IF NOT EXISTS idx_due_date ON odp.installment (due_date);
 CREATE INDEX IF NOT EXISTS idx_payment_option_id_inst ON odp.installment (payment_option_id);
 CREATE INDEX IF NOT EXISTS idx_payment_position_id_inst ON odp.installment (payment_position_id);
+CREATE INDEX IF NOT EXISTS idx_installment_metadata_gin ON odp.installment USING GIN (metadata);
 
 -- =====================
 -- transfer
