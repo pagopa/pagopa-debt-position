@@ -310,9 +310,9 @@ public class DebtPositionValidation {
                                     "Obtained unexpected empty payment option - ["
                                             + String.format(
                                             LOG_BASE_PARAMS_DETAIL,
-                                            ppToReport.getOrganizationFiscalCode(),
-                                            ppToReport.getIupd(),
-                                            iuv)
+                                            CommonUtil.sanitize(ppToReport.getOrganizationFiscalCode()),
+                                            CommonUtil.sanitize(ppToReport.getIupd()),
+                                            CommonUtil.sanitize(iuv))
                                             + "]");
                             return new AppException(
                                     AppError.TRANSFER_REPORTING_FAILED,
@@ -340,11 +340,11 @@ public class DebtPositionValidation {
                                             "Obtained unexpected empty transfer - ["
                                                     + String.format(
                                                     LOG_BASE_PARAMS_DETAIL,
-                                                    ppToReport.getOrganizationFiscalCode(),
-                                                    ppToReport.getIupd(),
-                                                    iuv)
+                                                    CommonUtil.sanitize(ppToReport.getOrganizationFiscalCode()),
+                                                    CommonUtil.sanitize(ppToReport.getIupd()),
+                                                    CommonUtil.sanitize(iuv))
                                                     + "idTransfer= "
-                                                    + transferId
+                                                    + CommonUtil.sanitize(transferId)
                                                     + "]");
                                     return new AppException(
                                             AppError.TRANSFER_REPORTING_FAILED,

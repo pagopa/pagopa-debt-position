@@ -21,6 +21,7 @@ import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.send.response.NotificationPriceResponse;
 import it.gov.pagopa.debtposition.repository.InstallmentRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
+import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -87,12 +88,12 @@ public class PaymentsService {
                 log.info(
                         "Notification fee amount of Installment with NAV {} has been updated with"
                                 + " notification-fee: {}.",
-                        installment.getNav(),
+                        CommonUtil.sanitize(installment.getNav()),
                         installment.getNotificationFee());
             else
                 log.error(
                         "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.",
-                        installment.getNav());
+                        CommonUtil.sanitize(installment.getNav()));
         }
 
         return installment;
@@ -159,7 +160,7 @@ public class PaymentsService {
             log.error(
                     "[GPD-ERR-SEND-00] Exception while calling getNotificationFee for NAV {}, class = {},"
                             + " message = {}.",
-                    installment.getNav(),
+                    CommonUtil.sanitize(installment.getNav()),
                     e.getClass(),
                     e.getMessage());
             return false;
@@ -221,12 +222,12 @@ public class PaymentsService {
             } catch (Exception ex) {
                 log.error(
                         "Error checking the position on the node for PO with fiscalCode "
-                                + organizationFiscalCode
+                                + CommonUtil.sanitize(organizationFiscalCode)
                                 + " and noticeNumber "
                                 + "("
                                 + auxDigit
                                 + ")"
-                                + nav,
+                                + CommonUtil.sanitize(nav),
                         ex);
                 // By business rules it is expected to treat the error as if the node had responded KO
                 installment.setPaymentInProgress(Boolean.TRUE);
@@ -234,12 +235,12 @@ public class PaymentsService {
         } catch (Exception e) {
             log.error(
                     "Error checking the position on the node for PO with fiscalCode "
-                            + organizationFiscalCode
+                            + CommonUtil.sanitize(organizationFiscalCode)
                             + " and noticeNumber "
                             + "("
                             + auxDigit
                             + ")"
-                            + nav,
+                            + CommonUtil.sanitize(nav),
                     e);
             // By business rules it is expected to treat the error as if the node had responded KO
             installment.setPaymentInProgress(Boolean.TRUE);
