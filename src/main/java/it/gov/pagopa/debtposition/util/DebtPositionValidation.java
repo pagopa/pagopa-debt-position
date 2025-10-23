@@ -245,7 +245,6 @@ public class DebtPositionValidation {
     private static void checkInstallmentPayable(PaymentPosition ppToPay, String nav) {
         // TODO #naviuv: temporary regression management --> remove "|| inst.getIuv().equals(nav)" when
         // only nav managment is enabled
-        // TODO optimize & change errors
         Installment installmentToPay = ppToPay.getPaymentOption().parallelStream()
                 .map(PaymentOption::getInstallment)
                 .flatMap(List::parallelStream)
@@ -300,7 +299,6 @@ public class DebtPositionValidation {
 
     private static void checkTransferAccountable(
             PaymentPosition ppToReport, String iuv, String transferId) {
-        // TODO change error
         Installment instToReport = ppToReport.getPaymentOption().stream()
                 .map(PaymentOption::getInstallment)
                 .flatMap(List::stream)
