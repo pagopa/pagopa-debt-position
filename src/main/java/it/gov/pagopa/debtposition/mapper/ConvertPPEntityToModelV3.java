@@ -18,6 +18,7 @@ import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class ConvertPPEntityToModelV3
         implements Converter<PaymentPosition, PaymentPositionModelV3> {
@@ -36,7 +37,7 @@ public class ConvertPPEntityToModelV3
         destination.setStatus(source.getStatus());
 
         if (source.getPaymentOption() != null) {
-            destination.setPaymentOption(source.getPaymentOption().stream().map(this::convertPaymentOption).toList());
+            destination.setPaymentOption(source.getPaymentOption().stream().filter(Objects::nonNull).map(this::convertPaymentOption).toList());
         } else {
             destination.setPaymentOption(new ArrayList<>());
         }
@@ -45,8 +46,6 @@ public class ConvertPPEntityToModelV3
     }
 
     private PaymentOptionModelV3 convertPaymentOption(PaymentOption po) {
-        if (po == null) return null; // TODO VERIFY
-
         PaymentOptionModelV3 pov3 = new PaymentOptionModelV3();
 
         pov3.setDescription(po.getDescription());
@@ -70,7 +69,7 @@ public class ConvertPPEntityToModelV3
         pov3.setDebtor(debtor);
 
         if (po.getInstallment() != null) {
-            pov3.setInstallments(po.getInstallment().stream().map(this::convertInstallment).toList());
+            pov3.setInstallments(po.getInstallment().stream().filter(Objects::nonNull).map(this::convertInstallment).toList());
         } else {
             pov3.setInstallments(new ArrayList<>());
         }
@@ -79,8 +78,6 @@ public class ConvertPPEntityToModelV3
     }
 
     private InstallmentModel convertInstallment(Installment installment) {
-        if (null == installment) return null; // TODO VERIFY
-
         InstallmentModel installmentModel = new InstallmentModel();
 
         installmentModel.setNav(installment.getNav());

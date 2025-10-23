@@ -38,24 +38,13 @@ public class ConvertPPModelV3ToEntity
 
     public void mapAndUpdatePaymentPosition(
             PaymentPositionModelV3 source, PaymentPosition destination) {
-
         destination.setIupd(source.getIupd());
         destination.setPayStandIn(source.isPayStandIn());
         destination.setCompanyName(source.getCompanyName());
         destination.setOfficeName(source.getOfficeName());
         destination.setValidityDate(getValidityDate(source.getPaymentOption()));
 
-        // TODO verify
         List<PaymentOptionModelV3> sourcePaymentOptionList = source.getPaymentOption();
-        if (sourcePaymentOptionList != null && !sourcePaymentOptionList.isEmpty()) {
-            List<InstallmentModel> sourceInstallment = sourcePaymentOptionList.get(0).getInstallments();
-            if (sourceInstallment != null && !sourceInstallment.isEmpty()) {
-                List<TransferModel> sourceTransferList = sourceInstallment.get(0).getTransfer();
-                if (sourceTransferList != null && !sourceTransferList.isEmpty()) {
-                    destination.setOrganizationFiscalCode(sourceTransferList.get(0).getOrganizationFiscalCode());
-                }
-            }
-        }
         if (sourcePaymentOptionList != null && !sourcePaymentOptionList.isEmpty()) {
             mapAndUpdatePaymentOptions(source, destination);
         } else {
@@ -113,19 +102,23 @@ public class ConvertPPModelV3ToEntity
                 destinationPo = filteredDestinationPOs.get(0);
             }
             for (InstallmentModel sourceInstallment : sourcePO.getInstallments()) {
-                List<Installment> filteredDestinationInstallment = destinationPo.getInstallment().stream().filter(inst -> inst.getIuv().equals(sourceInstallment.getIuv())).toList();
-                Installment destinationInstallment;
-                if (filteredDestinationInstallment.isEmpty()) {
-                    destinationInstallment = new Installment();
-                    destinationPo.getInstallment().add(destinationInstallment);
-                } else {
-                    destinationInstallment = filteredDestinationInstallment.get(0);
-                }
+                if(sourceInstallment.getIuv() != null){
+                    List<Installment> filteredDestinationInstallment = destinationPo.getInstallment().stream().filter(inst -> inst.getIuv().equals(sourceInstallment.getIuv())).toList();
+                    Installment destinationInstallment;
+                    if (filteredDestinationInstallment.isEmpty()) {
+                        destinationInstallment = new Installment();
+                        destinationPo.getInstallment().add(destinationInstallment);
+                    } else {
+                        destinationInstallment = filteredDestinationInstallment.get(0);
+                    }
 
-                mapAndUpdateInstallment(sourceInstallment, destinationInstallment, destinationPo, destination);
+                    mapAndUpdateInstallment(sourceInstallment, destinationInstallment, destinationPo, destination);
+                }
             }
 
-            mapAndUpdatePaymentOption(sourcePO, destinationPo, destination);
+            if(!destinationPo.getInstallment().isEmpty()){
+                mapAndUpdatePaymentOption(sourcePO, destinationPo, destination);
+            }
         }
     }
 
@@ -214,7 +207,7 @@ public class ConvertPPModelV3ToEntity
     private void mapAndUpdateSingleTransfer(TransferModel source, Transfer destinationTr, Installment destinationInst) {
         destinationTr.setAmount(source.getAmount());
         destinationTr.setCategory(source.getCategory());
-        // TODO where has it gone  destinationTr.setCompanyName(source.getCompanyName());
+        destinationTr.setCompanyName(source.getCompanyName());
         destinationTr.setIban(source.getIban());
         destinationTr.setTransferId(source.getIdTransfer());
         destinationTr.setLastUpdatedDate(LocalDateTime.now());

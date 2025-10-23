@@ -18,10 +18,7 @@ import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel, PaymentPosition> {
@@ -91,7 +88,7 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
         List<PaymentOptionModel> remainingSourcePO = source.getPaymentOption().stream().filter(po -> sourceIUVs.contains(po.getIuv())).toList();
         // Partitioning the payment options into partial and unique POs
         Map<Boolean, List<PaymentOptionModel>> partitionedPO =
-                remainingSourcePO.stream()
+                remainingSourcePO.stream().filter(Objects::nonNull)
                         .collect(Collectors.partitioningBy(PaymentOptionModel::getIsPartialPayment));
 
         // Extracting the partial and unique POs
@@ -178,36 +175,39 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
             throw new AppException(AppError.UNPROCESSABLE_ENTITY);
         }
 
-        List<String> sourceTransferIdList = new ArrayList<>(sourcePO.getTransfer().stream().map(TransferModel::getIdTransfer).toList());
+        List<TransferModel> sourceTransferFiltered = sourcePO.getTransfer() == null ? List.of() : sourcePO.getTransfer().stream().filter(Objects::nonNull).toList();
+        if(!sourceTransferFiltered.isEmpty()){
+            List<String> sourceTransferIdList = new ArrayList<>(sourceTransferFiltered.stream().map(TransferModel::getIdTransfer).toList());
 
-        // DELETE orphans Transfers
-        List<Transfer> transfersToDelete = destinationInstallment.getTransfer().stream().filter(tr -> !sourceTransferIdList.contains(tr.getTransferId())).toList();
-        destinationInstallment.getTransfer().removeAll(transfersToDelete);
-        sourceTransferIdList.removeAll(transfersToDelete.stream().map(Transfer::getTransferId).toList());
+            // DELETE orphans Transfers
+            List<Transfer> transfersToDelete = destinationInstallment.getTransfer().stream().filter(tr -> !sourceTransferIdList.contains(tr.getTransferId())).toList();
+            destinationInstallment.getTransfer().removeAll(transfersToDelete);
+            sourceTransferIdList.removeAll(transfersToDelete.stream().map(Transfer::getTransferId).toList());
 
-        // UPDATE existing Transfers
-        for (Transfer destinationTransfer : destinationInstallment.getTransfer()) {
-            TransferModel sourceTransfer = sourcePO.getTransfer().stream().filter(
-                    tr -> tr.getIdTransfer().equals(destinationTransfer.getTransferId())).toList().get(0);
+            // UPDATE existing Transfers
+            for (Transfer destinationTransfer : destinationInstallment.getTransfer()) {
+                TransferModel sourceTransfer = sourcePO.getTransfer().stream().filter(
+                        tr -> tr.getIdTransfer().equals(destinationTransfer.getTransferId())).toList().get(0);
 
-            mapAndUpdateSingleTransfer(sourceTransfer, destinationTransfer);
+                mapAndUpdateSingleTransfer(sourceTransfer, destinationTransfer);
 
-            sourceTransferIdList.remove(sourceTransfer.getIdTransfer());
-        }
-        // CREATE new Transfers
-        List<TransferModel> remainingSourceTr = sourcePO.getTransfer().stream().filter(tr -> sourceTransferIdList.contains(tr.getIdTransfer())).toList();
-        for (TransferModel sourceTransfer : remainingSourceTr) {
-            Transfer destinationTransfer = new Transfer();
-            mapAndUpdateSingleTransfer(sourceTransfer, destinationTransfer);
+                sourceTransferIdList.remove(sourceTransfer.getIdTransfer());
+            }
+            // CREATE new Transfers
+            List<TransferModel> remainingSourceTr = sourcePO.getTransfer().stream().filter(tr -> sourceTransferIdList.contains(tr.getIdTransfer())).toList();
+            for (TransferModel sourceTransfer : remainingSourceTr) {
+                Transfer destinationTransfer = new Transfer();
+                mapAndUpdateSingleTransfer(sourceTransfer, destinationTransfer);
 
-            destinationInstallment.getTransfer().add(destinationTransfer);
+                destinationInstallment.getTransfer().add(destinationTransfer);
+            }
         }
     }
 
     private void mapAndUpdateSingleTransfer(TransferModel source, Transfer transferDestination) {
         transferDestination.setAmount(source.getAmount());
         transferDestination.setCategory(source.getCategory());
-        // TODO where has it gone  destination.setCompanyName(source.getCompanyName());
+        transferDestination.setCompanyName(source.getCompanyName());
         transferDestination.setIban(source.getIban());
         transferDestination.setTransferId(source.getIdTransfer());
         transferDestination.setLastUpdatedDate(LocalDateTime.now());

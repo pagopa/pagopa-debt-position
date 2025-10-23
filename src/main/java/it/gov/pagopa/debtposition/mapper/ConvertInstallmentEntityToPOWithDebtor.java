@@ -15,6 +15,7 @@ import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class ConvertInstallmentEntityToPOWithDebtor
         implements Converter<Installment, PaymentOptionWithDebtorInfoModelResponse> {
@@ -73,7 +74,7 @@ public class ConvertInstallmentEntityToPOWithDebtor
             throw new AppException(AppError.UNPROCESSABLE_ENTITY);
         }
         if (source.getTransfer() != null) {
-            destination.setTransfer(source.getTransfer().stream().map(this::convertTransfer).toList());
+            destination.setTransfer(source.getTransfer().stream().filter(Objects::nonNull).map(this::convertTransfer).toList());
         } else {
             destination.setTransfer(new ArrayList<>());
         }
@@ -82,8 +83,6 @@ public class ConvertInstallmentEntityToPOWithDebtor
     }
 
     private TransferModelResponse convertTransfer(Transfer t) {
-        if (null == t) return null; // TODO VERIFY
-
         TransferModelResponse destination = new TransferModelResponse();
 
         destination.setOrganizationFiscalCode(t.getOrganizationFiscalCode());

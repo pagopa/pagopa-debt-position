@@ -18,6 +18,7 @@ import org.modelmapper.spi.MappingContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ConvertPPEntityToModelResponse
         implements Converter<PaymentPosition, PaymentPositionModelBaseResponse> {
@@ -83,7 +84,7 @@ public class ConvertPPEntityToModelResponse
                     throw new AppException(AppError.UNPROCESSABLE_ENTITY);
                 }
 
-                destinationPO.setTransfer(sourceInst.getTransfer().stream().map(this::convertTransfer).toList());
+                destinationPO.setTransfer(sourceInst.getTransfer().stream().filter(Objects::nonNull).map(this::convertTransfer).toList());
 
                 destinationPoList.add(destinationPO);
             }
@@ -92,8 +93,6 @@ public class ConvertPPEntityToModelResponse
     }
 
     private TransferModelResponse convertTransfer(Transfer sourceTransfer) {
-        if (null == sourceTransfer) return null; // TODO VERIFY
-
         TransferModelResponse destination = new TransferModelResponse();
 
         destination.setOrganizationFiscalCode(sourceTransfer.getOrganizationFiscalCode());
