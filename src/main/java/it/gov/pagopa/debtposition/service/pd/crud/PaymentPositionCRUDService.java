@@ -518,9 +518,9 @@ public class PaymentPositionCRUDService {
         for (PaymentOption po : pp.getPaymentOption()) {
             for (Installment inst : po.getInstallment()) {
                 // Make sure there isn't reserved metadata
-                List<Metadata> poMetadata = ObjectMapperUtils.readValueList(inst.getMetadata());
-                for (Metadata pom : poMetadata) {
-                    if (pom.getKey().equals(NOTIFICATION_FEE_METADATA_KEY)) {
+                List<HashMap<String, String>> poMetadata = ObjectMapperUtils.readValueList(inst.getMetadata());
+                for (HashMap<String, String> pom : poMetadata) {
+                    if (pom.get(NOTIFICATION_FEE_METADATA_KEY) != null) {
                         throw new AppException(
                                 AppError.PAYMENT_OPTION_RESERVED_METADATA, organizationFiscalCode, pp.getIupd());
                     }
