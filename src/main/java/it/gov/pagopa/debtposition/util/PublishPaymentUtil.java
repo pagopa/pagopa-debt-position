@@ -23,13 +23,12 @@ public class PublishPaymentUtil {
     ppToPublish.setPublishDate(currentDate);
     ppToPublish.setStatus(DebtPositionStatus.PUBLISHED);
     ppToPublish.setLastUpdatedDate(currentDate);
-    //TODO VERIFY Change all installments from DRAFT to UNPAID
-    ppToPublish.getPaymentOption().forEach(po -> po.getInstallment().forEach(inst -> inst.setStatus(InstallmentStatus.UNPAID)));
     // Regola 3 e Regola 4 - se non era stata prevista una data di inizio validità e la data di
     // pubblicazione è < della min_due_date => sovrascrivo lo stato direttamente a VALID
     if (null == ppToPublish.getValidityDate() && ppToPublish.getMinDueDate().isAfter(currentDate)) {
       ppToPublish.setValidityDate(currentDate);
       ppToPublish.setStatus(DebtPositionStatus.VALID);
+      ppToPublish.getPaymentOption().forEach(po -> po.getInstallment().forEach(inst -> inst.setStatus(InstallmentStatus.UNPAID)));
     }
     // Regola 5 - se la richiesta di pubblicazione è avvenuta dopo che una una delle opzioni di
     // pagamento è scaduta (currentDate > min_due_date) viene rilanciato un errore
