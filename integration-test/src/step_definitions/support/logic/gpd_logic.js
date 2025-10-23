@@ -195,6 +195,8 @@ async function executeDebtPositionInvalidateWithSegregationCodes(bundle, idOrg, 
 }
 
 async function executePaymentOptionPay(bundle, idOrg, iuv) {
+    // pre-cleaning of bundle.responseToCheck, possibly enhanced in previous iterations
+    bundle.responseToCheck = undefined;
     bundle.paymentDate = new Date();
     let response = await payPaymentOption(idOrg, iuv, bundle);
     bundle.responseToCheck = response;

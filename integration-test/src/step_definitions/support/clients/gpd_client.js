@@ -2,6 +2,7 @@ const { get, post, del, put, patch } = require("../utility/axios_common");
 const { toLog  } = require("../utility/helpers");
 const fs = require("fs");
 
+const ENV = process.env.environment;
 const GPD_HOST = process.env.gpd_host;
 const GPD_HOST_V2 = process.env.gpd_host_v2;
 const GPD_API_MASSIVE = (orgId) => process.env.gpd_api_massive.replace('{orgId}', orgId);
@@ -17,13 +18,19 @@ function  gpdHealthCheck() {
     })
 }
 
+function getVersionUri(version) {
+    let version_uri = `/${version}`;
+    if (ENV === 'local' && version === 'v1') {version_uri = '';} // in local v1 version is not present in the url
+    return version_uri;
+}
+
 function createDebtPosition(orgId, body, segCodes, toPublish = false, version = "v1") {
 	const params = {}
 	if (segCodes) {params.segregationCodes = segCodes}
     if (toPublish) {params.toPublish = toPublish}
-    toLog("[createDebtPosition] URL:" + GPD_EXTERNAL_HOST + `/${version}/organizations/${orgId}/debtpositions`)
+    toLog("[createDebtPosition] URL:" + GPD_EXTERNAL_HOST + getVersionUri(version) + `/organizations/${orgId}/debtpositions`)
     toLog("[createDebtPosition] BODY:" + JSON.stringify(body))
-    return post(GPD_EXTERNAL_HOST + `/${version}/organizations/${orgId}/debtpositions`, body, {
+    return post(GPD_EXTERNAL_HOST + getVersionUri(version) + `/organizations/${orgId}/debtpositions`, body, {
         timeout: API_TIMEOUT,
         params,
         headers: {
@@ -49,7 +56,9 @@ function createMassiveDebtPositions(orgId, body, segCodes) {
 function updateDebtPosition(orgId, iupd, body, segCodes, version = "v1") {
 	const params = {}
 	if (segCodes) {params.segregationCodes = segCodes}
-    return put(GPD_EXTERNAL_HOST + `/${version}/organizations/${orgId}/debtpositions/${iupd}`, body, {
+    toLog("[updateDebtPosition] URL:" + GPD_EXTERNAL_HOST + getVersionUri(version) + `/organizations/${orgId}/debtpositions/${iupd}`)
+    toLog("[updateDebtPosition] BODY:" + JSON.stringify(body))
+    return put(GPD_EXTERNAL_HOST + getVersionUri(version) + `/organizations/${orgId}/debtpositions/${iupd}`, body, {
         timeout: API_TIMEOUT,
         params,
         headers: {
@@ -62,7 +71,7 @@ function updateDebtPosition(orgId, iupd, body, segCodes, version = "v1") {
 function publishDebtPosition(orgId, iupd, segCodes, version = "v1") {
 	const params = {}
 	if (segCodes) {params.segregationCodes = segCodes}
-    return post(GPD_EXTERNAL_HOST + `/${version}/organizations/${orgId}/debtpositions/${iupd}/publish`, "", {
+    return post(GPD_EXTERNAL_HOST + getVersionUri(version) + `/organizations/${orgId}/debtpositions/${iupd}/publish`, "", {
         timeout: API_TIMEOUT,
         params,
         headers: {
@@ -75,7 +84,7 @@ function publishDebtPosition(orgId, iupd, segCodes, version = "v1") {
 function invalidateDebtPosition(orgId, iupd, segCodes, version = "v1") {
 	const params = {}
 	if (segCodes) {params.segregationCodes = segCodes}
-    return post(GPD_EXTERNAL_HOST + `/${version}/organizations/${orgId}/debtpositions/${iupd}/invalidate`, "", {
+    return post(GPD_EXTERNAL_HOST + getVersionUri(version) + `/organizations/${orgId}/debtpositions/${iupd}/invalidate`, "", {
         timeout: API_TIMEOUT,
         params,
         headers: {
@@ -97,7 +106,7 @@ function getDebtPositionList(orgId, dueDateFrom, dueDateTo, paymentDateFrom, pay
     params.ordering = "ASC";
     params.page = 0;
 
-    return get(GPD_EXTERNAL_HOST + `/${version}/organizations/${orgId}/debtpositions`, {
+    return get(GPD_EXTERNAL_HOST + getVersionUri(version) + `/organizations/${orgId}/debtpositions`, {
         timeout: API_TIMEOUT,
         params,
         headers: {
@@ -110,7 +119,7 @@ function getDebtPositionList(orgId, dueDateFrom, dueDateTo, paymentDateFrom, pay
 function getDebtPosition(orgId, iupd, segCodes, version = "v1") {
 	const params = {}
 	if (segCodes) {params.segregationCodes = segCodes}
-    return get(GPD_EXTERNAL_HOST + `/${version}/organizations/${orgId}/debtpositions/${iupd}`, {
+    return get(GPD_EXTERNAL_HOST + getVersionUri(version) + `/organizations/${orgId}/debtpositions/${iupd}`, {
         timeout: API_TIMEOUT,
         headers: {
             "Ocp-Apim-Subscription-Key": process.env.API_SUBSCRIPTION_KEY,
@@ -146,7 +155,7 @@ function getPaymentOptionByIuv(orgId, iuv) {
 function deleteDebtPosition(orgId, iupd, segCodes, version = "v1") {
 	const params = {}
 	if (segCodes) {params.segregationCodes = segCodes}
-    return del(GPD_EXTERNAL_HOST + `/${version}/organizations/${orgId}/debtpositions/${iupd}`, {
+    return del(GPD_EXTERNAL_HOST + getVersionUri(version) + `/organizations/${orgId}/debtpositions/${iupd}`, {
         timeout: API_TIMEOUT,
         params,
         headers: {
@@ -157,6 +166,8 @@ function deleteDebtPosition(orgId, iupd, segCodes, version = "v1") {
 }
 
 function payPaymentOption(orgId, iuv, body) {
+    toLog("[payPaymentOption] URL:" + GPD_HOST + `/organizations/${orgId}/paymentoptions/${iuv}/pay`)
+    toLog("[payPaymentOption] BODY:" + JSON.stringify(body))
     return post(GPD_HOST + `/organizations/${orgId}/paymentoptions/${iuv}/pay`, body, {
         timeout: API_TIMEOUT,
         headers: {
@@ -189,7 +200,7 @@ function  updateNotificationFee(orgId, iuv, body) {
 }
 
 function createAndPublishDebtPosition(orgId, body, version = "v1") {
-    return post(GPD_EXTERNAL_HOST + `/${version}/organizations/${orgId}/debtpositions`, body, {
+    return post(GPD_EXTERNAL_HOST + getVersionUri(version) + `/organizations/${orgId}/debtpositions`, body, {
         timeout: API_TIMEOUT,
         params: {
             toPublish: "True",
@@ -202,7 +213,7 @@ function createAndPublishDebtPosition(orgId, body, version = "v1") {
 }
 
 function updateAndPublishDebtPosition(orgId, iupd, body, version = "v1") {
-    return put(GPD_EXTERNAL_HOST + `/${version}/organizations/${orgId}/debtpositions/${iupd}`, body, {
+    return put(GPD_EXTERNAL_HOST + getVersionUri(version) + `/organizations/${orgId}/debtpositions/${iupd}`, body, {
         timeout: API_TIMEOUT,
         params: {
             toPublish: "True",
@@ -215,7 +226,7 @@ function updateAndPublishDebtPosition(orgId, iupd, body, version = "v1") {
 }
 
 function updateTransferIbanMassive(orgId, oldIban, newIban, version = "v1") {
-    return patch(GPD_EXTERNAL_HOST + `/${version}/organizations/${orgId}/debtpositions/transfers?oldIban=${oldIban}&limit=10`, {newIban}, {
+    return patch(GPD_EXTERNAL_HOST + getVersionUri(version) + `/organizations/${orgId}/debtpositions/transfers?oldIban=${oldIban}&limit=10`, {newIban}, {
         timeout: API_TIMEOUT,
         headers: {
             "Ocp-Apim-Subscription-Key": process.env.API_SUBSCRIPTION_KEY,

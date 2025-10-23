@@ -60,7 +60,7 @@ let gpdPayBundle = {
     pspCompany: "string2",
     idReceipt: "string3",
     fee: 0
-                   }
+}
 
 module.exports = {
     gpdSessionBundle,
