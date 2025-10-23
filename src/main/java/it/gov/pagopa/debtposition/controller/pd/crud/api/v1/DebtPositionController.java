@@ -364,7 +364,7 @@ public class DebtPositionController implements IDebtPositionController {
                         "GET",
                         "getDebtPositionByIUV",
                         String.format(
-                                LOG_BASE_PARAMS_DETAIL, CommonUtil.sanitize(organizationFiscalCode), iuv)));
+                                LOG_BASE_PARAMS_DETAIL, CommonUtil.sanitize(organizationFiscalCode), CommonUtil.sanitize(iuv))));
 
         ArrayList<String> segCodes =
                 segregationCodes != null
