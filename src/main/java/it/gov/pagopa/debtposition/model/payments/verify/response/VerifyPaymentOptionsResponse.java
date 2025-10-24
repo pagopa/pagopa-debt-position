@@ -2,6 +2,9 @@ package it.gov.pagopa.debtposition.model.payments.verify.response;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,9 +17,11 @@ import lombok.Setter;
 @AllArgsConstructor 
 @Builder
 public class VerifyPaymentOptionsResponse {
-	private String  paTaxCode;    
-	private String  paFullName;  
-	private String  paOfficeName;
+	private String  organizationFiscalCode;    
+	private String  companyName;  
+	private String  officeName;
+	@Schema(hidden = true)
+	@JsonIgnore
 	private Boolean standIn;
 	private List<PaymentOptionGroup> paymentOptions;
 }

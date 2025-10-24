@@ -2223,6 +2223,95 @@ class PaymentsControllerTest {
                     paymentOptionDTO.getAmount()
                         + notificationFeeUpdateModel.getNotificationFee()));
   }
+  
+  //========================= NEW TESTS FOR verifyPaymentOptions API =========================
+
+  @Test
+  void verifyPaymentOptions_single_200() throws Exception {
+	  String organization = "700123456789000";
+	  mvc.perform(
+			  post("/organizations/" + organization + "/debtpositions")
+			  .content(TestUtil.toJson(DebtPositionMock.getMock1(), objectMapper))
+			  .contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(status().isCreated());
+
+	  String navOrIuv = "1234561";
+
+	  mvc.perform(
+			  post("/payment-options/organizations/{organizationfiscalcode}/notices/{nav}", organization, navOrIuv)
+			  .contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(status().isOk())
+	  .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.organizationFiscalCode").value(organization))
+	  // Only 1 group expected (single)
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions.length()").value(1))
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions[0].numberOfInstallments").value(1))
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions[0].description").value("Payment in a single installment"));
+  }
+  
+  @Test
+  void verifyPaymentOptions_grouping_singleAndPlan_200_and_ordering() throws Exception {
+    String organization = "700123456789001";
+    mvc.perform(
+            post("/organizations/" + organization + "/debtpositions")
+                .content(TestUtil.toJson(DebtPositionMock.getMock3(), objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    String navOrIuv = "1234563";
+
+    mvc.perform(
+            post("/payment-options/organizations/{organizationfiscalcode}/notices/{nav}", organization, navOrIuv)
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions.length()",
+                Matchers.greaterThanOrEqualTo(2)))
+        // there must be AT LEAST one single group
+        .andExpect(MockMvcResultMatchers.jsonPath(
+                "$.paymentOptions[*].numberOfInstallments",
+                Matchers.hasItem(1)))
+        // there must be AT LEAST one plan group (>=2 installments)
+        .andExpect(MockMvcResultMatchers.jsonPath(
+                "$.paymentOptions[*].numberOfInstallments",
+                Matchers.hasItem(Matchers.greaterThanOrEqualTo(2))))
+        .andExpect(MockMvcResultMatchers.jsonPath(
+                "$.paymentOptions[*].description",
+                Matchers.hasItem("Payment in a single installment")))
+        .andExpect(MockMvcResultMatchers.jsonPath(
+                "$.paymentOptions[*].description",
+                Matchers.hasItem(Matchers.startsWith("Installment plan of"))));
+  }
+
+
+
+  @Test
+  void verifyPaymentOptions_404_whenNotFound() throws Exception {
+	  String organization = "700123456789002";
+	  String navOrIuv = "99999999"; // non-existent
+
+	  mvc.perform(
+			  post("/payment-options/organizations/{organizationfiscalcode}/notices/{nav}", organization, navOrIuv)
+			  .contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(status().isNotFound())
+	  .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+  }
+
+  @Test
+  void verifyPaymentOptions_400_onMalformedNAV() throws Exception {
+	  // Non-numeric NAV --> @Pattern("^\\d{1,30}$") is violated
+	  String organization = "700123456789003";
+	  String badNav = "ABCDEF";
+
+	  mvc.perform(
+			  post("/payment-options/organizations/{organizationfiscalcode}/notices/{nav}", organization, badNav)
+			  .contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(status().isBadRequest())
+	  .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(400))
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.title").exists())
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.detail").exists());
+  }
 
   /** VALIDATION TEST - unexpected case */
   @Test

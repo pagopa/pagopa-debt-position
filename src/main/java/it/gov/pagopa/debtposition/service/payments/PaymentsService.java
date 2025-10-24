@@ -284,14 +284,15 @@ public class PaymentsService {
     DebtPositionStatus.expirationCheckAndUpdate(paymentOption);
 
     PaymentPosition pp = paymentOption.getPaymentPosition();
+    final boolean ppInvalid = pp.getStatus() == DebtPositionStatus.INVALID;
     
     List<PaymentOption> siblings = pp.getPaymentOption();
 
     // Ec info
     VerifyPaymentOptionsResponse.VerifyPaymentOptionsResponseBuilder resp = VerifyPaymentOptionsResponse.builder()
-        .paTaxCode(pp.getOrganizationFiscalCode())
-        .paFullName(pp.getCompanyName())
-        .paOfficeName(pp.getOfficeName())
+        .organizationFiscalCode(pp.getOrganizationFiscalCode())
+        .companyName(pp.getCompanyName())
+        .officeName(pp.getOfficeName())
         .standIn(Boolean.TRUE.equals(pp.getPayStandIn()));
 
     // Group POs into:
@@ -305,56 +306,6 @@ public class PaymentsService {
       }
     }));
 
-    /*
-    List<PaymentOptionGroup> groups = new ArrayList<>();
-    for (Map.Entry<String, List<PaymentOption>> e : grouped.entrySet()) {
-      List<PaymentOption> list = e.getValue();
-      long totalAmount = list.stream().mapToLong(PaymentOption::getAmount).sum();
-      LocalDateTime maxDueDate = list.stream().map(PaymentOption::getDueDate).filter(Objects::nonNull)
-    	        .max(Comparator.naturalOrder()).orElse(null);
-      LocalDateTime minValidity = list.stream().map(PaymentOption::getValidityDate).filter(Objects::nonNull)
-          .min(Comparator.naturalOrder()).orElse(null);
-
-      // TODO Aggregate status - understanding logic 
-      // For now: 
-      // - if all UNPAID => PO_UNPAID;
-      // - if some but not all PAID => PO_PARTIALLY_PAID; if all PAID => PO_PAID;
-      String aggStatus = aggregateGroupStatus(list);
-
-      // TODO description - understanding logic: 
-      // - plan = description of the first installation
-      // - single =  description of the single po
-      String description = list.stream().map(PaymentOption::getDescription).filter(Objects::nonNull).findFirst().orElse("");
-
-      // installments
-      List<InstallmentSummary> installments = list.stream()
-          .sorted(Comparator.comparing(PaymentOption::getDueDate, Comparator.nullsLast(Comparator.naturalOrder())))
-          .map(po -> InstallmentSummary.builder()
-              .nav(po.getNav())
-              .iuv(po.getIuv())
-              .amount(po.getAmount())
-              .description(po.getDescription())
-              .dueDate(po.getDueDate())
-              .validFrom(po.getValidityDate())
-              .status(toInstallmentStatus(po.getStatus().name())) // es. "PO_UNPAID" -> "POI_UNPAID"
-              .build())
-          .toList();
-
-      PaymentOptionGroup group = PaymentOptionGroup.builder()
-          .description(description)
-          .numberOfInstallments(list.size())
-          .amount(totalAmount)
-          .dueDate(maxDueDate)
-          .validFrom(minValidity)
-          .status(aggStatus)
-          .statusReason(null) // ????
-          .allCCP(Boolean.FALSE) // iban postali
-          .installments(installments)
-          .build();
-
-      groups.add(group);
-    }*/
-    
     List<PaymentOptionGroup> groups = new ArrayList<>();
     for (Map.Entry<String, List<PaymentOption>> e : grouped.entrySet()) {
       List<PaymentOption> list = e.getValue();
@@ -374,14 +325,14 @@ public class PaymentsService {
           .orElse(null);
 
       // Description:
-      // - For "SINGLE:*" groups -> ALWAYS "Pagamento in un'unica soluzione"
-      // - For "PLAN:*" groups   -> "Piano rateale di N rate" (fallback: first non-null PO description)
+      // - For "SINGLE:*" groups -> ALWAYS "Payment in a single installment"
+      // - For "PLAN:*" groups   -> "Installment plan of N payments" (fallback: first non-null PO description)
       String groupKey = e.getKey();
       String description;
 
       if (groupKey.startsWith("SINGLE:")) {
     	  // Force a canonical label for single-payment option
-    	  description = "Pagamento in un'unica soluzione";
+    	  description = "Payment in a single installment";
       } else {
     	  int n = list.size();
     	  String fallback = list.stream()
@@ -389,7 +340,7 @@ public class PaymentsService {
     			  .filter(Objects::nonNull)
     			  .findFirst()
     			  .orElse("");
-    	  description = (n > 0) ? ("Piano rateale di " + n + " rate") : fallback;
+    	  description = (n > 0) ? ("Installment plan of " + n + " payments") : fallback;
       }
 
       // allCCP: true if ALL transfers from ALL POs in the group have a valid postalIBAN (not null/blank)
@@ -399,12 +350,13 @@ public class PaymentsService {
 
       /**
        * Aggregate PO status for a group:
-       * - if all PAID -> PO_PAID
+       * - if PP is invalid -> all PO is PO_INVALID
+       * - else if all PAID -> PO_PAID
        * - else if some PAID & some UNPAID within same group -> PO_PARTIALLY_PAID
        * - else handle EXPIRED flavors using dueDate/validityDate/switchToExpired
        * - else -> PO_UNPAID
        */
-      GroupStatus gs = aggregateGroupPoStatus(list); 
+      GroupStatus gs = aggregateGroupPoStatus(list, ppInvalid); 
 
       // installments sorted by dueDate
       List<InstallmentSummary> installments = list.stream()
@@ -416,8 +368,8 @@ public class PaymentsService {
               .description(po.getDescription())
               .dueDate(po.getDueDate())
               .validFrom(po.getValidityDate())
-              .status(toInstallmentStatus(po))       
-              .statusReason(toInstallmentReason(po)) // optional: detail text
+              .status(toInstallmentStatus(po, ppInvalid))       
+              .statusReason(toInstallmentReason(po, ppInvalid)) // optional: detail text
               .build())
           .toList();
 
@@ -427,7 +379,7 @@ public class PaymentsService {
           .amount(totalAmount)
           .dueDate(maxDueDate)
           .validFrom(minValidity)
-          .status(gs.status)              // PO_UNPAID / PO_PAID / PO_PARTIALLY_PAID / PO_EXPIRED_*
+          .status(gs.status)              // PO_INVALID / PO_UNPAID / PO_PAID / PO_PARTIALLY_PAID / PO_EXPIRED_*
           .statusReason(gs.reason)        // optional free text
           .allCCP(allCCP)
           .installments(installments)
@@ -435,7 +387,6 @@ public class PaymentsService {
 
       groups.add(group);
     }
-
 
     // order by duedate
     groups.sort(Comparator.comparing(PaymentOptionGroup::getDueDate, Comparator.nullsLast(Comparator.naturalOrder())));
@@ -519,7 +470,7 @@ public class PaymentsService {
     		po.setFee(Long.parseLong(paymentOptionModel.getFee()));
     		po.setStatus(PaymentOptionStatus.PO_PAID);
     		paidPO = po;
-    		break; // IMPORTANTE
+    		break;
     	}
     }
     if (paidPO == null) {
@@ -636,24 +587,6 @@ public class PaymentsService {
     }
   }
   
-  /*
-  private String aggregateGroupStatus(List<PaymentOption> list) {
-	  boolean anyPaid = list.stream().anyMatch(po -> po.getStatus() != PaymentOptionStatus.PO_UNPAID);
-	  boolean allPaid = list.stream().allMatch(po -> po.getStatus() == PaymentOptionStatus.PO_PAID 
-			  || po.getStatus() == PaymentOptionStatus.PO_REPORTED 
-			  || po.getStatus() == PaymentOptionStatus.PO_PARTIALLY_REPORTED);
-	  if (!anyPaid) return PaymentOptionStatus.PO_UNPAID.name();
-	  if (allPaid)  return PaymentOptionStatus.PO_PAID.name();
-	  return "PO_PARTIALLY_PAID"; // TODO: define new status if needed or change logic
-  }
-  
-  private String toInstallmentStatus(String poStatusName) {
-	  if (poStatusName.startsWith("PO_")) {
-		  return "POI_" + poStatusName.substring(3);
-	  }
-	  return poStatusName;
-  }*/
-  
   private static class GroupStatus {
 	  final String status;
 	  final String reason;
@@ -662,46 +595,43 @@ public class PaymentsService {
 
 	/**
 	 * Aggregate PO status for a group:
-	 * - if any INVALID  -> PO_INVALID
+	 * - if PP is invalid -> all PO is PO_INVALID
 	 * - else if all PAID -> PO_PAID
 	 * - else if some PAID & some UNPAID within same group -> PO_PARTIALLY_PAID
 	 * - else handle EXPIRED flavors using dueDate/validityDate/switchToExpired
 	 * - else -> PO_UNPAID
 	 */
-	private GroupStatus aggregateGroupPoStatus(List<PaymentOption> list) {
-	  // flags di base
-		/*
-	  boolean anyInvalid = list.stream().anyMatch(po -> po.getStatus() == PaymentOptionStatus.PO_INVALID);
-	  if (anyInvalid) return new GroupStatus("PO_INVALID", "One or more installments are invalid");*/
+  private GroupStatus aggregateGroupPoStatus(List<PaymentOption> list, boolean ppInvalid) {
+
+	  if (ppInvalid) {
+		  return new GroupStatus("PO_INVALID", "Debt position is INVALID");
+	  }
 
 	  boolean allPaid = list.stream().allMatch(po -> po.getStatus() == PaymentOptionStatus.PO_PAID);
-	  if (allPaid) return new GroupStatus("PO_PAID", null);
+	  if (allPaid) return new GroupStatus("PO_PAID", "All installments have been paid");
 
 	  boolean anyPaid   = list.stream().anyMatch(po -> po.getStatus() == PaymentOptionStatus.PO_PAID);
 	  boolean anyUnpaid = list.stream().anyMatch(po -> po.getStatus() == PaymentOptionStatus.PO_UNPAID);
 
 	  if (anyPaid && anyUnpaid) {
-	    return new GroupStatus("PO_PARTIALLY_PAID", "Some installments already paid");
+		  return new GroupStatus("PO_PARTIALLY_PAID", "Some installments already paid");
 	  }
-
-	  // Gestione scadenze a livello gruppo: se *tutte* scadute -> EXPIRED_NOT_PAYABLE/EXPIRED_UNPAID
-	  // Altrimenti se ce n'è almeno una non scaduta -> mantieni UNPAID.
 
 	  LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
 
-	  // tutte scadute?
+	  // all expired?
 	  boolean allExpired = list.stream().allMatch(po -> isExpired(po, now));
 	  if (allExpired) {
-	    // NOT_PAYABLE se almeno una PO ha switchToExpired=true
-	    boolean anyNotPayable = list.stream().anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
-	    return anyNotPayable
-	        ? new GroupStatus("PO_EXPIRED_NOT_PAYABLE", "Group expired and not payable")
-	        : new GroupStatus("PO_EXPIRED_UNPAID", "Group expired but still payable");
+		  // NOT_PAYABLE if at least one PO has switchToExpired=true
+		  boolean anyNotPayable = list.stream().anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
+		  return anyNotPayable
+				  ? new GroupStatus("PO_EXPIRED_NOT_PAYABLE", "Group expired and not payable")
+						  : new GroupStatus("PO_EXPIRED_UNPAID", "Group expired but still payable");
 	  }
 
 	  // default
-	  return new GroupStatus("PO_UNPAID", null);
-	}
+	  return new GroupStatus("PO_UNPAID", "No installment has been paid");
+  }
 
 	private boolean isExpired(PaymentOption po, LocalDateTime now) {
 		LocalDateTime due = po.getDueDate();
@@ -709,8 +639,10 @@ public class PaymentsService {
 		return now.isAfter(due);
 	}
 
-	private String toInstallmentStatus(PaymentOption po) {
-		//if (po.getStatus() == PaymentOptionStatus.PO_INVALID) return "POI_INVALID";
+	private String toInstallmentStatus(PaymentOption po, boolean ppInvalid) {
+
+		if (ppInvalid) return "POI_INVALID";
+
 		if (po.getStatus() == PaymentOptionStatus.PO_PAID)    return "POI_PAID";
 
 		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
@@ -724,8 +656,8 @@ public class PaymentsService {
 		return "POI_UNPAID";
 	}
 
-	private String toInstallmentReason(PaymentOption po) {
-		//if (po.getStatus() == PaymentOptionStatus.PO_INVALID) return "Invalid installment";
+	private String toInstallmentReason(PaymentOption po, boolean ppInvalid) {
+		if (ppInvalid) return "Debt position is INVALID";
 		if (po.getStatus() == PaymentOptionStatus.PO_PAID)    return null;
 
 		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
