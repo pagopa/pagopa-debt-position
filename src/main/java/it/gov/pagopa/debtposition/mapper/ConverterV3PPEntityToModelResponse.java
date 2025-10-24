@@ -10,6 +10,7 @@ import it.gov.pagopa.debtposition.model.v3.response.PaymentPositionModelResponse
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -59,22 +60,35 @@ public class ConverterV3PPEntityToModelResponse
     List<PaymentOption> partialPO = partitionedPO.get(true);
     List<PaymentOption> uniquePO = partitionedPO.get(false);
     List<PaymentOptionModelResponseV3> paymentOptionsToAdd = new ArrayList<>();
+    
+    if (partialPO != null && !partialPO.isEmpty()) {
+    	// group partial payment-options by planId
+    	Map<String, List<PaymentOption>> byPlan =
+    			partialPO.stream().collect(Collectors.groupingBy(PaymentOption::getPaymentPlanId));
 
-    if (null != partialPO && !partialPO.isEmpty()) {
-      // If at least one of the partial POs is marked as switchToExpired, the whole PO must be
-      boolean partialAnyMarkedExpired = partialPO.stream()
-  		      .anyMatch(i -> Boolean.TRUE.equals(i.getSwitchToExpired()));
-      PaymentOptionModelResponseV3 pov3 =
-          this.convertPartialPO(partialPO, partialAnyMarkedExpired);
-      paymentOptionsToAdd.add(pov3);
+    	for (Map.Entry<String, List<PaymentOption>> entry : byPlan.entrySet()) {
+    		List<PaymentOption> planInstallments = entry.getValue();
+    		// if at least one installment of THIS plan has switchToExpired=true, the aggregated plan option is marked as switchToExpired.
+    		boolean planAnyMarkedExpired = planInstallments.stream()
+    				.anyMatch(i -> Boolean.TRUE.equals(i.getSwitchToExpired()));
+    		PaymentOptionModelResponseV3 pov3 = this.convertPartialPO(planInstallments, planAnyMarkedExpired);
+    		paymentOptionsToAdd.add(pov3);
+    	}
     }
-
+    
     if (null != uniquePO && !uniquePO.isEmpty()) {
     	List<PaymentOptionModelResponseV3> pov3List = uniquePO.stream()
     			.map(this::convertUniquePO)
     			.toList();
     	paymentOptionsToAdd.addAll(pov3List);
     }
+    
+    // order by earliest dueDate among installments
+	paymentOptionsToAdd
+			.sort(Comparator.comparing(
+					p -> p.getInstallments().stream().map(InstallmentModelResponse::getDueDate).filter(Objects::nonNull)
+							.min(LocalDateTime::compareTo).orElse(null),
+					Comparator.nullsLast(Comparator.naturalOrder())));
 
     destination.setPaymentOption(paymentOptionsToAdd);
 
@@ -96,7 +110,11 @@ public class ConverterV3PPEntityToModelResponse
     pov3.setSwitchToExpired(switchToExpired);
     // Set installments
     List<InstallmentModelResponse> installments =
-        partialPOs.stream().map(this::convertInstallment).toList();
+    		partialPOs.stream()
+    	    .sorted(Comparator.comparing(PaymentOption::getDueDate,
+    	        Comparator.nullsLast(Comparator.naturalOrder())))
+    	    .map(this::convertInstallment)
+    	    .toList();
     pov3.setInstallments(installments);
     return pov3;
   }
