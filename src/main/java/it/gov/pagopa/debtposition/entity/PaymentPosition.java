@@ -107,10 +107,6 @@ public class PaymentPosition implements Serializable {
   @Column(name = "publish_date")
   private LocalDateTime publishDate;
 
-  /*
-  @Column(name = "validity_date")
-  private LocalDateTime validityDate;*/
-
   @NotNull
   @Column(name = "min_due_date")
   private LocalDateTime minDueDate;
