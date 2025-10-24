@@ -14,6 +14,7 @@ import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
+import it.gov.pagopa.debtposition.model.payments.verify.response.VerifyPaymentOptionsResponse;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
 import jakarta.validation.Valid;
@@ -350,4 +351,65 @@ public interface IPaymentsController {
             @RequestParam(required = false)
             String segregationCodes,
             @Valid @RequestBody AlreadyPaidPaymentOptionModel paidPaymentOptionModel);
+    
+    
+    
+    @Operation(
+            summary = "Verify payment options for a given notice number.",
+            security = {
+                    @SecurityRequirement(name = "ApiKey")
+            },
+            operationId = "verifyPaymentOptions")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Payment options successfully retrieved.",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = VerifyPaymentOptionsResponse.class))),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Malformed request.",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ProblemJson.class))),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "Wrong or missing function key.",
+                            content = @Content(schema = @Schema())),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "No payment option found.",
+                            content = @Content(schema = @Schema(implementation = ProblemJson.class))),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "Service unavailable.",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ProblemJson.class)))
+            })
+    @PostMapping(
+            value = "/payment-options/organizations/{organizationfiscalcode}/notices/{nav}",
+            produces = { MediaType.APPLICATION_JSON_VALUE })
+    ResponseEntity<VerifyPaymentOptionsResponse> verifyPaymentOptions(
+            @Parameter(
+                    description = "Organization fiscal code, the fiscal code of the Organization.",
+                    required = true)
+            @Pattern(regexp = "\\d{1,30}")
+            @PathVariable ("organizationfiscalcode")
+            String organizationFiscalCode,
+            @Parameter(
+                    description = "Notice number (NAV): [auxDigit][segregationCode][IUVBase][IUVCheckDigit].",
+                    required = true)
+            @Pattern(regexp = "^\\d{1,30}$")
+            @PathVariable
+            String nav,
+            @Valid
+            @Parameter(
+                    description = "Segregation codes for which broker is authorized",
+                    hidden = true)
+            @Pattern(regexp = "\\d{2}(,\\d{2})*")
+            @RequestParam(required = false)
+            String segregationCodes);
 }
