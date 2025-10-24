@@ -3,7 +3,7 @@ package it.gov.pagopa.debtposition.model.filterandorder;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

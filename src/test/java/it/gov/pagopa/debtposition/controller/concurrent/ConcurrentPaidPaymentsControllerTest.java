@@ -44,7 +44,7 @@ class ConcurrentPaidPaymentsControllerTest {
     // creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato) con più
     // opzioni di pagamento
     mvc.perform(
-            post("/organizations/PAY_Concurrent_Paid_12345678901/debtpositions?toPublish=true")
+            post("/organizations/1234567890177777/debtpositions?toPublish=true")
                 .content(TestUtil.toJson(DebtPositionMock.getMock3()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
@@ -63,9 +63,9 @@ class ConcurrentPaidPaymentsControllerTest {
             + Thread.currentThread().getName());
     // effettuo la notifica di pagamento di una rata parziale (setIsPartialPayment = true)
     mvc.perform(
-            post("/organizations/PAY_Concurrent_Paid_12345678901/paymentoptions/"
+            post("/organizations/1234567890177777/paymentoptions/"
                     + auxDigit
-                    + "123456IUVMULTIPLEMOCK4/pay")
+                    + "1234564/pay")
                 .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is(oneOf(200, 409)))
@@ -87,9 +87,9 @@ class ConcurrentPaidPaymentsControllerTest {
             + Thread.currentThread().getName());
     // effettuo la notifica di pagamento di una rata parziale (setIsPartialPayment = true)
     mvc.perform(
-            post("/organizations/PAY_Concurrent_Paid_12345678901/paymentoptions/"
+            post("/organizations/1234567890177777/paymentoptions/"
                     + auxDigit
-                    + "123456IUVMULTIPLEMOCK5/pay")
+                    + "1234565/pay")
                 .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is(oneOf(200, 409)))
@@ -107,9 +107,9 @@ class ConcurrentPaidPaymentsControllerTest {
         "checkDebtPosition_after_partially_paid start => " + Thread.currentThread().getName());
     // recupero la PO e verifico lo stato in PO_PAID
     String url =
-        "/organizations/PAY_Concurrent_Paid_12345678901/paymentoptions/"
+        "/organizations/1234567890177777/paymentoptions/"
             + auxDigit
-            + "123456IUVMULTIPLEMOCK4";
+            + "1234564";
     mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -119,7 +119,7 @@ class ConcurrentPaidPaymentsControllerTest {
 
     // recupero la PP e verifico lo stato sia PAID
     mvc.perform(
-            get("/organizations/PAY_Concurrent_Paid_12345678901/debtpositions/12345678901IUPDMULTIPLEMOCK2")
+            get("/organizations/1234567890177777/debtpositions/12345678901IUPDMULTIPLEMOCK2")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(
