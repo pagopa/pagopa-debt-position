@@ -50,7 +50,7 @@ function makeidNumber(length) {
 }
 
 function toLog(message) {
-    if (process.env.debug_enabled) {
+    if (process.env.debug_enabled === 'true') {
         console.log(message);
     }
 }
