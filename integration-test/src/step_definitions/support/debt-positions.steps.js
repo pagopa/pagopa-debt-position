@@ -67,16 +67,17 @@ Given('GPD running', () => executeHealthCheckForGPD());
  */
 Given('a random iupd', async function () {
     iupd = randomIupd();
+    gpdSessionBundle.debtPosition.iupd = iupd;
     // precondition -> deletion possible dirty data
     await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd);
 });
-When(/^the debt position with IUPD (.*) and payment option with IUV (.*) is created$/, (IUPD_input, iuv) => executeDebtPositionCreation(gpdSessionBundle, idOrg, IUPD_input, iuv));
-When('the debt position is created', () => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd));
+When(/^the debt position with IUPD (.*) and payment option with IUV (.*) is created$/, (IUPD_input, iuv) => executeDebtPositionCreation(gpdSessionBundle, idOrg, IUPD_input, version = "v1", iuv));
+When('the debt position is created using {string} API', (version) => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, version));
 When('the debt position with validityDate in {int} seconds is created', async (seconds) => {
-    await executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, iuv = makeidNumber(17), validityDate = addSeconds(seconds), toPublish = true)
+    await executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, version = "v1", iuv = makeidNumber(17), validityDate = addSeconds(seconds), toPublish = true);
 });
 Then('the debt position gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
-Then('the organization gets the nav value after creation', () => assertNav(gpdSessionBundle.createdDebtPosition, gpdSessionBundle.responseToCheck.data));
+Then('the organization gets the nav value from {string} after creation', (fromComponent) => assertNav(gpdSessionBundle.createdDebtPosition, gpdSessionBundle.responseToCheck.data, fromComponent));
 
 /*
  *  Massive debt positions creation
@@ -103,8 +104,8 @@ Given('the filter made by payment date from today to {int} days', (daysParam) =>
     paymentDateFrom = format(new Date());
     paymentDateTo = format(addDays(daysParam));
 });
-When('we ask the list of organizations debt positions', async () => {
-    await executeDebtPositionGetList(gpdSessionBundle, idOrg, dueDateFrom, dueDateTo, paymentDateFrom, paymentDateTo, status)
+When('we ask the list of organizations debt positions using {string} API', async (version) => {
+    await executeDebtPositionGetList(gpdSessionBundle, idOrg, dueDateFrom, dueDateTo, paymentDateFrom, paymentDateTo, status, version = version); 
     resetParams();
 });
 Then('we get the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
@@ -128,32 +129,32 @@ Then('the organization gets the updated amounts', () => assertNotificationFeeUpd
 /*
  *  Debt position update
  */
-When('the debt position is updated', () => executeDebtPositionUpdate(gpdSessionBundle, gpdUpdateBundle, idOrg, iupd));
+When('the debt position is updated using {string} API', (version) => executeDebtPositionUpdate(gpdSessionBundle, gpdUpdateBundle, idOrg, iupd, version = version));
 Then('the organization gets the update status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
-Then('the organization gets the nav value after update', () => assertNav(gpdSessionBundle.updatedDebtPosition, gpdSessionBundle.responseToCheck.data));
+Then('the organization gets the nav value from {string} after update', (fromComponent) => assertNav(gpdSessionBundle.updatedDebtPosition, gpdSessionBundle.responseToCheck.data, fromComponent));
 
 
 /*
  *  Debt position get
  */
-When('we get the debt position', () => executeDebtPositionGet(gpdSessionBundle, idOrg, iupd));
+When('we get the debt position using {string} API', (version) => executeDebtPositionGet(gpdSessionBundle, idOrg, iupd, version = version));
 When(/^we get the debt position by IUV (.*)$/, (iuv) => executeDebtPositionGetByIuv(gpdSessionBundle, idOrg, iuv));
 Then('the company name is {string}', (companyName) => assertCompanyName(gpdSessionBundle, companyName));
-Then('the organization get the nav value', () => assertNav(gpdSessionBundle.responseToCheck.data, gpdSessionBundle.responseToCheck.data))
+Then('the organization get the nav value from {string}', (fromComponent) => assertNav(gpdSessionBundle.responseToCheck.data, gpdSessionBundle.responseToCheck.data, fromComponent))
 Then(/^the debt position response IUV value is (.*)$/, (expectedIUV) => assertIUV(gpdSessionBundle.responseToCheck.data, expectedIUV))
 
 /*
  *  Debt position delete
  */
-When('the debt position is deleted', () => executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd));
+When('the debt position is deleted using {string} API', (version) => executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd, version = version));
 Then(/^the debt position with IUPD (.*) is deleted$/, (IUPD_input) => executeDebtPositionDeletion(gpdSessionBundle, idOrg, IUPD_input));
 
 /*
  *  Debt position publish
  */
-When('the debt position is published', () => executeDebtPositionPublish(gpdSessionBundle, idOrg, iupd));
+When('the debt position is published using {string} API', (version) => executeDebtPositionPublish(gpdSessionBundle, idOrg, iupd, version = version));
 When('the debt position using segregation codes is published', () => executeDebtPositionPublishWithSegregationCodes(gpdSessionBundle, idOrg, iupd));
-Then('the organization gets the nav value after publication', () => assertNav(gpdSessionBundle.createdDebtPosition, gpdSessionBundle.responseToCheck.data))
+Then('the organization gets the nav value from {string} after publication', (fromComponent) => assertNav(gpdSessionBundle.createdDebtPosition, gpdSessionBundle.responseToCheck.data, fromComponent))
 
 /*
  *  Debt position invalidate
@@ -185,10 +186,10 @@ Then('the transfer gets the status code {int}', (statusCode) => assertStatusCode
 /*
  *  Create and publish
  */
-When('the debt position is created and published', () => executeDebtPositionCreationAndPublication(gpdSessionBundle, idOrg, iupd));
+When('the debt position is created and published using {string} API', (version) => executeDebtPositionCreationAndPublication(gpdSessionBundle, idOrg, iupd, version));
 Then('the debt position gets status {string}', (statusString) => assertStatusString(gpdSessionBundle, statusString));
 
-When('the debt position is updated and published', () => executeDebtPositionUpdateAndPublication(gpdSessionBundle, idOrg, iupd));
+When('the debt position is updated and published using {string} API', (version) => executeDebtPositionUpdateAndPublication(gpdSessionBundle, idOrg, iupd, version));
 
 /*
  * Debt position manage with segregation codes
