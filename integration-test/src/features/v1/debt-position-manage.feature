@@ -10,7 +10,7 @@ Feature: Semantic check about a debt position
     And the organization gets the nav value from "payment_option" after creation
     # Debt position notification fee update
     When the notification fee of the debt position is updated
-    Then the organization gets the status code 209
+    Then the organization gets the status code 200
     And the organization gets the updated amounts
     # Debt position filter list by status and due date
     Given the filter made by status "DRAFT"
