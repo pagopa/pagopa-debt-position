@@ -69,8 +69,7 @@ public class ExpiredPositionsScheduler {
                       .format(LocalDateTime.now())));
       LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
       int numAffectedRows =
-          paymentPositionRepository.updatePaymentPositionStatusToExpired(
-              currentDate, DebtPositionStatus.EXPIRED);
+          paymentPositionRepository.updatePaymentPositionStatusToExpired(currentDate);
       log.debug(
           String.format(
               LOG_BASE_HEADER_INFO,

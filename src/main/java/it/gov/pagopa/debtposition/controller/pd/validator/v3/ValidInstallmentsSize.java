@@ -16,7 +16,7 @@ import jakarta.validation.constraints.Size;
 @Documented
 @Constraint(validatedBy = InstallmentsSizeValidator.class)
 public @interface ValidInstallmentsSize {
-  String message() default "Multiple Installment plan not available";
+  String message() default "Invalid payment options payload";
 
   Class<?>[] groups() default {};
 

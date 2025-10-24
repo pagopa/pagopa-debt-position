@@ -72,10 +72,12 @@ public class PaymentPositionCRUDService {
     final String ERROR_CREATION_LOG_MSG = "Error during debt position creation: %s";
 
     try {
-      // Inserisce (ed eventualmente porta in stato pubblicato) la posizione debitoria
-      return paymentPositionRepository.saveAndFlush(
-          this.checkAndBuildDebtPositionToSave(
-              debtPosition, organizationFiscalCode, toPublish, segCodes, action));
+    	// Inserts (and possibly brings to published status) the debt position
+    	PaymentPosition toSave =
+    	        this.checkAndBuildDebtPositionToSave(
+    	            debtPosition, organizationFiscalCode, toPublish, segCodes, action);
+    	
+    	return paymentPositionRepository.saveAndFlush(toSave);
     } catch (DataIntegrityViolationException e) {
       log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
       if (e.getCause() instanceof ConstraintViolationException constraintviolationexception) {
@@ -103,15 +105,18 @@ public class PaymentPositionCRUDService {
             new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
                 .and(new PaymentPositionByIUPD(iupd)));
 
-    Optional<PaymentPosition> pp = paymentPositionRepository.findOne(spec);
-    if (pp.isEmpty()) {
+    Optional<PaymentPosition> ppOptional = paymentPositionRepository.findOne(spec);
+    if (ppOptional.isEmpty()) {
       throw new AppException(AppError.DEBT_POSITION_NOT_FOUND, organizationFiscalCode, iupd);
     }
-    if (segCodes != null && !isAuthorizedBySegregationCode(pp.get(), segCodes)) {
+    
+    PaymentPosition pp = ppOptional.get();
+    
+    if (segCodes != null && !isAuthorizedBySegregationCode(pp, segCodes)) {
       throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, iupd);
     }
 
-    return pp.get();
+    return pp;
   }
 
   public PaymentPosition getDebtPositionByIUV(
@@ -127,7 +132,9 @@ public class PaymentPositionCRUDService {
       throw new AppException(AppError.PAYMENT_OPTION_IUV_NOT_FOUND, organizationFiscalCode, iuv);
     }
 
-    return po.get().getPaymentPosition();
+    PaymentOption inst = po.get();
+
+    return inst.getPaymentPosition();
   }
 
   public List<PaymentPosition> getDebtPositionsByIUPDs(
@@ -195,6 +202,7 @@ public class PaymentPositionCRUDService {
 
       List<PaymentOption> poList = paymentOptionRepository.findAll(specPO);
       pp.setPaymentOption(poList);
+      
     }
 
     return CommonUtil.toPage(positions, page.getNumber(), page.getSize(), page.getTotalElements());
@@ -245,7 +253,7 @@ public class PaymentPositionCRUDService {
       var ppUpdated =
           this.checkDebtPositionToUpdate(
               ppToUpdate, organizationFiscalCode, toPublish, segregationCodes, action);
-
+      
       return paymentPositionRepository.saveAndFlush(ppUpdated);
 
     } catch (ValidationException e) {
@@ -303,11 +311,12 @@ public class PaymentPositionCRUDService {
 
     try {
 
-      for (PaymentPosition debtPosition : debtPositions) {
-        ppToSaveList.add(
-            this.checkDebtPositionToUpdate(
-                debtPosition, organizationFiscalCode, toPublish, segCodes, action));
-      }
+     for (PaymentPosition debtPosition : debtPositions) {
+    		PaymentPosition pp = this.checkDebtPositionToUpdate(
+    				debtPosition, organizationFiscalCode, toPublish, segCodes, action);
+    		
+    		ppToSaveList.add(pp);
+     }
 
       // Inserisce il blocco di posizioni debitorie
       return paymentPositionRepository.saveAllAndFlush(ppToSaveList);
@@ -362,7 +371,7 @@ public class PaymentPositionCRUDService {
 
         // update amounts adding notification fee
         updateAmounts(organizationFiscalCode, currentPP);
-
+        
         // check data
         DebtPositionValidation.checkPaymentPositionInputDataAccuracy(currentPP, action);
       }
