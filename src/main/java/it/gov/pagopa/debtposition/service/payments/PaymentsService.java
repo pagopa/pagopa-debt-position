@@ -16,6 +16,9 @@ import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.payments.OrganizationModelQueryBean;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
+import it.gov.pagopa.debtposition.model.payments.verify.response.InstallmentSummary;
+import it.gov.pagopa.debtposition.model.payments.verify.response.PaymentOptionGroup;
+import it.gov.pagopa.debtposition.model.payments.verify.response.VerifyPaymentOptionsResponse;
 import it.gov.pagopa.debtposition.model.send.response.NotificationPriceResponse;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
@@ -24,6 +27,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -266,6 +271,93 @@ public class PaymentsService {
     paymentOptionRepository.saveAndFlush(paymentOption);
     return paymentOption;
   }
+  
+  @Transactional(readOnly = true)
+  public VerifyPaymentOptionsResponse verifyPaymentOptions(String organizationFiscalCode, String nav) {
+    
+	PaymentOption paymentOption = paymentOptionRepository
+        .findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
+            organizationFiscalCode, nav, organizationFiscalCode, nav)
+        .orElseThrow(() -> new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav));
+
+    DebtPositionStatus.validityCheckAndUpdate(paymentOption);
+    DebtPositionStatus.expirationCheckAndUpdate(paymentOption);
+
+    PaymentPosition pp = paymentOption.getPaymentPosition();
+    
+    List<PaymentOption> siblings = pp.getPaymentOption();
+
+    // Ec info
+    VerifyPaymentOptionsResponse.VerifyPaymentOptionsResponseBuilder resp = VerifyPaymentOptionsResponse.builder()
+        .paTaxCode(pp.getOrganizationFiscalCode())
+        .paFullName(pp.getCompanyName())
+        .paOfficeName(pp.getOfficeName());
+
+    // Group POs into:
+    // - "single" (isPartialPayment = false) => groupKey = "SINGLE:<POid>"
+    // - "plan"   (isPartialPayment = true)  => groupKey = "PLAN:<paymentPlanId>"
+    Map<String, List<PaymentOption>> grouped = siblings.stream().collect(Collectors.groupingBy(po -> {
+      if (Boolean.TRUE.equals(po.getIsPartialPayment())) {
+        return "PLAN:" + po.getPaymentPlanId();
+      } else {
+        return "SINGLE:" + po.getId();
+      }
+    }));
+
+    List<PaymentOptionGroup> groups = new ArrayList<>();
+    for (Map.Entry<String, List<PaymentOption>> e : grouped.entrySet()) {
+      List<PaymentOption> list = e.getValue();
+      long totalAmount = list.stream().mapToLong(PaymentOption::getAmount).sum();
+      LocalDateTime maxDueDate = list.stream().map(PaymentOption::getDueDate).filter(Objects::nonNull)
+    	        .max(Comparator.naturalOrder()).orElse(null);
+      LocalDateTime minValidity = list.stream().map(PaymentOption::getValidityDate).filter(Objects::nonNull)
+          .min(Comparator.naturalOrder()).orElse(null);
+
+      // TODO Aggregate status - understanding logic 
+      // For now: 
+      // - if all UNPAID => PO_UNPAID;
+      // - if some but not all PAID => PO_PARTIALLY_PAID; if all PAID => PO_PAID;
+      String aggStatus = aggregateGroupStatus(list);
+
+      // TODO description - understanding logic: 
+      // - plan = description of the first installation
+      // - single =  description of the single po
+      String description = list.stream().map(PaymentOption::getDescription).filter(Objects::nonNull).findFirst().orElse("");
+
+      // installments
+      List<InstallmentSummary> installments = list.stream()
+          .sorted(Comparator.comparing(PaymentOption::getDueDate, Comparator.nullsLast(Comparator.naturalOrder())))
+          .map(po -> InstallmentSummary.builder()
+              .nav(po.getNav())
+              .iuv(po.getIuv())
+              .amount(po.getAmount())
+              .description(po.getDescription())
+              .dueDate(po.getDueDate())
+              .validFrom(po.getValidityDate())
+              .status(toInstallmentStatus(po.getStatus().name())) // es. "PO_UNPAID" -> "POI_UNPAID"
+              .build())
+          .toList();
+
+      PaymentOptionGroup group = PaymentOptionGroup.builder()
+          .description(description)
+          .numberOfInstallments(list.size())
+          .amount(totalAmount)
+          .dueDate(maxDueDate)
+          .validFrom(minValidity)
+          .status(aggStatus)
+          .statusReason(null) // ????
+          .allCCP(Boolean.FALSE) // iban postali
+          .installments(installments)
+          .build();
+
+      groups.add(group);
+    }
+
+    // order by duedate
+    groups.sort(Comparator.comparing(PaymentOptionGroup::getDueDate, Comparator.nullsLast(Comparator.naturalOrder())));
+
+    return resp.paymentOptions(groups).build();
+  }
 
   public static void updateAmountsWithNotificationFee(
       PaymentOption paymentOption, String organizationFiscalCode, long notificationFeeAmount) {
@@ -459,4 +551,23 @@ public class PaymentsService {
       pp.setStatus(DebtPositionStatus.REPORTED);
     }
   }
+  
+  private String aggregateGroupStatus(List<PaymentOption> list) {
+	  boolean anyPaid = list.stream().anyMatch(po -> po.getStatus() != PaymentOptionStatus.PO_UNPAID);
+	  boolean allPaid = list.stream().allMatch(po -> po.getStatus() == PaymentOptionStatus.PO_PAID 
+			  || po.getStatus() == PaymentOptionStatus.PO_REPORTED 
+			  || po.getStatus() == PaymentOptionStatus.PO_PARTIALLY_REPORTED);
+	  if (!anyPaid) return PaymentOptionStatus.PO_UNPAID.name();
+	  if (allPaid)  return PaymentOptionStatus.PO_PAID.name();
+	  return "PO_PARTIALLY_PAID"; // TODO: define new status if needed or change logic
+  }
+  
+  private String toInstallmentStatus(String poStatusName) {
+	  if (poStatusName.startsWith("PO_")) {
+		  return "POI_" + poStatusName.substring(3);
+	  }
+	  return poStatusName;
+  }
+  
+  
 }

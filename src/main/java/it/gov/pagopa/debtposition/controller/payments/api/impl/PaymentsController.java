@@ -10,6 +10,7 @@ import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
+import it.gov.pagopa.debtposition.model.payments.verify.response.VerifyPaymentOptionsResponse;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionMetadataModelResponse;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
@@ -199,5 +200,20 @@ public class PaymentsController implements IPaymentsController {
     }
 
     return new ResponseEntity<>(paymentOptionModelResponse, HttpStatus.OK);
+  }
+
+  @Override
+  public ResponseEntity<VerifyPaymentOptionsResponse> verifyPaymentOptions(String organizationFiscalCode, String nav,
+		  String segregationCodes) {
+	  
+	  ArrayList<String> segCodes = segregationCodes != null
+			  ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
+					  : null;
+	  if (segCodes != null && !CommonUtil.isAuthorizedOnNavBySegregationCode(nav, segCodes)) {
+		  throw new AppException(AppError.DEBT_POSITION_FORBIDDEN_ON_NAV, organizationFiscalCode, nav);
+	  }
+		
+	  VerifyPaymentOptionsResponse resp = paymentsService.verifyPaymentOptions(organizationFiscalCode, nav);
+	  return ResponseEntity.ok(resp);
   }
 }
