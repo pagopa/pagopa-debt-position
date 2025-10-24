@@ -81,7 +81,7 @@ class DebtPositionControllerTest {
                 .value(auxDigit + "1234561"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].companyName")
-                .value("mock company name"))
+                .value("Comune di Firenze"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.DRAFT.toString()))
         .andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.nullValue()));
@@ -192,13 +192,13 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("31234563"))
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[1].nav")
                 .value("31234564"))
         .andExpect(
+            MockMvcResultMatchers.jsonPath("$.paymentOption[1].nav")
+                .value("31234565"))
+        .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[2].nav")
-                .value("31234565"));
+                .value("31234563"));
   }
 
   @Test
@@ -756,7 +756,7 @@ class DebtPositionControllerTest {
                 .value(auxDigit + "1234561"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].companyName")
-                .value("mock company name"));
+                .value("Comune di Firenze"));
   }
 
   @Test
@@ -954,13 +954,13 @@ class DebtPositionControllerTest {
                 .value("31234562"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[0].nav")
-                .value("31234563"))
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[1].nav")
                 .value("31234564"))
         .andExpect(
+            MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[1].nav")
+                .value("31234565"))
+        .andExpect(
             MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[2].nav")
-                .value("31234565"));
+                .value("31234563"));
   }
 
   @Test
@@ -1013,13 +1013,13 @@ class DebtPositionControllerTest {
                 .value("555" + auxDigit + "1234562"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[0].nav")
-                .value(auxDigit + "1234563"))
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[1].nav")
                 .value(auxDigit + "1234564"))
         .andExpect(
+            MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[1].nav")
+                .value(auxDigit + "1234565"))
+        .andExpect(
             MockMvcResultMatchers.jsonPath("$.payment_position_list[1].paymentOption[2].nav")
-                .value(auxDigit + "1234565"));
+                .value(auxDigit + "1234563"));
   }
 
   @Test

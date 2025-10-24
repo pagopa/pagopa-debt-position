@@ -5,9 +5,12 @@ import static it.gov.pagopa.debtposition.util.Constants.UPDATE_ACTION;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -25,6 +28,7 @@ public class PublishPaymentUtil {
     if (null == ppToPublish.getValidityDate() && ppToPublish.getMinDueDate().isAfter(currentDate)) {
       ppToPublish.setValidityDate(currentDate);
       ppToPublish.setStatus(DebtPositionStatus.VALID);
+      ppToPublish.getPaymentOption().forEach(po -> po.getInstallment().forEach(inst -> inst.setStatus(InstallmentStatus.UNPAID)));
     }
     // Regola 5 - se la richiesta di pubblicazione è avvenuta dopo che una una delle opzioni di
     // pagamento è scaduta (currentDate > min_due_date) viene rilanciato un errore

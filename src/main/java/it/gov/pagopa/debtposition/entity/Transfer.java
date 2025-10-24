@@ -3,38 +3,16 @@ package it.gov.pagopa.debtposition.entity;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-/**
- * @author aacitelli
- *     <p>JPA Entity
- * @param <transferMetadata>
- */
 @Builder(toBuilder = true)
 @Getter
 @Setter
@@ -42,96 +20,85 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table(
-    name = "transfer",
-    uniqueConstraints = {
-      @UniqueConstraint(
-          name = "unique_transfer",
-          columnNames = {"iuv", "organization_fiscal_code", "transfer_id", "payment_option_id"})
-    },
-    indexes = @Index(name = "transfer_payment_option_id_idx", columnList = "payment_option_id"))
+        name = "transfer",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "UniqueTransfer",
+                        columnNames = {"iuv", "organization_fiscal_code", "transfer_id", "installment_id"})
+        },
+        indexes = {
+                @Index(name = "idx_installment_id", columnList = "installment_id"),
+                @Index(name = "idx_transfer_metadata_gin", columnList = "metadata"),
+        })
 @JsonIdentityInfo(
-    generator = ObjectIdGenerators.IntSequenceGenerator.class,
-    property = "@transferId")
+        generator = ObjectIdGenerators.IntSequenceGenerator.class,
+        property = "@transferId")
 public class Transfer implements Serializable {
 
-  /** generated serialVersionUID */
-  private static final long serialVersionUID = -886970813082991109L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "TRANSFER_SEQ")
+    @SequenceGenerator(name = "TRANSFER_SEQ", sequenceName = "TRANSFER_SEQ", allocationSize = 1)
+    private Long id;
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "TRANSFER_SEQ")
-  @SequenceGenerator(name = "TRANSFER_SEQ", sequenceName = "TRANSFER_SEQ", allocationSize = 1)
-  private Long id;
+    @NotNull
+    @Column(name = "organization_fiscal_code")
+    private String organizationFiscalCode;
 
-  @NotNull
-  @Column(name = "organization_fiscal_code")
-  private String organizationFiscalCode;
+    @Column(name = "company_name")
+    private String companyName; // es. Comune di Roma
 
-  @NotNull
-  @Column(name = "transfer_id")
-  private String idTransfer;
+    @NotNull
+    @Column(name = "transfer_id")
+    private String transferId;
 
-  @NotNull private String iuv;
-  @NotNull private long amount;
+    @NotNull
+    private String iuv;
 
-  @NotNull
-  @Column(name = "remittance_information")
-  private String remittanceInformation; // causale
+    @NotNull
+    private long amount;
 
-  @NotNull private String category; // taxonomy
+    @NotNull
+    @Column(name = "remittance_information")
+    private String remittanceInformation; // causale
 
-  private String iban;
+    @NotNull
+    private String category; // taxonomy
 
-  @Column(name = "postal_iban")
-  private String postalIban;
+    private String iban;
 
-  @Column(name = "hash_document")
-  private String hashDocument;
+    @Column(name = "postal_iban")
+    private String postalIban;
 
-  @Column(name = "stamp_type")
-  private String stampType;
+    @Column(name = "hash_document")
+    private String hashDocument;
 
-  @Column(name = "provincial_residence")
-  private String provincialResidence;
+    @Column(name = "stamp_type")
+    private String stampType;
 
-  @Column(name = "company_name")
-  private String companyName;
+    @Column(name = "provincial_residence")
+    private String provincialResidence;
 
-  @NotNull
-  @Column(name = "inserted_date")
-  private LocalDateTime insertedDate;
+    @NotNull
+    @Column(name = "inserted_date")
+    private LocalDateTime insertedDate;
 
-  @NotNull
-  @Enumerated(EnumType.STRING)
-  private TransferStatus status;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private TransferStatus status;
 
-  @NotNull
-  @Column(name = "last_updated_date")
-  private LocalDateTime lastUpdatedDate;
+    @NotNull
+    @Column(name = "last_updated_date")
+    private LocalDateTime lastUpdatedDate;
 
-  @ManyToOne(
-      targetEntity = PaymentOption.class,
-      fetch = FetchType.LAZY,
-      optional = false,
-      cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-  @JoinColumn(name = "payment_option_id")
-  private PaymentOption paymentOption;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private List<Metadata> metadata;
 
-  @Builder.Default
-  @OneToMany(
-      targetEntity = TransferMetadata.class,
-      fetch = FetchType.LAZY,
-      mappedBy = "transfer",
-      cascade = CascadeType.ALL,
-      orphanRemoval = true)
-  private List<TransferMetadata> transferMetadata = new ArrayList<>();
-
-  public void addTransferMetadata(TransferMetadata metadata) {
-    transferMetadata.add(metadata);
-    metadata.setTransfer(this);
-  }
-
-  public void removeTransferMetadata(TransferMetadata metadata) {
-    transferMetadata.remove(metadata);
-    metadata.setTransfer(null);
-  }
+    @ManyToOne(
+            targetEntity = Installment.class,
+            fetch = FetchType.LAZY,
+            optional = false,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "installment_id")
+    private Installment installment;
 }
