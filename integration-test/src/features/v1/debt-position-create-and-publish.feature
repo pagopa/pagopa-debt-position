@@ -5,7 +5,7 @@ Feature: Create and publish a debt position
 
   Scenario: Debt position creation
     Given a random iupd
-    When the debt position is created and published
+    When the debt position is created and published using "v1" API
     Then the debt position gets the status code 201
     And the debt position gets status "VALID"
     
