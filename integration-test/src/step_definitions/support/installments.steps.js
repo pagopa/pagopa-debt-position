@@ -83,7 +83,7 @@ When('the multi debt position is created using {string} API with the following i
             };
         });
 
-        paymentOption.push({
+        const optionObject = {
             validityDate: gpdSessionBundle.debtPosition.validityDate,
             retentionDate: gpdSessionBundle.debtPosition.retentionDate,
             switchToExpired: false,
@@ -102,7 +102,21 @@ When('the multi debt position is created using {string} API with the following i
                 phone: gpdSessionBundle.payer.phone
             },
             installments
-        });
+        };
+
+        // If opt is a numeric index like "1", "2", place option at that index (preserving positions).
+        // Otherwise, fallback to pushing to the array.
+        const optIndex = Number(opt);
+        if (!Number.isNaN(optIndex) && Number.isFinite(optIndex)) {
+            paymentOption[optIndex - 1] = optionObject;
+        } else {
+            paymentOption.push(optionObject);
+        }
+    }
+
+    // Remove any undefined holes if opts were non-sequential
+    for (let i = paymentOption.length - 1; i >= 0; i--) {
+        if (paymentOption[i] === undefined) paymentOption.splice(i, 1);
     }
 
     const body = {
