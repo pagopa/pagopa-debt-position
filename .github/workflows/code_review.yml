@@ -47,7 +47,7 @@ jobs:
 
   smoke-test:
     name: Smoke Test
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted-job, "dev" ]
     environment:
       name: dev
     steps:
@@ -70,6 +70,7 @@ jobs:
         run: |
           cd ./docker
           chmod +x ./run_docker.sh
+          chmod +x ./run_docker_smoke.sh
           ./run_docker_smoke.sh
 
       - name: Run Integration Tests
@@ -85,7 +86,7 @@ jobs:
 
 
   delete_github_deployments:
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted-job, dev ]
     needs: smoke-test
     if: ${{ always() }}
     steps:

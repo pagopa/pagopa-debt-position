@@ -7,6 +7,11 @@ on:
         required: true
         description: The name of the environment where to run DB migration
         type: string
+      schema:
+        required: true
+        description: Which schema to migrate (apd|odp|all)
+        type: string
+        default: all
   workflow_dispatch:
     inputs:
       environment:
@@ -25,6 +30,7 @@ on:
           - apd
           - odp
           - all
+        default: all
 
 permissions:
   id-token: write
@@ -56,27 +62,35 @@ jobs:
       # ============================
       # - Run Flyway
       # ============================  
-      - name: Run Flyway Migration
+      - name: Run Flyway Validate + Migrate
         shell: bash
         run: |
-          export FLYWAY_DATASOURCE_URL='${{ secrets.FLYWAY_DATASOURCE_URL }}'
-          export SPRING_DATASOURCE_USERNAME='${{ secrets.DATASOURCE_USERNAME }}'
-          export SPRING_DATASOURCE_PASSWORD='${{ secrets.DATASOURCE_PASSWORD }}'
+           set -euo pipefail
+           export FLYWAY_DATASOURCE_URL='${{ secrets.FLYWAY_DATASOURCE_URL }}'
+           export SPRING_DATASOURCE_USERNAME='${{ secrets.DATASOURCE_USERNAME }}'
+           export SPRING_DATASOURCE_PASSWORD='${{ secrets.DATASOURCE_PASSWORD }}'
+           CFG=gpdFlywayConfig.conf
+           COMMON="-Dflyway.configFiles=${CFG} -Dflyway.validateMigrationNaming=true -Dflyway.cleanDisabled=true"
 
-          if [[ "${{ inputs.schema }}" == "apd" ]]; then
-            echo "▶ Running migration for schema APD..."
-            export SCHEMA_NAME='${{ vars.APD_SCHEMA_NAME }}'
-            mvn flyway:migrate -Dflyway.configFiles=gpdFlywayConfig.conf
-          elif [[ "${{ inputs.schema }}" == "odp" ]]; then
-            echo "▶ Running migration for schema ODP..."
-            export SCHEMA_NAME='${{ vars.ODP_SCHEMA_NAME }}'
-            mvn flyway:migrate -Dflyway.configFiles=gpdFlywayConfig.conf 
-          else
-            echo "▶ Running migration for ALL schemas..."
-            # APD
-            export SCHEMA_NAME='${{ vars.APD_SCHEMA_NAME }}'
-            mvn flyway:migrate -Dflyway.configFiles=gpdFlywayConfig.conf
-            # ODP
-            export SCHEMA_NAME='${{ vars.ODP_SCHEMA_NAME }}'
-            mvn flyway:migrate -Dflyway.configFiles=gpdFlywayConfig.conf                  
-          fi
+           if [[ "${{ inputs.schema }}" == "apd" ]]; then
+              echo "▶ Running APD: validate..."
+              export SCHEMA_NAME='${{ vars.APD_SCHEMA_NAME }}'
+              mvn -B flyway:validate ${COMMON}
+              echo "▶ Running APD: migrate..."
+              mvn -B flyway:migrate ${COMMON}
+            elif [[ "${{ inputs.schema }}" == "odp" ]]; then
+                echo "▶ Running ODP: validate..."
+                export SCHEMA_NAME='${{ vars.ODP_SCHEMA_NAME }}'
+                mvn -B flyway:validate ${COMMON}
+                echo "▶ Running ODP: migrate..."
+                mvn -B flyway:migrate ${COMMON}
+            else
+                echo "▶ Running ALL: APD first"
+                export SCHEMA_NAME='${{ vars.APD_SCHEMA_NAME }}'
+                mvn -B flyway:validate ${COMMON}
+                mvn -B flyway:migrate ${COMMON}
+                echo "▶ Running ALL: ODP then"
+                export SCHEMA_NAME='${{ vars.ODP_SCHEMA_NAME }}'
+                mvn -B flyway:validate ${COMMON}
+                mvn -B flyway:migrate ${COMMON}
+            fi
