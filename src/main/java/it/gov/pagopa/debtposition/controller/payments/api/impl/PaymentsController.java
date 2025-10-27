@@ -19,10 +19,8 @@ import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.CustomHttpStatus;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -43,7 +41,6 @@ public class PaymentsController implements IPaymentsController {
   private final ModelMapper modelMapper;
   private final PaymentsService paymentsService;
 
-  @Autowired
   public PaymentsController(ModelMapper modelMapper, PaymentsService paymentsService) {
     this.modelMapper = modelMapper;
     this.paymentsService = paymentsService;
