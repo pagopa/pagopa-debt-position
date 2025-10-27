@@ -1,19 +1,91 @@
 const { Given, When, Then, setDefaultTimeout } = require('@cucumber/cucumber');
 const assert = require('assert');
 
-// Helpers interni, come negli altri step
 const { executeHealthCheckForGPD } = require('./logic/health_checks_logic');
-const { createDebtPosition } = require('./clients/gpd_client'); // già usato in altri step
+const { createDebtPosition } = require('./clients/gpd_client');
 const { gpdSessionBundle } = require('./utility/data');
-const { executeVerifyPaymentOptions } = require('./logic/gpd_logic'); // wrapper per la nuova API
+const { executeVerifyPaymentOptions } = require('./logic/gpd_logic');
 const Data = require('./utility/data');
 
 setDefaultTimeout(30000);
 
-// Stato condiviso tra gli step
+// State shared between steps
 let ctx = {
   lastResponse: null,
 };
+
+// ---------- STEPS ----------
+
+/*
+ *  Health check
+ */
+Given('GPD running', () => executeHealthCheckForGPD());
+
+/*
+ *  Precondition: create a PD V3 with single + plan
+ */
+Given(
+  'a V3 debt position with one single-payment and one 2-installment plan exists for organization {string}',
+  async function (org) {
+    const payload = Data.v3.singleAndPlan(org);
+    const res = await createDebtPosition(org, payload, undefined, false, 'v3');
+    assert.ok([200, 201, 409].includes(res.status), `Unexpected status: ${res.status} - ${JSON.stringify(res.data)}`);
+  }
+);
+
+/*
+ *  Call to the verifyPaymentOptions API
+ */
+When('I call verifyPaymentOptions for organization {string} with nav {string}', async function (org, nav) {
+  const res = await executeVerifyPaymentOptions(gpdSessionBundle, org, nav);
+  ctx.lastResponse = res || gpdSessionBundle.responseToCheck;
+  if (!ctx.lastResponse) throw new Error('verifyPaymentOptions returned no response');
+});
+
+/*
+ *  Assertions
+ */
+Then('the HTTP status is {int}', function (code) {
+  assert.ok(ctx.lastResponse, 'No HTTP response captured');
+  assert.strictEqual(ctx.lastResponse.status, code, `Body: ${JSON.stringify(ctx.lastResponse.data)}`);
+});
+
+Then('the payload has at least {int} payment option groups', function (min) {
+  const groups = (ctx.lastResponse.data && ctx.lastResponse.data.paymentOptions) || [];
+  assert.ok(Array.isArray(groups), 'paymentOptions must be an array');
+  assert.ok(groups.length >= min, `Expected at least ${min} groups, got ${groups.length}`);
+});
+
+Then('there is at least one group with 1 installment described as {string}', function (expected) {
+  const groups = (ctx.lastResponse.data && ctx.lastResponse.data.paymentOptions) || [];
+  const singles = groups.filter(g => g.numberOfInstallments === 1);
+  assert.ok(singles.length >= 1, 'No group with numberOfInstallments == 1');
+  const descriptions = singles.map(g => g.description);
+  assert.ok(descriptions.includes(expected), `Expected a single group description "${expected}", got: ${descriptions.join(', ')}`);
+});
+
+Then('there is at least one group with more than 1 installment described starting with {string}', function (prefix) {
+  const groups = (ctx.lastResponse.data && ctx.lastResponse.data.paymentOptions) || [];
+  const plans = groups.filter(g => (g.numberOfInstallments || 0) > 1);
+  assert.ok(plans.length >= 1, 'No group with numberOfInstallments > 1');
+  const ok = plans.some(g => typeof g.description === 'string' && g.description.startsWith(prefix));
+  const got = plans.map(g => g.description).join(', ');
+  assert.ok(ok, `No plan description starts with "${prefix}". Got: ${got}`);
+});
+
+Then('groups are ordered by ascending dueDate', function () {
+  const groups = (ctx.lastResponse.data && ctx.lastResponse.data.paymentOptions) || [];
+  const dates = groups.map(g => (g.dueDate ? new Date(g.dueDate).getTime() : Number.MAX_SAFE_INTEGER));
+  for (let i = 1; i < dates.length; i++) {
+    assert.ok(dates[i] >= dates[i - 1], `Groups are not ordered by ascending dueDate at index ${i - 1} -> ${i}`);
+  }
+});
+
+Then('the response content-type contains {string}', function (expectedCT) {
+  const ct = (ctx.lastResponse.headers && (ctx.lastResponse.headers['content-type'] || ctx.lastResponse.headers['Content-Type'])) || '';
+  assert.ok(ct.includes(expectedCT), `Content-Type "${ct}" does not contain "${expectedCT}"`);
+});
+
 
 // ---------- UTILITIES ----------
 
@@ -143,79 +215,5 @@ function buildPpV3SingleAndPlan(orgFiscalCode) {
   return pp;
 }
 
-// Espone il builder su Data per coerenza con altri test
 Data.v3 = Data.v3 || {};
 Data.v3.singleAndPlan = buildPpV3SingleAndPlan;
-
-// ---------- STEPS ----------
-
-/*
- *  Health check
- */
-Given('GPD running', () => executeHealthCheckForGPD());
-
-/*
- *  Precondizione: creo una PD V3 con single + plan
- */
-Given(
-  'a V3 debt position with one single-payment and one 2-installment plan exists for organization {string}',
-  async function (org) {
-    const payload = Data.v3.singleAndPlan(org);
-    const res = await createDebtPosition(org, payload, undefined, false, 'v3');
-    assert.ok([200, 201, 409].includes(res.status), `Unexpected status: ${res.status} - ${JSON.stringify(res.data)}`);
-  }
-);
-
-/*
- *  Chiamata alla nuova API verifyPaymentOptions
- *  (usa il wrapper definito in gpd_logic, come negli altri test)
- */
-When('I call verifyPaymentOptions for organization {string} with nav {string}', async function (org, nav) {
-  const res = await executeVerifyPaymentOptions(gpdSessionBundle, org, nav);
-  ctx.lastResponse = res || gpdSessionBundle.responseToCheck;
-  if (!ctx.lastResponse) throw new Error('verifyPaymentOptions returned no response');
-});
-
-/*
- *  Asserzioni
- */
-Then('the HTTP status is {int}', function (code) {
-  assert.ok(ctx.lastResponse, 'No HTTP response captured');
-  assert.strictEqual(ctx.lastResponse.status, code, `Body: ${JSON.stringify(ctx.lastResponse.data)}`);
-});
-
-Then('the payload has at least {int} payment option groups', function (min) {
-  const groups = (ctx.lastResponse.data && ctx.lastResponse.data.paymentOptions) || [];
-  assert.ok(Array.isArray(groups), 'paymentOptions must be an array');
-  assert.ok(groups.length >= min, `Expected at least ${min} groups, got ${groups.length}`);
-});
-
-Then('there is at least one group with 1 installment described as {string}', function (expected) {
-  const groups = (ctx.lastResponse.data && ctx.lastResponse.data.paymentOptions) || [];
-  const singles = groups.filter(g => g.numberOfInstallments === 1);
-  assert.ok(singles.length >= 1, 'No group with numberOfInstallments == 1');
-  const descriptions = singles.map(g => g.description);
-  assert.ok(descriptions.includes(expected), `Expected a single group description "${expected}", got: ${descriptions.join(', ')}`);
-});
-
-Then('there is at least one group with more than 1 installment described starting with {string}', function (prefix) {
-  const groups = (ctx.lastResponse.data && ctx.lastResponse.data.paymentOptions) || [];
-  const plans = groups.filter(g => (g.numberOfInstallments || 0) > 1);
-  assert.ok(plans.length >= 1, 'No group with numberOfInstallments > 1');
-  const ok = plans.some(g => typeof g.description === 'string' && g.description.startsWith(prefix));
-  const got = plans.map(g => g.description).join(', ');
-  assert.ok(ok, `No plan description starts with "${prefix}". Got: ${got}`);
-});
-
-Then('groups are ordered by ascending dueDate', function () {
-  const groups = (ctx.lastResponse.data && ctx.lastResponse.data.paymentOptions) || [];
-  const dates = groups.map(g => (g.dueDate ? new Date(g.dueDate).getTime() : Number.MAX_SAFE_INTEGER));
-  for (let i = 1; i < dates.length; i++) {
-    assert.ok(dates[i] >= dates[i - 1], `Groups are not ordered by ascending dueDate at index ${i - 1} -> ${i}`);
-  }
-});
-
-Then('the response content-type contains {string}', function (expectedCT) {
-  const ct = (ctx.lastResponse.headers && (ctx.lastResponse.headers['content-type'] || ctx.lastResponse.headers['Content-Type'])) || '';
-  assert.ok(ct.includes(expectedCT), `Content-Type "${ct}" does not contain "${expectedCT}"`);
-});

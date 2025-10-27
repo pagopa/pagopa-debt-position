@@ -2,13 +2,9 @@
 set -euo pipefail
 
 ENV="dev"
-<<<<<<< HEAD
-
-pip3 install yq
-=======
->>>>>>> main
 
 image="service-local:latest"
+
 export image=${image}
 
 FILE=.env
@@ -23,13 +19,13 @@ for line in $(echo "$config" | yq -r '. | to_entries[] | select(.key) | "\(.key)
   key=$(echo "$line" | cut -d'=' -f1)
   value=$(echo "$line" | cut -d'=' -f2-)
 
-  # Se la chiave è SPRING_DATASOURCE_URL, assegna il valore specifico
-  if [[ "$key" == "SPRING_DATASOURCE_URL" ]]; then
-    value="jdbc:postgresql://pagopa-d-weu-gpd-pgflex.postgres.database.azure.com:6432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true"
-  fi
-  
-  # Scrivi la chiave-valore nel file .env
-  echo "$key=$value" >> .env
+    # Se la chiave è SPRING_DATASOURCE_URL, assegna il valore specifico
+    if [[ "$key" == "SPRING_DATASOURCE_URL" ]]; then
+        value="jdbc:postgresql://pagopa-d-weu-gpd-pgflex.postgres.database.azure.com:5432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true"
+    fi
+
+    # Scrivi la chiave-valore nel file .env
+    echo "$key=$value" >> .env
 done
 
 keyvault=$(yq -r '."microservice-chart".keyvault.name' ../helm/values-$ENV.yaml)
@@ -45,6 +41,7 @@ done
 
 stack_name=$(cd .. && basename "$PWD")
 docker compose -f ./docker-compose-local.yml -p "${stack_name}" up -d --remove-orphans --force-recreate --build
+
 
 # waiting the containers
 printf 'Waiting for the service'
@@ -76,7 +73,4 @@ while true; do
     exit 1
   fi
 done
-<<<<<<< HEAD
-=======
 echo 'Service Started'
->>>>>>> main
