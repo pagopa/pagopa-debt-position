@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface InstallmentRepository extends JpaRepository<Installment, Long>, JpaSpecificationExecutor<Installment> {
@@ -46,4 +47,14 @@ public interface InstallmentRepository extends JpaRepository<Installment, Long>,
                     "where inst.dueDate < :currentDate and inst.status='UNPAID' and " +
                     "po.switchToExpired IS TRUE)")
     void updateInstallmentStatusToExpired(@Param(value = "currentDate") LocalDateTime currentDate);
+
+    // TODO VERIFY
+    // lock for update to avoid issues with JPA
+    @Query(value = """ 
+			select *
+			from installment
+			where payment_position_id = :ppId
+			for update
+			""", nativeQuery = true)
+    List<Installment> lockAllByPaymentPositionId(@Param("ppId") Long ppId);
 }

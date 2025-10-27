@@ -79,7 +79,7 @@ public class PaymentsService {
         // PaymentPosition used when converting PaymentOption to POWithDebtor
         DebtPositionStatus.validityCheckAndUpdate(installment);
         DebtPositionStatus.expirationCheckAndUpdate(installment);
-        DebtPositionStatus.checkAlreadyPaidInstallments(installment.getPaymentOption(), nav);
+        DebtPositionStatus.checkAlreadyPaidInstallments(installment, nav, installmentRepository);
 
         // Synchronous update of notification fees
         if (Boolean.TRUE.equals(installment.getSendSync())) {
@@ -118,6 +118,15 @@ public class PaymentsService {
         // Update PaymentPosition instance only in memory
         DebtPositionStatus.validityCheckAndUpdate(paymentPositionToPay);
         DebtPositionValidation.checkPaymentPositionPayability(paymentPositionToPay, nav);
+        // TODO VERIFY
+        Installment instToPay = paymentPositionToPay.getPaymentOption().stream()
+                .map(PaymentOption::getInstallment)
+                .flatMap(List::stream)
+                .filter(inst -> nav.equals(inst.getNav()) || nav.equals(inst.getIuv()))
+                .findFirst()
+                .orElseThrow(() -> new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav));
+
+        DebtPositionStatus.checkAlreadyPaidInstallments(instToPay, nav, installmentRepository);
 
         return this.executePaymentFlow(paymentPositionToPay, nav, paymentOptionModel);
     }
@@ -136,6 +145,17 @@ public class PaymentsService {
         }
 
         DebtPositionValidation.checkPaymentPositionAccountability(ppToReport.get(), iuv, transferId);
+
+        // TODO VERIFY
+        Installment instToReport = ppToReport.get().getPaymentOption().stream()
+                .map(PaymentOption::getInstallment)
+                .flatMap(List::stream)
+                .filter(inst -> iuv.equals(inst.getIuv()))
+                .findFirst()
+                .orElseThrow(() -> new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, iuv));
+
+        // It will not do anything because the report operates on an Installment already paid, but it is checked for consistency
+        DebtPositionStatus.checkAlreadyPaidInstallments(instToReport, instToReport.getNav(), installmentRepository);
 
         return this.updateTransferStatus(ppToReport.get(), iuv, transferId);
     }
