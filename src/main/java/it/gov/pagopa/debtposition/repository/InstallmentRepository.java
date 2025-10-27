@@ -51,9 +51,9 @@ public interface InstallmentRepository extends JpaRepository<Installment, Long>,
     // TODO VERIFY
     // lock for update to avoid issues with JPA
     @Query(value = """ 
-			select *
-			from installment
-			where payment_position_id = :ppId
+			select inst.*
+			from odp.installment inst
+			where inst.payment_position_id = :ppId
 			for update
 			""", nativeQuery = true)
     List<Installment> lockAllByPaymentPositionId(@Param("ppId") Long ppId);
