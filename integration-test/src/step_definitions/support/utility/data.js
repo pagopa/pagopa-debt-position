@@ -31,7 +31,7 @@ let gpdSessionBundle = {
         transferDate: undefined
     },
     payer: {
-        name: "Michele Ventimiglia",
+        fullName: "Michele Ventimiglia",
         fiscalCode: "VNTMHL76M09H501D",
         streetName: "via Washington",
         civicNumber: "11",
@@ -60,7 +60,7 @@ let gpdPayBundle = {
     pspCompany: "string2",
     idReceipt: "string3",
     fee: 0
-                   }
+}
 
 module.exports = {
     gpdSessionBundle,

@@ -2,8 +2,11 @@
 set -euo pipefail
 
 ENV="dev"
+<<<<<<< HEAD
 
 pip3 install yq
+=======
+>>>>>>> main
 
 image="service-local:latest"
 export image=${image}
@@ -73,3 +76,7 @@ while true; do
     exit 1
   fi
 done
+<<<<<<< HEAD
+=======
+echo 'Service Started'
+>>>>>>> main
