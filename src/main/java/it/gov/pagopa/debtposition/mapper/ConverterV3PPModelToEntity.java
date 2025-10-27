@@ -73,7 +73,7 @@ public class ConverterV3PPModelToEntity
 						  .orElseGet(() -> java.util.UUID.randomUUID().toString());
 			  }
 
-			  // 2) Cicla le rate e mappa/crea/aggiorna
+			  // 2) Cycle installments and map/create/update
 			  for (InstallmentModel installment : sourceOption.getInstallments()) {
 				  PaymentOption managedOpt = managedOptionsByIuv.get(installment.getIuv());
 				  if (managedOpt != null) {
@@ -92,7 +92,7 @@ public class ConverterV3PPModelToEntity
 		  }
 	  }
 
-	  // DELETE: rimuovi gli orfani
+	  // DELETE: remove the orphans
 	  destination.getPaymentOption().removeAll(optionsToRemove);
   }
 
