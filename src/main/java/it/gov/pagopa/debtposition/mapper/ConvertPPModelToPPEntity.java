@@ -59,7 +59,7 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
 	  List<PaymentOptionModel> sourceOptions = source.getPaymentOption();
 	  List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
 
-	  // V1: a single installment plan per location → a single shared UUID
+	  // V1: all installment of the same debt position plan share one UUID
 	  String sharedPlanId = null;
 	  boolean hasAnyPlan =
 			  sourceOptions != null && sourceOptions.stream().anyMatch(o -> Boolean.TRUE.equals(o.getIsPartialPayment()));
@@ -86,7 +86,7 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
 		  }
 	  }
 
-	  // DELETE orfani
+	  // DELETE orphans
 	  destination.getPaymentOption().removeAll(optionsToRemove);
   }
 
