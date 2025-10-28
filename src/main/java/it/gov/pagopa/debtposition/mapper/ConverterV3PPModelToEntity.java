@@ -47,6 +47,10 @@ public class ConverterV3PPModelToEntity
   
   private void mapAndUpdateInstallments(
 		  PaymentPositionModelV3 source, PaymentPosition destination) {
+	  
+	  if (destination.getPaymentOption() == null) {
+		  destination.setPaymentOption(new ArrayList<>());
+	  }
 
 	  Map<String, PaymentOption> managedOptionsByIuv =
 			  destination.getPaymentOption().stream()
@@ -82,6 +86,7 @@ public class ConverterV3PPModelToEntity
 					  po.setSendSync(false);
 					  mapAndUpdateSinglePaymentOption(sourceOption, installment, po, planIdForThisOption);
 					  destination.getPaymentOption().add(po);
+					  managedOptionsByIuv.put(po.getIuv(), po);
 				  }
 			  }
 		  }
@@ -217,7 +222,7 @@ public class ConverterV3PPModelToEntity
 
         if (managedMetadata != null) {
           // UPDATE:
-          sourceMetadata.setValue(managedMetadata.getValue());
+          managedMetadata.setValue(sourceMetadata.getValue());
           metadataToRemove.remove(managedMetadata);
         } else {
           // CREATE:
@@ -250,7 +255,7 @@ public class ConverterV3PPModelToEntity
 
         if (managedMetadata != null) {
           // UPDATE:
-          sourceMetadata.setValue(managedMetadata.getValue());
+          managedMetadata.setValue(sourceMetadata.getValue());
           metadataToRemove.remove(managedMetadata);
         } else {
           // CREATE:

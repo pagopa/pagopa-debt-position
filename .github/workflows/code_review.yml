@@ -64,6 +64,19 @@ jobs:
           tenant-id: ${{ secrets.TENANT_ID }}
           subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
 
+      - name: Ensure Docker Compose v2
+        shell: bash
+        run: |
+          set -euo pipefail
+          if docker compose version >/dev/null 2>&1; then
+             echo "docker compose plugin already present"
+          else
+             echo "Install docker compose plugin"
+             sudo apt-get update
+             sudo apt-get install -y docker-compose-plugin
+          fi
+          docker compose version
+
       - name: Run Service on Docker
         shell: bash
         id: run_service_docker

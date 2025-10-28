@@ -7,13 +7,25 @@ image="service-local:latest"
 
 export image=${image}
 
+# Verifica se utilizzare Docker Compose v2 o v1
+if docker compose version >/dev/null 2>&1; then
+  DC="docker compose"
+elif command -v docker-compose >/dev/null 2>&1; then
+  DC="docker-compose"
+else
+  echo "Error: Docker Compose not found." >&2
+  exit 1
+fi
+
+
 FILE=.env
 if test -f "$FILE"; then
   rm .env
 fi
 
-config=$(yq -r '."microservice-chart".envConfig' ../helm/values-$ENV.yaml)
+OLD_IFS=$IFS
 IFS=$'\n'
+config=$(yq -r '."microservice-chart".envConfig' ../helm/values-$ENV.yaml)
 for line in $(echo "$config" | yq -r '. | to_entries[] | select(.key) | "\(.key)=\(.value)"'); do
   # Estrai la chiave e il valore dalla linea
   key=$(echo "$line" | cut -d'=' -f1)
@@ -38,20 +50,22 @@ for line in $(echo "$secret" | yq -r '. | to_entries[] | select(.key) | "\(.key)
   value=$(echo "$value" | sed 's/\$/\$\$/g' | tr -d '\n')
   echo "${array[0]}=$value" >> .env
 done
+IFS=$OLD_IFS
 
 stack_name=$(cd .. && basename "$PWD")
-docker compose -f ./docker-compose-local.yml -p "${stack_name}" up -d --remove-orphans --force-recreate --build
+#docker compose -f ./docker-compose-local.yml -p "${stack_name}" up -d --remove-orphans --force-recreate --build
+$DC -f ./docker-compose-local.yml -p "${stack_name}" up -d --remove-orphans --force-recreate --build
 
 
 # waiting the containers
-printf 'Waiting for the service'
+printf 'Waiting for the service\n'
 attempts=0
 max_attempts=60
 while true; do
   rc=0
   err="$(curl -fsS -o /dev/null "http://localhost:8080/info" 2>&1)" || rc=$?
   if [ $rc -eq 0 ]; then
-    echo ' Service Started'
+    echo 'Service Started'
     break
   fi
 
@@ -65,9 +79,11 @@ while true; do
   attempts=$((attempts+1))
   if [ $attempts -ge $max_attempts ]; then
     echo " Max attempts reached"
-    docker compose -f ./docker-compose-local.yml -p "${stack_name}" ps || true
-    docker compose -f ./docker-compose-local.yml -p "${stack_name}" logs gpd || true
-    docker compose -f ./docker-compose-local.yml -p "${stack_name}" logs pgbouncer || true
+ #   docker compose -f ./docker-compose-local.yml -p "${stack_name}" ps || true
+ #   docker compose -f ./docker-compose-local.yml -p "${stack_name}" logs gpd || true
+ #   docker compose -f ./docker-compose-local.yml -p "${stack_name}" logs pgbouncer || true
+    $DC -f ./docker-compose-local.yml -p "${stack_name}" ps || true
+    $DC -f ./docker-compose-local.yml -p "${stack_name}" logs gpd || true
     # final check to show endpoint status
     curl -i "http://localhost:8080/info" || true
     exit 1
