@@ -1,5 +1,17 @@
 package it.gov.pagopa.debtposition.mapper;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.modelmapper.Converter;
+import org.modelmapper.spi.MappingContext;
+
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
@@ -9,15 +21,6 @@ import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
 import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import org.modelmapper.Converter;
-import org.modelmapper.spi.MappingContext;
 
 public class ConverterV3PPEntityToModel
     implements Converter<PaymentPosition, PaymentPositionModelV3> {
@@ -49,12 +52,22 @@ public class ConverterV3PPEntityToModel
     List<PaymentOption> uniquePO = partitionedPO.get(false);
     List<PaymentOptionModelV3> paymentOptionsToAdd = new ArrayList<>();
 
-    if (null != partialPO && !partialPO.isEmpty()) {
-      // If at least one of the partial POs is marked as switchToExpired, the whole PO must be
-      boolean partialAnyMarkedExpired = partialPO.stream()
-    	        .anyMatch(i -> Boolean.TRUE.equals(i.getSwitchToExpired()));
-      PaymentOptionModelV3 pov3 = this.convertPartialPO(partialPO, partialAnyMarkedExpired);
-      paymentOptionsToAdd.add(pov3);
+    if (partialPO != null && !partialPO.isEmpty()) {
+    	// Group installments by paymentPlanId; defensive fallback if null/empty
+    	Map<String, List<PaymentOption>> byPlan = partialPO.stream()
+    			.collect(Collectors.groupingBy(po -> {
+    				String pid = po.getPaymentPlanId();
+    				return (pid != null && !pid.isBlank()) ? pid : ("_NO_PLAN_" + po.getId());
+    			}));
+
+    	for (Map.Entry<String, List<PaymentOption>> entry : byPlan.entrySet()) {
+    		List<PaymentOption> planInstallments = entry.getValue();
+    		// the plan is marked expired if at least one installment is
+    		boolean planAnyMarkedExpired = planInstallments.stream()
+    				.anyMatch(i -> Boolean.TRUE.equals(i.getSwitchToExpired()));
+    		PaymentOptionModelV3 pov3 = this.convertPartialPO(planInstallments, planAnyMarkedExpired);
+    		paymentOptionsToAdd.add(pov3);
+    	}
     }
 
     if (null != uniquePO && !uniquePO.isEmpty()) {
@@ -63,6 +76,15 @@ public class ConverterV3PPEntityToModel
     		    .toList();
       paymentOptionsToAdd.addAll(pov3List);
     }
+    
+    // sort options by minimum dueDate between the installments
+    paymentOptionsToAdd.sort(Comparator.comparing(
+    		p -> p.getInstallments().stream()
+    		.map(InstallmentModel::getDueDate)
+    		.filter(Objects::nonNull)
+    		.min(LocalDateTime::compareTo)
+    		.orElse(null),
+    		Comparator.nullsLast(Comparator.naturalOrder())));
 
     destination.setPaymentOption(paymentOptionsToAdd);
 
@@ -94,7 +116,11 @@ public class ConverterV3PPEntityToModel
     pov3.setSwitchToExpired(switchToExpired);
     // Set installments
     List<InstallmentModel> installments =
-        partialPOs.stream().map(this::convertInstallment).toList();
+    		partialPOs.stream()
+    	    .sorted(Comparator.comparing(PaymentOption::getDueDate,
+    	        Comparator.nullsLast(Comparator.naturalOrder())))
+    	    .map(this::convertInstallment)
+    	    .toList();
     pov3.setInstallments(installments);
     return pov3;
   }
