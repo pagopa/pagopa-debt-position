@@ -67,7 +67,7 @@ Given('a random iupd', async function () {
     await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd);
 });
 When(/^the debt position with IUPD (.*) and payment option with IUV (.*) is created$/, (IUPD_input, iuv) => executeDebtPositionCreation(gpdSessionBundle, idOrg, IUPD_input, version = "v1", iuv));
-When('the debt position is created using {string} API', (version) => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, version));
+When('the debt position is created using {string} API', (version) => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, version, makeidNumber(17)));
 When('the debt position with validityDate in {int} seconds is created', async (seconds) => {
     await executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, version = "v1", iuv = makeidNumber(17), validityDate = addSeconds(seconds), toPublish = true);
 });
@@ -110,6 +110,13 @@ Then('we get the status code {int}', (statusCode) => assertStatusCode(gpdSession
  */
 When('the notification fee of the debt position is updated', () => executeDebtPositionNotificationFeeUpdate(gpdSessionBundle, idOrg, 150));
 Then('the organization gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
+Then('the organization gets the status code {int} or {int}', (code1, code2) => {
+  const actual = gpdSessionBundle?.responseToCheck?.status;
+  assert.ok(
+    actual === code1 || actual === code2,
+    `Expected ${code1} or ${code2} but got ${actual}`
+  );
+});
 Then('the organization gets the updated amounts', () => assertNotificationFeeUpdatedAmounts(gpdSessionBundle.createdDebtPosition, gpdSessionBundle.responseToCheck.data));
 
 /*
