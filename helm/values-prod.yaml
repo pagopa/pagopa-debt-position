@@ -27,7 +27,7 @@ microservice-chart:
       maxSurge: 1
   deployment:
     create: true
-    replicas: 3 # same as HPA minReplica
+    replicas: 4 # same as HPA minReplica
   service:
     create: true
     type: ClusterIP
@@ -57,7 +57,7 @@ microservice-chart:
       cpu: "0.80"
   autoscaling:
     enable: true
-    minReplica: 3
+    minReplica: 4
     maxReplica: 10
     pollingInterval: 1 # seconds
     cooldownPeriod: 50 # seconds
@@ -175,7 +175,7 @@ microservice-chart:
       weightPercent: 0
     image:
       repository: ghcr.io/pagopa/pagopa-debt-position
-      tag: "0.16.0-2-hikari-switch"
+      tag: "1.0.0"
       pullPolicy: Always
     envConfig: {}
     envSecret: {}

@@ -16,10 +16,6 @@ let ctx = {
 
 // ---------- STEPS ----------
 
-/*
- *  Health check
- */
-Given('GPD running', () => executeHealthCheckForGPD());
 
 /*
  *  Precondition: create a PD V3 with single + plan

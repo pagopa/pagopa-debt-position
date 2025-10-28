@@ -58,11 +58,6 @@ BeforeAll(async function() {
  });
 
 /*
- *  'Given' precondition for health checks on various services.
- */
-Given('GPD running', () => executeHealthCheckForGPD());
-
-/*
  *  Debt position creation
  */
 Given('a random iupd', async function () {
