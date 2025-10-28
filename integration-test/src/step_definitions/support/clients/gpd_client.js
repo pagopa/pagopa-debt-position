@@ -235,8 +235,9 @@ function updateTransferIbanMassive(orgId, oldIban, newIban, version = "v1") {
     })
 }
 
-async function verifyPaymentOptions(organizationFiscalCode, nav, config = {}) {
-	const url = GPD_EXTERNAL_HOST + `/payment-options/organizations/${organizationFiscalCode}/notices/${nav}`;
+async function verifyPaymentOptions(organizationFiscalCode, nav, config = {}, version = "v1") {
+	const url = GPD_EXTERNAL_HOST + getVersionUri(version) + `/payment-options/organizations/${organizationFiscalCode}/notices/${nav}`;
+	toLog("[verifyPaymentOptions] URL:" + url);
 	return await post(url, {}, {
 		timeout: API_TIMEOUT,
 		headers: {
