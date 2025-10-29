@@ -148,13 +148,25 @@ class DebtPositionControllerV3Test {
   }
 
   @Test
-  void createDebtPosition_400() throws Exception {
+  void createDebtPosition_OkMultiPlan_201() throws Exception {
     String uri = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
     mvc.perform(
             post(uri)
                 .content(TestUtil.toJson(createPaymentPositionV3(2, 2)))
                 .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  void createDebtPosition_400() throws Exception {
+    String uri = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
+    PaymentPositionModelV3 paymentPositionModelV3 = createPaymentPositionV3(2, 2);
+    paymentPositionModelV3.getPaymentOption().forEach(po -> po.getInstallments().forEach(inst -> inst.setIuv("sameIuv")));
+    mvc.perform(
+                    post(uri)
+                            .content(TestUtil.toJson(paymentPositionModelV3))
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
   }
 
   @Test

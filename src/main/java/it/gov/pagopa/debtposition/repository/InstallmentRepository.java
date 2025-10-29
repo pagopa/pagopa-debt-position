@@ -52,7 +52,7 @@ public interface InstallmentRepository extends JpaRepository<Installment, Long>,
     // lock for update to avoid issues with JPA
     @Query(value = """ 
 			select inst.*
-			from odp.installment inst
+			from installment inst
 			where inst.payment_position_id = :ppId
 			for update
 			""", nativeQuery = true)

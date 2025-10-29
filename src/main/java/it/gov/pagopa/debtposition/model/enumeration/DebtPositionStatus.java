@@ -152,12 +152,12 @@ public enum DebtPositionStatus {
                         .filter(inst -> InstallmentStatus.getInstallmentPaidStatus().contains(inst.getStatus()))
                         .anyMatch(paid -> {
                             PaymentOption paidOption = paid.getPaymentOption();
-                            boolean paidIsInstallment = OptionType.OPZIONE_UNICA.equals(paidOption.getOptionType());
+                            boolean paidIsInstallment = OptionType.OPZIONE_RATEALE.equals(paidOption.getOptionType());
                             if (!paidIsInstallment) {
                                 // single payment already paid -> conflict
                                 return true;
                             }
-                            // paid installment -> conflict if plan IDs differ
+                            // paid installment -> conflict if option IDs differ
                             return !Objects.equals(paymentOption.getId(), paidOption.getId());
                         });
 
