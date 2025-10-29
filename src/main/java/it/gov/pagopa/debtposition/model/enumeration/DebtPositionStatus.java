@@ -57,15 +57,23 @@ public enum DebtPositionStatus {
         return EnumSet.of(DRAFT, PUBLISHED, INVALID, EXPIRED, REPORTED);
     }
 
-    public static PaymentPosition validityCheckAndUpdate(PaymentPosition pp) {
+    public static void validityCheckAndUpdate(PaymentPosition pp) {
         LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
         // Validity check on the fly
         if (pp.getStatus().equals(DebtPositionStatus.PUBLISHED)
                 && null != pp.getValidityDate()
                 && currentDate.isAfter(pp.getValidityDate())) {
             pp.setStatus(DebtPositionStatus.VALID);
+            pp.getPaymentOption().forEach(po -> {
+                if (currentDate.isAfter(po.getValidityDate())) {
+                    po.getInstallment().forEach(inst -> {
+                        if (inst.getStatus() == InstallmentStatus.DRAFT) {
+                            inst.setStatus(InstallmentStatus.UNPAID);
+                        }
+                    });
+                }
+            });
         }
-        return pp;
     }
 
     public static void expirationCheckAndUpdate(PaymentPosition pp) {
@@ -87,6 +95,15 @@ public enum DebtPositionStatus {
                 && null != pp.getValidityDate()
                 && currentDate.isAfter(pp.getValidityDate())) {
             pp.setStatus(DebtPositionStatus.VALID);
+            pp.getPaymentOption().forEach(po -> {
+                if (currentDate.isAfter(po.getValidityDate())) {
+                    po.getInstallment().forEach(inst -> {
+                        if (inst.getStatus() == InstallmentStatus.DRAFT) {
+                            inst.setStatus(InstallmentStatus.UNPAID);
+                        }
+                    });
+                }
+            });
         }
     }
 
