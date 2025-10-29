@@ -16,8 +16,8 @@ import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResp
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
-import javax.validation.Valid;
-import javax.validation.constraints.Pattern;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -68,7 +68,6 @@ public interface IPaymentsController {
           @Parameter(
               description = "Organization fiscal code, the fiscal code of the Organization.",
               required = true)
-          @Pattern(regexp = "^\\d{1,30}$")
           @PathVariable("organizationfiscalcode")
           String organizationFiscalCode,
       @Parameter(
@@ -76,6 +75,7 @@ public interface IPaymentsController {
                   "NAV (notice number) is the unique reference assigned to the payment by a"
                       + " creditor institution.",
               required = true)
+      @Pattern(regexp = "^\\d{1,30}$")
           @PathVariable("nav")
           String nav);
 

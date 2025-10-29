@@ -20,8 +20,8 @@ import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
 import java.time.LocalDate;
-import javax.validation.Valid;
-import javax.validation.constraints.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
 import it.gov.pagopa.debtposition.model.pd.response.UpdateTransferIbanMassiveResponse;
 import org.springframework.data.domain.Sort;

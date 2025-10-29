@@ -17,8 +17,8 @@ import it.gov.pagopa.debtposition.service.payments.PaymentsService;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.CustomHttpStatus;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
-import javax.validation.Valid;
-import javax.validation.constraints.Pattern;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,8 +50,8 @@ public class PaymentsController implements IPaymentsController {
 
   @Override
   public ResponseEntity<PaymentOptionWithDebtorInfoModelResponse> getOrganizationPaymentOptionByNAV(
-      @Pattern(regexp = "\\d{1,30}") String organizationFiscalCode,
-      @Pattern(regexp = "^\\d{1,30}$") String nav) {
+      String organizationFiscalCode,
+      String nav) {
     log.debug(
         String.format(
             LOG_BASE_HEADER_INFO,

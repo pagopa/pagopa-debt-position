@@ -1,4 +1,6 @@
 const assert = require("assert");
+const {toLog} = require("../utility/helpers");
+const {log}=require("console");
 
 const auxDigit = process.env.aux_digit
 
@@ -17,6 +19,10 @@ async function assertOutcome(bundle, outcome) {
 }
 
 async function assertStatusCode(bundle, statusCode) {
+    if(bundle.responseToCheck.status != statusCode) {
+        toLog("[assertStatusCode] executed request: " + JSON.stringify(bundle.responseToCheck.request.path))
+        toLog("[assertStatusCode] failed response: " + JSON.stringify(bundle.responseToCheck.data))
+    }
     assert.strictEqual(bundle.responseToCheck.status, statusCode);
 }
 
@@ -48,8 +54,12 @@ async function assertNotificationFeeUpdatedDateNotificationFee(createdDebtPositi
 	assert.notEqual(lastUpdatedDateNotificationFee, null);
 }
 
-async function assertNav(debtPosition, response) {
+async function assertNav(debtPosition, response, fromComponent = "payment_option") {
     // nav = auxDigit + iuv
+    if (fromComponent === "installment") {
+        assert.strictEqual(response.paymentOption[0].installments[0].nav, auxDigit + debtPosition.paymentOption[0].installments[0].iuv);
+        return;
+    }
     assert.strictEqual(response.paymentOption[0].nav, auxDigit + debtPosition.paymentOption[0].iuv);
 }
 
