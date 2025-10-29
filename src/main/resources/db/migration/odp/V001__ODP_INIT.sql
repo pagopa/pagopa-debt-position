@@ -219,7 +219,7 @@ CREATE TABLE IF NOT EXISTS odp.transfer (
     inserted_date timestamp NOT NULL,
     last_updated_date timestamp NOT NULL,
     organization_fiscal_code varchar(50) NOT NULL,
-    company_name varchar(100) NOT NULL,
+    company_name varchar(100) NULL,
     postal_iban varchar(255) NULL,
     remittance_information varchar(255) NOT NULL,
     status varchar(25) NOT NULL,

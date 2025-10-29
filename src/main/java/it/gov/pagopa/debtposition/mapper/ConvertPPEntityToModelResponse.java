@@ -89,7 +89,7 @@ public class ConvertPPEntityToModelResponse
         TransferModelResponse destination = new TransferModelResponse();
 
         destination.setOrganizationFiscalCode(sourceTransfer.getOrganizationFiscalCode());
-        destination.setCompanyName(sourceTransfer.getInstallment().getPaymentPosition().getCompanyName());
+        destination.setCompanyName(sourceTransfer.getCompanyName());
         destination.setIdTransfer(sourceTransfer.getTransferId());
         destination.setAmount(sourceTransfer.getAmount());
         destination.setRemittanceInformation(sourceTransfer.getRemittanceInformation());
