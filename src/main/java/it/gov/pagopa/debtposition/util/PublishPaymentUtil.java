@@ -30,6 +30,8 @@ public class PublishPaymentUtil {
 		if (minValidityDate == null && ppToPublish.getMinDueDate().isAfter(currentDate)) {
 			// the validityDate is set on all PaymentOptions that do not have it
 			setValidityDateIfAbsentOnAllOptions(ppToPublish, currentDate);
+            // todo setValidityDate to ppToPublish remove after v1.1.0 promotion because useless
+            ppToPublish.setValidityDate(currentDate);
 			ppToPublish.setStatus(DebtPositionStatus.VALID);
 		}
 		// Regola 5 - se la richiesta di pubblicazione è avvenuta dopo che una una delle opzioni di
