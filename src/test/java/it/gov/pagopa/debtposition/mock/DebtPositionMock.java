@@ -360,6 +360,7 @@ public class DebtPositionMock {
     pPMock.setCompanyName("Comune di Firenze");
     pPMock.setOfficeName("Ufficio tributario");
     pPMock.addPaymentOptions(createPaymentOptionsMock2());
+    pPMock.setSwitchToExpired(true);
 
     return pPMock;
   }
@@ -650,7 +651,7 @@ public class DebtPositionMock {
     pPMock.setOfficeName("Ufficio tributario");
     pPMock.setStatus(DebtPositionStatus.DRAFT);
     pPMock.addPaymentOptions(createPaymentOptions400Mock1());
-
+    pPMock.setSwitchToExpired(true);
     return pPMock;
   }
 
