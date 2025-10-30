@@ -247,6 +247,48 @@ class DebtPositionControllerV3Test {
             "/v3/organizations/%s/debtpositions/%s/publish", ORG_FISCAL_CODE, ppv3.getIupd());
     mvc.perform(post(positionUri).content(TestUtil.toJson(ppv3))).andExpect(status().isOk());
   }
+  
+  @Test
+  void createDebtPosition_MixedValidity_toPublishTrue() throws Exception {
+      String uri = String.format("/v3/organizations/%s/debtpositions?toPublish=true", ORG_FISCAL_CODE);
+      PaymentPositionModelV3 paymentPosition = createPaymentPositionV3(2, 1);
+      
+      // PO_1 with validity valued
+      paymentPosition.getPaymentOption().get(0).setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plusDays(1));
+      // PO_2 with validity = null
+      paymentPosition.getPaymentOption().get(1).setValidityDate(null);
+
+      mvc.perform(
+              post(uri)
+                  .content(TestUtil.toJson(paymentPosition))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isCreated())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+          // then: PO_1 maintains validity, PO_2 is populated (currentDate)
+          .andExpect(jsonPath("$.paymentOption[0].validityDate").isNotEmpty())
+          .andExpect(jsonPath("$.paymentOption[1].validityDate").isNotEmpty());
+  }
+  
+  @Test
+  void createDebtPosition_MixedValidity_toPublishFalse() throws Exception {
+      String uri = String.format("/v3/organizations/%s/debtpositions?toPublish=false", ORG_FISCAL_CODE);
+      PaymentPositionModelV3 paymentPosition = createPaymentPositionV3(2, 1);
+      
+      // PO_1 with validity valued
+      paymentPosition.getPaymentOption().get(0).setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plusDays(1));
+      // PO_2 with validity = null
+      paymentPosition.getPaymentOption().get(1).setValidityDate(null);
+
+      mvc.perform(
+              post(uri)
+                  .content(TestUtil.toJson(paymentPosition))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isCreated())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+          // then: PO_1 remains valued, PO_2 remains null
+          .andExpect(jsonPath("$.paymentOption[0].validityDate").isNotEmpty())
+          .andExpect(jsonPath("$.paymentOption[1].validityDate").value(IsNull.nullValue()));
+  }
 
   // ################### UTILS #################
 
