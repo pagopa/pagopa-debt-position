@@ -150,7 +150,7 @@ public class DebtPositionValidation {
           ||
 
           // Case 2: validity_date is null and due_date < current time
-          (pp.getValidityDate() == null && po.getDueDate().compareTo(today) < 0)
+          (pp.getValidityDate() == null && po.getDueDate().compareTo(today) < 0 && pp.getSwitchToExpired())
           ||
 
           // Case 3: Action is "update" and due_date < current time
