@@ -228,6 +228,14 @@ public class UtilityMapper {
       }
   }
 
+  public static boolean getSwitchToExpired(PaymentPosition pp, PaymentOption po) {
+    if (READ_FROM.equalsIgnoreCase("READ_FROM_PAYMENT_POSITION")) {
+        return pp.getSwitchToExpired();
+    } else {
+        return po.getSwitchToExpired();
+    }
+  }
+
    public static LocalDateTime getValidityDate(PaymentPosition pp, List<PaymentOption> po) {
       if (READ_FROM.equalsIgnoreCase("READ_FROM_PAYMENT_POSITION")) {
           return pp.getValidityDate();
@@ -240,4 +248,19 @@ public class UtilityMapper {
                   .orElse(null);
       }
     }
+
+  public static boolean getSwitchToExpired(PaymentPosition pp) {
+    if (READ_FROM.equalsIgnoreCase("READ_FROM_PAYMENT_POSITION")) {
+        return pp.getSwitchToExpired();
+    } else {
+        // the plan is marked expired if at least one installment is flagged expired (switchToExpired == TRUE),
+        // same as hasAnyMarkedExpired
+        return pp.getPaymentOption() != null && !pp.getPaymentOption().isEmpty() && pp.getPaymentOption()
+                .stream().anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
+    }
+  }
+
+  private boolean hasAnyMarkedExpired(List<PaymentOption> planInstallments) {
+    return planInstallments.stream().anyMatch(po-> Boolean.TRUE.equals(po.getSwitchToExpired()));
+  }
 }

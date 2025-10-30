@@ -1,5 +1,6 @@
 package it.gov.pagopa.debtposition.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -24,8 +25,12 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
@@ -43,6 +48,7 @@ import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 @AutoConfigureMockMvc
 class DebtPositionControllerV3Test {
   @Autowired private MockMvc mvc;
+  @Autowired private Environment env;
 
   @Mock private ModelMapper modelMapperMock;
 
@@ -278,16 +284,42 @@ class DebtPositionControllerV3Test {
       paymentPosition.getPaymentOption().get(0).setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plusDays(1));
       // PO_2 with validity = null
       paymentPosition.getPaymentOption().get(1).setValidityDate(null);
-
-      mvc.perform(
-              post(uri)
-                  .content(TestUtil.toJson(paymentPosition))
-                  .contentType(MediaType.APPLICATION_JSON))
-          .andExpect(status().isCreated())
-          .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-          // then: PO_1 remains valued, PO_2 remains null
-          .andExpect(jsonPath("$.paymentOption[0].validityDate").isNotEmpty())
-          .andExpect(jsonPath("$.paymentOption[1].validityDate").value(IsNull.nullValue()));
+      
+      var mvcResult =
+    	        mvc.perform(post(uri)
+    	                .content(TestUtil.toJson(paymentPosition))
+    	                .contentType(MediaType.APPLICATION_JSON))
+    	           .andExpect(status().isCreated())
+    	           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+    	           .andReturn();
+      
+      String flag = env.getProperty("database.migration.fields.read.from", "");
+      boolean readFromPP = "READ_FROM_PAYMENT_POSITION".equals(flag);
+      
+      // parse response
+      ObjectMapper om = new ObjectMapper();
+      JsonNode root = om.readTree(mvcResult.getResponse().getContentAsByteArray());
+      JsonNode poArray = root.path("paymentOption");
+      JsonNode po0 = poArray.get(0);
+      JsonNode po1 = poArray.get(1);
+      JsonNode vd0 = po0.get("validityDate");
+      JsonNode vd1 = po1.get("validityDate");
+      
+      if (!readFromPP) {
+    	  // correct behaviour: PO_1 remains valued, PO_2 remains null
+    	  assertThat(vd0).isNotNull();
+          assertThat(vd0.isNull()).isFalse();
+          assertThat(vd1 == null || vd1.isNull()).isTrue();
+      }
+      else {
+    	  // TODO remove when validityDate is read from payment option
+    	  // fallback behaviour: both valued and equal to each other
+    	  assertThat(vd0).isNotNull();
+    	  assertThat(vd0.isNull()).isFalse();
+    	  assertThat(vd1).isNotNull();
+    	  assertThat(vd1.isNull()).isFalse();
+    	  assertThat(vd0.asText()).isEqualTo(vd1.asText());
+      }
   }
 
   // ################### UTILS #################

@@ -69,8 +69,7 @@ public class ConverterV3PPEntityToModelResponse
     	for (Map.Entry<String, List<PaymentOption>> entry : byPlan.entrySet()) {
     		List<PaymentOption> planInstallments = entry.getValue();
     		// if at least one installment of THIS plan has switchToExpired=true, the aggregated plan option is marked as switchToExpired.
-    		boolean planAnyMarkedExpired = planInstallments.stream()
-    				.anyMatch(i -> Boolean.TRUE.equals(i.getSwitchToExpired()));
+    		boolean planAnyMarkedExpired = UtilityMapper.getSwitchToExpired(source);
     		PaymentOptionModelResponseV3 pov3 = this.convertPartialPO(source, planInstallments, planAnyMarkedExpired);
     		paymentOptionsToAdd.add(pov3);
     	}
@@ -123,7 +122,7 @@ public class ConverterV3PPEntityToModelResponse
   private PaymentOptionModelResponseV3 convertUniquePO(PaymentPosition pp, PaymentOption po) {
     PaymentOptionModelResponseV3 pov3 = convert(po);
     pov3.setValidityDate(UtilityMapper.getValidityDate(pp, po));
-    pov3.setSwitchToExpired(Boolean.TRUE.equals(po.getSwitchToExpired()));
+    pov3.setSwitchToExpired(UtilityMapper.getSwitchToExpired(pp, po));
     // set installment
     List<InstallmentModelResponse> installments = Collections.singletonList(convertInstallment(po));
     pov3.setInstallments(installments);
