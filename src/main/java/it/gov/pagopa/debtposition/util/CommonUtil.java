@@ -2,6 +2,7 @@ package it.gov.pagopa.debtposition.util;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 import it.gov.pagopa.debtposition.model.PageInfo;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
@@ -140,7 +141,7 @@ public class CommonUtil {
 		  return null;
 	  }
 	  return pp.getPaymentOption().stream()
-			  .map(PaymentOption::getValidityDate)
+			  .map(po -> UtilityMapper.getValidityDate(pp, po))
 			  .filter(Objects::nonNull)
 			  .min(Comparator.naturalOrder())
 			  .orElse(null);

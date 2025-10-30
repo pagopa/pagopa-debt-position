@@ -63,14 +63,14 @@ public class ConverterV3PPEntityToModel
       for (List<PaymentOption> planInstallments : byPlan.values()) {
     	// the plan is marked expired if at least one installment is flagged expired (switchToExpired == TRUE)  
         boolean planAnyMarkedExpired = hasAnyMarkedExpired(planInstallments);
-        PaymentOptionModelV3 pov3 = this.convertPartialPO(planInstallments, planAnyMarkedExpired);
+        PaymentOptionModelV3 pov3 = this.convertPartialPO(source, planInstallments, planAnyMarkedExpired);
         paymentOptionsToAdd.add(pov3);
       }
     }
 
     if (uniquePO != null && !uniquePO.isEmpty()) {
     	paymentOptionsToAdd.addAll(uniquePO.stream()
-    			.map(this::convertUniquePO)
+    			.map(po -> convertUniquePO(source, po))
     			.toList());
     }
 
@@ -88,27 +88,27 @@ public class ConverterV3PPEntityToModel
 
 
   // 1 unique PO -> 1 PaymentOption composed by 1 installment
-  private PaymentOptionModelV3 convertUniquePO(PaymentOption po) {
+  private PaymentOptionModelV3 convertUniquePO(PaymentPosition pp, PaymentOption po) {
 	  PaymentOptionModelV3 pov3 = convert(po);
-	  pov3.setValidityDate(po.getValidityDate());
+	  pov3.setValidityDate(UtilityMapper.getValidityDate(pp, po));
 	  pov3.setSwitchToExpired(Boolean.TRUE.equals(po.getSwitchToExpired()));
 	  List<InstallmentModel> installments = Collections.singletonList(convertInstallment(po));
 	  pov3.setInstallments(installments);
 	  return pov3;
-	}
+  }
 
   // N partial PO -> 1 PaymentOption composed by N installment
-  private PaymentOptionModelV3 convertPartialPO(
-      List<PaymentOption> partialPOs, boolean switchToExpired) {
+  private PaymentOptionModelV3 convertPartialPO(PaymentPosition pp, List<PaymentOption> partialPOs, boolean switchToExpired) {
     // Get only the first to fill common data for partial PO (retentionDate, insertedDate, debtor)
     PaymentOptionModelV3 pov3 = convert(partialPOs.get(0));
-    // validityDate = min between the validity of the plan installments
-    LocalDateTime validityDate = partialPOs.stream()
-    	      .map(PaymentOption::getValidityDate)
-    	      .filter(Objects::nonNull)
-    	      .min(LocalDateTime::compareTo)
-    	      .orElse(null);
-    pov3.setValidityDate(validityDate);
+    // todo re-enable when validityDate is read from payment option
+//    // validityDate = min between the validity of the plan installments
+//    LocalDateTime validityDate = partialPOs.stream()
+//    	      .map(PaymentOption::getValidityDate)
+//    	      .filter(Objects::nonNull)
+//    	      .min(LocalDateTime::compareTo)
+//    	      .orElse(null);
+    pov3.setValidityDate(UtilityMapper.getValidityDate(pp, partialPOs));
     pov3.setSwitchToExpired(switchToExpired);
     // Set installments
     List<InstallmentModel> installments =
