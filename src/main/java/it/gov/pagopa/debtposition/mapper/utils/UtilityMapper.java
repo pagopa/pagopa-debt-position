@@ -20,8 +20,8 @@ import org.springframework.util.CollectionUtils;
 
 public class UtilityMapper {
 
-  @Value("${database.migration.fields.read.from: READ_FROM_PAYMENT_POSITION}")
-  private static String readFrom;
+// @Value("${database.migration.fields.read.from: READ_FROM_PAYMENT_POSITION}")
+  private static String READ_FROM = "READ_FROM_PAYMENT_POSITION";
 
   private UtilityMapper() {
     throw new IllegalStateException("Utility class");
@@ -221,7 +221,7 @@ public class UtilityMapper {
   }
 
   public static LocalDateTime getValidityDate(PaymentPosition pp, PaymentOption po) {
-      if (readFrom.equalsIgnoreCase("READ_FROM_PAYMENT_POSITION")) {
+      if (READ_FROM.equalsIgnoreCase("READ_FROM_PAYMENT_POSITION")) {
         return pp.getValidityDate();
       } else {
         return po.getValidityDate();
@@ -229,7 +229,7 @@ public class UtilityMapper {
   }
 
    public static LocalDateTime getValidityDate(PaymentPosition pp, List<PaymentOption> po) {
-      if (readFrom.equalsIgnoreCase("READ_FROM_PAYMENT_POSITION")) {
+      if (READ_FROM.equalsIgnoreCase("READ_FROM_PAYMENT_POSITION")) {
           return pp.getValidityDate();
       } else {
           // validityDate = min between the validity of the plan installments
