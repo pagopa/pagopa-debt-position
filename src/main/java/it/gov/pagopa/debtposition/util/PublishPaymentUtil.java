@@ -6,6 +6,7 @@ import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
+import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -95,13 +96,14 @@ public class PublishPaymentUtil {
 
 	/* ====================== Helper ====================== */
 
+    // In the hybrid state during deploy there will be po.validityDate=NULL,
+    // but they are not actually NULL, they are NULL because we did not transfer them correctly
 	private static void setValidityDateIfAbsentOnAllOptions(PaymentPosition pp, LocalDateTime value) {
 		if (pp.getPaymentOption() == null) return;
 		for (PaymentOption po : pp.getPaymentOption()) {
-			if (po.getValidityDate() == null) {
+			if (UtilityMapper.getValidityDate(pp, po) == null) {
 				po.setValidityDate(value);
 			}
 		}
 	}
-
 }

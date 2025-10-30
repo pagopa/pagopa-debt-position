@@ -51,6 +51,7 @@ import lombok.*;
 	    generator = ObjectIdGenerators.PropertyGenerator.class,
 	    property = "id")
 public class PaymentOption implements Serializable {
+  public final static String SINGLE_OPTION = "SINGLE_OPTION";
 
   /** generated serialVersionUID */
   private static final long serialVersionUID = -2800191377721368418L;

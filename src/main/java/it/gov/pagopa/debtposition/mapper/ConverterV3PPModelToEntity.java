@@ -150,9 +150,7 @@ public class ConverterV3PPModelToEntity
     	}
     } else {
     	// single option
-    	if (destination.getPaymentPlanId() != null) {
-    		destination.setPaymentPlanId(null);
-    	}
+        destination.setPaymentPlanId(PaymentOption.SINGLE_OPTION);
     }
 
 

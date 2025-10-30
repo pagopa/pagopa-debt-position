@@ -426,7 +426,7 @@ public class PaymentsService {
     Map<String, List<PaymentOption>> groups = pp.getPaymentOption().stream()
         .collect(Collectors.groupingBy(po -> {
           if (Boolean.TRUE.equals(po.getIsPartialPayment())) {
-            return "PLAN:" + String.valueOf(po.getPaymentPlanId());
+            return "PLAN:" + po.getPaymentPlanId();
           } else {
             // each non-installment PO is a single "plan"
             return "SINGLE:" + po.getIuv();
