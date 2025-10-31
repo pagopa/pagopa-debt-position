@@ -183,7 +183,7 @@ class ConvertPPModelV3ToEntityTest {
     assertEquals(1, entity.getPaymentOption().size());
     assertEquals(1, entity.getPaymentOption().get(0).getInstallment().get(0).getTransfer().size());
     assertEquals("1", entity.getPaymentOption().get(0).getInstallment().get(0).getTransfer().get(0).getTransferId());
-    // assertEquals(1, entity.getPaymentOption().get(0).getInstallment().get(0).getPaymentOptionMetadata().size()); // TODO
+    assertEquals(1, entity.getPaymentOption().get(0).getInstallment().get(0).getMetadata().size());
   }
 
   @Test
@@ -236,7 +236,7 @@ class ConvertPPModelV3ToEntityTest {
     assertEquals(1, entity.getPaymentOption().size());
     assertEquals(1, entity.getPaymentOption().get(0).getInstallment().get(0).getTransfer().size());
     assertEquals("1", entity.getPaymentOption().get(0).getInstallment().get(0).getTransfer().get(0).getTransferId());
-    // TODO assertEquals(1, entity.getPaymentOption().get(0).getInstallment().get(0).getPaymentOptionMetadata().size());
-    // TODO assertEquals(1, entity.getPaymentOption().get(0).getInstallment().get(0).getTransfer().get(0).getTransferMetadata().size());
+    assertEquals(1, entity.getPaymentOption().get(0).getInstallment().get(0).getMetadata().size());
+    assertEquals(1, entity.getPaymentOption().get(0).getInstallment().get(0).getTransfer().get(0).getMetadata().size());
   }
 }

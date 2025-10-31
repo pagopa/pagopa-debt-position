@@ -48,7 +48,6 @@ public interface InstallmentRepository extends JpaRepository<Installment, Long>,
                     "po.switchToExpired IS TRUE)")
     void updateInstallmentStatusToExpired(@Param(value = "currentDate") LocalDateTime currentDate);
 
-    // TODO VERIFY
     // lock for update to avoid issues with JPA
     @Query(value = """ 
 			select inst.*

@@ -756,7 +756,7 @@ class DebtPositionControllerTest {
                 .value(auxDigit + "1234561"))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.paymentOption[0].transfer[0].companyName")
-                .value("Comune di Firenze"));
+                .value("mock company name"));
   }
 
   @Test
