@@ -1,6 +1,8 @@
 package it.gov.pagopa.debtposition.model.pd;
 
 import java.io.Serializable;
+
+import it.gov.pagopa.debtposition.model.Metadata;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -26,7 +28,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TransferMetadataModel implements Serializable {
+public class TransferMetadataModel extends Metadata implements Serializable {
 
   /** generated serialVersionUID */
   private static final long serialVersionUID = -1509450417943158597L;

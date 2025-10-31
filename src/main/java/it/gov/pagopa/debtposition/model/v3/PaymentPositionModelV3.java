@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import io.swagger.v3.oas.annotations.media.Schema;
 import it.gov.pagopa.debtposition.controller.pd.validator.v3.ValidInstallmentsSize;
 import it.gov.pagopa.debtposition.model.IPaymentPositionModel;
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatusV3;
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public class PaymentPositionModelV3 implements Serializable, IPaymentPositionMod
 
   @JsonProperty(access = Access.READ_ONLY)
   @Schema(accessMode = Schema.AccessMode.READ_ONLY)
-  private DebtPositionStatusV3 status;
+  private DebtPositionStatus status;
 
   @Valid
   @NotNull

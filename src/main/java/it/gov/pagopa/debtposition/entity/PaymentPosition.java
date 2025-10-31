@@ -3,20 +3,17 @@ package it.gov.pagopa.debtposition.entity;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
-import it.gov.pagopa.debtposition.model.enumeration.Type;
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-/**
- * @author aacitelli
- *     <p>JPA Entity
- */
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Builder(toBuilder = true)
 @Getter
 @Setter
@@ -24,134 +21,98 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table(
-    name = "payment_position",
-    uniqueConstraints = {
-      @UniqueConstraint(
-          name = "UniquePaymentPos",
-          columnNames = {"iupd", "organization_fiscal_code"})
-    })
+        name = "payment_position",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "UniquePaymentPos", columnNames = {"iupd", "organization_fiscal_code"})
+        },
+        indexes = {
+                @Index(name = "idx_iupd", columnList = "iupd"),
+                @Index(name = "idx_organization_fiscal_code", columnList = "organization_fiscal_code"),
+                @Index(name = "idx_payment_date", columnList = "payment_date"),
+                @Index(name = "idx_status_validity_date", columnList = "status, validity_date"),
+                @Index(name = "idx_fiscal_code", columnList = "fiscal_code"),
+        })
 @JsonIdentityInfo(
-    generator = ObjectIdGenerators.IntSequenceGenerator.class,
-    property = "@paymentPositionId")
+        generator = ObjectIdGenerators.IntSequenceGenerator.class,
+        property = "@paymentPositionId")
 public class PaymentPosition implements Serializable {
 
-  /** generated serialVersionUID */
-  private static final long serialVersionUID = -8637183968286214359L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "PAYMENT_POS_SEQ")
+    @SequenceGenerator(name = "PAYMENT_POS_SEQ", sequenceName = "PAYMENT_POS_SEQ", allocationSize = 1)
+    private Long id;
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "PAYMENT_POS_SEQ")
-  @SequenceGenerator(name = "PAYMENT_POS_SEQ", sequenceName = "PAYMENT_POS_SEQ", allocationSize = 1)
-  private Long id;
+    @NotNull
+    private String iupd;
 
-  @NotNull private String iupd;
+    @NotNull
+    @Column(name = "organization_fiscal_code")
+    private String organizationFiscalCode;
 
-  @NotNull
-  @Column(name = "organization_fiscal_code")
-  private String organizationFiscalCode;
+    @Builder.Default
+    @Column(name = "pull", columnDefinition = "boolean DEFAULT true")
+    private Boolean pull = true;
 
-  @Builder.Default
-  @Column(name = "pull", columnDefinition = "boolean DEFAULT true")
-  private Boolean pull = true;
+    @Builder.Default
+    @Column(name = "pay_stand_in", columnDefinition = "boolean DEFAULT true")
+    private Boolean payStandIn = true;
 
-  @Builder.Default
-  @Column(name = "pay_stand_in", columnDefinition = "boolean DEFAULT true")
-  private Boolean payStandIn = true;
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "service_type")
+    private ServiceType serviceType = ServiceType.GPD;
 
-  // Debtor properties
-  @NotNull
-  @Enumerated(EnumType.STRING)
-  private Type type;
+    // Payment Position properties
+    @NotNull
+    @Column(name = "company_name")
+    private String companyName; // es. Comune di Roma
 
-  @NotNull
-  @Column(name = "fiscal_code")
-  private String fiscalCode;
+    @Column(name = "office_name")
+    private String officeName; // es. Ufficio Tributi
 
-  @NotNull
-  @Column(name = "full_name")
-  @ToString.Exclude
-  private String fullName;
+    @NotNull
+    @Column(name = "inserted_date")
+    private LocalDateTime insertedDate;
 
-  @Column(name = "street_name")
-  private String streetName;
+    @Column(name = "publish_date")
+    private LocalDateTime publishDate;
 
-  @Column(name = "civic_number")
-  private String civicNumber;
+    @NotNull
+    @Column(name = "min_due_date")
+    private LocalDateTime minDueDate;
 
-  @Column(name = "postal_code")
-  private String postalCode;
+    @NotNull
+    @Column(name = "max_due_date")
+    private LocalDateTime maxDueDate;
 
-  private String city;
-  private String province;
-  private String region;
-  private String country;
-  @ToString.Exclude private String email;
-  @ToString.Exclude private String phone;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private DebtPositionStatus status;
 
-  @Builder.Default
-  @Enumerated(EnumType.STRING)
-  @Column(name = "service_type")
-  private ServiceType serviceType = ServiceType.GPD;
+    @NotNull
+    @Column(name = "last_updated_date")
+    private LocalDateTime lastUpdatedDate;
 
-  // Payment Position properties
-  @NotNull
-  @Column(name = "company_name")
-  private String companyName; // es. Comune di Roma
+    @Column(name = "payment_date")
+    private LocalDateTime paymentDate;
 
-  @Column(name = "office_name")
-  private String officeName; // es. Ufficio Tributi
+    @Builder.Default
+    @NotNull
+    @Version
+    @Column(columnDefinition = "integer DEFAULT 0")
+    private Integer version = 0;
 
-  @NotNull
-  @Column(name = "inserted_date")
-  private LocalDateTime insertedDate;
+    @Builder.Default
+    @OneToMany(
+            targetEntity = PaymentOption.class,
+            fetch = FetchType.LAZY,
+            mappedBy = "paymentPosition",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<PaymentOption> paymentOption = new ArrayList<>();
 
-  @Column(name = "publish_date")
-  private LocalDateTime publishDate;
-
-  @NotNull
-  @Column(name = "min_due_date")
-  private LocalDateTime minDueDate;
-
-  @NotNull
-  @Column(name = "max_due_date")
-  private LocalDateTime maxDueDate;
-
-  @NotNull
-  @Enumerated(EnumType.STRING)
-  private DebtPositionStatus status;
-
-  @NotNull
-  @Column(name = "last_updated_date")
-  private LocalDateTime lastUpdatedDate;
-
-  @Column(name = "payment_date")
-  private LocalDateTime paymentDate;
-
-  @Builder.Default
-  @NotNull
-  @Version
-  @Column(columnDefinition = "integer DEFAULT 0")
-  private Integer version = 0;
-
-  // todo remove after v1.1.0 promotion
-  @Column(name = "validity_date")
-  private LocalDateTime validityDate;
-
-  // todo remove after v1.1.0 promotion
-  @Builder.Default
-  @Column(name = "switch_to_expired", columnDefinition = "boolean DEFAULT false")
-  private Boolean switchToExpired = false;
-
-  @Builder.Default
-  @OneToMany(
-      targetEntity = PaymentOption.class,
-      fetch = FetchType.LAZY,
-      mappedBy = "paymentPosition",
-      cascade = CascadeType.ALL,
-      orphanRemoval = true)
-  private List<PaymentOption> paymentOption = new ArrayList<>();
-
-  public void addPaymentOption(PaymentOption paymentOpt) {
-    paymentOption.add(paymentOpt);
-    paymentOpt.setPaymentPosition(this);
-  }
+    public void addPaymentOption(PaymentOption paymentOpt) {
+        paymentOption.add(paymentOpt);
+        paymentOpt.setPaymentPosition(this);
+    }
 }

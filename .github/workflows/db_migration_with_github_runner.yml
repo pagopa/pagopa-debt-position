@@ -22,7 +22,7 @@ on:
           - dev
           - uat
           - prod
-      schema:                
+      schema:
         required: true
         type: choice
         description: Select the Schema to migrate
@@ -61,7 +61,7 @@ jobs:
 
       # ============================
       # - Run Flyway
-      # ============================  
+      # ============================
       - name: Run Flyway (APD)
         if: ${{ inputs.schema == 'apd' || inputs.schema == 'all' }}
         shell: bash
@@ -91,4 +91,3 @@ jobs:
           COMMON="-Dflyway.configFiles=${CFG} -Dflyway.validateMigrationNaming=true -Dflyway.cleanDisabled=true"
           echo "▶ Running ODP: validate on migrate"
           mvn -B flyway:migrate -Dflyway.validateOnMigrate=true ${COMMON}
-

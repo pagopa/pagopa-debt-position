@@ -10,47 +10,46 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
 public class InstallmentsSizeValidator
-implements ConstraintValidator<ValidInstallmentsSize, PaymentPositionModelV3> {
+        implements ConstraintValidator<ValidInstallmentsSize, PaymentPositionModelV3> {
 
-	@Override
-	public boolean isValid(PaymentPositionModelV3 value, ConstraintValidatorContext ctx) {
-	    if (value == null) return true; // nothing to validate
-	    var options = value.getPaymentOption();
-	    if (options == null) return true;
+  @Override
+  public boolean isValid(PaymentPositionModelV3 value, ConstraintValidatorContext ctx) {
+    if (value == null) return true; // nothing to validate
+    var options = value.getPaymentOption();
+    if (options == null) return true;
 
-	    ctx.disableDefaultConstraintViolation();
+    ctx.disableDefaultConstraintViolation();
 
-	    return validateGlobalIuvUniqueness(options, ctx);
-	}
-    
-	private boolean validateGlobalIuvUniqueness(List<PaymentOptionModelV3> options,
-	                                            ConstraintValidatorContext ctx) {
-		// Global uniqueness of IUVs across all installments
-		boolean ok = true;
-	    Set<String> seenIuv = new HashSet<>();
+    return validateGlobalIuvUniqueness(options, ctx);
+  }
 
-	    for (int i = 0; i < options.size(); i++) {
-	        var po = options.get(i);
-	        if (po == null || po.getInstallments() == null) continue;
+  private boolean validateGlobalIuvUniqueness(List<PaymentOptionModelV3> options,
+                                              ConstraintValidatorContext ctx) {
+    // Global uniqueness of IUVs across all installments
+    boolean ok = true;
+    Set<String> seenIuv = new HashSet<>();
 
-	        int j = 0;
-	        for (var inst : po.getInstallments()) {
-	            if (inst != null) {
-	                String iuv = inst.getIuv();
-	                if (iuv != null && !seenIuv.add(iuv)) {
-	                    addViolation(ctx, "duplicate IUV at paymentOption[" + i + "].installments[" + j + "]");
-	                    ok = false;
-	                }
-	            }
-	            j++;
-	        }
-	    }
-	    return ok;
-	}
+    for (int i = 0; i < options.size(); i++) {
+      var po = options.get(i);
+      if (po == null || po.getInstallments() == null) continue;
 
-	private void addViolation(ConstraintValidatorContext ctx, String msg) {
-	    ctx.buildConstraintViolationWithTemplate(msg).addConstraintViolation();
-	}
+      int j = 0;
+      for (var inst : po.getInstallments()) {
+        if (inst != null) {
+          String iuv = inst.getIuv();
+          if (iuv != null && !seenIuv.add(iuv)) {
+            addViolation(ctx, "duplicate IUV at paymentOption[" + i + "].installments[" + j + "]");
+            ok = false;
+          }
+        }
+        j++;
+      }
+    }
+    return ok;
+  }
+
+  private void addViolation(ConstraintValidatorContext ctx, String msg) {
+    ctx.buildConstraintViolationWithTemplate(msg).addConstraintViolation();
+  }
 
 }
-

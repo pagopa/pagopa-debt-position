@@ -115,7 +115,7 @@ class ConcurrentReportedPaymentsControllerTest {
   @AfterAll
   void checkDebtPosition_after_reporting() throws Exception {
     log.trace("checkDebtPosition_after_reporting start => " + Thread.currentThread().getName());
-    // recupero la PO e verifico lo stato in PO_PARTIALLY_REPORTED
+    // recupero la PO e verifico lo stato in PO_REPORTED
     String url =
         "/organizations/12345678901999999/paymentoptions/"
             + auxDigit

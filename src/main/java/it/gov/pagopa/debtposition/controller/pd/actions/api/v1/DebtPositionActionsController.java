@@ -10,7 +10,6 @@ import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,13 +22,10 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
   private static final String LOG_BASE_HEADER_INFO =
       "[RequestMethod: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
   private static final String LOG_BASE_PARAMS_DETAIL = "organizationFiscalCode= %s; iupd= %s";
-  private final ModelMapper modelMapper;
   private final PaymentPositionActionsService paymentPositionActionsService;
 
   @Autowired
-  public DebtPositionActionsController(
-      ModelMapper modelMapper, PaymentPositionActionsService paymentPositionActionsService) {
-    this.modelMapper = modelMapper;
+  public DebtPositionActionsController(PaymentPositionActionsService paymentPositionActionsService) {
     this.paymentPositionActionsService = paymentPositionActionsService;
   }
 

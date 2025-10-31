@@ -17,31 +17,23 @@ public interface TransferRepository extends JpaRepository<Transfer, Long> {
     @Modifying
     @Transactional
     @Query(
-        nativeQuery = true,
-        value = """
-            UPDATE transfer AS tr
-            SET iban = :newIban,
-                last_updated_date = :currentDate
-            WHERE tr.id IN (
-                SELECT tr2.id
-                FROM transfer tr2
-                JOIN payment_option po ON tr2.payment_option_id = po.id
-                JOIN payment_position pp ON po.payment_position_id = pp.id
-                WHERE tr2.iban = :oldIban
-                  AND po.status IN (:poStatus)
-                  AND pp.organization_fiscal_code = :organizationFiscalCode
-                  AND pp.status IN (:ppStatus)
-                LIMIT :limit
-            )
-            """
-    )
+            nativeQuery = true,
+            value = "UPDATE odp.transfer as tr " +
+                    "SET iban = :newIban, last_updated_date = :currentDate " +
+                    "where id in (" +
+                    "SELECT tr.id " +
+                    "from odp.transfer tr join odp.installment AS inst ON tr.installment_id = inst.id " +
+                    "JOIN odp.payment_position AS pp ON inst.payment_position_id = pp.id " +
+                    "WHERE tr.iban=:oldIban and inst.status in (:instStatus) and " +
+                    "pp.organization_fiscal_code = :organizationFiscalCode and pp.status in (:ppStatus) " +
+                    "limit :limit)")
     int updateTransferIban(
-        @Param("organizationFiscalCode") String organizationFiscalCode,
-        @Param("oldIban") String oldIban,
-        @Param("newIban") String newIban,
-        @Param("currentDate") LocalDateTime currentDate,
-        @Param("poStatus") List<String> poStatus,
-        @Param("ppStatus") List<String> ppStatus,
-        @Param("limit") int limit
+            @Param(value = "organizationFiscalCode") String organizationFiscalCode,
+            @Param(value = "oldIban") String oldIban,
+            @Param(value = "newIban") String newIban,
+            @Param(value = "currentDate") LocalDateTime currentDate,
+            @Param(value = "instStatus") List<String> instStatus,
+            @Param(value = "ppStatus") List<String> ppStatus,
+            @Param(value = "limit") int limit
     );
 }
