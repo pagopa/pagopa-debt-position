@@ -14,7 +14,6 @@ public class InstallmentsSizeValidator
 
   @Override
   public boolean isValid(PaymentPositionModelV3 value, ConstraintValidatorContext ctx) {
-    // TODO VERIFY
     if (value == null) return true; // nothing to validate
     var options = value.getPaymentOption();
     if (options == null) return true;
@@ -26,7 +25,7 @@ public class InstallmentsSizeValidator
 
   private boolean validateGlobalIuvUniqueness(List<PaymentOptionModelV3> options,
                                               ConstraintValidatorContext ctx) {
-    // Global uniqueness of IUVs across all installments     // TODO VERIFY
+    // Global uniqueness of IUVs across all installments
     boolean ok = true;
     Set<String> seenIuv = new HashSet<>();
 

@@ -35,7 +35,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -87,12 +90,12 @@ public class PaymentsService {
             if (result)
                 log.info(
                         "Notification fee amount of Installment with NAV {} has been updated with"
-                                + " notification-fee: {}.",
+                                + " notification-fee: {}." ,
                         CommonUtil.sanitize(installment.getNav()),
                         installment.getNotificationFee());
             else
                 log.error(
-                        "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.",
+                        "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}." ,
                         CommonUtil.sanitize(installment.getNav()));
         }
 
@@ -118,7 +121,7 @@ public class PaymentsService {
         // Update PaymentPosition instance only in memory
         DebtPositionStatus.validityCheckAndUpdate(paymentPositionToPay);
         DebtPositionValidation.checkPaymentPositionPayability(paymentPositionToPay, nav);
-        // TODO VERIFY
+
         Installment instToPay = paymentPositionToPay.getPaymentOption().stream()
                 .map(PaymentOption::getInstallment)
                 .flatMap(List::stream)
@@ -146,7 +149,6 @@ public class PaymentsService {
 
         DebtPositionValidation.checkPaymentPositionAccountability(ppToReport.get(), iuv, transferId);
 
-        // TODO VERIFY
         Installment instToReport = ppToReport.get().getPaymentOption().stream()
                 .map(PaymentOption::getInstallment)
                 .flatMap(List::stream)
@@ -179,7 +181,7 @@ public class PaymentsService {
         } catch (Exception e) {
             log.error(
                     "[GPD-ERR-SEND-00] Exception while calling getNotificationFee for NAV {}, class = {},"
-                            + " message = {}.",
+                            + " message = {}." ,
                     CommonUtil.sanitize(installment.getNav()),
                     e.getClass(),
                     e.getMessage());
@@ -334,22 +336,9 @@ public class PaymentsService {
             PaymentPosition pp, String nav, PaymentOptionModel paymentOptionModel) {
 
         LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-        PaymentOption paidPO = null;
         Installment paidInst = null;
 
-        long numberOfPartialPayment =
-                pp.getPaymentOption().stream()
-                        .filter(po -> OptionType.OPZIONE_RATEALE.equals(po.getOptionType()))
-                        .map(PaymentOption::getInstallment)
-                        .mapToLong(List::size)
-                        .sum();
-        // verifico se ci sono pagamenti parziali in stato PAID
-        long countPaidPartialPayment = pp.getPaymentOption().stream()
-                .filter(po -> OptionType.OPZIONE_RATEALE.equals(po.getOptionType()))
-                .map(PaymentOption::getInstallment)
-                .flatMap(List::stream)
-                .filter(inst -> InstallmentStatus.PAID.equals(inst.getStatus()))
-                .count();
+        boolean isOptionAPlanAndNotFullyPaid = false;
 
         for (PaymentOption po : pp.getPaymentOption()) {
             for (Installment inst : po.getInstallment()) {
@@ -366,23 +355,24 @@ public class PaymentsService {
                     inst.setReceiptId(paymentOptionModel.getIdReceipt());
                     inst.setFee(Long.parseLong(paymentOptionModel.getFee()));
                     inst.setStatus(InstallmentStatus.PAID);
-                    // se la payment option è di tipo partial incremento il contatore
+                    // if payment option is a plan and any installment has not been yet paid set the boolean to true
                     if (OptionType.OPZIONE_RATEALE.equals(po.getOptionType())) {
-                        countPaidPartialPayment++;
+                        isOptionAPlanAndNotFullyPaid = po.getInstallment().stream().anyMatch(i -> InstallmentStatus.getInstallmentNotYetPaidStatus().contains(i.getStatus()));
                     }
 
                     paidInst = inst;
-                    paidPO = po;
+                    break;
                 }
+            }
+            if (paidInst != null) {
+                break;
             }
         }
 
         // aggiorno lo stato della payment position
         // PIDM-42 if paying the full amount when there is already a paid partial payment
         // then update the payment position status to PAID
-        if (countPaidPartialPayment > 0
-                && countPaidPartialPayment < numberOfPartialPayment
-                && OptionType.OPZIONE_RATEALE.equals(Objects.requireNonNull(paidPO).getOptionType())) {
+        if (isOptionAPlanAndNotFullyPaid) {
             pp.setStatus(DebtPositionStatus.PARTIALLY_PAID);
         } else {
             pp.setStatus(DebtPositionStatus.PAID);
@@ -423,7 +413,7 @@ public class PaymentsService {
                     inst.getTransfer().stream().filter(t -> t.getTransferId().equals(transferId)).findFirst();
 
             if (transferToReport.isEmpty()) {
-                String error = String.format("Obtained unexpected empty transfer - [organizationFiscalCode= %s; iupd= %s; iuv= %s; idTransfer= %s]", pp.getOrganizationFiscalCode(), pp.getIupd(), iuv, transferId);
+                String error = String.format("Obtained unexpected empty transfer - [organizationFiscalCode= %s; iupd= %s; iuv= %s; idTransfer= %s]" , pp.getOrganizationFiscalCode(), pp.getIupd(), iuv, transferId);
                 throw new AppException(AppError.TRANSFER_REPORTING_FAILED, error);
             }
 
@@ -441,7 +431,7 @@ public class PaymentsService {
             inst.setLastUpdatedDate(currentDate);
         }
 
-        this.setPaymentPositionStatus(pp);
+        this.recomputePaymentPositionStatus(pp);
         pp.setLastUpdatedDate(currentDate);
         // salvo l'aggiornamento della rendicontazione
         paymentPositionRepository.saveAndFlush(pp);
@@ -449,34 +439,12 @@ public class PaymentsService {
         return reportedTransfer;
     }
 
-    private void setPaymentPositionStatus(PaymentPosition pp) {
-        List<Installment> installmentList = pp.getPaymentOption().parallelStream()
-                .map(PaymentOption::getInstallment)
-                .flatMap(List::parallelStream).toList();
-        // numero totale degli installments in opzione di pagamento in unica rata in stato REPORTED
-        long numberInstallmentReportedNoPartial =
-                installmentList.parallelStream()
-                        .filter(
-                                inst ->
-                                        (inst.getStatus().equals(InstallmentStatus.REPORTED)
-                                                && OptionType.OPZIONE_UNICA.equals(inst.getPaymentOption().getOptionType())))
-                        .count();
-        // numero totale degli installments rateizzati
-        long totalNumberPartialInstallment =
-                installmentList.parallelStream()
-                        .filter(inst -> OptionType.OPZIONE_RATEALE.equals(inst.getPaymentOption().getOptionType()))
-                        .count();
-        // numero degli installments rateizzati in stato REPORTED
-        long numberPOReportedPartial =
-                installmentList.parallelStream()
-                        .filter(
-                                inst ->
-                                        (inst.getStatus().equals(InstallmentStatus.REPORTED)
-                                                && OptionType.OPZIONE_RATEALE.equals(inst.getPaymentOption().getOptionType())))
-                        .count();
+    private void recomputePaymentPositionStatus(PaymentPosition pp) {
+        List<PaymentOption> paymentOptionList = pp.getPaymentOption();
 
-        if (numberInstallmentReportedNoPartial > 0
-                || (totalNumberPartialInstallment > 0 && totalNumberPartialInstallment == numberPOReportedPartial)) {
+        if (paymentOptionList.parallelStream().anyMatch(
+                po -> po.getInstallment().stream().allMatch(inst -> inst.getStatus().equals(InstallmentStatus.REPORTED)))
+        ) {
             pp.setStatus(DebtPositionStatus.REPORTED);
         }
     }

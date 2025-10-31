@@ -128,7 +128,6 @@ public enum DebtPositionStatus {
      * @param nav       the identifier of the notice being paid
      */
     public static void checkAlreadyPaidInstallments(Installment instToPay, String nav, InstallmentRepository instRepo) {
-        // TODO VERIFY METHOD
         // Skip when current Installment is not UNPAID (e.g. reporting flow or repeated updates)
         if (instToPay.getStatus() != InstallmentStatus.UNPAID) {
             return;
@@ -143,7 +142,7 @@ public enum DebtPositionStatus {
         List<Installment> siblingsLocked = instRepo.lockAllByPaymentPositionId(pp.getId());
 
         // 2) Hard guard on parent status
-        if (pp.getStatus() == DebtPositionStatus.PAID || pp.getStatus() == DebtPositionStatus.REPORTED) {
+        if (DebtPositionStatus.getPaymentPosFullyPaidStatus().contains(pp.getStatus())) {
             throw new AppException(
                     AppError.PAYMENT_OPTION_ALREADY_PAID, instToPay.getOrganizationFiscalCode(), nav);
         }
