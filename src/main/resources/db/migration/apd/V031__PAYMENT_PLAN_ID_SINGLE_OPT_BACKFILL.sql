@@ -44,4 +44,4 @@ BEGIN
 END;
 $$;
 
-CALL apd.backfill_payment_plan_id_single_option(p_batch_size => 10000, p_lock_pause => '100 milliseconds'::interval);
+CALL apd.backfill_payment_plan_id_single_option();
