@@ -8,7 +8,6 @@ import it.gov.pagopa.debtposition.mock.DebtPositionMock;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
 import org.awaitility.Awaitility;
-import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -174,7 +173,6 @@ class ExpiredPositionsSchedulerTest {
                         MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.VALID.toString()))
                 .andExpect(
                         MockMvcResultMatchers.jsonPath("$.paymentOption[0].installments[0].status").value(InstallmentStatus.UNPAID.toString()));
-        ;
     }
 
     @Test
@@ -258,7 +256,6 @@ class ExpiredPositionsSchedulerTest {
                                 .value(DebtPositionStatus.EXPIRED.toString()))
                 .andExpect(
                         MockMvcResultMatchers.jsonPath("$.paymentOption[0].installments[0].status").value(InstallmentStatus.EXPIRED.toString()));
-        ;
     }
 
     @Test
@@ -292,7 +289,6 @@ class ExpiredPositionsSchedulerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty())
                 .andExpect(
                         MockMvcResultMatchers.jsonPath("$.paymentOption[0].installments[0].status").value(InstallmentStatus.DRAFT.toString()));
-        ;
 
         // introduco un ritardo in modo da far scadere la validity date
         LocalDateTime currentDatePlusSeconds =
@@ -318,7 +314,6 @@ class ExpiredPositionsSchedulerTest {
                         MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.VALID.toString()))
                 .andExpect(
                         MockMvcResultMatchers.jsonPath("$.paymentOption[0].installments[0].status").value(InstallmentStatus.UNPAID.toString()));
-        ;
 
         // introduco un nuovo ritardo in modo da far scadere la due date
         LocalDateTime newCurrentDatePlusSeconds =
@@ -346,7 +341,6 @@ class ExpiredPositionsSchedulerTest {
                                 .value(DebtPositionStatus.EXPIRED.toString()))
                 .andExpect(
                         MockMvcResultMatchers.jsonPath("$.paymentOption[0].installments[0].status").value(InstallmentStatus.EXPIRED.toString()));
-        ;
 
         // aggiorno la posizione debitoria (stato atteso DRAFT)
         pp7.setCompanyName("Comune di Napoli");
@@ -415,6 +409,5 @@ class ExpiredPositionsSchedulerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.companyName").value("Comune di Latina"))
                 .andExpect(
                         MockMvcResultMatchers.jsonPath("$.paymentOption[0].installments[0].status").value(InstallmentStatus.UNPAID.toString()));
-        ;
     }
 }
