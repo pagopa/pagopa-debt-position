@@ -1,4 +1,4 @@
-package it.gov.pagopa.debtposition.mapper;
+package it.gov.pagopa.debtposition.mapper.utils;
 
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.model.Metadata;

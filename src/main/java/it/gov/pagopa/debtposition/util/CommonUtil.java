@@ -1,12 +1,12 @@
 package it.gov.pagopa.debtposition.util;
 
-import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 import it.gov.pagopa.debtposition.model.PageInfo;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
 import it.gov.pagopa.debtposition.model.filterandorder.OrderType;
+import lombok.experimental.UtilityClass;
+import org.springframework.data.domain.*;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -14,14 +14,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
-
-import lombok.experimental.UtilityClass;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 
 @UtilityClass
 public class CommonUtil {
@@ -141,7 +133,7 @@ public class CommonUtil {
 		  return null;
 	  }
 	  return pp.getPaymentOption().stream()
-			  .map(po -> UtilityMapper.getValidityDate(pp, po))
+			  .map(po -> po.getValidityDate())
 			  .filter(Objects::nonNull)
 			  .min(Comparator.naturalOrder())
 			  .orElse(null);

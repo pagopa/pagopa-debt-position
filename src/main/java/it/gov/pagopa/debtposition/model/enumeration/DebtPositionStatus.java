@@ -6,6 +6,7 @@ import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.repository.InstallmentRepository;
+import it.gov.pagopa.debtposition.util.CommonUtil;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -59,10 +60,12 @@ public enum DebtPositionStatus {
 
     public static void validityCheckAndUpdate(PaymentPosition pp) {
         LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+        // calculate the min validity date among the installments
+        LocalDateTime minValidity = CommonUtil.resolveMinValidity(pp);
         // Validity check on the fly
         if (pp.getStatus().equals(DebtPositionStatus.PUBLISHED)
-                && null != pp.getValidityDate()
-                && currentDate.isAfter(pp.getValidityDate())) {
+                && minValidity != null
+                && currentDate.isAfter(minValidity)) {
             pp.setStatus(DebtPositionStatus.VALID);
             pp.getPaymentOption().forEach(po -> {
                 if (currentDate.isAfter(po.getValidityDate())) {
@@ -91,9 +94,10 @@ public enum DebtPositionStatus {
         LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
         PaymentPosition pp = installment.getPaymentPosition();
         // Validity check on the fly
+        LocalDateTime minValidity = CommonUtil.resolveMinValidity(pp);
         if (pp.getStatus().equals(DebtPositionStatus.PUBLISHED)
-                && null != pp.getValidityDate()
-                && currentDate.isAfter(pp.getValidityDate())) {
+                && minValidity != null
+                && currentDate.isAfter(minValidity)) {
             pp.setStatus(DebtPositionStatus.VALID);
             pp.getPaymentOption().forEach(po -> {
                 if (currentDate.isAfter(po.getValidityDate())) {
@@ -111,8 +115,7 @@ public enum DebtPositionStatus {
         LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
         // Expiration check on the fly
         PaymentPosition pp = installment.getPaymentPosition();
-        PaymentOption po = installment.getPaymentOption();
-        if (Boolean.TRUE.equals(po.getSwitchToExpired())
+        if (pp.getPaymentOption().stream().anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()))
                 && pp.getStatus().equals(DebtPositionStatus.VALID)
                 && null != pp.getMaxDueDate()
                 && currentDate.isAfter(pp.getMaxDueDate())) {

@@ -4,6 +4,7 @@ import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.mapper.utils.ConvertUtils;
 import it.gov.pagopa.debtposition.model.enumeration.OptionType;
 import it.gov.pagopa.debtposition.model.pd.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
@@ -38,7 +39,6 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
         destination.setPayStandIn(source.isPayStandIn());
         destination.setCompanyName(source.getCompanyName());
         destination.setOfficeName(source.getOfficeName());
-        destination.setValidityDate(source.getValidityDate());
 
         List<PaymentOptionModel> sourcePOs = source.getPaymentOption();
         if (sourcePOs != null && !sourcePOs.isEmpty()) {

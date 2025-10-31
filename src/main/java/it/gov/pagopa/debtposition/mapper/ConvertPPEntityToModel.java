@@ -3,10 +3,12 @@ package it.gov.pagopa.debtposition.mapper;
 import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.mapper.utils.ConvertUtils;
 import it.gov.pagopa.debtposition.model.enumeration.OptionType;
 import it.gov.pagopa.debtposition.model.pd.PaymentOptionMetadataModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
+import it.gov.pagopa.debtposition.util.CommonUtil;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
@@ -27,7 +29,7 @@ public class ConvertPPEntityToModel
         destination.setPayStandIn(source.getPayStandIn());
         destination.setCompanyName(source.getCompanyName());
         destination.setOfficeName(source.getOfficeName());
-        destination.setValidityDate(source.getValidityDate());
+        destination.setValidityDate(CommonUtil.resolveMinValidity(source));
         destination.setPaymentDate(source.getPaymentDate());
         destination.setStatus(source.getStatus());
 

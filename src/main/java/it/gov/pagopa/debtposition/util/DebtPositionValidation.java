@@ -130,38 +130,26 @@ public class DebtPositionValidation {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
 
         // Regola 1 - must be validity_date ≥ current time (applied only at creation stage)
-        if (!ArrayUtils.isEmpty(action)
-                && action[0].equalsIgnoreCase(CREATE_ACTION)
-                && null != pp.getValidityDate()
-                && pp.getValidityDate().compareTo(today) < 0) {
-            throw new ValidationException(
-                    String.format(
-                            VALIDITY_DATE_VALIDATION_ERROR,
-                            dateFormatter.format(pp.getValidityDate()),
-                            dateFormatter.format(today)));
-        }
-
         for (PaymentOption po : pp.getPaymentOption()) {
             for (Installment inst : po.getInstallment()) {
+                LocalDateTime poValidity = po.getValidityDate();
+                if (!ArrayUtils.isEmpty(action)
+                        && CREATE_ACTION.equalsIgnoreCase(action[0])
+                        && poValidity != null
+                        && poValidity.isBefore(today)) { // TODO VERIFY
+                    throw new ValidationException(
+                            String.format(
+                                    VALIDITY_DATE_VALIDATION_ERROR,
+                                    dateFormatter.format(poValidity),
+                                    dateFormatter.format(today)));
+                }
                 // Regola 4 - must be due_date ≥ validity_date || due_date ≥ current time
-                if (
-                    // Case 1: validity_date is not null and due_date < validity_date
-                        (pp.getValidityDate() != null && inst.getDueDate().isBefore(pp.getValidityDate()))
-                                ||
-
-                                // Case 2: validity_date is null and due_date < current time
-                                (pp.getValidityDate() == null && inst.getDueDate().isBefore(today))
-                                ||
-
-                                // Case 3: Action is "update" and due_date < current time
-                                (!ArrayUtils.isEmpty(action)
-                                        && UPDATE_ACTION.equalsIgnoreCase(action[0])
-                                        && inst.getDueDate().isBefore(today))) {
+                if (isDueDateInvalid(inst, poValidity, today, action)) { // TODO VERIFY
                     throw new ValidationException(
                             String.format(
                                     DUE_DATE_VALIDATION_ERROR,
                                     dateFormatter.format(inst.getDueDate()),
-                                    (null != pp.getValidityDate() ? dateFormatter.format(pp.getValidityDate()) : null),
+                                    (null != poValidity ? dateFormatter.format(poValidity) : null),
                                     dateFormatter.format(today)));
                 }
                 // must be retention_date ≥ due_date
@@ -388,5 +376,20 @@ public class DebtPositionValidation {
         public String toString() {
             return value;
         }
+    }
+
+    private static boolean isDueDateInvalid(
+            Installment inst,
+            LocalDateTime poValidity,
+            LocalDateTime today,
+            String... action) {
+
+        boolean dueBeforeValidity = (poValidity != null && inst.getDueDate().isBefore(poValidity)); // Case 1: validity_date is not null and due_date < validity_date
+        boolean dueBeforeNowWhenNoValidity = (poValidity == null && inst.getDueDate().isBefore(today)); // Case 2: validity_date is null and due_date < current time
+        boolean updateWithPastDue = (!ArrayUtils.isEmpty(action)  // Case 3: Action is "update" and due_date < current time
+                && UPDATE_ACTION.equalsIgnoreCase(action[0])
+                && inst.getDueDate().isBefore(today));
+
+        return dueBeforeValidity || dueBeforeNowWhenNoValidity || updateWithPastDue;
     }
 }

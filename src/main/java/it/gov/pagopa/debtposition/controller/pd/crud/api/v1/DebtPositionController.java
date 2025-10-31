@@ -85,6 +85,7 @@ public class DebtPositionController implements IDebtPositionController {
         if (null != createdDebtPos) {
             PaymentPositionModel paymentPosition =
                     ObjectMapperUtils.map(createdDebtPos, PaymentPositionModel.class);
+
             return new ResponseEntity<>(paymentPosition, HttpStatus.CREATED);
         }
 
@@ -144,7 +145,6 @@ public class DebtPositionController implements IDebtPositionController {
         // flip entity to model
         List<PaymentPositionModelBaseResponse> ppResponseList =
                 ObjectMapperUtils.mapAll(pagePP.toList(), PaymentPositionModelBaseResponse.class);
-
         return new ResponseEntity<>(
                 PaymentPositionsInfo.builder()
                         .ppBaseResponseList(ppResponseList)
@@ -372,9 +372,7 @@ public class DebtPositionController implements IDebtPositionController {
                         : null;
         // flip entity to model
         PaymentPositionModelBaseResponse paymentPositionResponse =
-                ObjectMapperUtils.map(
-                        paymentPositionService.getDebtPositionByIUV(organizationFiscalCode, iuv, segCodes),
-                        PaymentPositionModelBaseResponse.class);
+                ObjectMapperUtils.map(paymentPositionService.getDebtPositionByIUV(organizationFiscalCode, iuv, segCodes), PaymentPositionModelBaseResponse.class);
 
         return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
     }
