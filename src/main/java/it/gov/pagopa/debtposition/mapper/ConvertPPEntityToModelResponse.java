@@ -3,10 +3,10 @@ package it.gov.pagopa.debtposition.mapper;
 import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.model.enumeration.OptionType;
-import it.gov.pagopa.debtposition.model.pd.Stamp;
-import it.gov.pagopa.debtposition.model.pd.response.*;
+import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionMetadataModelResponse;
+import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionModelResponse;
+import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
@@ -77,43 +77,11 @@ public class ConvertPPEntityToModelResponse
                 destinationPO.setPaymentOptionMetadata(ObjectMapperUtils.mapAll(sourceInst.getMetadata(), PaymentOptionMetadataModelResponse.class));
 
 
-                destinationPO.setTransfer(sourceInst.getTransfer().stream().filter(Objects::nonNull).map(this::convertTransfer).toList());
+                destinationPO.setTransfer(sourceInst.getTransfer().stream().filter(Objects::nonNull).map(MapperUtils::convertTransfer).toList());
 
                 destinationPoList.add(destinationPO);
             }
         }
         return destinationPoList;
-    }
-
-    private TransferModelResponse convertTransfer(Transfer sourceTransfer) {
-        TransferModelResponse destination = new TransferModelResponse();
-
-        destination.setOrganizationFiscalCode(sourceTransfer.getOrganizationFiscalCode());
-        destination.setCompanyName(sourceTransfer.getCompanyName());
-        destination.setIdTransfer(sourceTransfer.getTransferId());
-        destination.setAmount(sourceTransfer.getAmount());
-        destination.setRemittanceInformation(sourceTransfer.getRemittanceInformation());
-        destination.setCategory(sourceTransfer.getCategory());
-        destination.setIban(sourceTransfer.getIban());
-        destination.setPostalIban(sourceTransfer.getPostalIban());
-        // if one of Stamp attributes are different from null return Stamp values
-        if (sourceTransfer.getHashDocument() != null
-                || sourceTransfer.getStampType() != null
-                || sourceTransfer.getProvincialResidence() != null) {
-            destination.setStamp(
-                    Stamp.builder()
-                            .hashDocument(sourceTransfer.getHashDocument())
-                            .provincialResidence(sourceTransfer.getProvincialResidence())
-                            .stampType(sourceTransfer.getStampType())
-                            .build());
-        }
-
-        destination.setInsertedDate(sourceTransfer.getInsertedDate());
-        destination.setStatus(sourceTransfer.getStatus());
-        destination.setLastUpdatedDate(sourceTransfer.getLastUpdatedDate());
-
-        destination.setTransferMetadata(ObjectMapperUtils.mapAll(sourceTransfer.getMetadata(), TransferMetadataModelResponse.class));
-
-        return destination;
     }
 }

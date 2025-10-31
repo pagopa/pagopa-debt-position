@@ -3,9 +3,10 @@ package it.gov.pagopa.debtposition.mapper;
 import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.model.enumeration.OptionType;
-import it.gov.pagopa.debtposition.model.pd.*;
+import it.gov.pagopa.debtposition.model.pd.PaymentOptionMetadataModel;
+import it.gov.pagopa.debtposition.model.pd.PaymentOptionModel;
+import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
@@ -74,41 +75,12 @@ public class ConvertPPEntityToModel
 
                 destinationPO.setPaymentOptionMetadata(ObjectMapperUtils.mapAll(sourceInst.getMetadata(), PaymentOptionMetadataModel.class));
 
-                destinationPO.setTransfer(sourceInst.getTransfer().stream().filter(Objects::nonNull).map(this::convertTransfer).toList());
+                destinationPO.setTransfer(sourceInst.getTransfer().stream().filter(Objects::nonNull).map(MapperUtils::convertTransferModel).toList());
 
                 destinationPoList.add(destinationPO);
             }
         }
 
         return destinationPoList;
-    }
-
-    private TransferModel convertTransfer(Transfer t) {
-        TransferModel destination = new TransferModel();
-
-        destination.setIdTransfer(t.getTransferId());
-        destination.setAmount(t.getAmount());
-        destination.setOrganizationFiscalCode(t.getOrganizationFiscalCode());
-        destination.setRemittanceInformation(t.getRemittanceInformation());
-        destination.setCategory(t.getCategory());
-        destination.setIban(t.getIban());
-        destination.setPostalIban(t.getPostalIban());
-        // if one of Stamp attributes are different from null return Stamp values
-        if (t.getHashDocument() != null
-                || t.getStampType() != null
-                || t.getProvincialResidence() != null) {
-            destination.setStamp(
-                    Stamp.builder()
-                            .hashDocument(t.getHashDocument())
-                            .provincialResidence(t.getProvincialResidence())
-                            .stampType(t.getStampType())
-                            .build());
-        }
-
-        destination.setCompanyName(t.getInstallment().getPaymentPosition().getCompanyName());
-
-        destination.setTransferMetadata(ObjectMapperUtils.mapAll(t.getMetadata(), TransferMetadataModel.class));
-
-        return destination;
     }
 }
