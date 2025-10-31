@@ -1,9 +1,6 @@
 package it.gov.pagopa.debtposition.mapper.utils;
 
-import it.gov.pagopa.debtposition.entity.PaymentOption;
-import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
-import it.gov.pagopa.debtposition.entity.Transfer;
-import it.gov.pagopa.debtposition.entity.TransferMetadata;
+import it.gov.pagopa.debtposition.entity.*;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import it.gov.pagopa.debtposition.model.pd.DebtorModel;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
@@ -13,14 +10,18 @@ import it.gov.pagopa.debtposition.model.pd.response.TransferMetadataModelRespons
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
 import it.gov.pagopa.debtposition.model.v3.InstallmentMetadataModel;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 
 public class UtilityMapper {
+
+// @Value("${database.migration.fields.read.from: READ_FROM_PAYMENT_POSITION}")
+  private static String READ_FROM = "READ_FROM_PAYMENT_POSITION";
 
   private UtilityMapper() {
     throw new IllegalStateException("Utility class");
@@ -217,5 +218,49 @@ public class UtilityMapper {
     destination.setTransferMetadata(transferMetadataModelResponses);
 
     return destination;
+  }
+
+  public static LocalDateTime getValidityDate(PaymentPosition pp, PaymentOption po) {
+      if (READ_FROM.equalsIgnoreCase("READ_FROM_PAYMENT_POSITION")) {
+        return pp.getValidityDate();
+      } else {
+        return po.getValidityDate();
+      }
+  }
+
+  public static boolean getSwitchToExpired(PaymentPosition pp, PaymentOption po) {
+    if (READ_FROM.equalsIgnoreCase("READ_FROM_PAYMENT_POSITION")) {
+        return pp.getSwitchToExpired();
+    } else {
+        return po.getSwitchToExpired();
+    }
+  }
+
+   public static LocalDateTime getValidityDate(PaymentPosition pp, List<PaymentOption> po) {
+      if (READ_FROM.equalsIgnoreCase("READ_FROM_PAYMENT_POSITION")) {
+          return pp.getValidityDate();
+      } else {
+          // validityDate = min between the validity of the plan installments
+          return po.stream()
+                  .map(PaymentOption::getValidityDate)
+                  .filter(Objects::nonNull)
+                  .min(LocalDateTime::compareTo)
+                  .orElse(null);
+      }
+    }
+
+  public static boolean getSwitchToExpired(PaymentPosition pp) {
+    if (READ_FROM.equalsIgnoreCase("READ_FROM_PAYMENT_POSITION")) {
+        return pp.getSwitchToExpired();
+    } else {
+        // the plan is marked expired if at least one installment is flagged expired (switchToExpired == TRUE),
+        // same as hasAnyMarkedExpired
+        return pp.getPaymentOption() != null && !pp.getPaymentOption().isEmpty() && pp.getPaymentOption()
+                .stream().anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
+    }
+  }
+
+  private boolean hasAnyMarkedExpired(List<PaymentOption> planInstallments) {
+    return planInstallments.stream().anyMatch(po-> Boolean.TRUE.equals(po.getSwitchToExpired()));
   }
 }

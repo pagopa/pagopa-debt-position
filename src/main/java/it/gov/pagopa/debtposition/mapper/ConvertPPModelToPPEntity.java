@@ -132,9 +132,7 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     		destination.setPaymentPlanId(sharedPlanId);
     	}
     } else {
-    	if (destination.getPaymentPlanId() != null) {
-    		destination.setPaymentPlanId(null);
-    	}
+        destination.setPaymentPlanId(PaymentOption.SINGLE_OPTION);
     }
 
     mapAndUpdateTransfers(source, destination);

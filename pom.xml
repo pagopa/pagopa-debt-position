@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>it.gov.pagopa.debtposition</groupId>
 	<artifactId>gpd</artifactId>
-	<version>0.20.1-1-PAGOPA-3335-opt2-data-model-evolution</version>
+	<version>0.20.1-2-PAGOPA-3335-opt2-data-model-evolution</version>
 	<name>Gestione Posizioni Debitorie</name>
 	<description>Progetto Gestione Posizioni Debitorie</description>
 	<properties>
