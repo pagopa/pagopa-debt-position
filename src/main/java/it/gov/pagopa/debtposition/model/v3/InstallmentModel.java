@@ -3,7 +3,6 @@ package it.gov.pagopa.debtposition.model.v3;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
-import it.gov.pagopa.debtposition.model.Metadata;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -54,5 +53,5 @@ public class InstallmentModel implements Serializable {
   @Valid
   @Size(min = 0, max = 10)
   @Schema(description = "it can added a maximum of 10 key-value pairs for metadata")
-  private List<Metadata> installmentMetadata = new ArrayList<>();
+  private List<InstallmentMetadataModel> installmentMetadata = new ArrayList<>();
 }

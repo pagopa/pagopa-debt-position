@@ -10,6 +10,6 @@ public class ConvertTransferEntityToTransferModeResponse implements Converter<Tr
     @Override
     public TransferModelResponse convert(MappingContext<Transfer, TransferModelResponse> context) {
         Transfer source = context.getSource();
-        return MapperUtils.convertTransfer(source);
+        return ConvertUtils.convertTransfer(source);
     }
 }

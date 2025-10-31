@@ -1,9 +1,8 @@
 package it.gov.pagopa.debtposition.model.v3.response;
 
-import it.gov.pagopa.debtposition.model.Metadata;
 import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
-
+import it.gov.pagopa.debtposition.model.v3.InstallmentMetadataModel;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,7 +31,7 @@ public class InstallmentModelResponse implements Serializable {
   private InstallmentStatus status;
   private LocalDateTime lastUpdatedDate;
 
-  private List<Metadata> installmentMetadata = new ArrayList<>();
+  private List<InstallmentMetadataModel> installmentMetadata = new ArrayList<>();
 
   private List<TransferModelResponse> transfer = new ArrayList<>();
 }

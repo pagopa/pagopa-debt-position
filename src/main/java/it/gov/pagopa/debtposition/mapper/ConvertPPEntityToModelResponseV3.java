@@ -4,6 +4,7 @@ import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.model.pd.DebtorModel;
+import it.gov.pagopa.debtposition.model.v3.InstallmentMetadataModel;
 import it.gov.pagopa.debtposition.model.v3.response.InstallmentModelResponse;
 import it.gov.pagopa.debtposition.model.v3.response.PaymentOptionModelResponseV3;
 import it.gov.pagopa.debtposition.model.v3.response.PaymentPositionModelResponseV3;
@@ -92,12 +93,12 @@ public class ConvertPPEntityToModelResponseV3
         installmentModel.setStatus(installment.getStatus());
         installmentModel.setLastUpdatedDate(installment.getLastUpdatedDate());
         if (installment.getTransfer() != null) {
-            installmentModel.setTransfer(installment.getTransfer().stream().map(MapperUtils::convertTransfer).toList());
+            installmentModel.setTransfer(installment.getTransfer().stream().map(ConvertUtils::convertTransfer).toList());
         } else {
             installmentModel.setTransfer(new ArrayList<>());
         }
 
-        installmentModel.setInstallmentMetadata(MapperUtils.convertMetadataFromMap(installment.getMetadata()));
+        installmentModel.setInstallmentMetadata(ConvertUtils.convertMetadataFromMap(installment.getMetadata(), InstallmentMetadataModel.class));
 
         return installmentModel;
     }

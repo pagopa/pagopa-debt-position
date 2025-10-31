@@ -163,7 +163,7 @@ public class ConvertPPModelV3ToEntity
         destinationInstallment.setPaymentOption(destinationPo);
         destinationInstallment.setPaymentPosition(destination);
 
-        destinationInstallment.setMetadata(MapperUtils.convertMetadataFromModel(source.getInstallmentMetadata()));
+        destinationInstallment.setMetadata(ConvertUtils.convertMetadataFromModel(source.getInstallmentMetadata()));
 
         mapAndUpdateTransfers(source, destinationInstallment);
     }
@@ -211,7 +211,7 @@ public class ConvertPPModelV3ToEntity
             destinationTr.setProvincialResidence(stamp.getProvincialResidence());
             destinationTr.setStampType(stamp.getStampType());
         }
-        destinationTr.setMetadata(MapperUtils.convertMetadataFromModel(source.getTransferMetadata()));
+        destinationTr.setMetadata(ConvertUtils.convertMetadataFromModel(source.getTransferMetadata()));
 
         destinationTr.setInstallment(destinationInst);
     }

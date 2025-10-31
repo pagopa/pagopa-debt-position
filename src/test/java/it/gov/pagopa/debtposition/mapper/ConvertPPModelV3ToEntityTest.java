@@ -4,8 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import it.gov.pagopa.debtposition.model.Metadata;
+import it.gov.pagopa.debtposition.model.pd.TransferMetadataModel;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
+import it.gov.pagopa.debtposition.model.v3.InstallmentMetadataModel;
 import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
@@ -151,7 +152,7 @@ class ConvertPPModelV3ToEntityTest {
     InstallmentModel installmentModel = new InstallmentModel();
     installmentModel.setAmount(1L);
     installmentModel.setIuv("123");
-    Metadata installmentMetadataModel = new Metadata();
+    InstallmentMetadataModel installmentMetadataModel = new InstallmentMetadataModel();
     installmentMetadataModel.setKey("k");
     installmentMetadataModel.setValue("v");
 
@@ -198,7 +199,7 @@ class ConvertPPModelV3ToEntityTest {
     InstallmentModel installmentModel = new InstallmentModel();
     installmentModel.setAmount(1L);
     installmentModel.setIuv("123");
-    Metadata installmentMetadataModel = new Metadata();
+    InstallmentMetadataModel installmentMetadataModel = new InstallmentMetadataModel();
     installmentMetadataModel.setKey("k");
     installmentMetadataModel.setValue("v");
 
@@ -208,7 +209,7 @@ class ConvertPPModelV3ToEntityTest {
     transferModel.setIdTransfer("1");
     transferModel.setAmount(1L);
 
-    Metadata transferMetadataModel = new Metadata();
+    TransferMetadataModel transferMetadataModel = new TransferMetadataModel();
     transferMetadataModel.setKey("k");
     transferMetadataModel.setValue("v");
 

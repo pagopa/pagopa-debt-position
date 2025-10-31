@@ -6,8 +6,6 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-import it.gov.pagopa.debtposition.model.Metadata;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
@@ -52,7 +50,7 @@ public class PaymentOptionModel implements Serializable {
   @Valid
   @Size(min = 0, max = 10)
   @Schema(description = "it can added a maximum of 10 key-value pairs for metadata")
-  private List<Metadata> paymentOptionMetadata = new ArrayList<>();
+  private List<PaymentOptionMetadataModel> paymentOptionMetadata = new ArrayList<>();
 
   public void addTransfers(TransferModel trans) {
     transfer.add(trans);
@@ -62,11 +60,11 @@ public class PaymentOptionModel implements Serializable {
     transfer.remove(trans);
   }
 
-  public void addPaymentOptionMetadata(Metadata paymentOptMetadata) {
+  public void addPaymentOptionMetadata(PaymentOptionMetadataModel paymentOptMetadata) {
     paymentOptionMetadata.add(paymentOptMetadata);
   }
 
-  public void removePaymentOptionMetadata(Metadata paymentOptMetadata) {
+  public void removePaymentOptionMetadata(PaymentOptionMetadataModel paymentOptMetadata) {
     paymentOptionMetadata.remove(paymentOptMetadata);
   }
 }

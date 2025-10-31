@@ -1,10 +1,10 @@
 package it.gov.pagopa.debtposition.model.payments.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import it.gov.pagopa.debtposition.model.Metadata;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
+import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionMetadataModelResponse;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -43,7 +43,7 @@ public class PaymentOptionWithDebtorInfoModelResponse implements Serializable {
   private String idFlowReporting;
   private String serviceType;
   private PaymentOptionStatus status;
-  private List<Metadata> paymentOptionMetadata = new ArrayList<>();
+  private List<PaymentOptionMetadataModelResponse> paymentOptionMetadata = new ArrayList<>();
 
   // PaymentPosition entity fields
   private String iupd;

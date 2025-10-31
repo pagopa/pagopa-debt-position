@@ -166,7 +166,7 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
         destinationInstallment.setFee(sourcePO.getFee());
         destinationInstallment.setLastUpdatedDate(LocalDateTime.now());
 
-        destinationInstallment.setMetadata(MapperUtils.convertMetadataFromModel(sourcePO.getPaymentOptionMetadata()));
+        destinationInstallment.setMetadata(ConvertUtils.convertMetadataFromModel(sourcePO.getPaymentOptionMetadata()));
 
         List<TransferModel> sourceTransferFiltered = sourcePO.getTransfer() == null ? List.of() : sourcePO.getTransfer().stream().filter(Objects::nonNull).toList();
         if (!sourceTransferFiltered.isEmpty()) {
@@ -214,6 +214,6 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
             transferDestination.setStampType(stamp.getStampType());
         }
 
-        transferDestination.setMetadata(MapperUtils.convertMetadataFromModel(source.getTransferMetadata()));
+        transferDestination.setMetadata(ConvertUtils.convertMetadataFromModel(source.getTransferMetadata()));
     }
 }

@@ -4,6 +4,7 @@ import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.model.enumeration.OptionType;
+import it.gov.pagopa.debtposition.model.pd.PaymentOptionMetadataModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import org.modelmapper.Converter;
@@ -71,9 +72,9 @@ public class ConvertPPEntityToModel
                 destinationPO.setFee(sourceInst.getFee());
                 destinationPO.setNotificationFee(sourceInst.getNotificationFee());
 
-                destinationPO.setPaymentOptionMetadata(MapperUtils.convertMetadataFromMap(sourceInst.getMetadata()));
+                destinationPO.setPaymentOptionMetadata(ConvertUtils.convertMetadataFromMap(sourceInst.getMetadata(), PaymentOptionMetadataModel.class));
 
-                destinationPO.setTransfer(sourceInst.getTransfer().stream().filter(Objects::nonNull).map(MapperUtils::convertTransferModel).toList());
+                destinationPO.setTransfer(sourceInst.getTransfer().stream().filter(Objects::nonNull).map(ConvertUtils::convertTransferModel).toList());
 
                 destinationPoList.add(destinationPO);
             }
