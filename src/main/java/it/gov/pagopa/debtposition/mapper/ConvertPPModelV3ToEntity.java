@@ -38,7 +38,6 @@ public class ConvertPPModelV3ToEntity
         destination.setPayStandIn(source.isPayStandIn());
         destination.setCompanyName(source.getCompanyName());
         destination.setOfficeName(source.getOfficeName());
-        destination.setValidityDate(getValidityDate(source.getPaymentOption()));
 
         List<PaymentOptionModelV3> sourcePaymentOptionList = source.getPaymentOption();
         if (sourcePaymentOptionList != null && !sourcePaymentOptionList.isEmpty()) {
@@ -46,25 +45,6 @@ public class ConvertPPModelV3ToEntity
         } else {
             destination.getPaymentOption().removeAll(destination.getPaymentOption());
         }
-    }
-
-    private LocalDateTime getValidityDate(List<PaymentOptionModelV3> paymentOptions) {
-
-        if (paymentOptions == null) {
-            return null;
-        }
-
-        LocalDateTime validityDate = null;
-        // Find the minimum validityDate
-        Optional<LocalDateTime> minValidityDate =
-                paymentOptions.stream()
-                        .map(PaymentOptionModelV3::getValidityDate)
-                        .filter(Objects::nonNull) // Ensure we only deal with non-null values
-                        .min(Comparator.naturalOrder());
-
-        if (minValidityDate.isPresent()) validityDate = minValidityDate.get();
-
-        return validityDate;
     }
 
     private void mapAndUpdatePaymentOptions(PaymentPositionModelV3 source, PaymentPosition destination) {
