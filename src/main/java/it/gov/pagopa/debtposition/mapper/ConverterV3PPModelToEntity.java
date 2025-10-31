@@ -41,77 +41,65 @@ public class ConverterV3PPModelToEntity
     destination.setFullName(UNDEFINED_DEBTOR);
     destination.setCompanyName(source.getCompanyName());
     destination.setOfficeName(source.getOfficeName());
+    // todo setValidityDate method remove after v1.1.0 promotion because useless
     destination.setValidityDate(getValidityDate(source.getPaymentOption()));
+    // todo setSwitchToExpired method remove after v1.1.0 promotion because useless
     destination.setSwitchToExpired(getSwitchToExpired(source.getPaymentOption()));
 
     mapAndUpdateInstallments(source, destination);
   }
-
-  private LocalDateTime getValidityDate(List<PaymentOptionModelV3> paymentOptions) {
-
-    if (paymentOptions == null) {
-      return null;
-    }
-
-    LocalDateTime validityDate = null;
-    // Find the minimum validityDate
-    Optional<LocalDateTime> minValidityDate =
-        paymentOptions.stream()
-            .map(PaymentOptionModelV3::getValidityDate)
-            .filter(Objects::nonNull) // Ensure we only deal with non-null values
-            .min(Comparator.naturalOrder());
-
-    if (minValidityDate.isPresent()) validityDate = minValidityDate.get();
-
-    return validityDate;
-  }
-
-  private boolean getSwitchToExpired(List<PaymentOptionModelV3> paymentOptions) {
-    if (paymentOptions == null) {
-      return false;
-    }
-    // Check if any PaymentOptionModelV3 has switchToExpired as true
-    // OR operation for the boolean field
-    return paymentOptions.stream()
-        .filter(Objects::nonNull)
-        .anyMatch(PaymentOptionModelV3::getSwitchToExpired);
-  }
-
+  
   private void mapAndUpdateInstallments(
-      PaymentPositionModelV3 source, PaymentPosition destination) {
-    Map<String, PaymentOption> managedOptionsByIuv =
-        destination.getPaymentOption().stream()
-            .collect(Collectors.toMap(PaymentOption::getIuv, po -> po));
+		  PaymentPositionModelV3 source, PaymentPosition destination) {
+	  
+	  if (destination.getPaymentOption() == null) {
+		  destination.setPaymentOption(new ArrayList<>());
+	  }
 
-    List<PaymentOptionModelV3> sourceOptions = source.getPaymentOption();
-    List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
+	  Map<String, PaymentOption> managedOptionsByIuv =
+			  destination.getPaymentOption().stream()
+			  .collect(Collectors.toMap(PaymentOption::getIuv, po -> po));
 
-    // Covered cases:
-    // - 1 Payment Option with [1:N] Installment (ie Opzione Rateale)
-    // - [1:N] Payment Option with 1 Installment (ie Opzione Multipla)
-    // - [1:N] Payment Option with 1 Installment and 1 Payment Option with [1:N] Installment (ie
-    // Opzione Unica + Opzione Rateale)
-    if (sourceOptions != null) {
-      for (PaymentOptionModelV3 sourceOption : sourceOptions) {
-        for (InstallmentModel installment : sourceOption.getInstallments()) {
-          PaymentOption managedOpt = managedOptionsByIuv.get(installment.getIuv());
-          if (managedOpt != null) {
-            // UPDATE: the option
-            mapAndUpdateSinglePaymentOption(sourceOption, installment, managedOpt);
-            optionsToRemove.remove(managedOpt);
-          } else {
-            // CREATE: the option
-            PaymentOption po = PaymentOption.builder().build();
-            po.setSendSync(false);
-            mapAndUpdateSinglePaymentOption(sourceOption, installment, po);
-            destination.getPaymentOption().add(po);
-          }
-        }
-      }
-    }
-    // DELETE: remove the orphans options
-    destination.getPaymentOption().removeAll(optionsToRemove);
+	  List<PaymentOptionModelV3> sourceOptions = source.getPaymentOption();
+	  List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
+
+	  if (sourceOptions != null) {
+		  for (PaymentOptionModelV3 sourceOption : sourceOptions) {
+			  boolean isPartial = sourceOption.getInstallments().size() > 1;
+
+			  // 1) Determine the planId for THIS paymentOption (plan):
+			  // - for single → null
+			  // - for plan → reuse an existing UUID among existing iuvs, otherwise generate a new one
+			  String planIdForThisOption = null;
+			  if (isPartial) {
+				  planIdForThisOption =
+						  findExistingPlanUuidAmongManaged(sourceOption.getInstallments(), managedOptionsByIuv)
+						  .orElseGet(() -> java.util.UUID.randomUUID().toString());
+			  }
+
+			  // 2) Cycle installments and map/create/update
+			  for (InstallmentModel installment : sourceOption.getInstallments()) {
+				  PaymentOption managedOpt = managedOptionsByIuv.get(installment.getIuv());
+				  if (managedOpt != null) {
+					  // UPDATE
+					  mapAndUpdateSinglePaymentOption(sourceOption, installment, managedOpt, planIdForThisOption);
+					  optionsToRemove.remove(managedOpt);
+				  } else {
+					  // CREATE
+					  PaymentOption po = PaymentOption.builder().build();
+					  po.setSendSync(false);
+					  mapAndUpdateSinglePaymentOption(sourceOption, installment, po, planIdForThisOption);
+					  destination.getPaymentOption().add(po);
+					  managedOptionsByIuv.put(po.getIuv(), po);
+				  }
+			  }
+		  }
+	  }
+
+	  // DELETE: remove the orphans
+	  destination.getPaymentOption().removeAll(optionsToRemove);
   }
+
 
   /**
    * @param source the input model
@@ -119,7 +107,11 @@ public class ConverterV3PPModelToEntity
    * @param destination the output entity
    */
   private void mapAndUpdateSinglePaymentOption(
-      PaymentOptionModelV3 source, InstallmentModel sourceInstallment, PaymentOption destination) {
+		    PaymentOptionModelV3 source,
+		    InstallmentModel sourceInstallment,
+		    PaymentOption destination,
+		    String planIdForThisOption) {
+
     DebtorModel debtor = source.getDebtor();
 
     if (debtor != null) {
@@ -145,7 +137,22 @@ public class ConverterV3PPModelToEntity
     destination.setIuv(sourceInstallment.getIuv());
     destination.setLastUpdatedDate(LocalDateTime.now());
     destination.setNav(sourceInstallment.getNav());
+    destination.setValidityDate(source.getValidityDate());
     destination.setRetentionDate(source.getRetentionDate());
+    
+    destination.setSwitchToExpired(Boolean.TRUE.equals(source.getSwitchToExpired()));
+    
+    // Assign paymentPlanId
+    if (source.getInstallments().size() > 1) {
+    	// installment plan
+    	if (!Objects.equals(destination.getPaymentPlanId(), planIdForThisOption)) {
+    		destination.setPaymentPlanId(planIdForThisOption);
+    	}
+    } else {
+    	// single option
+        destination.setPaymentPlanId(PaymentOption.SINGLE_OPTION);
+    }
+
 
     mapAndUpdateTransfers(sourceInstallment, destination);
     mapAndUpdateOptionMetadata(sourceInstallment, destination);
@@ -217,7 +224,7 @@ public class ConverterV3PPModelToEntity
 
         if (managedMetadata != null) {
           // UPDATE:
-          sourceMetadata.setValue(managedMetadata.getValue());
+          managedMetadata.setValue(sourceMetadata.getValue());
           metadataToRemove.remove(managedMetadata);
         } else {
           // CREATE:
@@ -250,7 +257,7 @@ public class ConverterV3PPModelToEntity
 
         if (managedMetadata != null) {
           // UPDATE:
-          sourceMetadata.setValue(managedMetadata.getValue());
+          managedMetadata.setValue(sourceMetadata.getValue());
           metadataToRemove.remove(managedMetadata);
         } else {
           // CREATE:
@@ -266,5 +273,61 @@ public class ConverterV3PPModelToEntity
     }
     // DELETE:
     destination.getTransferMetadata().removeAll(metadataToRemove);
+  }
+  
+  private Optional<String> findExistingPlanUuidAmongManaged(
+		  List<InstallmentModel> installments,
+		  Map<String, PaymentOption> managedByIuv) {
+
+	  for (InstallmentModel inst : installments) {
+		  PaymentOption existing = managedByIuv.get(inst.getIuv());
+		  if (existing != null) {
+			  String pid = existing.getPaymentPlanId();
+			  if (pid != null && isUuid(pid)) {
+				  return Optional.of(pid);
+			  }
+		  }
+	  }
+	  return Optional.empty();
+  }
+
+  // valid UUID (case-insensitive)
+  private boolean isUuid(String s) {
+	  try {
+		  java.util.UUID.fromString(s);
+		  return true;
+	  } catch (IllegalArgumentException e) {
+		  return false;
+	  }
+  }
+
+  // todo getValidityDate method remove after v1.1.0 promotion because useless
+  private LocalDateTime getValidityDate(List<PaymentOptionModelV3> paymentOptions) {
+      if (paymentOptions == null) {
+          return null;
+      }
+
+      LocalDateTime validityDate = null;
+      // Find the minimum validityDate
+      Optional<LocalDateTime> minValidityDate =
+              paymentOptions.stream()
+                      .map(PaymentOptionModelV3::getValidityDate)
+                      .filter(Objects::nonNull) // Ensure we only deal with non-null values
+                      .min(Comparator.naturalOrder());
+
+      if (minValidityDate.isPresent()) validityDate = minValidityDate.get();
+
+      return validityDate;
+  }
+  // todo getSwitchToExpired method remove after v1.1.0 promotion because useless
+  private boolean getSwitchToExpired(List<PaymentOptionModelV3> paymentOptions) {
+      if (paymentOptions == null) {
+          return false;
+      }
+      // Check if any PaymentOptionModelV3 has switchToExpired as true
+      // OR operation for the boolean field
+      return paymentOptions.stream()
+              .filter(Objects::nonNull)
+              .anyMatch(PaymentOptionModelV3::getSwitchToExpired);
   }
 }

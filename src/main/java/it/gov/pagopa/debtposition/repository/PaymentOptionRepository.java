@@ -36,10 +36,19 @@ public interface PaymentOptionRepository
   // Configuration Query
   @Modifying
   @Query(
-          "update PaymentOption po set po.sendSync = true " +
-                  "where po.organizationFiscalCode = :organization " +
-                  "and po.nav = :noticeNumber")
+          "update PaymentOption i set i.sendSync = true " +
+                  "where i.organizationFiscalCode = :organization " +
+                  "and i.nav = :noticeNumber")
   int updatePaymentOptionSendSync(
           @Param(value = "organization") String organizationFiscalCode,
           @Param(value = "noticeNumber") String noticeNumber);
+  
+   // lock for update to avoid race condition with cross-payment cases
+	@Query(value = """
+			select po.*
+			from apd.payment_option po
+			where po.payment_position_id = :ppId
+			for update
+			""", nativeQuery = true)
+  List<PaymentOption> lockAllByPaymentPositionId(@Param("ppId") Long ppId);
 }

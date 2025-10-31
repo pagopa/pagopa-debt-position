@@ -17,7 +17,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -47,13 +46,12 @@ import lombok.*;
       @UniqueConstraint(
           name = "UniquePaymentOptNav",
           columnNames = {"nav", "organization_fiscal_code"}),
-    },
-    indexes =
-        @Index(name = "payment_option_payment_position_id_idx", columnList = "payment_position_id"))
+    })
 @JsonIdentityInfo(
-    generator = ObjectIdGenerators.IntSequenceGenerator.class,
-    property = "@paymentOptionId")
+	    generator = ObjectIdGenerators.PropertyGenerator.class,
+	    property = "id")
 public class PaymentOption implements Serializable {
+  public final static String SINGLE_OPTION = "SINGLE_OPTION";
 
   /** generated serialVersionUID */
   private static final long serialVersionUID = -2800191377721368418L;
@@ -70,6 +68,10 @@ public class PaymentOption implements Serializable {
   @NotNull
   @Column(name = "organization_fiscal_code")
   private String organizationFiscalCode;
+  
+  // payment_plan_id (null for single, '<uuid>' for installment plans)
+  @Column(name = "payment_plan_id", length = 50)
+  private String paymentPlanId;
 
   @NotNull private long amount;
   private String description;
@@ -77,6 +79,9 @@ public class PaymentOption implements Serializable {
   @NotNull
   @Column(name = "is_partial_payment")
   private Boolean isPartialPayment;
+  
+  @Column(name = "validity_date")
+  private LocalDateTime validityDate;
 
   @NotNull
   @Column(name = "due_date")
@@ -166,7 +171,11 @@ public class PaymentOption implements Serializable {
   @ToString.Exclude private String phone;
 
   @Column(name = "send_sync")
-  private Boolean sendSync = false;
+  @Builder.Default private Boolean sendSync = false;
+  
+  @Builder.Default
+  @Column(name = "switch_to_expired", columnDefinition = "boolean DEFAULT false")
+  private Boolean switchToExpired = false;
 
   // flag that identifies if the payment option has a payment in progress (false = no payment in
   // progress)
