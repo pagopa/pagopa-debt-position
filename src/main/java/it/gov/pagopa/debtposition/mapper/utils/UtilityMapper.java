@@ -15,19 +15,17 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 
 public class UtilityMapper {
 
-// @Value("${database.migration.fields.read.from: READ_FROM_PAYMENT_POSITION}")
+  public static final String UNDEFINED_DEBTOR = "NA";
+
   private static String READ_FROM = "READ_FROM_PAYMENT_POSITION";
 
-  private UtilityMapper() {
-    throw new IllegalStateException("Utility class");
+  static void setReadFrom(String value) {
+    READ_FROM = (value == null ? "READ_FROM_PAYMENT_POSITION" : value.trim());
   }
-
-  public static final String UNDEFINED_DEBTOR = "NA";
 
   public static DebtorModel extractDebtor(PaymentOption po) {
     DebtorModel debtor = new DebtorModel();
