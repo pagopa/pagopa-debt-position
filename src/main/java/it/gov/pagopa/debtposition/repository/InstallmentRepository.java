@@ -1,10 +1,8 @@
 package it.gov.pagopa.debtposition.repository;
 
 import it.gov.pagopa.debtposition.entity.Installment;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
@@ -49,11 +47,6 @@ public interface InstallmentRepository extends JpaRepository<Installment, Long>,
     void updateInstallmentStatusToExpired(@Param(value = "currentDate") LocalDateTime currentDate);
 
     // lock for update to avoid issues with JPA
-    @Query(value = """ 
-			select inst.*
-			from installment inst
-			where inst.payment_position_id = :ppId
-			for update
-			""", nativeQuery = true)
-    List<Installment> lockAllByPaymentPositionId(@Param("ppId") Long ppId);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    List<Installment> findByPaymentPositionId(Long ppId);
 }

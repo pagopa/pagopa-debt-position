@@ -139,7 +139,7 @@ public enum DebtPositionStatus {
         }
 
         // 1) Lock ALL siblings so we read a consistent state and prevent concurrent cross-payments
-        List<Installment> siblingsLocked = instRepo.lockAllByPaymentPositionId(pp.getId());
+        List<Installment> siblingsLocked = instRepo.findByPaymentPositionId(pp.getId());
 
         // 2) Hard guard on parent status
         if (DebtPositionStatus.getPaymentPosFullyPaidStatus().contains(pp.getStatus())) {
