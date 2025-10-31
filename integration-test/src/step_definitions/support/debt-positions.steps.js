@@ -115,6 +115,13 @@ Then('we get the status code {int}', (statusCode) => assertStatusCode(gpdSession
  */
 When('the notification fee of the debt position is updated', () => executeDebtPositionNotificationFeeUpdate(gpdSessionBundle, idOrg, 150));
 Then('the organization gets the status code {int}', (statusCode) => assertStatusCode(gpdSessionBundle, statusCode));
+Then('the organization gets the status code {int} or {int}', (code1, code2) => {
+  const actual = gpdSessionBundle?.responseToCheck?.status;
+  assert.ok(
+    actual === code1 || actual === code2,
+    `Expected ${code1} or ${code2} but got ${actual}`
+  );
+});
 Then('the organization gets the updated amounts', () => assertNotificationFeeUpdatedAmounts(gpdSessionBundle.createdDebtPosition, gpdSessionBundle.responseToCheck.data));
 
 /*
