@@ -107,7 +107,7 @@ CREATE TABLE IF NOT EXISTS odp.payment_option (
     payment_position_id int8 NOT NULL,
     retention_date timestamp NULL,
     validity_date timestamp NULL,
-    description varchar(255) NOT NULL,
+    description varchar(255) NULL,
     inserted_date timestamp NOT NULL,
     switch_to_expired bool DEFAULT false NOT NULL,
     option_type varchar(50) NOT NULL, -- SINGLE_OPTION, INSTALLMENT_OPTION
