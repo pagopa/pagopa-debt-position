@@ -81,7 +81,7 @@ public class ExpiredPositionsScheduler {
       LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
       int numAffectedRows =
           paymentPositionRepository.updatePaymentPositionStatusToExpired(
-              currentDate, DebtPositionStatus.EXPIRED);
+              currentDate);
       installmentRepository.updateInstallmentStatusToExpired(currentDate);
 
       log.debug(

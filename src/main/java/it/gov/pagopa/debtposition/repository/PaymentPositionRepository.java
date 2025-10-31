@@ -26,26 +26,62 @@ public interface PaymentPositionRepository
         PagingAndSortingRepository<PaymentPosition, Long> {
 
     @Modifying
-    @Query(
-            "update PaymentPosition pp set pp.status = :status, pp.lastUpdatedDate = :currentDate,"
-                    + " pp.version=pp.version+1 where pp.validityDate IS NOT NULL and pp.validityDate <="
-                    + " :currentDate and pp.status='PUBLISHED'")
+    @Query("""
+              update PaymentPosition pp
+                 set pp.status = :status,
+                     pp.lastUpdatedDate = :currentDate,
+                     pp.version = pp.version + 1
+               where pp.status = 'PUBLISHED'
+                 and exists (
+                       select 1
+                         from PaymentOption po
+                        where po.paymentPosition = pp
+                          and po.validityDate is not null
+                          and po.validityDate <= :currentDate
+                 )
+            """)
     int updatePaymentPositionStatusToValid(
-            @Param(value = "currentDate") LocalDateTime currentDate,
-            @Param(value = "status") DebtPositionStatus status);
+            @Param("currentDate") LocalDateTime currentDate,
+            @Param("status") DebtPositionStatus status);
 
     // Regola 6 - Una posizione va in expired nel momento in cui si raggiunge la max_due_date, il flag
-    // switch_to_expired di una delle paymentOption è impostato a TRUE e lo stato è a valid
+    // switch_to_expired è impostato a TRUE e lo stato è a valid
+
+    /**
+     * Native is used to avoid two-step recovery:
+     * - SELECT PaymentPosition in join with PaymentOption
+     * - UPDATE PaymentPosition pp SET ... WHERE pp.id IN :ids
+     * verbose with two round-trips.
+     */
     @Modifying
-    @Query(
-            "update PaymentPosition pp set pp.status = :status, pp.lastUpdatedDate = :currentDate, pp.version=pp.version+1 " +
-                    "where pp.id in (" +
-                    "select pp.id from PaymentPosition pp join PaymentOption as po on po.paymentPosition = pp " +
-                    "where pp.maxDueDate < :currentDate and pp.status='VALID' and " +
-                    "po.switchToExpired IS TRUE)")
-    int updatePaymentPositionStatusToExpired(
-            @Param(value = "currentDate") LocalDateTime currentDate,
-            @Param(value = "status") DebtPositionStatus status);
+    @Query(value = """
+            UPDATE payment_position pp
+            SET status = 'EXPIRED',
+                last_updated_date = :currentDate,
+                version = pp.version + 1
+            WHERE pp.max_due_date < :currentDate
+              AND pp.status = 'VALID'
+              AND pp.payment_date IS NULL
+              AND EXISTS (
+                  SELECT 1
+                  FROM payment_option po
+                  WHERE po.payment_position_id = pp.id
+                    AND po.switch_to_expired = true
+                    AND EXISTS (
+                        SELECT 1
+                        FROM installment inst
+                        WHERE inst.payment_option_id = po.id
+                            AND inst.status = 'UNPAID'
+                    )
+              )
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM installment inst2
+                  WHERE inst2.payment_position_id = pp.id
+                    AND inst2.status <> 'UNPAID'
+              )
+            """, nativeQuery = true)
+    int updatePaymentPositionStatusToExpired(@Param("currentDate") LocalDateTime currentDate);
 
     // Derived Query - using method naming convention - get parent PaymentPosition from child
     // PaymentOption properties
