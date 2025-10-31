@@ -3,7 +3,6 @@ package it.gov.pagopa.debtposition.mapper;
 import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.model.enumeration.OptionType;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
-import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionMetadataModelResponse;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
@@ -39,7 +38,7 @@ public class ConvertInstallmentEntityToPOModelResponse implements Converter<Inst
         destination.setLastUpdatedDate(source.getLastUpdatedDate());
         destination.setLastUpdatedDateNotificationFee(source.getLastUpdatedDateNotificationFee());
 
-        destination.setPaymentOptionMetadata(ObjectMapperUtils.mapAll(source.getMetadata(), PaymentOptionMetadataModelResponse.class));
+        destination.setPaymentOptionMetadata(MapperUtils.convertMetadataFromMap(source.getMetadata()));
 
         if (source.getTransfer() != null) {
             destination.setTransfer(source.getTransfer().stream().filter(Objects::nonNull).map(MapperUtils::convertTransfer).toList());

@@ -2,12 +2,11 @@ package it.gov.pagopa.debtposition.controller;
 
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
+import it.gov.pagopa.debtposition.model.Metadata;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import it.gov.pagopa.debtposition.model.pd.DebtorModel;
-import it.gov.pagopa.debtposition.model.pd.TransferMetadataModel;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
-import it.gov.pagopa.debtposition.model.v3.InstallmentMetadataModel;
 import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
@@ -277,11 +276,11 @@ class DebtPositionControllerV3Test {
         inst.setAmount(100L);
         inst.setDescription("Description");
         inst.setDueDate(LocalDateTime.now().plusDays(60));
-        ArrayList<InstallmentMetadataModel> instMetadataList =
+        ArrayList<Metadata> instMetadataList =
                 new ArrayList<>(
                         Arrays.asList(
-                                new InstallmentMetadataModel("key1" , "value1"),
-                                new InstallmentMetadataModel("key2" , "value2")));
+                                new Metadata("key1" , "value1"),
+                                new Metadata("key2" , "value2")));
         inst.setInstallmentMetadata(instMetadataList);
 
         TransferModel transfer = getTransferModel();
@@ -298,11 +297,11 @@ class DebtPositionControllerV3Test {
         transfer.setAmount(100L);
         transfer.setRemittanceInformation("remittance information");
         transfer.setCategory("10/22252/20");
-        ArrayList<TransferMetadataModel> transferMetadataList =
+        ArrayList<Metadata> transferMetadataList =
                 new ArrayList<>(
                         Arrays.asList(
-                                new TransferMetadataModel("key1" , "value1"),
-                                new TransferMetadataModel("key2" , "value2")));
+                                new Metadata("key1" , "value1"),
+                                new Metadata("key2" , "value2")));
         transfer.setTransferMetadata(transferMetadataList);
         return transfer;
     }
@@ -347,10 +346,10 @@ class DebtPositionControllerV3Test {
 
         inst.setTransfer(List.of(tr));
 
-        ArrayList<InstallmentMetadataModel> instMetadataList = new ArrayList<>(
+        ArrayList<Metadata> instMetadataList = new ArrayList<>(
                 Arrays.asList(
-                        new InstallmentMetadataModel("key1" , "value1"),
-                        new InstallmentMetadataModel("key2" , "value2")));
+                        new Metadata("key1" , "value1"),
+                        new Metadata("key2" , "value2")));
         inst.setInstallmentMetadata(instMetadataList);
 
         return inst;

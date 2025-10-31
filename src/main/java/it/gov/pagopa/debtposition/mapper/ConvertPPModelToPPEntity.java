@@ -1,9 +1,14 @@
 package it.gov.pagopa.debtposition.mapper;
 
-import it.gov.pagopa.debtposition.entity.*;
+import it.gov.pagopa.debtposition.entity.Installment;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.model.enumeration.OptionType;
-import it.gov.pagopa.debtposition.model.pd.*;
-import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
+import it.gov.pagopa.debtposition.model.pd.PaymentOptionModel;
+import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
+import it.gov.pagopa.debtposition.model.pd.Stamp;
+import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import jakarta.validation.constraints.NotNull;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
@@ -161,9 +166,7 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
         destinationInstallment.setFee(sourcePO.getFee());
         destinationInstallment.setLastUpdatedDate(LocalDateTime.now());
 
-        List<PaymentOptionMetadataModel> metadata = sourcePO.getPaymentOptionMetadata();
-        destinationInstallment.setMetadata(metadata == null || metadata.isEmpty()
-                ? new ArrayList<>() : ObjectMapperUtils.mapAll(metadata, Metadata.class));
+        destinationInstallment.setMetadata(MapperUtils.convertMetadataFromModel(sourcePO.getPaymentOptionMetadata()));
 
         List<TransferModel> sourceTransferFiltered = sourcePO.getTransfer() == null ? List.of() : sourcePO.getTransfer().stream().filter(Objects::nonNull).toList();
         if (!sourceTransferFiltered.isEmpty()) {
@@ -211,8 +214,6 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
             transferDestination.setStampType(stamp.getStampType());
         }
 
-        List<TransferMetadataModel> metadata = source.getTransferMetadata();
-        transferDestination.setMetadata(metadata == null || metadata.isEmpty() ?
-                new ArrayList<>() : ObjectMapperUtils.mapAll(metadata, Metadata.class));
+        transferDestination.setMetadata(MapperUtils.convertMetadataFromModel(source.getTransferMetadata()));
     }
 }

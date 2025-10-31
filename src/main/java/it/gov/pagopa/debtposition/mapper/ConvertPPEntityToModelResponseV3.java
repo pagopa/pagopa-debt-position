@@ -4,11 +4,9 @@ import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.model.pd.DebtorModel;
-import it.gov.pagopa.debtposition.model.v3.InstallmentMetadataModel;
 import it.gov.pagopa.debtposition.model.v3.response.InstallmentModelResponse;
 import it.gov.pagopa.debtposition.model.v3.response.PaymentOptionModelResponseV3;
 import it.gov.pagopa.debtposition.model.v3.response.PaymentPositionModelResponseV3;
-import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
@@ -99,7 +97,7 @@ public class ConvertPPEntityToModelResponseV3
             installmentModel.setTransfer(new ArrayList<>());
         }
 
-        installmentModel.setInstallmentMetadata(ObjectMapperUtils.mapAll(installment.getMetadata(), InstallmentMetadataModel.class));
+        installmentModel.setInstallmentMetadata(MapperUtils.convertMetadataFromMap(installment.getMetadata()));
 
         return installmentModel;
     }

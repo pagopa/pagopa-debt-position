@@ -5,13 +5,13 @@ import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
+import it.gov.pagopa.debtposition.model.Metadata;
 import it.gov.pagopa.debtposition.model.payments.AlreadyPaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
-import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionMetadataModelResponse;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
 import it.gov.pagopa.debtposition.service.payments.PaymentsService;
 import it.gov.pagopa.debtposition.util.CommonUtil;
@@ -66,7 +66,7 @@ public class PaymentsController implements IPaymentsController {
 
         // Add NOTIFICATION_FEE_METADATA_KEY to response on the fly
         paymentOptionResponse.getPaymentOptionMetadata()
-                .add(PaymentOptionMetadataModelResponse.builder()
+                .add(Metadata.builder()
                         .key(NOTIFICATION_FEE_METADATA_KEY)
                         .value(String.valueOf(paymentOptionResponse.getNotificationFee()))
                         .build());

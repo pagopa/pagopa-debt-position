@@ -1,7 +1,9 @@
 package it.gov.pagopa.debtposition.service.pd.crud;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import it.gov.pagopa.debtposition.entity.*;
+import it.gov.pagopa.debtposition.entity.Installment;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.exception.ValidationException;
@@ -190,7 +192,7 @@ public class PaymentPositionCRUDService {
         // fetch, are not used by JPA
         for (PaymentPosition pp : positions) {
             List<PaymentOption> poToAdd = new ArrayList<>();
-            for(PaymentOption po : pp.getPaymentOption()){
+            for (PaymentOption po : pp.getPaymentOption()) {
                 Specification<Installment> specInst =
                         allOf(
                                 new InstallmentByAttribute(
@@ -201,7 +203,7 @@ public class PaymentPositionCRUDService {
 
                 List<Installment> instList = installmentRepository.findAll(specInst);
 
-                if(!instList.isEmpty()){
+                if (!instList.isEmpty()) {
                     po.setInstallment(instList);
                     poToAdd.add(po);
                 }
@@ -399,7 +401,7 @@ public class PaymentPositionCRUDService {
             throw e;
         } catch (Exception e) {
             // Log the entire exception for debugging purposes.
-            log.error("Error during debt position update process", e);
+            log.error("Error during debt position update process" , e);
             throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
         }
     }
@@ -518,11 +520,9 @@ public class PaymentPositionCRUDService {
         for (PaymentOption po : pp.getPaymentOption()) {
             for (Installment inst : po.getInstallment()) {
                 // Make sure there isn't reserved metadata
-                for (Metadata pom : inst.getMetadata()) {
-                    if (pom.getKey().equals(NOTIFICATION_FEE_METADATA_KEY)) {
-                        throw new AppException(
-                                AppError.PAYMENT_OPTION_RESERVED_METADATA, organizationFiscalCode, pp.getIupd());
-                    }
+                if (inst.getMetadata().get(NOTIFICATION_FEE_METADATA_KEY) != null) {
+                    throw new AppException(
+                            AppError.PAYMENT_OPTION_RESERVED_METADATA, organizationFiscalCode, pp.getIupd());
                 }
 
                 inst.setOrganizationFiscalCode(organizationFiscalCode);

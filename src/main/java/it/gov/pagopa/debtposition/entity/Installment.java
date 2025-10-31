@@ -13,6 +13,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Builder(toBuilder = true)
 @Getter
@@ -108,6 +109,7 @@ public class Installment implements Serializable {
 
     @NotNull
     @Column(name = "send_sync")
+    @Builder.Default()
     private Boolean sendSync = false;
 
     // flag that identifies if the installment has a payment in progress (false = no payment in
@@ -118,7 +120,7 @@ public class Installment implements Serializable {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private List<Metadata> metadata;
+    private Map<String, String> metadata;
 
     @ManyToOne(
             targetEntity = PaymentPosition.class,

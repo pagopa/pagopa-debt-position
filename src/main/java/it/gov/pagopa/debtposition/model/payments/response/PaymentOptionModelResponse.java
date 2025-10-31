@@ -1,8 +1,8 @@
 package it.gov.pagopa.debtposition.model.payments.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import it.gov.pagopa.debtposition.model.Metadata;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
-import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionMetadataModelResponse;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -40,7 +40,7 @@ public class PaymentOptionModelResponse implements Serializable {
   private LocalDateTime lastUpdatedDate;
   private LocalDateTime lastUpdatedDateNotificationFee;
 
-  private List<PaymentOptionMetadataModelResponse> paymentOptionMetadata = new ArrayList<>();
+  private List<Metadata> paymentOptionMetadata = new ArrayList<>();
 
   private List<TransferModelResponse> transfer = new ArrayList<>();
 }

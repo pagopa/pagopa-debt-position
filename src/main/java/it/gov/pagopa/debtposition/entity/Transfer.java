@@ -11,7 +11,7 @@ import org.hibernate.type.SqlTypes;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Map;
 
 @Builder(toBuilder = true)
 @Getter
@@ -92,7 +92,7 @@ public class Transfer implements Serializable {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private List<Metadata> metadata;
+    private Map<String, String> metadata;
 
     @ManyToOne(
             targetEntity = Installment.class,

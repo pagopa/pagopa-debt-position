@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
+import it.gov.pagopa.debtposition.model.Metadata;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
@@ -66,13 +68,13 @@ public class TransferModel implements Serializable {
   @Valid
   @Size(min = 0, max = 10)
   @Schema(description = "it can added a maximum of 10 key-value pairs for metadata")
-  private List<TransferMetadataModel> transferMetadata = new ArrayList<>();
+  private List<Metadata> transferMetadata = new ArrayList<>();
 
-  public void addTransferMetadata(TransferMetadataModel trans) {
+  public void addTransferMetadata(Metadata trans) {
     transferMetadata.add(trans);
   }
 
-  public void removeTransferMetadata(TransferMetadataModel trans) {
+  public void removeTransferMetadata(Metadata trans) {
     transferMetadata.remove(trans);
   }
 }

@@ -1,15 +1,17 @@
 package it.gov.pagopa.debtposition.mapper;
 
 import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.model.Metadata;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
-import it.gov.pagopa.debtposition.model.pd.TransferMetadataModel;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
-import it.gov.pagopa.debtposition.model.pd.response.TransferMetadataModelResponse;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
-import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class MapperUtils {
-    MapperUtils(){}
+    MapperUtils() {
+    }
 
     public static TransferModelResponse convertTransfer(Transfer sourceTransfer) {
         TransferModelResponse destination = new TransferModelResponse();
@@ -38,7 +40,7 @@ public class MapperUtils {
         destination.setStatus(sourceTransfer.getStatus());
         destination.setLastUpdatedDate(sourceTransfer.getLastUpdatedDate());
 
-        destination.setTransferMetadata(ObjectMapperUtils.mapAll(sourceTransfer.getMetadata(), TransferMetadataModelResponse.class));
+        destination.setTransferMetadata(convertMetadataFromMap(sourceTransfer.getMetadata()));
 
         return destination;
     }
@@ -67,8 +69,32 @@ public class MapperUtils {
 
         destination.setCompanyName(sourceTransfer.getCompanyName());
 
-        destination.setTransferMetadata(ObjectMapperUtils.mapAll(sourceTransfer.getMetadata(), TransferMetadataModel.class));
+        destination.setTransferMetadata(convertMetadataFromMap(sourceTransfer.getMetadata()));
 
         return destination;
+    }
+
+    public static Map<String, String> convertMetadataFromModel(List<Metadata> metadata) {
+
+        return (metadata == null || metadata.isEmpty()) ?
+                new LinkedHashMap<>() :
+                metadata.stream()
+                        .filter(Objects::nonNull)
+                        .filter(m -> m.getKey() != null)
+                        .collect(Collectors.toMap(
+                                Metadata::getKey,
+                                Metadata::getValue,
+                                (oldValue, newValue) -> newValue,
+                                LinkedHashMap::new
+                        ));
+    }
+
+    public static List<Metadata> convertMetadataFromMap(Map<String, String> metadata) {
+        return (metadata == null || metadata.isEmpty()) ?
+                new ArrayList<>() :
+                metadata.entrySet().stream()
+                        .filter(Objects::nonNull)
+                        .map(e -> new Metadata(e.getKey(), e.getValue()))
+                        .toList();
     }
 }

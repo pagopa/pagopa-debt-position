@@ -4,7 +4,6 @@ import it.gov.pagopa.debtposition.entity.Installment;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.model.enumeration.OptionType;
-import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionMetadataModelResponse;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
@@ -74,8 +73,7 @@ public class ConvertPPEntityToModelResponse
                 destinationPO.setStatus(ObjectMapperUtils.mapInstallmentStatusToPoStatus(sourceInst.getStatus()));
                 destinationPO.setLastUpdatedDate(sourceInst.getLastUpdatedDate());
 
-                destinationPO.setPaymentOptionMetadata(ObjectMapperUtils.mapAll(sourceInst.getMetadata(), PaymentOptionMetadataModelResponse.class));
-
+                destinationPO.setPaymentOptionMetadata(MapperUtils.convertMetadataFromMap(sourceInst.getMetadata()));
 
                 destinationPO.setTransfer(sourceInst.getTransfer().stream().filter(Objects::nonNull).map(MapperUtils::convertTransfer).toList());
 

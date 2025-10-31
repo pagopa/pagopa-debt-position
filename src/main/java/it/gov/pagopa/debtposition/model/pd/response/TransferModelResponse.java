@@ -1,5 +1,6 @@
 package it.gov.pagopa.debtposition.model.pd.response;
 
+import it.gov.pagopa.debtposition.model.Metadata;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
 import java.io.Serializable;
@@ -29,5 +30,5 @@ public class TransferModelResponse implements Serializable {
   private TransferStatus status;
   private LocalDateTime lastUpdatedDate;
 
-  private List<TransferMetadataModelResponse> transferMetadata = new ArrayList<>();
+  private List<Metadata> transferMetadata = new ArrayList<>();
 }
