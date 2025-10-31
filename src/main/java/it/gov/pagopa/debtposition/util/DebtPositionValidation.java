@@ -9,6 +9,7 @@ import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.exception.ValidationException;
+import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
@@ -131,7 +132,7 @@ public class DebtPositionValidation {
 
 	  for (PaymentOption po : pp.getPaymentOption()) {
 
-		  LocalDateTime poValidity = po.getValidityDate();
+		  LocalDateTime poValidity = UtilityMapper.getValidityDate(pp, po);
 
 		  // Regola 1 - must be validity_date ≥ current time (applied only at creation stage)
 		  if (!ArrayUtils.isEmpty(action)

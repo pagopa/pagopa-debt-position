@@ -24,6 +24,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +33,7 @@ import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADAT
 import static it.gov.pagopa.debtposition.util.Constants.PO_MARKED_AS_PAID_FIELD_PLACEHOLDER;
 
 @Controller
+@Validated
 @Slf4j
 public class PaymentsController implements IPaymentsController {
 

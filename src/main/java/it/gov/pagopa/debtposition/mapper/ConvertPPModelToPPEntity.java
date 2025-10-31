@@ -45,6 +45,10 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     destination.setPhone(source.getPhone());
     destination.setCompanyName(source.getCompanyName());
     destination.setOfficeName(source.getOfficeName());
+    // todo validityDate mapping remove after v1.1.0 promotion
+    destination.setValidityDate(source.getValidityDate());
+    // todo switchToExpired mapping remove after v1.1.0 promotion
+    destination.setSwitchToExpired(source.getSwitchToExpired());
     
     mapAndUpdatePaymentOptions(source, destination);
   }
@@ -128,9 +132,7 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     		destination.setPaymentPlanId(sharedPlanId);
     	}
     } else {
-    	if (destination.getPaymentPlanId() != null) {
-    		destination.setPaymentPlanId(null);
-    	}
+        destination.setPaymentPlanId(PaymentOption.SINGLE_OPTION);
     }
 
     mapAndUpdateTransfers(source, destination);

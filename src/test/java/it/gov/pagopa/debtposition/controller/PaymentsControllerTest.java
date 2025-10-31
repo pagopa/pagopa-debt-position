@@ -15,6 +15,7 @@ import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
 import it.gov.pagopa.debtposition.client.NodeClient;
 import it.gov.pagopa.debtposition.client.SendClient;
+import it.gov.pagopa.debtposition.controller.payments.api.impl.PaymentsController;
 import it.gov.pagopa.debtposition.dto.PaymentOptionDTO;
 import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import it.gov.pagopa.debtposition.dto.TransferDTO;
@@ -22,6 +23,7 @@ import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppException;
+import it.gov.pagopa.debtposition.exception.ErrorHandler;
 import it.gov.pagopa.debtposition.mock.DebtPositionMock;
 import it.gov.pagopa.debtposition.model.checkposition.NodeCheckPositionModel;
 import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPositionResponse;
@@ -55,6 +57,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @SpringBootTest(classes = DebtPositionApplication.class)
 @AutoConfigureMockMvc
@@ -2224,6 +2227,126 @@ class PaymentsControllerTest {
                         + notificationFeeUpdateModel.getNotificationFee()));
   }
   
+  @Test
+  void recomputeStatusV3_planMixedPaidAndReported_resultsInPP_PAID() throws Exception {
+    // 1) A PD with a 2-payment plan is created (plan + single option) and published
+    mvc.perform(
+            post("/organizations/555123456789000/debtpositions")
+                .content(TestUtil.toJson(DebtPositionMock.getMock3(), objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    mvc.perform(
+            post("/organizations/555123456789000/debtpositions/12345678901IUPDMULTIPLEMOCK2/publish")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    // 2) Both installments of the plan are paid (1234564 and 1234565)
+    mvc.perform(
+            post("/organizations/555123456789000/paymentoptions/" + auxDigit + "1234564/pay")
+                .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1(), objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status")
+            .value(PaymentOptionStatus.PO_PAID.toString()));
+
+    mvc.perform(
+            post("/organizations/555123456789000/paymentoptions/" + auxDigit + "1234565/pay")
+                .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1(), objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status")
+            .value(PaymentOptionStatus.PO_PAID.toString()));
+
+    // 3) PP = PAID is verified after ALL plan installments have been paid
+    mvc.perform(
+            get("/organizations/555123456789000/debtpositions/12345678901IUPDMULTIPLEMOCK2")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status")
+            .value(DebtPositionStatus.PAID.toString()));
+
+    // 4) ONLY one of the two installments is reported (1234564) -> PO_REPORTED, the other remains PO_PAID
+    mvc.perform(
+            post("/organizations/555123456789000/paymentoptions/1234564/transfers/4/report")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status")
+            .value(TransferStatus.T_REPORTED.toString()));
+
+    mvc.perform(
+            post("/organizations/555123456789000/paymentoptions/1234564/transfers/5/report")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status")
+            .value(TransferStatus.T_REPORTED.toString()));
+
+    // 5) The plan is in a mixed condition: { PO_REPORTED (1234564), PO_PAID (1234565) } -> PP MUST remain PAID
+    mvc.perform(
+            get("/organizations/555123456789000/debtpositions/12345678901IUPDMULTIPLEMOCK2")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status")
+            .value(DebtPositionStatus.PAID.toString()));
+  }
+
+  @Test
+  void recomputeStatusV3_planAllReported_resultsInPP_REPORTED() throws Exception {
+    // 1) A PD with a 2-payment plan is created (plan + single option) and published
+    mvc.perform(
+            post("/organizations/556123456789000/debtpositions")
+                .content(TestUtil.toJson(DebtPositionMock.getMock3(), objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    mvc.perform(
+            post("/organizations/556123456789000/debtpositions/12345678901IUPDMULTIPLEMOCK2/publish")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    // 2) Both installments of the plan are paid (1234564 and 1234565)
+    mvc.perform(
+            post("/organizations/556123456789000/paymentoptions/" + auxDigit + "1234564/pay")
+                .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1(), objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    mvc.perform(
+            post("/organizations/556123456789000/paymentoptions/" + auxDigit + "1234565/pay")
+                .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1(), objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    // 3) Both installments are brought to REPORTED
+    mvc.perform(
+            post("/organizations/556123456789000/paymentoptions/1234564/transfers/4/report")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    mvc.perform(
+            post("/organizations/556123456789000/paymentoptions/1234564/transfers/5/report")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    mvc.perform(
+            post("/organizations/556123456789000/paymentoptions/1234565/transfers/4/report")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    mvc.perform(
+            post("/organizations/556123456789000/paymentoptions/1234565/transfers/5/report")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    // 4) All plan installments are REPORTED -> PP = REPORTED
+    mvc.perform(
+            get("/organizations/556123456789000/debtpositions/12345678901IUPDMULTIPLEMOCK2")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status")
+            .value(DebtPositionStatus.REPORTED.toString()));
+  }
+  
   //========================= NEW TESTS FOR verifyPaymentOptions API =========================
 
   @Test
@@ -2283,34 +2406,85 @@ class PaymentsControllerTest {
                 Matchers.hasItem(Matchers.startsWith("Installment plan of"))));
   }
 
-
-
   @Test
   void verifyPaymentOptions_404_whenNotFound() throws Exception {
-	  String organization = "700123456789002";
-	  String navOrIuv = "99999999"; // non-existent
+    String organization = "700123456789002";
+    String navOrIuv = "99999999"; // non-existent
 
-	  mvc.perform(
-			  post("/payment-options/organizations/{organizationfiscalcode}/notices/{nav}", organization, navOrIuv)
-			  .contentType(MediaType.APPLICATION_JSON))
-	  .andExpect(status().isNotFound())
-	  .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    mvc.perform(
+            post("/payment-options/organizations/{organization-fiscal-code}/notices/{notice-number}",
+                    organization, navOrIuv)
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isNotFound())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatusCode").value(404))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatusDescription").value("Not Found"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.appErrorCode").value("ODP-107"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.errorMessage", Matchers.containsString("PAA_PAGAMENTO_SCONOSCIUTO")));
   }
 
   @Test
   void verifyPaymentOptions_400_onMalformedNAV() throws Exception {
-	  // Non-numeric NAV --> @Pattern("^\\d{1,30}$") is violated
-	  String organization = "700123456789003";
-	  String badNav = "ABCDEF";
+    String organization = "700123456789003";
+    String badNav = "ABCDEF"; // non-numeric
 
-	  mvc.perform(
-			  post("/payment-options/organizations/{organizationfiscalcode}/notices/{nav}", organization, badNav)
-			  .contentType(MediaType.APPLICATION_JSON))
-	  .andExpect(status().isBadRequest())
-	  .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
-	  .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(400))
-	  .andExpect(MockMvcResultMatchers.jsonPath("$.title").exists())
-	  .andExpect(MockMvcResultMatchers.jsonPath("$.detail").exists());
+    mvc.perform(
+            post("/payment-options/organizations/{organization-fiscal-code}/notices/{notice-number}",
+                    organization, badNav)
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatusCode").value(400))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatusDescription").value("Bad Request"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.appErrorCode").value("ODP-101"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.errorMessage", Matchers.containsString("PAA_SINTASSI")));
+  }
+  
+  @Test
+  void verifyPaymentOptions_404_onUnauthorizedSegregationCodes() throws Exception {
+    String organization = "700123456789004";
+    String nav = "331234567890";
+
+    mvc.perform(
+            post("/payment-options/organizations/{organization-fiscal-code}/notices/{notice-number}",
+                    organization, nav)
+                .queryParam("segregationCodes", "11,22") // does not include "33" => not authorized
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isNotFound())
+        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatusCode").value(404))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.appErrorCode").value("ODP-107"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.errorMessage", Matchers.containsString("PAA_PAGAMENTO_SCONOSCIUTO")));
+  }
+  
+  @Test
+  void verifyPaymentOptions_500_onUnexpectedError() throws Exception {
+	  String organization = "700123456789005";
+	  String nav = "1234567890";
+
+	  PaymentsService ps = mock(PaymentsService.class);
+	  when(ps.verifyPaymentOptions(anyString(), anyString()))
+	  .thenThrow(new RuntimeException("unexpected error"));
+
+	  PaymentsController controller = new PaymentsController(modelMapperMock, ps);
+
+	  MockMvc mvcStandalone = MockMvcBuilders
+			  .standaloneSetup(controller)
+			  .setControllerAdvice(new ErrorHandler())
+			  .build();
+
+	  mvcStandalone.perform(
+			  post("/payment-options/organizations/{organization-fiscal-code}/notices/{notice-number}",
+					  organization, nav)
+			  .contentType(MediaType.APPLICATION_JSON)
+			  .accept(MediaType.APPLICATION_JSON))     
+	  .andExpect(status().isInternalServerError())
+	  .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatusCode").value(500))
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.appErrorCode").value("ODP-103"))
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.errorMessage",
+			  Matchers.containsString("PAA_SYSTEM_ERROR")));
   }
 
   /** VALIDATION TEST - unexpected case */

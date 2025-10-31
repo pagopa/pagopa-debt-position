@@ -254,7 +254,7 @@ class ConvertPPModelToPPEntityTest {
     PaymentPosition entity = mapper.convert(ctx);
 
     // Assert: Single --> paymentPlanId nullo
-    assertNull(findByIuv(entity, "S1").getPaymentPlanId());
+    assertEquals(PaymentOption.SINGLE_OPTION, findByIuv(entity, "S1").getPaymentPlanId());
 
     // installments → same shared UUID
     String pidA1 = findByIuv(entity, "A1").getPaymentPlanId();

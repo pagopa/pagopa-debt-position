@@ -282,7 +282,7 @@ class ConverterV3PPModelToEntityTest {
 
     assertNotNull(entity);
     // single --> paymentPlanId null
-    assertNull(findByIuv(entity, "S1").getPaymentPlanId());
+    assertEquals(PaymentOption.SINGLE_OPTION, findByIuv(entity, "S1").getPaymentPlanId());
 
     // plan → same UUID for both installments 
     String pidA = findByIuv(entity, "P1A").getPaymentPlanId();

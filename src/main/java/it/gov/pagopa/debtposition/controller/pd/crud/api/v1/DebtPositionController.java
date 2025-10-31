@@ -7,6 +7,7 @@ import it.gov.pagopa.debtposition.config.ExclusiveParamGroup;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
+import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.filterandorder.Filter;
@@ -91,8 +92,7 @@ public class DebtPositionController implements IDebtPositionController {
 	if (null != createdDebtPos) {
 		PaymentPositionModel paymentPosition = ObjectMapperUtils.map(createdDebtPos, PaymentPositionModel.class);
 		// set the switchToExpired flag in the response
-		boolean anyMatchSwitchToExpired = createdDebtPos.getPaymentOption() != null && createdDebtPos.getPaymentOption()
-				.stream().anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
+		boolean anyMatchSwitchToExpired = UtilityMapper.getSwitchToExpired(createdDebtPos);
 		paymentPosition.setSwitchToExpired(anyMatchSwitchToExpired);
 		// set validityDate as min of the validityDate on the PaymentOption
 		LocalDateTime minValidityDate = CommonUtil.resolveMinValidity(createdDebtPos);
@@ -273,8 +273,7 @@ public class DebtPositionController implements IDebtPositionController {
       PaymentPositionModel paymentPosition =
           ObjectMapperUtils.map(updatedDebtPos, PaymentPositionModel.class);
       // set the switchToExpired flag in the response
-   	  boolean anyMatchSwitchToExpired = updatedDebtPos.getPaymentOption() != null && updatedDebtPos.getPaymentOption()
-   				.stream().anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
+   	  boolean anyMatchSwitchToExpired = UtilityMapper.getSwitchToExpired(updatedDebtPos);
    	  paymentPosition.setSwitchToExpired(anyMatchSwitchToExpired);
    	  // set validityDate as min of the validityDate on the PaymentOption
    	  LocalDateTime minValidityDate = CommonUtil.resolveMinValidity(updatedDebtPos);
