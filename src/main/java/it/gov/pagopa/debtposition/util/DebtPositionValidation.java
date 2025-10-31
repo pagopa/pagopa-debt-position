@@ -269,6 +269,11 @@ public class DebtPositionValidation {
                     AppError.PAYMENT_OPTION_ALREADY_PAID, installmentToPay.getOrganizationFiscalCode(), nav);
         }
 
+        if (InstallmentStatus.getInstallmentNotAccountableStatus().contains(installmentToPay.getStatus())) {
+            throw new AppException(
+                    AppError.PAYMENT_OPTION_NOT_PAYABLE, installmentToPay.getOrganizationFiscalCode(), nav);
+        }
+
         // PIDM-42: if this is a full payment and the position is partially paid then
         // log this but allow the installment status to be changed to PAID instead of throwing an
         // error

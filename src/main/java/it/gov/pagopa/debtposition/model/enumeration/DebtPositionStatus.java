@@ -129,7 +129,7 @@ public enum DebtPositionStatus {
      */
     public static void checkAlreadyPaidInstallments(Installment instToPay, String nav, InstallmentRepository instRepo) {
         // Skip when current Installment is not UNPAID (e.g. reporting flow or repeated updates)
-        if (instToPay.getStatus() != InstallmentStatus.UNPAID) {
+        if (!InstallmentStatus.getInstallmentNotYetPaidStatus().contains(instToPay.getStatus())) {
             return;
         }
 
