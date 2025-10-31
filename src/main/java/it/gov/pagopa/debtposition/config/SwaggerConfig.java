@@ -32,7 +32,7 @@ public class SwaggerConfig {
   private static final String DEBT_POSITION_API_BLOCK = "/organizations/{organizationfiscalcode}/debtpositions/**";
 
   @Bean
-  public OpenAPI customOpenAPI(
+  OpenAPI customOpenAPI(
       @Value("${info.application.description}") String appDescription,
       @Value("${info.application.version}") String appVersion) {
 
@@ -56,7 +56,7 @@ public class SwaggerConfig {
   }
 
   @Bean
-  public OpenApiCustomizer sortOperationsAlphabetically() {
+  OpenApiCustomizer sortOperationsAlphabetically() {
     return openApi -> {
       Paths paths =
           openApi.getPaths().entrySet().stream()
@@ -71,7 +71,7 @@ public class SwaggerConfig {
   }
 
   @Bean
-  public Map<String, GroupedOpenApi> configureGroupOpenApi(
+  Map<String, GroupedOpenApi> configureGroupOpenApi(
       Map<String, GroupedOpenApi> groupOpenApi) {
     groupOpenApi.forEach(
         (id, groupedOpenApi) -> groupedOpenApi.getOpenApiCustomizers().add(addCommonHeaders()));
@@ -79,7 +79,7 @@ public class SwaggerConfig {
   }
 
   @Bean
-  public OpenApiCustomizer addCommonHeaders() {
+  OpenApiCustomizer addCommonHeaders() {
     return openApi ->
         openApi
             .getPaths()
@@ -116,7 +116,7 @@ public class SwaggerConfig {
   }
 
   @Bean
-  public GroupedOpenApi internalV1Api() {
+  GroupedOpenApi internalV1Api() {
 
     // api to remove
     Map<String, Set<String>> removeFromInternalV1 = Map.of(
@@ -147,7 +147,7 @@ public class SwaggerConfig {
   }
 
   @Bean
-  public GroupedOpenApi internalV2Api() {
+  GroupedOpenApi internalV2Api() {
 
     // api to remove
     Map<String, Set<String>> removeFromInternalV2 = Map.of(
@@ -174,7 +174,7 @@ public class SwaggerConfig {
   }
 
   @Bean
-  public GroupedOpenApi externalV1Api() {
+  GroupedOpenApi externalV1Api() {
     Map<String, Set<String>> removeFromExternalV1 = Map.of(
             DEBT_POSITIONS_API, Set.of("put", "delete")
     );
@@ -202,7 +202,7 @@ public class SwaggerConfig {
   }
 
   @Bean
-  public GroupedOpenApi externalV2Api() {
+  GroupedOpenApi externalV2Api() {
     Map<String, Set<String>> removeFromExternalV2 = Map.of(
             DEBT_POSITIONS_API, Set.of("get", "post")
     );
@@ -224,7 +224,7 @@ public class SwaggerConfig {
   }
 
   @Bean
-  public GroupedOpenApi externalV3Api() {
+  GroupedOpenApi externalV3Api() {
     Map<String, Set<String>> removeFromExternalV3 = Map.of();
 
     // server list
@@ -244,7 +244,7 @@ public class SwaggerConfig {
   }
 
   @Bean
-  public GroupedOpenApi acaV1Api() {
+  GroupedOpenApi acaV1Api() {
     Map<String, Set<String>> removeFromAcaV1 = Map.of(
             DEBT_POSITIONS_API, Set.of("put", "delete"),
             "/organizations/{organizationfiscalcode}/debtpositions/transfers", Set.of("patch")
@@ -275,7 +275,7 @@ public class SwaggerConfig {
   }
 
   @Bean
-  public GroupedOpenApi sendV1Api() {
+  GroupedOpenApi sendV1Api() {
     Map<String, Set<String>> removeFromSendV1 = Map.of();
 
     // server list
