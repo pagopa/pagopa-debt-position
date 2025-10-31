@@ -54,7 +54,6 @@ CREATE TABLE IF NOT EXISTS odp.payment_position (
     max_due_date timestamp NOT NULL,
     min_due_date timestamp NOT NULL,
     publish_date timestamp NULL,
-    validity_date timestamp NULL,
     status varchar(25) NOT NULL,
     "version" int4 DEFAULT 0 NOT NULL,
     pull bool DEFAULT true NOT NULL,
