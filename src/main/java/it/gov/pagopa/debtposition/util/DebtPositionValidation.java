@@ -136,7 +136,7 @@ public class DebtPositionValidation {
                 if (!ArrayUtils.isEmpty(action)
                         && CREATE_ACTION.equalsIgnoreCase(action[0])
                         && poValidity != null
-                        && poValidity.isBefore(today)) { // TODO VERIFY
+                        && poValidity.isBefore(today)) {
                     throw new ValidationException(
                             String.format(
                                     VALIDITY_DATE_VALIDATION_ERROR,
@@ -144,7 +144,7 @@ public class DebtPositionValidation {
                                     dateFormatter.format(today)));
                 }
                 // Regola 4 - must be due_date ≥ validity_date || due_date ≥ current time
-                if (isDueDateInvalid(inst, poValidity, today, action)) { // TODO VERIFY
+                if (isDueDateInvalid(inst, poValidity, today, action)) {
                     throw new ValidationException(
                             String.format(
                                     DUE_DATE_VALIDATION_ERROR,

@@ -405,7 +405,6 @@ class ExpiredPositionsSchedulerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(
                         MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.VALID.toString()))
-                // TODO verify why model v3 has not validityDate .andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.notNullValue()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.companyName").value("Comune di Latina"))
                 .andExpect(
                         MockMvcResultMatchers.jsonPath("$.paymentOption[0].installments[0].status").value(InstallmentStatus.UNPAID.toString()));
