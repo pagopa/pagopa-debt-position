@@ -20,9 +20,7 @@ implements ConstraintValidator<ValidInstallmentsSize, PaymentPositionModelV3> {
 
 	    ctx.disableDefaultConstraintViolation();
 
-	    boolean ok = true;
-	    ok &= validateGlobalIuvUniqueness(options, ctx);
-	    return ok;
+	    return validateGlobalIuvUniqueness(options, ctx);
 	}
     
 	private boolean validateGlobalIuvUniqueness(List<PaymentOptionModelV3> options,

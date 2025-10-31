@@ -148,9 +148,14 @@ public enum AppError {
       "transfer is not in accountable state",
       "The transfer option with Organization Fiscal Code %s, IUV %s and TxID %s is not in payable"
           + " state"),
-  UNKNOWN(null, null, null),
   UNPROCESSABLE_ENTITY(
-      HttpStatus.UNPROCESSABLE_ENTITY, "The debt position operation is failed", null);
+	      HttpStatus.UNPROCESSABLE_ENTITY, "The debt position operation is failed", null),
+  PAYMENT_PLAN_ID_MISSING(
+		    HttpStatus.UNPROCESSABLE_ENTITY,
+		    "Invalid payment plan",
+		    "Installment with isPartialPayment=true must have a non-blank paymentPlanId. IUV=%s, Organization Fiscal Code=%s"
+		),
+  UNKNOWN(null, null, null);
 
   public final HttpStatus httpStatus;
   public final String title;

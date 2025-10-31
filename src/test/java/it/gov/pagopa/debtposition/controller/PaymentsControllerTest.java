@@ -2224,6 +2224,126 @@ class PaymentsControllerTest {
                         + notificationFeeUpdateModel.getNotificationFee()));
   }
   
+  @Test
+  void recomputeStatusV3_planMixedPaidAndReported_resultsInPP_PAID() throws Exception {
+    // 1) A PD with a 2-payment plan is created (plan + single option) and published
+    mvc.perform(
+            post("/organizations/555123456789000/debtpositions")
+                .content(TestUtil.toJson(DebtPositionMock.getMock3(), objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    mvc.perform(
+            post("/organizations/555123456789000/debtpositions/12345678901IUPDMULTIPLEMOCK2/publish")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    // 2) Both installments of the plan are paid (1234564 and 1234565)
+    mvc.perform(
+            post("/organizations/555123456789000/paymentoptions/" + auxDigit + "1234564/pay")
+                .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1(), objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status")
+            .value(PaymentOptionStatus.PO_PAID.toString()));
+
+    mvc.perform(
+            post("/organizations/555123456789000/paymentoptions/" + auxDigit + "1234565/pay")
+                .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1(), objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status")
+            .value(PaymentOptionStatus.PO_PAID.toString()));
+
+    // 3) PP = PAID is verified after ALL plan installments have been paid
+    mvc.perform(
+            get("/organizations/555123456789000/debtpositions/12345678901IUPDMULTIPLEMOCK2")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status")
+            .value(DebtPositionStatus.PAID.toString()));
+
+    // 4) ONLY one of the two installments is reported (1234564) -> PO_REPORTED, the other remains PO_PAID
+    mvc.perform(
+            post("/organizations/555123456789000/paymentoptions/1234564/transfers/4/report")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status")
+            .value(TransferStatus.T_REPORTED.toString()));
+
+    mvc.perform(
+            post("/organizations/555123456789000/paymentoptions/1234564/transfers/5/report")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status")
+            .value(TransferStatus.T_REPORTED.toString()));
+
+    // 5) The plan is in a mixed condition: { PO_REPORTED (1234564), PO_PAID (1234565) } -> PP MUST remain PAID
+    mvc.perform(
+            get("/organizations/555123456789000/debtpositions/12345678901IUPDMULTIPLEMOCK2")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status")
+            .value(DebtPositionStatus.PAID.toString()));
+  }
+
+  @Test
+  void recomputeStatusV3_planAllReported_resultsInPP_REPORTED() throws Exception {
+    // 1) A PD with a 2-payment plan is created (plan + single option) and published
+    mvc.perform(
+            post("/organizations/556123456789000/debtpositions")
+                .content(TestUtil.toJson(DebtPositionMock.getMock3(), objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    mvc.perform(
+            post("/organizations/556123456789000/debtpositions/12345678901IUPDMULTIPLEMOCK2/publish")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    // 2) Both installments of the plan are paid (1234564 and 1234565)
+    mvc.perform(
+            post("/organizations/556123456789000/paymentoptions/" + auxDigit + "1234564/pay")
+                .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1(), objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    mvc.perform(
+            post("/organizations/556123456789000/paymentoptions/" + auxDigit + "1234565/pay")
+                .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1(), objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    // 3) Both installments are brought to REPORTED
+    mvc.perform(
+            post("/organizations/556123456789000/paymentoptions/1234564/transfers/4/report")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    mvc.perform(
+            post("/organizations/556123456789000/paymentoptions/1234564/transfers/5/report")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    mvc.perform(
+            post("/organizations/556123456789000/paymentoptions/1234565/transfers/4/report")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    mvc.perform(
+            post("/organizations/556123456789000/paymentoptions/1234565/transfers/5/report")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    // 4) All plan installments are REPORTED -> PP = REPORTED
+    mvc.perform(
+            get("/organizations/556123456789000/debtpositions/12345678901IUPDMULTIPLEMOCK2")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.status")
+            .value(DebtPositionStatus.REPORTED.toString()));
+  }
+  
   //========================= NEW TESTS FOR verifyPaymentOptions API =========================
 
   @Test

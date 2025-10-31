@@ -4,6 +4,7 @@ import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
+import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 
@@ -74,8 +75,7 @@ public enum DebtPositionStatus {
 	LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
 
 	// switchToExpired = true if at least one installment has switchToExpired = true
-	boolean anySwitchToExpired = pp.getPaymentOption() != null && !pp.getPaymentOption().isEmpty()
-			&& pp.getPaymentOption().stream().anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
+	boolean anySwitchToExpired = UtilityMapper.getSwitchToExpired(pp);
 
 	if (anySwitchToExpired && pp.getStatus() == DebtPositionStatus.VALID && pp.getMaxDueDate() != null
 			&& currentDate.isAfter(pp.getMaxDueDate())) {
@@ -103,8 +103,7 @@ public enum DebtPositionStatus {
 	PaymentPosition pp = po.getPaymentPosition();
 
 	// switchToExpired = true if at least one installment has switchToExpired = true
-	boolean anySwitchToExpired = pp.getPaymentOption() != null && !pp.getPaymentOption().isEmpty()
-			&& pp.getPaymentOption().stream().anyMatch(i -> Boolean.TRUE.equals(i.getSwitchToExpired()));
+	boolean anySwitchToExpired = UtilityMapper.getSwitchToExpired(pp);
 
 	if (anySwitchToExpired && pp.getStatus() == DebtPositionStatus.VALID && pp.getMaxDueDate() != null
 			&& currentDate.isAfter(pp.getMaxDueDate())) {
