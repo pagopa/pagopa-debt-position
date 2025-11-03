@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import jakarta.validation.constraints.NotNull;
 import org.modelmapper.Converter;
@@ -44,45 +45,61 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     destination.setPhone(source.getPhone());
     destination.setCompanyName(source.getCompanyName());
     destination.setOfficeName(source.getOfficeName());
+    // todo validityDate mapping remove after v1.1.0 promotion
     destination.setValidityDate(source.getValidityDate());
+    // todo switchToExpired mapping remove after v1.1.0 promotion
     destination.setSwitchToExpired(source.getSwitchToExpired());
-
+    
     mapAndUpdatePaymentOptions(source, destination);
   }
-
+ 
   private void mapAndUpdatePaymentOptions(
-      PaymentPositionModel source, PaymentPosition destination) {
-    Map<String, PaymentOption> managedOptionsByIuv =
-        destination.getPaymentOption().stream()
-            .collect(Collectors.toMap(PaymentOption::getIuv, po -> po));
+		  PaymentPositionModel source, PaymentPosition destination) {
 
-    List<PaymentOptionModel> sourceOptions = source.getPaymentOption();
-    List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
+	  Map<String, PaymentOption> managedOptionsByIuv =
+			  destination.getPaymentOption().stream()
+			  .collect(Collectors.toMap(PaymentOption::getIuv, po -> po));
 
-    if (sourceOptions != null) {
-      for (PaymentOptionModel sourceOpt : sourceOptions) {
-        PaymentOption managedOpt = managedOptionsByIuv.get(sourceOpt.getIuv());
+	  List<PaymentOptionModel> sourceOptions = source.getPaymentOption();
+	  List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
 
-        if (managedOpt != null) {
-          // UPDATE
-          mapAndUpdateSinglePaymentOption(source, sourceOpt, managedOpt);
-          optionsToRemove.remove(managedOpt);
-        } else {
-          // CREATE
-          PaymentOption po = PaymentOption.builder().build();
-          po.setSendSync(false);
-          mapAndUpdateSinglePaymentOption(source, sourceOpt, po);
-          destination.getPaymentOption().add(po);
-        }
-      }
-    }
+	  // V1: all installment of the same debt position plan share one UUID
+	  String sharedPlanId = null;
+	  boolean hasAnyPlan =
+			  sourceOptions != null && sourceOptions.stream().anyMatch(o -> Boolean.TRUE.equals(o.getIsPartialPayment()));
+	  if (hasAnyPlan) {
+		  sharedPlanId = findExistingSharedPlanUuid(managedOptionsByIuv.values())
+				  .orElseGet(() -> java.util.UUID.randomUUID().toString());
+	  }
 
-    // DELETE
-    destination.getPaymentOption().removeAll(optionsToRemove);
+	  if (sourceOptions != null) {
+		  for (PaymentOptionModel sourceOpt : sourceOptions) {
+			  PaymentOption managedOpt = managedOptionsByIuv.get(sourceOpt.getIuv());
+
+			  if (managedOpt != null) {
+				  // UPDATE
+				  mapAndUpdateSinglePaymentOption(source, sourceOpt, managedOpt, sharedPlanId);
+				  optionsToRemove.remove(managedOpt);
+			  } else {
+				  // CREATE
+				  PaymentOption po = PaymentOption.builder().build();
+				  po.setSendSync(false);
+				  mapAndUpdateSinglePaymentOption(source, sourceOpt, po, sharedPlanId);
+				  destination.getPaymentOption().add(po);
+			  }
+		  }
+	  }
+
+	  // DELETE orphans
+	  destination.getPaymentOption().removeAll(optionsToRemove);
   }
 
+
   private void mapAndUpdateSinglePaymentOption(
-      PaymentPositionModel paymentPosition, PaymentOptionModel source, PaymentOption destination) {
+		    PaymentPositionModel paymentPosition,
+		    PaymentOptionModel source,
+		    PaymentOption destination,
+		    String sharedPlanId) {
 
     destination.setAmount(source.getAmount());
     destination.setCity(paymentPosition.getCity());
@@ -102,8 +119,21 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     destination.setPostalCode(paymentPosition.getPostalCode());
     destination.setProvince(paymentPosition.getProvince());
     destination.setRegion(paymentPosition.getRegion());
+    destination.setValidityDate(paymentPosition.getValidityDate());
     destination.setRetentionDate(source.getRetentionDate());
     destination.setStreetName(paymentPosition.getStreetName());
+    
+    // Propagate the parent flag on the installment that will persist on DB
+    destination.setSwitchToExpired(Boolean.TRUE.equals(paymentPosition.getSwitchToExpired()));
+    
+    // Assign payment_plan_id (V1: shared among all isPartialPayment=true)
+    if (Boolean.TRUE.equals(source.getIsPartialPayment())) {
+    	if (!java.util.Objects.equals(destination.getPaymentPlanId(), sharedPlanId)) {
+    		destination.setPaymentPlanId(sharedPlanId);
+    	}
+    } else {
+        destination.setPaymentPlanId(PaymentOption.SINGLE_OPTION);
+    }
 
     mapAndUpdateTransfers(source, destination);
     mapAndUpdateOptionMetadata(source, destination);
@@ -222,5 +252,27 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     }
     // DELETE
     destination.getTransferMetadata().removeAll(metadataToRemove);
+  }
+  
+  private Optional<String> findExistingSharedPlanUuid(
+		  java.util.Collection<PaymentOption> managedOptions) {
+	  for (PaymentOption existing : managedOptions) {
+		  if (Boolean.TRUE.equals(existing.getIsPartialPayment())) {
+			  String pid = existing.getPaymentPlanId();
+			  if (pid != null && isUuid(pid)) {
+				  return Optional.of(pid);
+			  }
+		  }
+	  }
+	  return Optional.empty();
+  }
+
+  private boolean isUuid(String s) {
+	  try {
+		  java.util.UUID.fromString(s);
+		  return true;
+	  } catch (IllegalArgumentException e) {
+		  return false;
+	  }
   }
 }

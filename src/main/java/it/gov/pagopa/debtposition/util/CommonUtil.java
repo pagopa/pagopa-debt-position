@@ -1,10 +1,17 @@
 package it.gov.pagopa.debtposition.util;
 
+import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 import it.gov.pagopa.debtposition.model.PageInfo;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
 import it.gov.pagopa.debtposition.model.filterandorder.OrderType;
+
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -130,5 +137,23 @@ public class CommonUtil {
    */
   public static String escapeString(String value) {
       return "\"" + value + "\"";
+  }
+  
+  /**
+   * Resolves the minimum validity date among the payment options of a payment
+   * position
+   * 
+   * @param pp the payment position
+   * @return the minimum validity date, or null if no validity date is set
+   */
+  public static LocalDateTime resolveMinValidity(PaymentPosition pp) {
+	  if (pp == null || pp.getPaymentOption() == null || pp.getPaymentOption().isEmpty()) {
+		  return null;
+	  }
+	  return pp.getPaymentOption().stream()
+			  .map(po -> UtilityMapper.getValidityDate(pp, po))
+			  .filter(Objects::nonNull)
+			  .min(Comparator.naturalOrder())
+			  .orElse(null);
   }
 }

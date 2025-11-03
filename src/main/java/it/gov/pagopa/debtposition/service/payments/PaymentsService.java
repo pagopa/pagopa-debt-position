@@ -24,11 +24,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +43,6 @@ public class PaymentsService {
   private final NodeClient nodeClient;
   private final SendClient sendClient;
 
-  @Autowired
   public PaymentsService(
       PaymentPositionRepository paymentPositionRepository,
       PaymentOptionRepository paymentOptionRepository,
@@ -72,11 +72,12 @@ public class PaymentsService {
     }
 
     PaymentOption paymentOption = po.get();
+    
     // Update PaymentPosition instance only in memory
     // PaymentPosition used when converting PaymentOption to POWithDebtor
     DebtPositionStatus.validityCheckAndUpdate(paymentOption);
     DebtPositionStatus.expirationCheckAndUpdate(paymentOption);
-    DebtPositionStatus.checkAlreadyPaidInstallments(paymentOption, nav);
+    DebtPositionStatus.checkAlreadyPaidInstallments(paymentOption, nav, paymentOptionRepository);
 
     // Synchronous update of notification fees
     if (paymentOption.getSendSync()) {
@@ -116,6 +117,13 @@ public class PaymentsService {
     DebtPositionStatus.validityCheckAndUpdate(paymentPositionToPay);
     DebtPositionValidation.checkPaymentPositionPayability(paymentPositionToPay, nav);
 
+    PaymentOption poToPay = paymentPositionToPay.getPaymentOption().stream()
+    	    .filter(po -> nav.equals(po.getNav()) || nav.equals(po.getIuv()))
+    	    .findFirst()
+    	    .orElseThrow(() -> new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav));
+    
+    DebtPositionStatus.checkAlreadyPaidInstallments(poToPay, nav, paymentOptionRepository);
+    
     return this.executePaymentFlow(paymentPositionToPay, nav, paymentOptionModel);
   }
 
@@ -133,6 +141,11 @@ public class PaymentsService {
     }
 
     DebtPositionValidation.checkPaymentPositionAccountability(ppToReport.get(), iuv, transferId);
+    
+    ppToReport.get().getPaymentOption().stream()
+    	    .filter(po -> iuv.equals(po.getIuv()))
+    	    .findFirst()
+    	    .orElseThrow(() -> new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, iuv));
 
     return this.updateTransferStatus(ppToReport.get(), iuv, transferId);
   }
@@ -314,52 +327,32 @@ public class PaymentsService {
 
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
     PaymentOption paidPO = null;
-
-    long numberOfPartialPayment =
-        pp.getPaymentOption().stream()
-            .filter(po -> Boolean.TRUE.equals(po.getIsPartialPayment()))
-            .count();
-    int countPaidPartialPayment = 0;
-
+    
     for (PaymentOption po : pp.getPaymentOption()) {
-
-      // verifico se ci sono pagamenti parziali in stato PO_PAID
-      if (Boolean.TRUE.equals(po.getIsPartialPayment())
-          && po.getStatus().equals(PaymentOptionStatus.PO_PAID)) {
-        countPaidPartialPayment++;
-      }
-
-      // aggiorno le proprietà per la payment option oggetto dell'attuale pagamento
-      // TODO #naviuv: temporary regression management --> remove "|| po.getIuv().equals(nav)" when
-      // only nav managment is enabled
-      if (po.getNav().equals(nav) || po.getIuv().equals(nav)) {
-        po.setLastUpdatedDate(currentDate);
-        po.setPaymentDate(paymentOptionModel.getPaymentDate());
-        po.setPaymentMethod(paymentOptionModel.getPaymentMethod());
-        po.setPspCode(paymentOptionModel.getPspCode());
-        po.setPspTaxCode(paymentOptionModel.getPspTaxCode());
-        po.setPspCompany(paymentOptionModel.getPspCompany());
-        po.setIdReceipt(paymentOptionModel.getIdReceipt());
-        po.setFee(Long.parseLong(paymentOptionModel.getFee()));
-        po.setStatus(PaymentOptionStatus.PO_PAID);
-        // se la payment option è di tipo partial incremento il contatore
-        if (Boolean.TRUE.equals(po.getIsPartialPayment())) {
-          countPaidPartialPayment++;
-        }
-        paidPO = po;
-      }
+    	// TODO #naviuv: temporary regression management --> remove "|| po.getIuv().equals(nav)" when
+        // only nav managment is enabled
+    	if (po.getNav().equals(nav) || po.getIuv().equals(nav)) {
+    		po.setLastUpdatedDate(currentDate);
+    		po.setPaymentDate(paymentOptionModel.getPaymentDate());
+    		po.setPaymentMethod(paymentOptionModel.getPaymentMethod());
+    		po.setPspCode(paymentOptionModel.getPspCode());
+    		po.setPspTaxCode(paymentOptionModel.getPspTaxCode());
+    		po.setPspCompany(paymentOptionModel.getPspCompany());
+    		po.setIdReceipt(paymentOptionModel.getIdReceipt());
+    		po.setFee(Long.parseLong(paymentOptionModel.getFee()));
+    		po.setStatus(PaymentOptionStatus.PO_PAID);
+    		paidPO = po;
+    		break; // IMPORTANTE
+    	}
+    }
+    if (paidPO == null) {
+    	throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, pp.getOrganizationFiscalCode(), nav);
     }
 
-    // aggiorno lo stato della payment position
-    // PIDM-42 if paying the full amount when there is already a paid partial payment
-    // then update the payment position status to PAID
-    if (countPaidPartialPayment > 0
-        && countPaidPartialPayment < numberOfPartialPayment
-        && Boolean.TRUE.equals(Objects.requireNonNull(paidPO).getIsPartialPayment())) {
-      pp.setStatus(DebtPositionStatus.PARTIALLY_PAID);
-    } else {
-      pp.setStatus(DebtPositionStatus.PAID);
-      pp.setPaymentDate(paymentOptionModel.getPaymentDate());
+    this.recomputePaymentPositionStatus(pp);
+    
+    if (pp.getStatus() == DebtPositionStatus.PAID || pp.getStatus() == DebtPositionStatus.REPORTED) {
+    	pp.setPaymentDate(paymentOptionModel.getPaymentDate());
     }
 
     pp.setLastUpdatedDate(currentDate);
@@ -410,40 +403,78 @@ public class PaymentsService {
       }
     }
 
-    this.setPaymentPositionStatus(pp);
+    this.recomputePaymentPositionStatus(pp);
     pp.setLastUpdatedDate(currentDate);
     // salvo l'aggiornamento della rendicontazione
     paymentPositionRepository.saveAndFlush(pp);
 
     return reportedTransfer;
   }
+  
+  /**
+  * Recompute PaymentPosition status (V3 semantics):
+  * - A "plan" is:
+  *   - a group of POs with the same paymentPlanId (isPartialPayment = TRUE), or
+  *   - a single non-installment PO (isPartialPayment = FALSE).
+  * - The PP becomes:
+  *   - REPORTED if at least one plan is fully REPORTED;
+  *   - otherwise PAID if at least one plan is fully {PAID|REPORTED};
+  *   - otherwise PARTIALLY_PAID if a subset of installments is paid/reported;
+  *   - otherwise the status remains unchanged.
+  */
+  private void recomputePaymentPositionStatus(PaymentPosition pp) {
+    Map<String, List<PaymentOption>> groups = pp.getPaymentOption().stream()
+        .collect(Collectors.groupingBy(po -> {
+          if (Boolean.TRUE.equals(po.getIsPartialPayment())) {
+            return "PLAN:" + po.getPaymentPlanId();
+          } else {
+            // each non-installment PO is a single "plan"
+            return "SINGLE:" + po.getIuv();
+          }
+        }));
 
-  private void setPaymentPositionStatus(PaymentPosition pp) {
-    // numero totale delle PO con pagamento in unica rata in stato PO_REPORTED
-    long numberPOReportedNoPartial =
-        pp.getPaymentOption().stream()
-            .filter(
-                po ->
-                    (po.getStatus().equals(PaymentOptionStatus.PO_REPORTED)
-                        && Boolean.FALSE.equals(po.getIsPartialPayment())))
-            .count();
-    // numero totale delle PO rateizzate
-    long totalNumberPartialPO =
-        pp.getPaymentOption().stream()
-            .filter(po -> Boolean.TRUE.equals(po.getIsPartialPayment()))
-            .count();
-    // numero delle PO rateizzate in stato PO_REPORTED
-    long numberPOReportedPartial =
-        pp.getPaymentOption().stream()
-            .filter(
-                po ->
-                    (po.getStatus().equals(PaymentOptionStatus.PO_REPORTED)
-                        && Boolean.TRUE.equals(po.getIsPartialPayment())))
-            .count();
+    boolean anyPlanInProgress = false;    // there is at least one installment paid/reported/partially reported 
+    boolean anyPlanFullyPaid = false;     // there is a fully {PAID|REPORTED} plan
+    boolean anyPlanFullyReported = false; // there is a fully REPORTED plan
 
-    if (numberPOReportedNoPartial > 0
-        || (totalNumberPartialPO > 0 && totalNumberPartialPO == numberPOReportedPartial)) {
+    for (List<PaymentOption> group : groups.values()) {
+      boolean allPaidOrReported = true;
+      boolean allReported = true;
+      boolean groupHasAnyProgress = false;
+
+      for (PaymentOption po : group) {
+     
+        if (po.getStatus() == PaymentOptionStatus.PO_PAID
+            || po.getStatus() == PaymentOptionStatus.PO_REPORTED
+            || po.getStatus() == PaymentOptionStatus.PO_PARTIALLY_REPORTED) {
+          groupHasAnyProgress = true;
+        }
+
+        // fully paid if all installments of a plan are {PAID | PARTIALLY_REPORTED | REPORTED}
+        if (!(po.getStatus() == PaymentOptionStatus.PO_PAID
+            || po.getStatus() == PaymentOptionStatus.PO_PARTIALLY_REPORTED
+            || po.getStatus() == PaymentOptionStatus.PO_REPORTED)) {
+          allPaidOrReported = false;
+        }
+
+        // fully accounted for if all installments are REPORTED
+        if (po.getStatus() != PaymentOptionStatus.PO_REPORTED) {
+          allReported = false;
+        }
+      }
+
+      if (groupHasAnyProgress) anyPlanInProgress = true;
+      if (allPaidOrReported)   anyPlanFullyPaid = true;
+      if (allReported)         anyPlanFullyReported = true;
+    }
+
+    if (anyPlanFullyReported) {
       pp.setStatus(DebtPositionStatus.REPORTED);
+    } else if (anyPlanFullyPaid) {
+      pp.setStatus(DebtPositionStatus.PAID);
+    } else if (anyPlanInProgress) {
+      pp.setStatus(DebtPositionStatus.PARTIALLY_PAID);
     }
   }
+
 }

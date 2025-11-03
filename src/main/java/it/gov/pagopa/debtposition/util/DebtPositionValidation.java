@@ -9,6 +9,7 @@ import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.exception.ValidationException;
+import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
@@ -123,62 +124,52 @@ public class DebtPositionValidation {
 
     return Arrays.asList(from, to);
   }
+  
+  private static void checkPaymentPositionContentCongruency(final PaymentPosition pp, String... action) {
 
-  private static void checkPaymentPositionContentCongruency(
-      final PaymentPosition pp, String... action) {
+	  LocalDateTime today = LocalDateTime.now(ZoneOffset.UTC);
+	  DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
 
-    LocalDateTime today = LocalDateTime.now(ZoneOffset.UTC);
-    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
+	  for (PaymentOption po : pp.getPaymentOption()) {
 
-    // Regola 1 - must be validity_date ≥ current time (applied only at creation stage)
-    if (!ArrayUtils.isEmpty(action)
-        && action[0].equalsIgnoreCase(CREATE_ACTION)
-        && null != pp.getValidityDate()
-        && pp.getValidityDate().compareTo(today) < 0) {
-      throw new ValidationException(
-          String.format(
-              VALIDITY_DATE_VALIDATION_ERROR,
-              dateFormatter.format(pp.getValidityDate()),
-              dateFormatter.format(today)));
-    }
+		  LocalDateTime poValidity = UtilityMapper.getValidityDate(pp, po);
 
-    for (PaymentOption po : pp.getPaymentOption()) {
-      // Regola 4 - must be due_date ≥ validity_date || due_date ≥ current time
-      if (
-      // Case 1: validity_date is not null and due_date < validity_date
-      (pp.getValidityDate() != null && po.getDueDate().compareTo(pp.getValidityDate()) < 0)
-          ||
+		  // Regola 1 - must be validity_date ≥ current time (applied only at creation stage)
+		  if (!ArrayUtils.isEmpty(action)
+				  && CREATE_ACTION.equalsIgnoreCase(action[0])
+				  && poValidity != null
+				  && poValidity.isBefore(today)) {
+			  throw new ValidationException(
+					  String.format(
+							  VALIDITY_DATE_VALIDATION_ERROR,
+							  dateFormatter.format(poValidity),
+							  dateFormatter.format(today)));
+		  }
 
-          // Case 2: validity_date is null and due_date < current time
-          (pp.getValidityDate() == null && po.getDueDate().compareTo(today) < 0)
-          ||
+		  // Regola 4 - must be due_date ≥ validity_date || due_date ≥ current time
+		  if (isDueDateInvalid(po, poValidity, today, action)) {
+			  throw new ValidationException(
+					  String.format(
+							  DUE_DATE_VALIDATION_ERROR,
+							  dateFormatter.format(po.getDueDate()),
+							  (poValidity != null ? dateFormatter.format(poValidity) : null),
+							  dateFormatter.format(today)));
+		  }
 
-          // Case 3: Action is "update" and due_date < current time
-          (!ArrayUtils.isEmpty(action)
-              && UPDATE_ACTION.equalsIgnoreCase(action[0])
-              && po.getDueDate().compareTo(today) < 0)) {
-        throw new ValidationException(
-            String.format(
-                DUE_DATE_VALIDATION_ERROR,
-                dateFormatter.format(po.getDueDate()),
-                (null != pp.getValidityDate() ? dateFormatter.format(pp.getValidityDate()) : null),
-                dateFormatter.format(today)));
-      }
-      // must be retention_date ≥ due_date
-      else if (null != po.getRetentionDate()
-          && po.getRetentionDate().compareTo(po.getDueDate()) < 0) {
-        throw new ValidationException(
-            String.format(
-                RETENTION_DATE_VALIDATION_ERROR,
-                dateFormatter.format(po.getRetentionDate()),
-                dateFormatter.format(po.getDueDate())));
-      }
+		  // must be retention_date ≥ due_date
+		  if (po.getRetentionDate() != null && po.getRetentionDate().isBefore(po.getDueDate())) {
+			  throw new ValidationException(
+					  String.format(
+							  RETENTION_DATE_VALIDATION_ERROR,
+							  dateFormatter.format(po.getRetentionDate()),
+							  dateFormatter.format(po.getDueDate())));
+		  }
 
-      checkPaymentOptionTransfers(po);
-
-      checkPaymentOptionAmounts(po);
-    }
+		  checkPaymentOptionTransfers(po);
+		  checkPaymentOptionAmounts(po);
+	  }
   }
+
 
   private static void checkPaymentOptionTransfers(final PaymentOption po) {
     int maxNumberOfTrasfersForPO = TransferId.values().length;
@@ -406,5 +397,20 @@ public class DebtPositionValidation {
     public String toString() {
       return value;
     }
+  }
+  
+  private static boolean isDueDateInvalid(
+		  PaymentOption po,
+		  LocalDateTime poValidity,
+		  LocalDateTime today,
+		  String... action) {
+
+	  boolean dueBeforeValidity = (poValidity != null && po.getDueDate().isBefore(poValidity)); // Case 1: validity_date is not null and due_date < validity_date
+	  boolean dueBeforeNowWhenNoValidity = (poValidity == null && po.getDueDate().isBefore(today)); // Case 2: validity_date is null and due_date < current time
+	  boolean updateWithPastDue = (!ArrayUtils.isEmpty(action)  // Case 3: Action is "update" and due_date < current time
+			  && UPDATE_ACTION.equalsIgnoreCase(action[0])
+			  && po.getDueDate().isBefore(today)); 
+
+	  return dueBeforeValidity || dueBeforeNowWhenNoValidity || updateWithPastDue;
   }
 }

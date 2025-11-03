@@ -30,7 +30,7 @@ on:
           - apd
           - odp
           - all
-        default: all
+        default: apd
 
 permissions:
   id-token: write
@@ -62,35 +62,33 @@ jobs:
       # ============================
       # - Run Flyway
       # ============================  
-      - name: Run Flyway Validate + Migrate
+      - name: Run Flyway (APD)
+        if: ${{ inputs.schema == 'apd' || inputs.schema == 'all' }}
         shell: bash
+        env:
+          FLYWAY_DATASOURCE_URL: ${{ secrets.FLYWAY_DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
+          SCHEMA_NAME: ${{ vars.APD_SCHEMA_NAME }}
         run: |
-           set -euo pipefail
-           export FLYWAY_DATASOURCE_URL='${{ secrets.FLYWAY_DATASOURCE_URL }}'
-           export SPRING_DATASOURCE_USERNAME='${{ secrets.DATASOURCE_USERNAME }}'
-           export SPRING_DATASOURCE_PASSWORD='${{ secrets.DATASOURCE_PASSWORD }}'
-           CFG=gpdFlywayConfig.conf
-           COMMON="-Dflyway.configFiles=${CFG} -Dflyway.validateMigrationNaming=true -Dflyway.cleanDisabled=true"
+          set -euo pipefail
+          CFG=gpdFlywayConfig.conf
+          COMMON="-Dflyway.configFiles=${CFG} -Dflyway.validateMigrationNaming=true -Dflyway.cleanDisabled=true"
+          echo "▶ Running APD: validate on migrate"
+          mvn -B flyway:migrate -Dflyway.validateOnMigrate=true ${COMMON}
 
-           if [[ "${{ inputs.schema }}" == "apd" ]]; then
-              echo "▶ Running APD: validate..."
-              export SCHEMA_NAME='${{ vars.APD_SCHEMA_NAME }}'
-              mvn -B flyway:validate ${COMMON}
-              echo "▶ Running APD: migrate..."
-              mvn -B flyway:migrate ${COMMON}
-            elif [[ "${{ inputs.schema }}" == "odp" ]]; then
-                echo "▶ Running ODP: validate..."
-                export SCHEMA_NAME='${{ vars.ODP_SCHEMA_NAME }}'
-                mvn -B flyway:validate ${COMMON}
-                echo "▶ Running ODP: migrate..."
-                mvn -B flyway:migrate ${COMMON}
-            else
-                echo "▶ Running ALL: APD first"
-                export SCHEMA_NAME='${{ vars.APD_SCHEMA_NAME }}'
-                mvn -B flyway:validate ${COMMON}
-                mvn -B flyway:migrate ${COMMON}
-                echo "▶ Running ALL: ODP then"
-                export SCHEMA_NAME='${{ vars.ODP_SCHEMA_NAME }}'
-                mvn -B flyway:validate ${COMMON}
-                mvn -B flyway:migrate ${COMMON}
-            fi
+      - name: Run Flyway (ODP)
+        if: ${{ inputs.schema == 'odp' || inputs.schema == 'all' }}
+        shell: bash
+        env:
+          FLYWAY_DATASOURCE_URL: ${{ secrets.FLYWAY_DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
+          SCHEMA_NAME: ${{ vars.ODP_SCHEMA_NAME }}
+        run: |
+          set -euo pipefail
+          CFG=gpdFlywayConfig.conf
+          COMMON="-Dflyway.configFiles=${CFG} -Dflyway.validateMigrationNaming=true -Dflyway.cleanDisabled=true"
+          echo "▶ Running ODP: validate on migrate"
+          mvn -B flyway:migrate -Dflyway.validateOnMigrate=true ${COMMON}
+

@@ -34,8 +34,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Builder
 @JsonIdentityInfo(
-    generator = ObjectIdGenerators.IntSequenceGenerator.class,
-    property = "@paymentOptionMetadataId")
+	    generator = ObjectIdGenerators.PropertyGenerator.class,
+	    property = "id")
 public class PaymentOptionMetadata implements Serializable {
 
   /** generated serialVersionUID */

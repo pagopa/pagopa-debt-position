@@ -44,14 +44,14 @@ docker compose -f ./docker-compose-local.yml -p "${stack_name}" up -d --remove-o
 
 
 # waiting the containers
-printf 'Waiting for the service'
+printf 'Waiting for the service\n'
 attempts=0
 max_attempts=60
 while true; do
   rc=0
   err="$(curl -fsS -o /dev/null "http://localhost:8080/info" 2>&1)" || rc=$?
   if [ $rc -eq 0 ]; then
-    echo ' Service Started'
+    echo 'Service Started'
     break
   fi
 
@@ -73,4 +73,3 @@ while true; do
     exit 1
   fi
 done
-echo 'Service Started'
