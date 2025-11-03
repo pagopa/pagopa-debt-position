@@ -1,10 +1,12 @@
-DROP PROCEDURE IF EXISTS backfill_payment_plan_id_single_option();
+DROP PROCEDURE IF EXISTS apd.backfill_payment_plan_id_single_option(INT, NUMERIC);
 
-CREATE OR REPLACE PROCEDURE apd.backfill_payment_plan_id_single_option()
+CREATE OR REPLACE PROCEDURE apd.backfill_payment_plan_id_single_option(
+    batch_size INT DEFAULT 1000,
+    sleep_seconds NUMERIC DEFAULT 0.1
+)
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    batch_size INT := 10000; -- This parameter controls the batch size.
     rows_updated INT;
     total_rows BIGINT := 0;
 BEGIN
@@ -38,10 +40,8 @@ BEGIN
         COMMIT;
 
         -- 6. Short pause to reduce I/O load.
-        PERFORM pg_sleep(0.1); -- 100ms pause.
+        PERFORM pg_sleep(sleep_seconds);
     END LOOP;
     RAISE NOTICE 'Batch migration completed. Total rows updated: %', total_rows;
 END;
 $$;
-
-CALL apd.backfill_payment_plan_id_single_option();

@@ -22,7 +22,7 @@ BEGIN
 			  AND po.validity_date IS NULL
 			  AND pp.validity_date IS NOT NULL
 			ORDER BY po.id
-			LIMIT 100
+			LIMIT batch_size
 			FOR UPDATE SKIP LOCKED
         ),
         update_result AS (
@@ -54,6 +54,3 @@ BEGIN
 
     RAISE NOTICE 'ZDT backfill completed. Total rows updated: %', total_updated;
 END $$;
-
--- Performs backfill with batches of 10,000 rows
-CALL apd.backfill_validity_date(10000);

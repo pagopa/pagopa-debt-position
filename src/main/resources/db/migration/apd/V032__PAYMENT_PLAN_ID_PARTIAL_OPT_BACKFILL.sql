@@ -1,11 +1,12 @@
-DROP PROCEDURE IF EXISTS backfill_payment_plan_id_grouped_batch();
+DROP PROCEDURE IF EXISTS apd.backfill_payment_plan_id_grouped_batch(INT, NUMERIC);
 
-CREATE OR REPLACE PROCEDURE apd.backfill_payment_plan_id_grouped_batch()
+CREATE OR REPLACE PROCEDURE apd.backfill_payment_plan_id_grouped_batch(
+    batch_size INT DEFAULT 1000,
+    sleep_seconds NUMERIC DEFAULT 0.1
+)
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    -- This is the batch size for *scanning* to find groups.
-    scan_batch_size INT := 10;
     rows_updated INT;
     total_rows BIGINT := 0;
     target_table TEXT := 'apd.payment_option';
@@ -48,7 +49,7 @@ BEGIN
               AND po.is_partial_payment IS TRUE; -- Safety condition
             ',
             target_table,         -- %1$s
-            scan_batch_size       -- %2$s
+            batch_size       -- %2$s
         );
 
         EXECUTE query;
@@ -65,11 +66,9 @@ BEGIN
         COMMIT;
 
         -- 7. Short pause to reduce I/O load.
-        PERFORM pg_sleep(0.1);
+        PERFORM pg_sleep(sleep_seconds);
 
     END LOOP;
     RAISE NOTICE 'Batch migration completed. Total rows updated: %', total_rows;
 END;
 $$;
-
-CALL apd.backfill_payment_plan_id_grouped_batch();

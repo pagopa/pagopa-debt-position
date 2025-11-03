@@ -1,4 +1,4 @@
-DROP PROCEDURE IF EXISTS backfill_switch_to_expired();
+DROP PROCEDURE IF EXISTS apd.backfill_switch_to_expired(INT, NUMERIC);
 
 -- 1. Creation of the procedure
 CREATE OR REPLACE PROCEDURE apd.backfill_switch_to_expired(
@@ -52,6 +52,3 @@ BEGIN
 
     RAISE NOTICE 'ZDT backfill completed. Total rows updated: %', total_updated;
 END $$;
-
--- Performs backfill with batches of 10,000 rows
-CALL apd.backfill_switch_to_expired(10000);
