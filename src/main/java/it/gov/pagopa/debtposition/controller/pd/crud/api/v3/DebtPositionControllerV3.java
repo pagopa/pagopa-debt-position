@@ -196,6 +196,6 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
             ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
             : null;
     paymentPositionService.delete(organizationFiscalCode, iupd, segCodes);
-    return new ResponseEntity<>(Constants.DEBT_POSITION_DELETED, HttpStatus.OK);
+    return new ResponseEntity<>(CommonUtil.escapeString(Constants.DEBT_POSITION_DELETED), HttpStatus.OK);
   }
 }

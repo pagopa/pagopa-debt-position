@@ -128,6 +128,16 @@ public class CommonUtil {
 	  }
 	  return new String(out);
   }
+
+  /**
+   * Generate an escaped string from input content.
+   *
+   * @param value the string not escaped (e.g. without "\"" char)
+   * @return the escaped string with "\"" prefix and suffix
+   */
+  public static String escapeString(String value) {
+      return "\"" + value + "\"";
+  }
   
   /**
    * Resolves the minimum validity date among the payment options of a payment
