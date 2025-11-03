@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.20.1-2-PAGOPA-3335-opt2-data-model-evolution"
+    tag: "0.20.1-3-PAGOPA-3335-opt2-data-model-evolution"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -96,6 +96,7 @@ microservice-chart:
     SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
     SPRING_JPA_HIBERNATE_SHOW_SQL: "false"
     SCHEMA_NAME: "apd"
+    MIGRATION_READ_FROM: "READ_FROM_PAYMENT_POSITION"
     CRON_JOB_SCHEDULE_ENABLED: "true"
     CRON_JOB_SCHEDULE_EXPRESSION_TO_VALID: "0 */10 * * * *"
     CRON_JOB_SCHEDULE_EXPRESSION_TO_EXPIRED: "0 */20 * * * *"

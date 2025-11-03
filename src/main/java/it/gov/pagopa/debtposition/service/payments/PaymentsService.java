@@ -419,7 +419,7 @@ public class PaymentsService {
   * - The PP becomes:
   *   - REPORTED if at least one plan is fully REPORTED;
   *   - otherwise PAID if at least one plan is fully {PAID|REPORTED};
-  *   - otherwise PARTIALLY_PAID if at least one installment is paid/reported;
+  *   - otherwise PARTIALLY_PAID if a subset of installments is paid/reported;
   *   - otherwise the status remains unchanged.
   */
   private void recomputePaymentPositionStatus(PaymentPosition pp) {
