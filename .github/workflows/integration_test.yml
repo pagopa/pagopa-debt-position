@@ -29,7 +29,7 @@ permissions:
 jobs:
   integration_test:
     name: Test
-    runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
+    runs-on: [ self-hosted-job, "${{(github.event.inputs == null && 'uat') || inputs.environment }}" ]
     environment: ${{(github.event.inputs == null && 'uat') || inputs.environment }}
     steps:
       - name: Checkout
