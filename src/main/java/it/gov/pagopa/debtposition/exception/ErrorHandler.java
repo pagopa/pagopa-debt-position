@@ -2,6 +2,7 @@ package it.gov.pagopa.debtposition.exception;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.TypeMismatchException;
@@ -342,11 +343,12 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
 
   /** Detects whether current request must return ODP-shaped errors. */
   private boolean isOdpEndpoint(WebRequest request) {
-    if (request instanceof ServletWebRequest swr) {
-      String uri = swr.getRequest().getRequestURI();
-      return uri != null && uri.contains("/payment-options/");
-    }
-    return false;
+	final Pattern odpEndpointPath = Pattern.compile(".*/payment-options/organizations/[^/]+/notices/[^/]+/?$");
+	if (request instanceof ServletWebRequest swr) {
+		String uri = swr.getRequest().getRequestURI();
+		return uri != null && odpEndpointPath.matcher(uri).matches();
+	}
+	return false;
   }
 
   /** Converts AppError.OdpSpec to an OdpProfile */

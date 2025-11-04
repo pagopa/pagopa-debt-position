@@ -42,54 +42,50 @@ class ErrorHandlerTest {
 	@Validated
 	static class TestController {
 
-		// ========== ODP endpoints (match "/payment-options/") ==========
+		// ========== ODP endpoint ==========
+		@PostMapping(
+			value = "/payment-options/organizations/{organizationFiscalCode}/notices/{noticeNumber}",
+			consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+		public String odpPost(
+			@PathVariable String organizationFiscalCode,
+			@PathVariable String noticeNumber,
 
-		@GetMapping("/payment-options/error")
-		public String boom() {
-			throw new RuntimeException("unexpected error");
-		}
+			// used to trigger different branches in ErrorHandler
+			@RequestParam(required = false) String mode,
 
-		@GetMapping("/payment-options/app-not-found")
-		public String appNotFound() {
-			throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, "70000000000", "NAV123");
-		}
+			// MissingServletRequestParameterException on ODP branch when absent
+			@RequestParam String requiredParam,
 
-		@GetMapping("/payment-options/app-not-payable")
-		public String appNotPayable() {
-			// ODP-110 (422, PAA_PAGAMENTO_SCADUTO)
-			throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, "70000000000", "NAV999");
-		}
+			// TypeMismatch on ODP branch when non-numeric
+			@RequestParam(required = false) Integer size,
 
-		@GetMapping("/payment-options/app-unmapped-system")
-		public String appUnmappedSystem() {
-			// Not present: SYSTEM fallback (ODP-103 / 500)
-			throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, "70000000000");
-		}
+			// ConstraintViolation on ODP branch when < 1
+			@RequestParam(required = false) @Min(1) Integer minParam,
 
-		@GetMapping("/payment-options/badparam/{id}")
-		public String badParam(@PathVariable Integer id) {
+			// MethodArgumentNotValid on ODP branch with {}
+			@Valid @RequestBody(required = false) SampleDto dto) {
+
+			if ("error".equals(mode)) {
+				throw new RuntimeException("unexpected error");
+			}
+			if ("app-not-found".equals(mode)) {
+				throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, "70000000000", "NAV123");
+			}
+			if ("app-not-payable".equals(mode)) {
+				// ODP-110 (422, PAA_PAGAMENTO_SCADUTO)
+				throw new AppException(AppError.PAYMENT_OPTION_NOT_PAYABLE, "70000000000", "NAV999");
+			}
+			if ("app-unmapped-system".equals(mode)) {
+			    // Force ODP generic SYSTEM fallback (ODP-103 / 500)
+			    throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal error", "unexpected exception");
+			}
+			if ("data-integrity-any".equals(mode)) {
+				// DataIntegrity violation -> ODP SYSTEM (500)
+				throw new DataIntegrityViolationException("generic DI violation");
+			}
+
 			return "ok";
-		}
-
-		@GetMapping("/payment-options/missing")
-		public String missing(@RequestParam String required) {
-			return "ok";
-		}
-
-		@GetMapping("/payment-options/validated")
-		public String validatedParam(@RequestParam @Min(1) int size) {
-			return "ok";
-		}
-
-		@PostMapping(value = "/payment-options/json", consumes = MediaType.APPLICATION_JSON_VALUE)
-		public String needsJson(@Valid @RequestBody SampleDto dto) {
-			return "ok";
-		}
-
-		@GetMapping("/payment-options/data-integrity-any")
-		public String dataIntegrityAny() {
-			// DataIntegrity violation -> ODP SYSTEM (500)
-			throw new DataIntegrityViolationException("generic DI violation");
 		}
 
 		// ========== non-ODP endpoint ==========
@@ -129,14 +125,14 @@ class ErrorHandlerTest {
 			LocalValidatorFactoryBean validatorFactory = new LocalValidatorFactoryBean()) {
 				validatorFactory.afterPropertiesSet();
 				Validator jakartaValidator = validatorFactory.getValidator();
-	
+
 				MethodValidationInterceptor interceptor = new MethodValidationInterceptor(jakartaValidator);
-	
+
 				// add validation to proxy
 				ProxyFactory pf = new ProxyFactory(target);
 				pf.addAdvice(interceptor);
 				Object proxiedController = pf.getProxy();
-	
+
 				this.mvc = MockMvcBuilders
 						.standaloneSetup(proxiedController)
 						.setControllerAdvice(new ErrorHandler())
@@ -150,7 +146,11 @@ class ErrorHandlerTest {
 	// ---------------- ODP branch: generic exception => SYSTEM (ODP-103) 500 ----------------
 	@Test
 	void odp_genericException_returnsSystem500() throws Exception {
-		mvc.perform(get("/payment-options/error").accept(MediaType.APPLICATION_JSON))
+		mvc.perform(post("/payment-options/organizations/70000000000/notices/123456")
+				.param("mode", "error")
+				.param("requiredParam", "ok")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
 		.andExpect(status().isInternalServerError())
 		.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 		.andExpect(jsonPath("$.httpStatusCode").value(500))
@@ -161,7 +161,11 @@ class ErrorHandlerTest {
 	//---------------- ODP branch: AppException not in overlay -> fallback SYSTEM (ODP-103) 500 ----------------
 	@Test
 	void odp_appException_unmapped_fallsBackToSystem500() throws Exception {
-		mvc.perform(get("/payment-options/app-unmapped-system").accept(MediaType.APPLICATION_JSON))
+		mvc.perform(post("/payment-options/organizations/70000000000/notices/123456")
+				.param("mode", "app-unmapped-system")
+				.param("requiredParam", "ok")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
 		.andExpect(status().isInternalServerError())
 		.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 		.andExpect(jsonPath("$.httpStatusCode").value(500))
@@ -172,7 +176,11 @@ class ErrorHandlerTest {
 	//---------------- ODP branch: DataIntegrityViolationException => SYSTEM (ODP-103) 500 ----------------
 	@Test
 	void odp_dataIntegrity_any_returnsSystem500() throws Exception {
-		mvc.perform(get("/payment-options/data-integrity-any").accept(MediaType.APPLICATION_JSON))
+		mvc.perform(post("/payment-options/organizations/70000000000/notices/123456")
+				.param("mode", "data-integrity-any")
+				.param("requiredParam", "ok")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
 		.andExpect(status().isInternalServerError())
 		.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 		.andExpect(jsonPath("$.httpStatusCode").value(500))
@@ -182,7 +190,11 @@ class ErrorHandlerTest {
 	// ---------------- ODP branch: AppException mapped to ODP ----------------
 	@Test
 	void odp_appException_mappedToOdp107() throws Exception {
-		mvc.perform(get("/payment-options/app-not-found").accept(MediaType.APPLICATION_JSON))
+		mvc.perform(post("/payment-options/organizations/70000000000/notices/123456")
+				.param("mode", "app-not-found")
+				.param("requiredParam", "ok")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
 		.andExpect(status().isNotFound())
 		.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 		.andExpect(jsonPath("$.httpStatusCode").value(404))
@@ -193,7 +205,11 @@ class ErrorHandlerTest {
 	//---------------- ODP branch: AppException with override 422 -> ODP-110 ----------------
 	@Test
 	void odp_appException_mappedToOdp110_422() throws Exception {
-		mvc.perform(get("/payment-options/app-not-payable").accept(MediaType.APPLICATION_JSON))
+		mvc.perform(post("/payment-options/organizations/70000000000/notices/123456")
+				.param("mode", "app-not-payable")
+				.param("requiredParam", "ok")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
 		.andExpect(status().isUnprocessableEntity())
 		.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 		.andExpect(jsonPath("$.httpStatusCode").value(422))
@@ -204,7 +220,12 @@ class ErrorHandlerTest {
 	// ---------------- ODP branch: type mismatch => SYNTAX (ODP-101) 400 ----------------
 	@Test
 	void odp_typeMismatch_returnsSyntax400() throws Exception {
-		mvc.perform(get("/payment-options/badparam/notANumber").accept(MediaType.APPLICATION_JSON))
+		mvc.perform(post("/payment-options/organizations/70000000000/notices/123456")
+				.param("requiredParam", "ok")
+				.param("size", "notANumber")
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON)
+				.content("{}"))
 		.andExpect(status().isBadRequest())
 		.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 		.andExpect(jsonPath("$.httpStatusCode").value(400))
@@ -215,7 +236,11 @@ class ErrorHandlerTest {
 	// ---------------- ODP branch: missing request param => SYNTAX (ODP-101) 400 ----------------
 	@Test
 	void odp_missingRequestParam_returnsSyntax400() throws Exception {
-		mvc.perform(get("/payment-options/missing").accept(MediaType.APPLICATION_JSON))
+		mvc.perform(post("/payment-options/organizations/70000000000/notices/123456")
+				// requiredParam intentionally missing
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON)
+				.content("{}"))
 		.andExpect(status().isBadRequest())
 		.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 		.andExpect(jsonPath("$.httpStatusCode").value(400))
@@ -226,7 +251,12 @@ class ErrorHandlerTest {
 	//---------------- ODP branch: constraint violation on request param => SYNTAX (ODP-101) 400 ----------------
 	@Test
 	void odp_paramConstraintViolation_returnsSyntax400() throws Exception {
-		mvc.perform(get("/payment-options/validated").param("size", "0").accept(MediaType.APPLICATION_JSON))
+		mvc.perform(post("/payment-options/organizations/70000000000/notices/123456")
+				.param("requiredParam", "ok")
+				.param("minParam", "0") // violates @Min(1)
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON)
+				.content("{}"))
 		.andExpect(status().isBadRequest())
 		.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 		.andExpect(jsonPath("$.httpStatusCode").value(400))
@@ -237,7 +267,8 @@ class ErrorHandlerTest {
 	//---------------- ODP branch: unreadable JSON body => SYNTAX (ODP-101) 400 ----------------
 	@Test
 	void odp_httpMessageNotReadable_returnsSyntax400() throws Exception {
-		mvc.perform(post("/payment-options/json")
+		mvc.perform(post("/payment-options/organizations/70000000000/notices/123456")
+				.param("requiredParam", "ok")
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON)
 				.content("{invalidJson"))
@@ -250,16 +281,16 @@ class ErrorHandlerTest {
 	//---------------- ODP branch: bean validation @Valid => SYNTAX (ODP-101) 400 ----------------
 	@Test
 	void odp_methodArgumentNotValid_returnsSyntax400() throws Exception {
-		mvc.perform(post("/payment-options/json")
+		mvc.perform(post("/payment-options/organizations/70000000000/notices/123456")
+				.param("requiredParam", "ok")
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON)
-				.content("{}")) // missing required field
+				.content("{}")) // missing required field in body
 		.andExpect(status().isBadRequest())
 		.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 		.andExpect(jsonPath("$.httpStatusCode").value(400))
 		.andExpect(jsonPath("$.appErrorCode").value("ODP-101"));
 	}
-
 
 	// ---------------- Legacy branch: AppException -> ProblemJson ----------------
 	@Test

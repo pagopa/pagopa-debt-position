@@ -23,4 +23,4 @@ Feature: Verify payment options by NAV
   Scenario: 400 - malformed NAV
     When I call verifyPaymentOptions for organization "700123456789001" with nav "ABCDEF"
     Then the HTTP status is 400
-    And the response content-type contains "application/problem+json"
+    And the response content-type contains "application/json"

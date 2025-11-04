@@ -2428,16 +2428,16 @@ class PaymentsControllerTest {
     String organization = "700123456789003";
     String badNav = "ABCDEF"; // non-numeric
 
-    mvc.perform(
-            post("/payment-options/organizations/{organization-fiscal-code}/notices/{notice-number}",
-                    organization, badNav)
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isBadRequest())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatusCode").value(400))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatusDescription").value("Bad Request"))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.appErrorCode").value("ODP-101"))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.errorMessage", Matchers.containsString("PAA_SINTASSI")));
+    mvc.perform(post("/payment-options/organizations/{organization-fiscal-code}/notices/{notice-number}",
+                     organization, badNav)
+           .contentType(MediaType.APPLICATION_JSON)
+           .accept(MediaType.APPLICATION_JSON))
+       .andExpect(status().isBadRequest())
+       .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+       .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatusCode").value(400))
+       .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatusDescription").value("Bad Request"))
+       .andExpect(MockMvcResultMatchers.jsonPath("$.appErrorCode").value("ODP-101"))
+       .andExpect(MockMvcResultMatchers.jsonPath("$.errorMessage", Matchers.containsString("PAA_SINTASSI")));
   }
   
   @Test
