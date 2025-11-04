@@ -63,7 +63,9 @@ class ErrorHandlerTest {
 			// ConstraintViolation on ODP branch when < 1
 			@RequestParam(required = false) @Min(1) Integer minParam,
 
-			// MethodArgumentNotValid on ODP branch with {}
+			/**
+			 * Triggers MethodArgumentNotValid when body == {}.
+			 */
 			@Valid @RequestBody(required = false) SampleDto dto) {
 
 			if ("error".equals(mode)) {
