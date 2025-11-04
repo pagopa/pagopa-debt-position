@@ -19,14 +19,14 @@ public interface TransferRepository extends JpaRepository<Transfer, Long> {
     @Query(
         nativeQuery = true,
         value = """
-            UPDATE transfer AS tr
+            UPDATE apd.transfer AS tr
             SET iban = :newIban,
                 last_updated_date = :currentDate
             WHERE tr.id IN (
                 SELECT tr2.id
-                FROM transfer tr2
-                JOIN payment_option po ON tr2.payment_option_id = po.id
-                JOIN payment_position pp ON po.payment_position_id = pp.id
+                FROM apd.transfer tr2
+                JOIN apd.payment_option po ON tr2.payment_option_id = po.id
+                JOIN apd.payment_position pp ON po.payment_position_id = pp.id
                 WHERE tr2.iban = :oldIban
                   AND po.status IN (:poStatus)
                   AND pp.organization_fiscal_code = :organizationFiscalCode
