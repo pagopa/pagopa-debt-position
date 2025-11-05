@@ -4,6 +4,6 @@
 -- just to find the few remaining NULL rows. This process becomes exponentially slower towards the end of the backfill.
 
 -- 3. Index for: fn_backfill_switch_to_expired
-CREATE INDEX CONCURRENTLY idx_payment_option_switch_expired_pending
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_payment_option_switch_expired_pending
 ON apd.payment_option (id)
 WHERE switch_to_expired IS NULL;
