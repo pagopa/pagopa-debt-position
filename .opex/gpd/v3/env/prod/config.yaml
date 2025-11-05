@@ -1,0 +1,12 @@
+oa3_spec: ./gpd/openapi/openapi_external_v3.json
+name: opex_pagopa-debt-position-v3
+location: West Europe
+timespan: 5m
+data_source: /subscriptions/b9fc9419-6097-45fe-9f74-ba0641c91912/resourceGroups/pagopa-p-vnet-rg/providers/Microsoft.Network/applicationGateways/pagopa-p-app-gw
+resource_type: api-management
+action_groups:
+  - /subscriptions/b9fc9419-6097-45fe-9f74-ba0641c91912/resourceGroups/pagopa-p-monitor-rg/providers/microsoft.insights/actionGroups/PagoPA
+  - /subscriptions/b9fc9419-6097-45fe-9f74-ba0641c91912/resourceGroups/pagopa-p-monitor-rg/providers/microsoft.insights/actionGroups/SlackPagoPA
+overrides:
+  hosts:
+    - api.platform.pagopa.it
