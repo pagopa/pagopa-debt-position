@@ -283,7 +283,8 @@ public class PaymentsService {
     DebtPositionStatus.expirationCheckAndUpdate(paymentOption);
 
     PaymentPosition pp = paymentOption.getPaymentPosition();
-    final boolean ppInvalid = pp.getStatus() == DebtPositionStatus.INVALID;
+	final boolean ppInvalidOrExpired = 
+			pp.getStatus() == DebtPositionStatus.INVALID || pp.getStatus() == DebtPositionStatus.EXPIRED;
     
     List<PaymentOption> siblings = pp.getPaymentOption();
 
@@ -304,10 +305,16 @@ public class PaymentsService {
         return SINGLE + po.getId();
       }
     }));
+    
+    // Find out if there is an "active plan" with an in progress payment
+    Optional<String> activePlanKey = findActivePlanKey(grouped);
 
     List<PaymentOptionGroup> groups = new ArrayList<>();
     for (Map.Entry<String, List<PaymentOption>> e : grouped.entrySet()) {
       List<PaymentOption> list = e.getValue();
+      // true if the current group is NOT the active plan (joint obligors rule → INVALID at runtime)
+      boolean outsideActivePlan = activePlanKey.map(k -> !k.equals(e.getKey())).orElse(false);
+      boolean forceInvalid = ppInvalidOrExpired || outsideActivePlan;
 
       long totalAmount = list.stream().mapToLong(PaymentOption::getAmount).sum();
 
@@ -355,7 +362,7 @@ public class PaymentsService {
        * - else handle EXPIRED flavors using dueDate/validityDate/switchToExpired
        * - else -> PO_UNPAID
        */
-      GroupStatus gs = aggregateGroupPoStatus(list, ppInvalid); 
+      GroupStatus gs = aggregateGroupPoStatus(list, ppInvalidOrExpired, forceInvalid); 
 
       // installments sorted by dueDate
       List<InstallmentSummary> installments = list.stream()
@@ -367,8 +374,8 @@ public class PaymentsService {
               .description(po.getDescription())
               .dueDate(po.getDueDate())
               .validFrom(po.getValidityDate())
-              .status(toInstallmentStatus(po, ppInvalid))       
-              .statusReason(toInstallmentReason(po, ppInvalid)) // optional: detail text
+              .status(toInstallmentStatus(po, ppInvalidOrExpired, forceInvalid))       
+              .statusReason(toInstallmentReason(po, ppInvalidOrExpired, forceInvalid)) // optional: detail text
               .build())
           .toList();
 
@@ -402,7 +409,7 @@ public class PaymentsService {
     Retrieving the old notification fee. It MUST BE SUBTRACTED from the various amount in order due to the fact that
     these values were updated in a previous step with another value and adding the new value directly can cause miscalculations.
      */
-    long oldNotificationFee = Optional.of(paymentOption.getNotificationFee()).orElse(0L);
+    long oldNotificationFee = Optional.ofNullable(paymentOption.getNotificationFee()).orElse(0L);
 
     // Setting the new value of the notification fee, updating the amount of the payment option and
     // the last updated date fee
@@ -550,15 +557,8 @@ public class PaymentsService {
    *   - otherwise the status remains unchanged.
    */
    private void recomputePaymentPositionStatus(PaymentPosition pp) {
-     Map<String, List<PaymentOption>> groups = pp.getPaymentOption().stream()
-         .collect(Collectors.groupingBy(po -> {
-           if (Boolean.TRUE.equals(po.getIsPartialPayment())) {
-             return PLAN + po.getPaymentPlanId();
-           } else {
-             // each non-installment PO is a single "plan"
-             return SINGLE + po.getIuv();
-           }
-         }));
+	   Map<String, List<PaymentOption>> groups = pp.getPaymentOption().stream()
+			    .collect(Collectors.groupingBy(PaymentsService::groupKeyOf));
 
      boolean anyPlanInProgress = false;    // there is at least one installment paid/reported/partially reported 
      boolean anyPlanFullyPaid = false;     // there is a fully {PAID|REPORTED} plan
@@ -618,10 +618,10 @@ public class PaymentsService {
 	 * - else handle EXPIRED flavors using dueDate/validityDate/switchToExpired
 	 * - else -> PO_UNPAID
 	 */
-  private GroupStatus aggregateGroupPoStatus(List<PaymentOption> list, boolean ppInvalid) {
+  private GroupStatus aggregateGroupPoStatus(List<PaymentOption> list, boolean ppInvalid, boolean forceInvalid) {
 
-	  if (ppInvalid) {
-		  return new GroupStatus("PO_INVALID", "Debt position is INVALID");
+	  if (ppInvalid || forceInvalid) {
+		  return new GroupStatus("PO_INVALID", ppInvalid ? "Debt position is INVALID or EXPIRED" : "Not payable: another payment option has already been used");
 	  }
 
 	  boolean allPaid = list.stream().allMatch(po -> po.getStatus() == PaymentOptionStatus.PO_PAID);
@@ -656,9 +656,9 @@ public class PaymentsService {
 		return now.isAfter(due);
 	}
 
-	private String toInstallmentStatus(PaymentOption po, boolean ppInvalid) {
+	private String toInstallmentStatus(PaymentOption po, boolean ppInvalid, boolean forceInvalid) {
 
-		if (ppInvalid) return "POI_INVALID";
+		if (ppInvalid || forceInvalid) return "POI_INVALID";
 
 		if (po.getStatus() == PaymentOptionStatus.PO_PAID)    return "POI_PAID";
 
@@ -673,8 +673,9 @@ public class PaymentsService {
 		return "POI_UNPAID";
 	}
 
-	private String toInstallmentReason(PaymentOption po, boolean ppInvalid) {
-		if (ppInvalid) return "Debt position is INVALID";
+	private String toInstallmentReason(PaymentOption po, boolean ppInvalid, boolean forceInvalid) {
+		if (ppInvalid) return "Debt position is INVALID or EXPIRED";
+		if (forceInvalid) return "Not payable: another payment option has already been used";
 		if (po.getStatus() == PaymentOptionStatus.PO_PAID)    return null;
 
 		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
@@ -685,5 +686,29 @@ public class PaymentsService {
 			return notPayable ? "Expired and not payable" : "Expired but payable";
 		}
 		return null;
+	}
+	
+	/** flag to identify a payment in progress */
+	private static boolean hasProgress(PaymentOption po) {
+	  return po.getStatus() == PaymentOptionStatus.PO_PAID
+	      || po.getStatus() == PaymentOptionStatus.PO_PARTIALLY_REPORTED
+	      || po.getStatus() == PaymentOptionStatus.PO_REPORTED;
+	}
+
+	/** Grouping key: PLAN:<paymentPlanId> or SINGLE:<id> */
+	private static String groupKeyOf(PaymentOption po) {
+	  if (Boolean.TRUE.equals(po.getIsPartialPayment())) {
+	    return PLAN + po.getPaymentPlanId();
+	  } else {
+	    return SINGLE + po.getId();
+	  }
+	}
+
+	/** Check if there is an "active plan," that is, an installment plan that is already being paid. */
+	private static Optional<String> findActivePlanKey(Map<String, List<PaymentOption>> groups) {
+	  return groups.entrySet().stream()
+	      .filter(e -> e.getValue().stream().anyMatch(PaymentsService::hasProgress))
+	      .map(Map.Entry::getKey)
+	      .findFirst();
 	}
 }
