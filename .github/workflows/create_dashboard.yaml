@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         environment: [ prod ]
-        product: [ v1, v3 ]
+        product: [ internal-v1, v1, v3 ]
       max-parallel: 1
     environment:
       name: ${{ inputs.environment }}
@@ -41,6 +41,7 @@ jobs:
           cd opex-dashboard
           pip install -e .
           cd ..
+          rm -rf ./dashboard # cleanup to avoid residues between iterations
           venv/bin/opex_dashboard generate \
             --template-name azure-dashboard \
             --package ./dashboard \
