@@ -1,4 +1,4 @@
-oa3_spec: ./gpd/openapi/openapi_internal_v1.json # If start with http the file would be downloaded from the internet
+oa3_spec: ./openapi/openapi_internal_v1.json # If start with http the file would be downloaded from the internet
 name: opex_pagopa-debt-position
 location: West Europe
 timespan: 5m # Default, a number or a timespan https://docs.microsoft.com/en-us/azure/data-explorer/kusto/query/scalar-data-types/timespan

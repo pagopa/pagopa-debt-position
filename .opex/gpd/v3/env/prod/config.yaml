@@ -1,4 +1,4 @@
-oa3_spec: ./gpd/openapi/openapi_external_v3.json
+oa3_spec: ./openapi/openapi_external_v3.json
 name: opex_pagopa-debt-position-v3
 location: West Europe
 timespan: 5m
