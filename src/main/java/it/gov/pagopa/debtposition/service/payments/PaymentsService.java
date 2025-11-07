@@ -75,23 +75,29 @@ public class PaymentsService {
     
     // Update PaymentPosition instance only in memory
     // PaymentPosition used when converting PaymentOption to POWithDebtor
-    DebtPositionStatus.validityCheckAndUpdate(paymentOption);
-    DebtPositionStatus.expirationCheckAndUpdate(paymentOption);
+    LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+    DebtPositionStatus.validityCheckAndUpdate(currentDate, paymentOption);
+    DebtPositionStatus.expirationCheckAndUpdate(currentDate, paymentOption);
+
+    // If the Installment is not valid it's as if the installment didn't officially exist.
+    if(!DebtPositionStatus.isInstallmentValid(currentDate, paymentOption)) {
+        throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav);
+    }
+
     DebtPositionStatus.checkAlreadyPaidInstallments(paymentOption, nav, paymentOptionRepository);
 
     // Synchronous update of notification fees
     if (paymentOption.getSendSync()) {
-      boolean result = updateNotificationFeeSync(paymentOption);
-      if (result)
-        log.info(
-            "Notification fee amount of Payment Option with NAV {} has been updated with"
-                + " notification-fee: {}.",
-            paymentOption.getNav(),
-            paymentOption.getNotificationFee());
-      else
-        log.error(
-            "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.",
-            paymentOption.getNav());
+      if (updateNotificationFeeSync(paymentOption)) {
+          log.info(
+                  "Notification fee amount of Payment Option with NAV {} has been updated with notification-fee: {}.",
+                  paymentOption.getNav(),
+                  paymentOption.getNotificationFee());
+      } else {
+          log.error(
+                  "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.",
+                  paymentOption.getNav());
+      }
     }
 
     return paymentOption;
