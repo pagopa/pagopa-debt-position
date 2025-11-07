@@ -41,7 +41,6 @@ jobs:
           cd opex-dashboard
           pip install -e .
           cd ..
-          rm -rf ./dashboard # cleanup to avoid residues between iterations
           venv/bin/opex_dashboard generate \
             --template-name azure-dashboard \
             --package ./dashboard \
