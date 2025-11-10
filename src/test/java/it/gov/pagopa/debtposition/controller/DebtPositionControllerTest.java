@@ -1,5 +1,6 @@
 package it.gov.pagopa.debtposition.controller;
 
+import static it.gov.pagopa.debtposition.controller.DebtPositionControllerV3Test.createPaymentPositionV3;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -22,6 +23,7 @@ import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
 import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
+import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import it.gov.pagopa.debtposition.service.pd.crud.PaymentPositionCRUDService;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 
@@ -50,6 +52,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 @SpringBootTest(classes = DebtPositionApplication.class)
 @AutoConfigureMockMvc
 class DebtPositionControllerTest {
+  private static final String ORG_FISCAL_CODE = "7777777777";
 
   @Autowired private MockMvc mvc;
 
@@ -333,6 +336,41 @@ class DebtPositionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+  }
+
+  @Test
+  void multiInstallmentsDebtPositionNotReadableV1() throws Exception {
+      String uri = String.format("/organizations/%s/debtpositions", ORG_FISCAL_CODE);
+      PaymentPositionModelV3 paymentPositionV3 = createPaymentPositionV3(2, 2);
+      mvc.perform(
+              post("/v3" + uri)
+                      .content(TestUtil.toJson(paymentPositionV3))
+                      .contentType(MediaType.APPLICATION_JSON))
+              .andExpect(status().isCreated());
+
+      mvc.perform(
+              get(uri + "/" + paymentPositionV3.getIupd()))
+              .andExpect(status().isUnprocessableEntity());
+  }
+
+  @Test
+  void multiInstallmentDebtPositionsFilteredOut() throws Exception {
+      String uri = String.format("/organizations/%s/debtpositions", ORG_FISCAL_CODE);
+      PaymentPositionModelV3 paymentPositionV3 = createPaymentPositionV3(2, 2);
+      mvc.perform(
+              post("/v3" + uri)
+                      .content(TestUtil.toJson(paymentPositionV3))
+                      .contentType(MediaType.APPLICATION_JSON))
+              .andExpect(status().isCreated());
+
+      mvc.perform(get(uri)
+                      .param("limit", "1")
+                      .param("page", "0"))
+              .andExpect(status().isOk())
+              .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+              .andExpect(jsonPath(
+                      "$.payment_position_list[?(@.iupd == '%s')]", paymentPositionV3.getIupd()
+              ).doesNotExist());
   }
 
   @Test

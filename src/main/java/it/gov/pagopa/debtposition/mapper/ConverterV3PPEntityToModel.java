@@ -24,6 +24,8 @@ import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 
+import static it.gov.pagopa.debtposition.util.CommonUtil.groupByPlanId;
+
 public class ConverterV3PPEntityToModel
     implements Converter<PaymentPosition, PaymentPositionModelV3> {
 
@@ -166,10 +168,6 @@ public class ConverterV3PPEntityToModel
 					  );
 		  }
 	  }
-  }
-
-  private Map<String, List<PaymentOption>> groupByPlanId(List<PaymentOption> partialPO) {
-	  return partialPO.stream().collect(Collectors.groupingBy(PaymentOption::getPaymentPlanId));
   }
 
   private boolean hasAnyMarkedExpired(List<PaymentOption> planInstallments) {

@@ -88,10 +88,11 @@ public enum DebtPositionStatus {
      * This method check for Installment validity. An Installment (payment option) could be valid from a specific datetime.
      * @param currentDate is the LocalDateTime at the moment of the check
      * @param po payment option is the installment (ie rata) associated with a notice number (NAV)
-     * @return
+     * @return true if is before or equal to currentDate
      */
   public static boolean isInstallmentValid(LocalDateTime currentDate, PaymentOption po) {
-      return po.getValidityDate().isEqual(currentDate) || po.getValidityDate().isBefore(currentDate);
+      LocalDateTime validityDate = po.getValidityDate();
+      return validityDate == null || !po.getValidityDate().isAfter(currentDate);
   }
 
   public static void validityCheckAndUpdate(LocalDateTime currentDate, PaymentOption po) {
