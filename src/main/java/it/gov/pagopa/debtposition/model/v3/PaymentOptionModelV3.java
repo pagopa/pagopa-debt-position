@@ -17,8 +17,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PaymentOptionModelV3 implements Serializable {
 
-  @Size(max = 140) // todo save also this value, the installment property is used
-  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+  @Size(max = 140) // compliant to paForNode.xsd
   private String description;
 
   private LocalDateTime validityDate;
