@@ -365,8 +365,8 @@ class DebtPositionControllerV3Test {
           .andExpect(status().isOk())
           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
           // paymentOption level description
-          .andExpect(jsonPath("$.paymentOption[0].description").value("PO Single option"))
-          .andExpect(jsonPath("$.paymentOption[1].description").value("PO Plan A"))
+          .andExpect(jsonPath("$.paymentOption[0].description").doesNotExist())
+          .andExpect(jsonPath("$.paymentOption[1].description").doesNotExist())
           // installment level description
           .andExpect(jsonPath("$.paymentOption[0].installments[0].description").value("Saldo unico"))
           .andExpect(jsonPath("$.paymentOption[1].installments[0].description").value("Piano A - Rata 1/1"));

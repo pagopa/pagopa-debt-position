@@ -135,7 +135,7 @@ public class ConverterV3PPEntityToModelResponse
     pov3.setRetentionDate(po.getRetentionDate());
     pov3.setInsertedDate(po.getInsertedDate());
     pov3.setDebtor(UtilityMapper.extractDebtor(po));
-    pov3.setPaymentOptionDescription(po.getPaymentOptionDescription());
+    //pov3.setPaymentOptionDescription(po.getPaymentOptionDescription()); //TODO add when SANPs will be updated
 
     return pov3;
   }
