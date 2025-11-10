@@ -331,22 +331,22 @@ public class PaymentsService {
           .orElse(null);
 
       // Description:
-      // - For "SINGLE:*" groups -> ALWAYS "Payment in a single installment"
-      // - For "PLAN:*" groups   -> "Installment plan of N payments" (fallback: first non-null PO description)
+      // - For "SINGLE:*" groups -> if payment option description exists it is used otherwise "Payment in a single installment"
+      // - For "PLAN:*" groups   -> if payment option description exists it is used otherwise "Installment plan of N payments"
       String groupKey = e.getKey();
-      String description;
+      
+      String poLevelDesc = list.stream()
+    		    .map(PaymentOption::getPaymentOptionDescription)
+    		    .filter(s -> s != null && !s.isBlank())
+    		    .findFirst()
+    		    .orElse(null);
 
+      String description;
       if (groupKey.startsWith(SINGLE)) {
-    	  // Force a canonical label for single-payment option
-    	  description = "Payment in a single installment";
+    	  description = (poLevelDesc != null) ? poLevelDesc : "Payment in a single installment";
       } else {
     	  int n = list.size();
-    	  String fallback = list.stream()
-    			  .map(PaymentOption::getDescription)
-    			  .filter(Objects::nonNull)
-    			  .findFirst()
-    			  .orElse("");
-    	  description = (n > 0) ? ("Installment plan of " + n + " payments") : fallback;
+    	  description = (poLevelDesc != null) ? poLevelDesc : ("Installment plan of " + n + " payments");
       }
 
       // allCCP: true if ALL transfers from ALL POs in the group have a valid postalIBAN (not null/blank)

@@ -51,7 +51,7 @@ import lombok.*;
 	    generator = ObjectIdGenerators.PropertyGenerator.class,
 	    property = "id")
 public class PaymentOption implements Serializable {
-  public final static String SINGLE_OPTION = "SINGLE_OPTION";
+  public static final String SINGLE_OPTION = "SINGLE_OPTION";
 
   /** generated serialVersionUID */
   private static final long serialVersionUID = -2800191377721368418L;
@@ -74,7 +74,11 @@ public class PaymentOption implements Serializable {
   private String paymentPlanId;
 
   @NotNull private long amount;
+  
   private String description;
+  
+  @Column(name = "payment_option_description")
+  private String paymentOptionDescription;
 
   @NotNull
   @Column(name = "is_partial_payment")

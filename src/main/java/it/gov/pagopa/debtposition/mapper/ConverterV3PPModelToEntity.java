@@ -139,6 +139,7 @@ public class ConverterV3PPModelToEntity
     destination.setNav(sourceInstallment.getNav());
     destination.setValidityDate(source.getValidityDate());
     destination.setRetentionDate(source.getRetentionDate());
+    destination.setPaymentOptionDescription(source.getDescription());
     
     destination.setSwitchToExpired(Boolean.TRUE.equals(source.getSwitchToExpired()));
     
