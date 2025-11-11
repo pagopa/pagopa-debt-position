@@ -31,6 +31,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
@@ -76,7 +77,7 @@ class DebtPositionControllerV3Test {
 
     mvc.perform(
             post(uri)
-                .content(TestUtil.toJson(paymentPositionV3))
+            .content(TestUtil.toJson(paymentPositionV3))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
@@ -85,7 +86,8 @@ class DebtPositionControllerV3Test {
             "/v3/organizations/%s/debtpositions/%s", ORG_FISCAL_CODE, paymentPositionV3.getIupd());
     mvc.perform(get(getPositionUri).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.paymentOption[0].description").doesNotExist());
   }
 
   @Test
@@ -150,6 +152,7 @@ class DebtPositionControllerV3Test {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.paymentOption[0].description").doesNotExist())
         .andExpect(jsonPath("$.paymentOption[0].installments[0].iuv").isNotEmpty())
         .andExpect(jsonPath("$.paymentOption[0].installments[0].nav").isNotEmpty())
         .andExpect(
@@ -181,9 +184,11 @@ class DebtPositionControllerV3Test {
     pp.setCompanyName("CompanyName");
 
     PaymentOptionModelV3 po1 = basePaymentOption(false);
+    po1.setDescription("PO Single option");
     po1.getInstallments().add(buildInstallmentWithIuv(DUPL_IUV, 500L, "Saldo unico", LocalDateTime.now().plusDays(30)));
 
     PaymentOptionModelV3 po2 = basePaymentOption(true);
+    po2.setDescription("PO Plan A");
     po2.getInstallments().add(buildInstallmentWithIuv(DUPL_IUV, 600L, "Piano A - Rata 1/1", LocalDateTime.now().plusDays(40)));
 
     pp.setPaymentOption(List.of(po1, po2));
@@ -270,6 +275,8 @@ class DebtPositionControllerV3Test {
                   .contentType(MediaType.APPLICATION_JSON))
           .andExpect(status().isCreated())
           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+          .andExpect(jsonPath("$.paymentOption[0].description").doesNotExist())
+          .andExpect(jsonPath("$.paymentOption[1].description").doesNotExist())
           // then: PO_1 maintains validity, PO_2 is populated (currentDate)
           .andExpect(jsonPath("$.paymentOption[0].validityDate").isNotEmpty())
           .andExpect(jsonPath("$.paymentOption[1].validityDate").isNotEmpty());
@@ -302,6 +309,8 @@ class DebtPositionControllerV3Test {
       JsonNode poArray = root.path("paymentOption");
       JsonNode po0 = poArray.get(0);
       JsonNode po1 = poArray.get(1);
+      assertThat(po0.get("description")).isNull();
+      assertThat(po1.get("description")).isNull();
       JsonNode vd0 = po0.get("validityDate");
       JsonNode vd1 = po1.get("validityDate");
       
@@ -321,6 +330,47 @@ class DebtPositionControllerV3Test {
     	  assertThat(vd0.asText()).isEqualTo(vd1.asText());
       }
   }
+  
+  @Test
+  void createAndGet_PaymentOptionDescription_and_InstallmentDescription() throws Exception {
+      String uri = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
+
+      PaymentPositionModelV3 pp = new PaymentPositionModelV3();
+      pp.setIupd("IUPD-" + randomAlphaNum(10));
+      pp.setCompanyName("CompanyName");
+
+      PaymentOptionModelV3 po0 = basePaymentOption(false); // expected description: "PO Single option"
+      po0.getInstallments().add(
+          buildInstallmentWithIuv(randomAlphaNum(17), 500L, "Saldo unico", LocalDateTime.now().plusDays(30))
+      );
+
+      PaymentOptionModelV3 po1 = basePaymentOption(true);  // expected description: "PO Plan A"
+      po1.getInstallments().add(
+          buildInstallmentWithIuv(randomAlphaNum(17), 600L, "Piano A - Rata 1/1", LocalDateTime.now().plusDays(40))
+      );
+
+      pp.setPaymentOption(List.of(po0, po1));
+
+      mvc.perform(post(uri)
+    		  // with @JsonProperty(access = WRITE_ONLY) the description field is discarded by TestUtil.toJson(...) --> manual injection
+              .content(toJsonInjectWriteOnlyDescriptions(pp))
+              .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isCreated())
+          .andExpect(jsonPath("$.paymentOption[0].description").doesNotExist())
+          .andExpect(jsonPath("$.paymentOption[1].description").doesNotExist());
+
+      // GET by IUPD
+      String getUri = String.format("/v3/organizations/%s/debtpositions/%s", ORG_FISCAL_CODE, pp.getIupd());
+      mvc.perform(get(getUri).contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+          // paymentOption level description
+          .andExpect(jsonPath("$.paymentOption[0].description").doesNotExist())
+          .andExpect(jsonPath("$.paymentOption[1].description").doesNotExist())
+          // installment level description
+          .andExpect(jsonPath("$.paymentOption[0].installments[0].description").value("Saldo unico"))
+          .andExpect(jsonPath("$.paymentOption[1].installments[0].description").value("Piano A - Rata 1/1"));
+  }
 
   // ################### UTILS #################
 
@@ -338,6 +388,7 @@ class DebtPositionControllerV3Test {
   private PaymentOptionModelV3 createPaymentOptionV3(int numberOfInstallment) {
     PaymentOptionModelV3 pov3 = new PaymentOptionModelV3();
     pov3.setSwitchToExpired(false);
+    pov3.setDescription("Payment Option Description");
 
     DebtorModel debtor = new DebtorModel();
     debtor.setType(Type.F);
@@ -389,6 +440,7 @@ class DebtPositionControllerV3Test {
   private PaymentOptionModelV3 basePaymentOption(boolean switchToExpired) {
 	  PaymentOptionModelV3 po = new PaymentOptionModelV3();
 	  po.setSwitchToExpired(switchToExpired);
+	  po.setDescription(switchToExpired ? "PO Plan A" : "PO Single option");
 	  DebtorModel debtor = new DebtorModel();
 	  debtor.setType(Type.F);
 	  debtor.setFiscalCode("ABCDEF00A00A000A");
@@ -446,4 +498,31 @@ class DebtPositionControllerV3Test {
 		String formatSpec = String.format("%%-%ss", String.valueOf(len));
 		return String.format(formatSpec, s).replace(' ', '0');
 	}
+	
+	private String toJsonInjectWriteOnlyDescriptions(PaymentPositionModelV3 pp, String... descriptions) throws Exception {
+	    String json = TestUtil.toJson(pp);
+	    ObjectMapper om = new ObjectMapper();
+	    JsonNode root = om.readTree(json);
+
+	    JsonNode poArray = root.path("paymentOption");
+	    if (poArray.isArray()) {
+	        for (int i = 0; i < poArray.size(); i++) {
+	            ObjectNode poNode = (ObjectNode) poArray.get(i);
+	            String desc = null;
+
+	            if (descriptions != null && descriptions.length > 0) {
+	                desc = (i < descriptions.length) ? descriptions[i] : descriptions[descriptions.length - 1];
+	            } else if (pp.getPaymentOption() != null && i < pp.getPaymentOption().size()) {
+	                desc = pp.getPaymentOption().get(i).getDescription();
+	            }
+
+	            if (desc != null) {
+	                poNode.put("description", desc);
+	            }
+	        }
+	    }
+
+	    return om.writeValueAsString(root);
+	}
+
 }

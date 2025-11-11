@@ -74,7 +74,11 @@ public class PaymentOption implements Serializable {
   private String paymentPlanId;
 
   @NotNull private long amount;
+  
   private String description;
+  
+  @Column(name = "payment_option_description")
+  private String paymentOptionDescription;
 
   @NotNull
   @Column(name = "is_partial_payment")
