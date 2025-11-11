@@ -88,7 +88,7 @@ public class PaymentsService {
 
     // Synchronous update of notification fees
     if (paymentOption.getSendSync()) {
-      if (updateNotificationFeeSync(paymentOption)) {
+      if (this.updateNotificationFeeSync(paymentOption)) {
           log.info(
                   "Notification fee amount of Payment Option with NAV {} has been updated with notification-fee: {}.",
                   paymentOption.getNav(),
