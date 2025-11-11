@@ -128,7 +128,7 @@ microservice-chart:
     MAX_DEBT_POSITIONS: "100"
     SERVICE_NAME: "pagopa-gpd-core"
     OTEL_SERVICE_NAME: "pagopa-gpd-core"
-    OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=uat"
+    OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=prod"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
     OTEL_TRACES_SAMPLER: "traceidratio"
     OTEL_TRACES_SAMPLER_ARG: "0.5"
