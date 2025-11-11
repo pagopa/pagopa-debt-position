@@ -115,7 +115,7 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
             .build();
 
     Page<PaymentPosition> pagePP =
-        paymentPositionService.getOrganizationDebtPositions(limit, page, filterOrder, false);
+        paymentPositionService.getOrganizationDebtPositions(limit, page, filterOrder);
 
     // flip entity to model
     List<PaymentPositionModelResponseV3> ppResponseList =
