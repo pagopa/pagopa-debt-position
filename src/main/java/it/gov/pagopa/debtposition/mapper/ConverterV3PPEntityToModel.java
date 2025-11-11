@@ -94,6 +94,7 @@ public class ConverterV3PPEntityToModel
 	  PaymentOptionModelV3 pov3 = convert(po);
 	  pov3.setValidityDate(UtilityMapper.getValidityDate(pp, po));
 	  pov3.setSwitchToExpired(UtilityMapper.getSwitchToExpired(pp, po));
+	  pov3.setDescription(po.getPaymentOptionDescription());
 	  List<InstallmentModel> installments = Collections.singletonList(convertInstallment(po));
 	  pov3.setInstallments(installments);
 	  return pov3;
@@ -127,7 +128,7 @@ public class ConverterV3PPEntityToModel
     PaymentOptionModelV3 pov3 = new PaymentOptionModelV3();
     pov3.setRetentionDate(po.getRetentionDate());
     pov3.setDebtor(UtilityMapper.extractDebtor(po));
-
+    pov3.setDescription(po.getPaymentOptionDescription());
     return pov3;
   }
 
