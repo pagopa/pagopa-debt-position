@@ -3,7 +3,6 @@ package it.gov.pagopa.debtposition.repository.specification;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -31,7 +30,6 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
   public Predicate toPredicate(
       Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
     Join<?, ?> ppOptionsJoin = root.join(PAYMENT_OPT_JOIN, JoinType.INNER);
-    List<Predicate> predicates = new ArrayList<>();
 
     Predicate dueDatePredicate = cb.isTrue(cb.literal(true));
     Predicate segregationCodesPredicate = cb.isTrue(cb.literal(false));
@@ -48,7 +46,6 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
     else if (dateFrom != null) {
       dueDatePredicate = cb.between(ppOptionsJoin.get(DUEDATE_FIELD), dateFrom, dateTo);
     }
-    predicates.add(dueDatePredicate);
 
     // segregation code predicate
     if (segregationCodes != null && !segregationCodes.isEmpty()) {
@@ -64,8 +61,7 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
     } else {
       segregationCodesPredicate = cb.isTrue(cb.literal(true));
     }
-    predicates.add(segregationCodesPredicate);
 
-    return cb.and(predicates.toArray(new Predicate[0]));
+    return cb.and(dueDatePredicate, segregationCodesPredicate);
   }
 }
