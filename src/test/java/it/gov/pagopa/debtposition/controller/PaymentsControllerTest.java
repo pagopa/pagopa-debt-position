@@ -32,7 +32,11 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
+import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import it.gov.pagopa.debtposition.model.send.response.NotificationPriceResponse;
+import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
+import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
+import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import it.gov.pagopa.debtposition.service.payments.PaymentsService;
 import it.gov.pagopa.debtposition.util.CustomHttpStatus;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
@@ -41,6 +45,8 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.List;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -2351,7 +2357,7 @@ class PaymentsControllerTest {
 
   @Test
   void verifyPaymentOptions_single_200() throws Exception {
-	  String organization = "700123456789000";
+	  String organization = "700123456789010";
 	  mvc.perform(
 			  post("/organizations/" + organization + "/debtpositions")
 			  .content(TestUtil.toJson(DebtPositionMock.getMock1(), objectMapper))
@@ -2374,7 +2380,54 @@ class PaymentsControllerTest {
   
   @Test
   void verifyPaymentOptions_grouping_singleAndPlan_200_and_ordering() throws Exception {
-    String organization = "700123456789001";
+
+	  String organization = "700123456789001";
+
+	  String singleNavOrIuv = "9" + randomNum(16);
+	  String planIuv1      = "8" + randomNum(16);
+	  String planIuv2      = "7" + randomNum(16);
+
+	  // V3 position  with 1 SINGLE and 1 PLAN (2 installments)
+	  PaymentPositionModelV3 pp = buildV3SingleAndPlan(organization, singleNavOrIuv, planIuv1, planIuv2);
+
+	  String body = toJsonInjectWriteOnlyDescriptions(pp,
+			  "Pagamento singolo test",
+			  "Piano A test"
+			  );
+
+	  mvc.perform(
+			  post("/v3/organizations/" + organization + "/debtpositions")
+			  .content(body)
+			  .contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(status().isCreated());
+
+	  mvc.perform(
+			  post("/payment-options/organizations/{organizationfiscalcode}/notices/{nav}", organization, singleNavOrIuv)
+			  .contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(status().isOk())
+	  .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions.length()",
+			  Matchers.greaterThanOrEqualTo(2)))
+	  // there must be AT LEAST one single group
+	  .andExpect(MockMvcResultMatchers.jsonPath(
+			  "$.paymentOptions[*].numberOfInstallments",
+			  Matchers.hasItem(1)))
+	  // there must be AT LEAST one plan group (>=2 installments)
+	  .andExpect(MockMvcResultMatchers.jsonPath(
+			  "$.paymentOptions[*].numberOfInstallments",
+			  Matchers.hasItem(Matchers.greaterThanOrEqualTo(2))))
+	  .andExpect(MockMvcResultMatchers.jsonPath(
+			  "$.paymentOptions[*].description",
+			  Matchers.hasItem("Pagamento singolo test")))
+	  .andExpect(MockMvcResultMatchers.jsonPath(
+			  "$.paymentOptions[*].description",
+			  Matchers.hasItem("Piano A test")));
+  }
+  
+  @Test
+  void verifyPaymentOptions_grouping_singleAndPlan_uses_fallbacks_200_and_ordering() throws Exception {
+    String organization = "700123456789006";
+
     mvc.perform(
             post("/organizations/" + organization + "/debtpositions")
                 .content(TestUtil.toJson(DebtPositionMock.getMock3(), objectMapper))
@@ -2389,21 +2442,79 @@ class PaymentsControllerTest {
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions.length()",
-                Matchers.greaterThanOrEqualTo(2)))
-        // there must be AT LEAST one single group
+            Matchers.greaterThanOrEqualTo(2)))
         .andExpect(MockMvcResultMatchers.jsonPath(
-                "$.paymentOptions[*].numberOfInstallments",
-                Matchers.hasItem(1)))
-        // there must be AT LEAST one plan group (>=2 installments)
+            "$.paymentOptions[*].numberOfInstallments",
+            Matchers.hasItem(1)))
         .andExpect(MockMvcResultMatchers.jsonPath(
-                "$.paymentOptions[*].numberOfInstallments",
-                Matchers.hasItem(Matchers.greaterThanOrEqualTo(2))))
+            "$.paymentOptions[*].numberOfInstallments",
+            Matchers.hasItem(Matchers.greaterThanOrEqualTo(2))))
         .andExpect(MockMvcResultMatchers.jsonPath(
-                "$.paymentOptions[*].description",
-                Matchers.hasItem("Payment in a single installment")))
+            "$.paymentOptions[*].description",
+            Matchers.hasItem("Payment in a single installment")))
         .andExpect(MockMvcResultMatchers.jsonPath(
-                "$.paymentOptions[*].description",
-                Matchers.hasItem(Matchers.startsWith("Installment plan of"))));
+            "$.paymentOptions[*].description",
+            Matchers.hasItem(Matchers.startsWith("Installment plan of"))));
+  }
+  
+  @Test
+  void verifyPaymentOptions_singlePO_description_200() throws Exception {
+    String organization = "700123456789033";
+
+
+    String navOrIuv = "1" + randomNum(16);
+    PaymentPositionModelV3 pp = buildV3SingleAndPlan(organization, navOrIuv, null, null);
+    
+    // get only the po with single option
+    PaymentOptionModelV3 onlySingle = pp.getPaymentOption().get(0);
+    pp.setPaymentOption(java.util.List.of(onlySingle));
+    
+    // the description is injected manually
+    String body = toJsonInjectWriteOnlyDescriptions(pp, "Pagamento singolo test");
+    
+    mvc.perform(
+            post("/v3/organizations/" + organization + "/debtpositions")
+                .content(body)
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    mvc.perform(
+            post("/payment-options/organizations/{organizationfiscalcode}/notices/{nav}", organization, navOrIuv)
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.organizationFiscalCode").value(organization))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions.length()").value(1))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions[0].numberOfInstallments").value(1))
+        // the paymentOptionDescription set is used
+        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions[0].description")
+            .value("Pagamento singolo test"));
+  }
+  
+  @Test
+  void verifyPaymentOptions_singlePO_fallback_description_200() throws Exception {
+    String organization = "700123456789001";
+
+    // no injection paymentOptionDescription --> fallback to default description
+    mvc.perform(
+            post("/organizations/" + organization + "/debtpositions")
+                .content(TestUtil.toJson(DebtPositionMock.getMock1(), objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    String navOrIuv = "1234561";
+
+    mvc.perform(
+            post("/payment-options/organizations/{organizationfiscalcode}/notices/{nav}", organization, navOrIuv)
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.organizationFiscalCode").value(organization))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions.length()").value(1))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions[0].numberOfInstallments").value(1))
+        // fallback atteso
+        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions[0].description")
+            .value("Payment in a single installment"));
   }
 
   @Test
@@ -2543,4 +2654,119 @@ class PaymentsControllerTest {
       fail("Not the expected exception: " + e.getMessage());
     }
   }
+  
+  //==== HELPERS PER VERIFY (V3) ====
+
+  private static String randomNum(int len) {
+	  StringBuilder sb = new StringBuilder(len);
+	  java.util.Random r = new java.util.Random();
+	  for (int i = 0; i < len; i++) sb.append((char) ('0' + r.nextInt(10)));
+	  return sb.toString();
+  }
+
+  /** Manually inject write-only "description" fields into POs */
+  private String toJsonInjectWriteOnlyDescriptions(PaymentPositionModelV3 pp, String... descriptions) throws Exception {
+	  String json = TestUtil.toJson(pp); 
+	  com.fasterxml.jackson.databind.ObjectMapper om = new com.fasterxml.jackson.databind.ObjectMapper();
+	  com.fasterxml.jackson.databind.JsonNode root = om.readTree(json);
+
+	  com.fasterxml.jackson.databind.JsonNode poArray = root.path("paymentOption");
+	  if (poArray.isArray()) {
+		  for (int i = 0; i < poArray.size(); i++) {
+			  com.fasterxml.jackson.databind.node.ObjectNode poNode = (com.fasterxml.jackson.databind.node.ObjectNode) poArray.get(i);
+			  String desc = null;
+
+			  if (descriptions != null && descriptions.length > 0) {
+				  desc = (i < descriptions.length) ? descriptions[i] : descriptions[descriptions.length - 1];
+			  } else if (pp.getPaymentOption() != null && i < pp.getPaymentOption().size()) {
+				  desc = pp.getPaymentOption().get(i).getDescription();
+			  }
+
+			  if (desc != null) {
+				  poNode.put("description", desc);
+			  }
+		  }
+	  }
+
+	  return om.writeValueAsString(root);
+  }
+
+  /** Build a V3 position with 1 SINGLE and 1 PLAN (2 installments) */
+  private PaymentPositionModelV3 buildV3SingleAndPlan(String organization, String singleNavOrIuv, String planIuv1, String planIuv2) {
+	  PaymentPositionModelV3 pp = new PaymentPositionModelV3();
+	  pp.setIupd("IUPD-" + java.util.UUID.randomUUID());
+	  pp.setCompanyName("CompanyName");
+
+	  // Debtor base
+	  it.gov.pagopa.debtposition.model.pd.DebtorModel debtor = new it.gov.pagopa.debtposition.model.pd.DebtorModel();
+	  debtor.setType(it.gov.pagopa.debtposition.model.enumeration.Type.F);
+	  debtor.setFiscalCode("ABCDEF00A00A000A");
+	  debtor.setFullName("Full Name");
+
+	  // SINGLE
+	  PaymentOptionModelV3 single = new PaymentOptionModelV3();
+	  single.setSwitchToExpired(false);
+	  single.setDebtor(debtor);
+
+	  InstallmentModel instSingle = new InstallmentModel();
+	  instSingle.setIuv(singleNavOrIuv);
+	  instSingle.setNav(singleNavOrIuv);
+	  instSingle.setAmount(1000L);
+	  instSingle.setDescription("Saldo unico");
+	  instSingle.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plusDays(30));
+	  TransferModel tr1 = new TransferModel();
+	  tr1.setIdTransfer("1");
+	  tr1.setCompanyName("CompanyName");
+	  tr1.setIban("IT75I0306902887100000300015");
+	  tr1.setAmount(1000L);
+	  tr1.setCategory("10/22252/20");
+	  tr1.setOrganizationFiscalCode(organization);
+	  tr1.setRemittanceInformation("remittance information");
+	  instSingle.setTransfer(List.of(tr1));
+	  single.getInstallments().add(instSingle);
+
+	  // PLAN (2 rate)
+	  PaymentOptionModelV3 plan = new PaymentOptionModelV3();
+	  plan.setSwitchToExpired(false);
+	  plan.setDebtor(debtor);
+
+	  InstallmentModel instPlan1 = new InstallmentModel();
+	  instPlan1.setIuv(planIuv1);
+	  instPlan1.setNav(planIuv1);
+	  instPlan1.setAmount(600L);
+	  instPlan1.setDescription("Piano A - Rata 1/2");
+	  instPlan1.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plusDays(40));
+	  TransferModel tr2 = new TransferModel();
+	  tr2.setIdTransfer("1");
+	  tr2.setCompanyName("CompanyName");
+	  tr2.setIban("IT75I0306902887100000300015");
+	  tr2.setAmount(600L);
+	  tr2.setCategory("10/22252/20");
+	  tr2.setOrganizationFiscalCode(organization);
+	  tr2.setRemittanceInformation("remittance information");
+	  instPlan1.setTransfer(List.of(tr2));
+
+	  InstallmentModel instPlan2 = new InstallmentModel();
+	  instPlan2.setIuv(planIuv2);
+	  instPlan2.setNav(planIuv2);
+	  instPlan2.setAmount(400L);
+	  instPlan2.setDescription("Piano A - Rata 2/2");
+	  instPlan2.setDueDate(LocalDateTime.now(ZoneOffset.UTC).plusDays(60));
+	  TransferModel tr3 = new TransferModel();
+	  tr3.setIdTransfer("1");
+	  tr3.setCompanyName("CompanyName");
+	  tr3.setIban("IT75I0306902887100000300015");
+	  tr3.setAmount(400L);
+	  tr3.setCategory("10/22252/20");
+	  tr3.setOrganizationFiscalCode(organization);
+	  tr3.setRemittanceInformation("remittance information");
+	  instPlan2.setTransfer(List.of(tr3));
+
+	  plan.getInstallments().add(instPlan1);
+	  plan.getInstallments().add(instPlan2);
+
+	  pp.setPaymentOption(List.of(single, plan));
+	  return pp;
+  }
+
 }
