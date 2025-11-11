@@ -84,9 +84,18 @@ public enum DebtPositionStatus {
 	return pp;
   }
 
+    /**
+     * This method check for Installment validity. An Installment (payment option) could be valid from a specific datetime.
+     * @param currentDate is the LocalDateTime at the moment of the check
+     * @param po payment option is the installment (ie rata) associated with a notice number (NAV)
+     * @return true if is before or equal to currentDate
+     */
+  public static boolean isInstallmentValid(LocalDateTime currentDate, PaymentOption po) {
+      LocalDateTime validityDate = po.getValidityDate();
+      return validityDate == null || !po.getValidityDate().isAfter(currentDate);
+  }
 
-  public static PaymentPosition validityCheckAndUpdate(PaymentOption po) {
-    LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+  public static void validityCheckAndUpdate(LocalDateTime currentDate, PaymentOption po) {
     PaymentPosition pp = po.getPaymentPosition();
     LocalDateTime minValidity = CommonUtil.resolveMinValidity(pp);
     // Validity check on the fly
@@ -95,11 +104,9 @@ public enum DebtPositionStatus {
     		&& currentDate.isAfter(minValidity)) {
     	pp.setStatus(DebtPositionStatus.VALID);
     }
-    return pp;
   }
   
-  public static PaymentPosition expirationCheckAndUpdate(PaymentOption po) {
-	LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+  public static void expirationCheckAndUpdate(LocalDateTime currentDate, PaymentOption po) {
 	PaymentPosition pp = po.getPaymentPosition();
 
 	// switchToExpired = true if at least one installment has switchToExpired = true
@@ -109,9 +116,7 @@ public enum DebtPositionStatus {
 			&& currentDate.isAfter(pp.getMaxDueDate())) {
 		pp.setStatus(DebtPositionStatus.EXPIRED);
 	}
-
-	return pp;
- }
+  }
 
   /**
    * Checks if the user is trying to pay the full amount for the payment position but there is an

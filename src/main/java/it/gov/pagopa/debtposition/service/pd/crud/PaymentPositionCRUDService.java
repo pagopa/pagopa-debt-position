@@ -165,7 +165,7 @@ public class PaymentPositionCRUDService {
   }
 
   public Page<PaymentPosition> getOrganizationDebtPositions(
-      @Positive Integer limit, @Positive Integer pageNum, FilterAndOrder filterAndOrder) {
+      @Positive Integer limit, @Positive Integer pageNum, FilterAndOrder filterAndOrder, boolean filterOutMultiInstallments) {
 
     checkAndUpdateDates(filterAndOrder);
 
@@ -178,7 +178,8 @@ public class PaymentPositionCRUDService {
                 new PaymentPositionByOptionsAttribute(
                         filterAndOrder.getFilter().getDueDateFrom(),
                         filterAndOrder.getFilter().getDueDateTo(),
-                        filterAndOrder.getFilter().getSegregationCodes())
+                        filterAndOrder.getFilter().getSegregationCodes(),
+                        filterOutMultiInstallments)
                     .and(
                         new PaymentPositionByPaymentDate(
                             filterAndOrder.getFilter().getPaymentDateFrom(),
@@ -202,7 +203,6 @@ public class PaymentPositionCRUDService {
 
       List<PaymentOption> poList = paymentOptionRepository.findAll(specPO);
       pp.setPaymentOption(poList);
-      
     }
 
     return CommonUtil.toPage(positions, page.getNumber(), page.getSize(), page.getTotalElements());

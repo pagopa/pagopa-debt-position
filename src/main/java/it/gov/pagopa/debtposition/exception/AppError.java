@@ -150,6 +150,9 @@ public enum AppError {
           + " state"),
   UNPROCESSABLE_ENTITY(
 	      HttpStatus.UNPROCESSABLE_ENTITY, "The debt position operation is failed", null),
+  V1_UNPROCESSABLE_ENTITY_MULTI_INSTALLMENTS(
+          HttpStatus.UNPROCESSABLE_ENTITY, "MULTI_INSTALLMENT_NOT_SUPPORTED_IN_V1", "Multi-installment positions are not supported " +
+          "by this version of the API (v1). Organization Fiscal Code %s, IUPD %s."),
   PAYMENT_PLAN_ID_MISSING(
 		    HttpStatus.UNPROCESSABLE_ENTITY,
 		    "Invalid payment plan",
