@@ -146,7 +146,7 @@ public enum DebtPositionStatus {
     // 2) Hard guard on parent status
     if (pp.getStatus() == DebtPositionStatus.PAID || pp.getStatus() == DebtPositionStatus.REPORTED) {
       throw new AppException(
-          AppError.PAYMENT_OPTION_ALREADY_PAID, poToPay.getOrganizationFiscalCode(), nav);
+          AppError.PAYMENT_OPTION_NOT_FOUND, poToPay.getOrganizationFiscalCode(), nav);
     }
 
     boolean isFullPayment = !Boolean.TRUE.equals(poToPay.getIsPartialPayment());
@@ -161,7 +161,7 @@ public enum DebtPositionStatus {
       boolean anyPaid = siblingsLocked.stream().anyMatch(isAlreadyPaid);
       if (anyPaid) {
         throw new AppException(
-            AppError.PAYMENT_OPTION_ALREADY_PAID, poToPay.getOrganizationFiscalCode(), nav);
+            AppError.PAYMENT_OPTION_NOT_FOUND, poToPay.getOrganizationFiscalCode(), nav);
       }
       return;
     }
@@ -183,7 +183,7 @@ public enum DebtPositionStatus {
 
     if (conflict) {
       throw new AppException(
-          AppError.PAYMENT_OPTION_ALREADY_PAID, poToPay.getOrganizationFiscalCode(), nav);
+          AppError.PAYMENT_OPTION_NOT_FOUND, poToPay.getOrganizationFiscalCode(), nav);
     }
   }
 
