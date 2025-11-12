@@ -312,9 +312,6 @@ public class PaymentsService {
     List<PaymentOptionGroup> groups = new ArrayList<>();
     for (Map.Entry<String, List<PaymentOption>> e : grouped.entrySet()) {
       List<PaymentOption> list = e.getValue();
-      // true if the current group is NOT the active plan (joint obligors rule → INVALID at runtime)
-      boolean outsideActivePlan = activePlanKey.map(k -> !k.equals(e.getKey())).orElse(false);
-      boolean forceInvalid = ppInvalidOrExpired || outsideActivePlan;
 
       long totalAmount = list.stream().mapToLong(PaymentOption::getAmount).sum();
 
@@ -329,25 +326,12 @@ public class PaymentsService {
           .filter(Objects::nonNull)
           .min(Comparator.naturalOrder())
           .orElse(null);
-
-      // Description:
-      // - For "SINGLE:*" groups -> if payment option description exists it is used otherwise "Payment in a single installment"
-      // - For "PLAN:*" groups   -> if payment option description exists it is used otherwise "Installment plan of N payments"
-      String groupKey = e.getKey();
       
-      String poLevelDesc = list.stream()
-    		    .map(PaymentOption::getPaymentOptionDescription)
-    		    .filter(s -> s != null && !s.isBlank())
-    		    .findFirst()
-    		    .orElse(null);
-
-      String description;
-      if (groupKey.startsWith(SINGLE)) {
-    	  description = (poLevelDesc != null) ? poLevelDesc : "Payment in a single installment";
-      } else {
-    	  int n = list.size();
-    	  description = (poLevelDesc != null) ? poLevelDesc : ("Installment plan of " + n + " payments");
-      }
+      String groupKey = e.getKey();
+      String description = buildGroupDescription(list);
+      // true if the current group is NOT the active plan
+      boolean outsideActivePlan = activePlanKey.map(k -> !k.equals(groupKey)).orElse(false);
+      boolean forceInvalid = ppInvalidOrExpired || outsideActivePlan;
 
       // allCCP: true if ALL transfers from ALL POs in the group have a valid postalIBAN (not null/blank)
       boolean allCCP = list.stream()
@@ -363,21 +347,9 @@ public class PaymentsService {
        * - else -> PO_UNPAID
        */
       GroupStatus gs = aggregateGroupPoStatus(list, ppInvalidOrExpired, forceInvalid); 
-
-      // installments sorted by dueDate
-      List<InstallmentSummary> installments = list.stream()
-          .sorted(Comparator.comparing(PaymentOption::getDueDate, Comparator.nullsLast(Comparator.naturalOrder())))
-          .map(po -> InstallmentSummary.builder()
-              .nav(po.getNav())
-              .iuv(po.getIuv())
-              .amount(po.getAmount())
-              .description(po.getDescription())
-              .dueDate(po.getDueDate())
-              .validFrom(po.getValidityDate())
-              .status(toInstallmentStatus(po, ppInvalidOrExpired, forceInvalid))       
-              .statusReason(toInstallmentReason(po, ppInvalidOrExpired, forceInvalid)) // optional: detail text
-              .build())
-          .toList();
+      
+      List<InstallmentSummary> installments =
+    		    toInstallmentSummaries(list, ppInvalidOrExpired, forceInvalid);
 
       PaymentOptionGroup group = PaymentOptionGroup.builder()
           .description(description)
@@ -711,4 +683,38 @@ public class PaymentsService {
 	      .map(Map.Entry::getKey)
 	      .findFirst();
 	}
+
+
+	/** 
+	* Builds the group description:
+	* - SINGLE -> paymentOptionDescription if present, otherwise null
+	* - PLAN -> paymentOptionDescription if present, otherwise null
+	*/
+	private static String buildGroupDescription(List<PaymentOption> list) {
+		return list.stream()
+				.map(PaymentOption::getPaymentOptionDescription)
+				.filter(s -> s != null && !s.isBlank())
+				.findFirst()
+				.orElse(null);
+	}
+
+	/** Converts the group's POs to InstallmentSummaries sorted by dueDate. */
+	private List<InstallmentSummary> toInstallmentSummaries(List<PaymentOption> list,
+	                                                        boolean ppInvalidOrExpired,
+	                                                        boolean forceInvalid) {
+	  return list.stream()
+	      .sorted(Comparator.comparing(PaymentOption::getDueDate, Comparator.nullsLast(Comparator.naturalOrder())))
+	      .map(po -> InstallmentSummary.builder()
+	          .nav(po.getNav())
+	          .iuv(po.getIuv())
+	          .amount(po.getAmount())
+	          .description(po.getDescription())
+	          .dueDate(po.getDueDate())
+	          .validFrom(po.getValidityDate())
+	          .status(toInstallmentStatus(po, ppInvalidOrExpired, forceInvalid))
+	          .statusReason(toInstallmentReason(po, ppInvalidOrExpired, forceInvalid))
+	          .build())
+	      .toList();
+	}
+
 }

@@ -1,6 +1,7 @@
 package it.gov.pagopa.debtposition.controller;
 
 import static org.assertj.core.api.Assertions.fail;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -2375,7 +2376,7 @@ class PaymentsControllerTest {
 	  // Only 1 group expected (single)
 	  .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions.length()").value(1))
 	  .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions[0].numberOfInstallments").value(1))
-	  .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions[0].description").value("Payment in a single installment"));
+	  .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions[0].description").value(nullValue()));
   }
   
   @Test
@@ -2425,7 +2426,7 @@ class PaymentsControllerTest {
   }
   
   @Test
-  void verifyPaymentOptions_grouping_singleAndPlan_uses_fallbacks_200_and_ordering() throws Exception {
+  void verifyPaymentOptions_grouping_singleAndPlan_uses_nulls_200_and_ordering() throws Exception {
     String organization = "700123456789006";
 
     mvc.perform(
@@ -2451,10 +2452,7 @@ class PaymentsControllerTest {
             Matchers.hasItem(Matchers.greaterThanOrEqualTo(2))))
         .andExpect(MockMvcResultMatchers.jsonPath(
             "$.paymentOptions[*].description",
-            Matchers.hasItem("Payment in a single installment")))
-        .andExpect(MockMvcResultMatchers.jsonPath(
-            "$.paymentOptions[*].description",
-            Matchers.hasItem(Matchers.startsWith("Installment plan of"))));
+            Matchers.everyItem(Matchers.nullValue())));
   }
   
   @Test
@@ -2492,10 +2490,10 @@ class PaymentsControllerTest {
   }
   
   @Test
-  void verifyPaymentOptions_singlePO_fallback_description_200() throws Exception {
+  void verifyPaymentOptions_singlePO_null_description_200() throws Exception {
     String organization = "700123456789001";
 
-    // no injection paymentOptionDescription --> fallback to default description
+    // no injection paymentOptionDescription --> null
     mvc.perform(
             post("/organizations/" + organization + "/debtpositions")
                 .content(TestUtil.toJson(DebtPositionMock.getMock1(), objectMapper))
@@ -2512,9 +2510,7 @@ class PaymentsControllerTest {
         .andExpect(MockMvcResultMatchers.jsonPath("$.organizationFiscalCode").value(organization))
         .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions.length()").value(1))
         .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions[0].numberOfInstallments").value(1))
-        // fallback atteso
-        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions[0].description")
-            .value("Payment in a single installment"));
+        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOptions[0].description").value(org.hamcrest.core.IsNull.nullValue()));
   }
 
   @Test
