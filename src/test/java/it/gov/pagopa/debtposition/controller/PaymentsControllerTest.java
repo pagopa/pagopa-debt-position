@@ -714,7 +714,7 @@ class PaymentsControllerTest {
   }
 
   @Test
-  void getPaymentOption_Multiple_Partial_409() throws Exception {
+  void getPaymentOption_Multiple_Partial_404() throws Exception {
     // creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato) con più
     // opzioni di pagamento
     mvc.perform(
@@ -757,13 +757,13 @@ class PaymentsControllerTest {
                 .value(DebtPositionStatus.PARTIALLY_PAID.toString()));
 
     // effettuo una GET/ACTIVATE sulla payment option corrispondente alla rata unica/intero importo
-    // e ottengo errore 409
+    // e ottengo errore 404
     mvc.perform(
             get("/organizations/1234567890166/paymentoptions/"
                     + auxDigit
                     + "1234563")
                 .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isConflict());
+        .andExpect(status().isNotFound());
   }
 
   @Test

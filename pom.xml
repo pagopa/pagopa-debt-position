@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>it.gov.pagopa.debtposition</groupId>
 	<artifactId>gpd</artifactId>
-	<version>1.1.5</version>
+	<version>1.1.5-1-PAOGPA-3385-FIX</version>
 	<name>Gestione Posizioni Debitorie</name>
 	<description>Progetto Gestione Posizioni Debitorie</description>
 	<properties>
