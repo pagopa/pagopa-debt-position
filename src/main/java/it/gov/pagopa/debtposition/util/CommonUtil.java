@@ -11,7 +11,6 @@ import it.gov.pagopa.debtposition.model.filterandorder.OrderType;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
 import lombok.experimental.UtilityClass;
 import org.springframework.data.domain.Example;
@@ -20,6 +19,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+
+import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.groupByPlanId;
 
 @UtilityClass
 public class CommonUtil {
@@ -158,9 +159,5 @@ public class CommonUtil {
   public static boolean isMultiInstallments(PaymentPosition pp) {
       List<PaymentOption> paymentOptions = pp.getPaymentOption().stream().filter(PaymentOption::getIsPartialPayment).toList();
       return groupByPlanId(paymentOptions).size() > 1;
-  }
-
-  public static Map<String, List<PaymentOption>> groupByPlanId(List<PaymentOption> partialPO) {
-      return partialPO.stream().collect(Collectors.groupingBy(PaymentOption::getPaymentPlanId));
   }
 }

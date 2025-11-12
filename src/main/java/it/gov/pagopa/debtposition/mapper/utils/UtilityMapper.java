@@ -1,6 +1,8 @@
 package it.gov.pagopa.debtposition.mapper.utils;
 
 import it.gov.pagopa.debtposition.entity.*;
+import it.gov.pagopa.debtposition.exception.AppError;
+import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import it.gov.pagopa.debtposition.model.pd.DebtorModel;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
@@ -256,6 +258,58 @@ public class UtilityMapper {
         return pp.getPaymentOption() != null && !pp.getPaymentOption().isEmpty() && pp.getPaymentOption()
                 .stream().anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
     }
+  }
+
+  /**
+   * Groups a list of PaymentOption.
+   * The grouping strategy depends on the READ_FROM constant and data integrity:
+   * 1. If READ_FROM is "READ_FROM_PAYMENT_POSITION" AND any PaymentOption has a
+   * null or blank paymentPlanId, it groups by the 'isPartialPayment' flag.
+   * 2. In all other cases (i.e., READ_FROM is different, OR all plan IDs are present),
+   * it groups by 'paymentPlanId'.
+   *
+   * @param partialPO A list of partial PaymentOption.
+   * @return A Map where keys are grouping criteria (String) and values are lists of PaymentOptions.
+   * */
+  public static Map<String, List<PaymentOption>> groupByPlanId(List<PaymentOption> partialPO) {
+      if (partialPO == null || partialPO.isEmpty()) {
+          return Collections.emptyMap();
+      }
+
+      if (READ_FROM.equalsIgnoreCase("READ_FROM_PAYMENT_POSITION")) {
+
+          // Check if *any* payment_plan_id is null or blank
+          boolean anyMissingPlanId = partialPO.stream()
+                  .anyMatch(po -> po.getPaymentPlanId() == null || po.getPaymentPlanId().isBlank());
+
+          if(anyMissingPlanId) {
+              // Group by the partial payment flag as a fallback
+              return partialPO.stream().collect(Collectors.groupingBy(
+                      paymentOption -> paymentOption.getIsPartialPayment().toString()));
+          } else {
+              // If all plan IDs are present, fall through to the default grouping
+              return partialPO.stream().collect(Collectors.groupingBy(PaymentOption::getPaymentPlanId));
+          }
+      } else {
+          // Validate all partial installments have a non-blank paymentPlanId; if missing, raises an exception
+          validateAllHavePlanId(partialPO);
+
+          // default grouping by payment_plan_id
+          return partialPO.stream().collect(Collectors.groupingBy(PaymentOption::getPaymentPlanId));
+      }
+  }
+
+  private static void validateAllHavePlanId(List<PaymentOption> partialPO) {
+      for (PaymentOption po : partialPO) {
+          String pid = po.getPaymentPlanId();
+          if (pid == null || pid.isBlank()) {
+              throw new AppException(
+                      AppError.PAYMENT_PLAN_ID_MISSING,
+                      String.valueOf(po.getIuv()),
+                      String.valueOf(po.getOrganizationFiscalCode())
+              );
+          }
+      }
   }
 
   private boolean hasAnyMarkedExpired(List<PaymentOption> planInstallments) {

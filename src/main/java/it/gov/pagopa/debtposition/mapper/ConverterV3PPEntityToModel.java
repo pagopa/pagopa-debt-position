@@ -15,8 +15,6 @@ import org.modelmapper.spi.MappingContext;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
-import it.gov.pagopa.debtposition.exception.AppError;
-import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatusV3;
 import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
@@ -24,7 +22,7 @@ import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 
-import static it.gov.pagopa.debtposition.util.CommonUtil.groupByPlanId;
+import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.groupByPlanId;
 
 public class ConverterV3PPEntityToModel
     implements Converter<PaymentPosition, PaymentPositionModelV3> {
@@ -57,8 +55,6 @@ public class ConverterV3PPEntityToModel
     List<PaymentOptionModelV3> paymentOptionsToAdd = new ArrayList<>();
 
     if (partialPO != null && !partialPO.isEmpty()) {
-      // Validate all partial installments have a non-blank paymentPlanId; if missing, raises an exception	
-      validateAllHavePlanId(partialPO);
       //Group installments by paymentPlanId
       Map<String, List<PaymentOption>> byPlan = groupByPlanId(partialPO);
 
@@ -156,19 +152,6 @@ public class ConverterV3PPEntityToModel
     inst.setTransfer(UtilityMapper.convertTransfers(transfers));
 
     return inst;
-  }
-  
-  private void validateAllHavePlanId(List<PaymentOption> partialPO) {
-	  for (PaymentOption po : partialPO) {
-		  String pid = po.getPaymentPlanId();
-		  if (pid == null || pid.isBlank()) {
-			  throw new AppException(
-					  AppError.PAYMENT_PLAN_ID_MISSING,
-					  String.valueOf(po.getIuv()),
-					  String.valueOf(po.getOrganizationFiscalCode())
-					  );
-		  }
-	  }
   }
 
   private boolean hasAnyMarkedExpired(List<PaymentOption> planInstallments) {
