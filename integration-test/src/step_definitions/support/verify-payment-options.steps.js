@@ -82,6 +82,24 @@ Then('the response content-type contains {string}', function (expectedCT) {
   assert.ok(ct.includes(expectedCT), `Content-Type "${ct}" does not contain "${expectedCT}"`);
 });
 
+Then('there is at least one group with 1 installment and null po description', function () {
+  const groups = (ctx.lastResponse.data && ctx.lastResponse.data.paymentOptions) || [];
+  const singles = groups.filter(g => g.numberOfInstallments === 1);
+  assert.ok(singles.length >= 1, 'No group with numberOfInstallments == 1');
+  const hasNull = singles.some(g => g.description == null); // null o undefined
+  const got = singles.map(g => g.description);
+  assert.ok(hasNull, `Expected at least one single group with null description. Got: ${got.join(', ')}`);
+});
+
+Then('there is at least one group with more than 1 installment and null po description', function () {
+  const groups = (ctx.lastResponse.data && ctx.lastResponse.data.paymentOptions) || [];
+  const plans = groups.filter(g => (g.numberOfInstallments || 0) > 1);
+  assert.ok(plans.length >= 1, 'No group with numberOfInstallments > 1');
+  const hasNull = plans.some(g => g.description == null); // null o undefined
+  const got = plans.map(g => g.description);
+  assert.ok(hasNull, `Expected at least one plan group with null description. Got: ${got.join(', ')}`);
+});
+
 
 // ---------- UTILITIES ----------
 
