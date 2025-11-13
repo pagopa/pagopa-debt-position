@@ -365,8 +365,8 @@ class DebtPositionControllerV3Test {
           .andExpect(status().isOk())
           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
           // paymentOption level description
-          .andExpect(jsonPath("$.paymentOption[0].description").value("PO Single option"))
-          .andExpect(jsonPath("$.paymentOption[1].description").value("PO Plan A"))
+          .andExpect(jsonPath("$.paymentOption[0].description").doesNotExist())
+          .andExpect(jsonPath("$.paymentOption[1].description").doesNotExist())
           // installment level description
           .andExpect(jsonPath("$.paymentOption[0].installments[0].description").value("Saldo unico"))
           .andExpect(jsonPath("$.paymentOption[1].installments[0].description").value("Piano A - Rata 1/1"));
@@ -374,7 +374,7 @@ class DebtPositionControllerV3Test {
 
   // ################### UTILS #################
 
-  private PaymentPositionModelV3 createPaymentPositionV3(int numberOfPO, int numberOfInstallment) {
+  public static PaymentPositionModelV3 createPaymentPositionV3(int numberOfPO, int numberOfInstallment) {
     PaymentPositionModelV3 paymentPosition = new PaymentPositionModelV3();
     paymentPosition.setIupd(String.format("IUPD-%s", randomAlphaNum(10)));
     paymentPosition.setCompanyName("CompanyName");
@@ -385,7 +385,7 @@ class DebtPositionControllerV3Test {
     return paymentPosition;
   }
 
-  private PaymentOptionModelV3 createPaymentOptionV3(int numberOfInstallment) {
+  private static PaymentOptionModelV3 createPaymentOptionV3(int numberOfInstallment) {
     PaymentOptionModelV3 pov3 = new PaymentOptionModelV3();
     pov3.setSwitchToExpired(false);
     pov3.setDescription("Payment Option Description");
@@ -401,7 +401,7 @@ class DebtPositionControllerV3Test {
     return pov3;
   }
 
-  private InstallmentModel createInstallment() {
+  private static InstallmentModel createInstallment() {
     InstallmentModel inst = new InstallmentModel();
     inst.setIuv(randomAlphaNum(17));
     inst.setAmount(100L);

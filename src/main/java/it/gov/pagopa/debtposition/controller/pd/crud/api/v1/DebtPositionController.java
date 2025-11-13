@@ -1,5 +1,6 @@
 package it.gov.pagopa.debtposition.controller.pd.crud.api.v1;
 
+import static it.gov.pagopa.debtposition.util.CommonUtil.isMultiInstallments;
 import static it.gov.pagopa.debtposition.util.Constants.CREATE_ACTION;
 import static it.gov.pagopa.debtposition.util.Constants.UPDATE_ACTION;
 
@@ -150,18 +151,19 @@ public class DebtPositionController implements IDebtPositionController {
             .order(Order.builder().orderBy(orderBy).ordering(ordering).build())
             .build();
 
-    Page<PaymentPosition> pagePP =
-        paymentPositionService.getOrganizationDebtPositions(limit, page, filterOrder);
+    Page<PaymentPosition> pagePP = paymentPositionService.getOrganizationDebtPositions(limit, page, filterOrder);
 
-    // flip entity to model
-    List<PaymentPositionModelBaseResponse> ppResponseList =
-        ObjectMapperUtils.mapAll(pagePP.toList(), PaymentPositionModelBaseResponse.class);
-    
-    List<PaymentPosition> entities = pagePP.toList();
-    for (int i = 0; i < entities.size(); i++) {
-      LocalDateTime minValidity = CommonUtil.resolveMinValidity(entities.get(i));
-      ppResponseList.get(i).setValidityDate(minValidity);
-    }
+    List<PaymentPosition> entities = pagePP.getContent();
+    List<PaymentPositionModelBaseResponse> ppResponseList = entities.stream()
+            .filter(entity -> !isMultiInstallments(entity))
+            .map(entity -> {
+                PaymentPositionModelBaseResponse dto = ObjectMapperUtils.map(entity, PaymentPositionModelBaseResponse.class);
+                LocalDateTime minValidity = CommonUtil.resolveMinValidity(entity);
+                dto.setValidityDate(minValidity);
+
+                return dto;
+            })
+            .collect(Collectors.toList());
 
     return new ResponseEntity<>(
         PaymentPositionsInfo.builder()
@@ -194,11 +196,16 @@ public class DebtPositionController implements IDebtPositionController {
     PaymentPosition entity =
     	    paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segCodes);
 
-    	PaymentPositionModelBaseResponse paymentPositionResponse =
-    	    ObjectMapperUtils.map(entity, PaymentPositionModelBaseResponse.class);
+    if (isMultiInstallments(entity)) {
+        // Return 422 because MULTI_INSTALLMENTS debt-position is not readable by v1 API.
+        throw new AppException(AppError.V1_UNPROCESSABLE_ENTITY_MULTI_INSTALLMENTS, organizationFiscalCode, iupd);
+    }
 
-    	// set validityDate as min of the validityDate on the PaymentOption
-    	paymentPositionResponse.setValidityDate(CommonUtil.resolveMinValidity(entity));
+    PaymentPositionModelBaseResponse paymentPositionResponse =
+            ObjectMapperUtils.map(entity, PaymentPositionModelBaseResponse.class);
+
+    // set validityDate as min of the validityDate on the PaymentOption
+    paymentPositionResponse.setValidityDate(CommonUtil.resolveMinValidity(entity));
 
     return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
   }

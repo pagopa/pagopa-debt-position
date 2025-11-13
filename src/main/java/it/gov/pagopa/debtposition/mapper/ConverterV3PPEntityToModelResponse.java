@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
+import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.groupByPlanId;
+
 public class ConverterV3PPEntityToModelResponse
     implements Converter<PaymentPosition, PaymentPositionModelResponseV3> {
 
@@ -63,8 +65,7 @@ public class ConverterV3PPEntityToModelResponse
     
     if (partialPO != null && !partialPO.isEmpty()) {
     	// group partial payment-options by planId
-    	Map<String, List<PaymentOption>> byPlan =
-    			partialPO.stream().collect(Collectors.groupingBy(PaymentOption::getPaymentPlanId));
+        Map<String, List<PaymentOption>> byPlan = groupByPlanId(partialPO);
 
     	for (Map.Entry<String, List<PaymentOption>> entry : byPlan.entrySet()) {
     		List<PaymentOption> planInstallments = entry.getValue();
@@ -135,7 +136,7 @@ public class ConverterV3PPEntityToModelResponse
     pov3.setRetentionDate(po.getRetentionDate());
     pov3.setInsertedDate(po.getInsertedDate());
     pov3.setDebtor(UtilityMapper.extractDebtor(po));
-    pov3.setPaymentOptionDescription(po.getPaymentOptionDescription());
+    //pov3.setPaymentOptionDescription(po.getPaymentOptionDescription()); //TODO add when SANPs will be updated
 
     return pov3;
   }

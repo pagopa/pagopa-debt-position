@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "1.1.2"
+    tag: "1.1.6"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -128,7 +128,7 @@ microservice-chart:
     MAX_DEBT_POSITIONS: "100"
     SERVICE_NAME: "pagopa-gpd-core"
     OTEL_SERVICE_NAME: "pagopa-gpd-core"
-    OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=prod"
+    OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=uat"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
     OTEL_TRACES_SAMPLER: "always_on"
     OTEL_TRACES_EXPORTER: otlp

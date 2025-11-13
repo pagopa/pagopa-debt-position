@@ -29,7 +29,6 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
 
   public Predicate toPredicate(
       Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-
     Join<?, ?> ppOptionsJoin = root.join(PAYMENT_OPT_JOIN, JoinType.INNER);
 
     Predicate dueDatePredicate = cb.isTrue(cb.literal(true));
