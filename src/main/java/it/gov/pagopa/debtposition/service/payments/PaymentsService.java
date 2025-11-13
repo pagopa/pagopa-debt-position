@@ -284,11 +284,12 @@ public class PaymentsService {
         .findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
             organizationFiscalCode, nav, organizationFiscalCode, nav)
         .orElseThrow(() -> new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav));
+		
+	PaymentPosition pp = paymentOption.getPaymentPosition();
 
-    DebtPositionStatus.validityCheckAndUpdate(paymentOption);
-    DebtPositionStatus.expirationCheckAndUpdate(paymentOption);
-
-    PaymentPosition pp = paymentOption.getPaymentPosition();
+    DebtPositionStatus.validityCheckAndUpdate(pp);
+    DebtPositionStatus.expirationCheckAndUpdate(pp);
+    
 	final boolean ppInvalidOrExpired = 
 			pp.getStatus() == DebtPositionStatus.INVALID || pp.getStatus() == DebtPositionStatus.EXPIRED;
     
