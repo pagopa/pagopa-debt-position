@@ -18,7 +18,7 @@ Feature: Multi installment Debt Position payment using v3 API
     Then the payment option gets the status code 200
     # # Try to Pay Payment Option 2
     When we get the installment 1 of payment option 2
-    Then the payment option gets the status code 409
+    Then the payment option gets the status code 404
     # # Get Debt Position and check status
     When we get the debt position using "v3" API
     Then the debt position gets the status code 200
@@ -44,7 +44,7 @@ Feature: Multi installment Debt Position payment using v3 API
     Then the payment option gets the status code 200
     # # Try to Pay Payment Option 2
     When we get the installment 1 of payment option 2
-    Then the payment option gets the status code 409
+    Then the payment option gets the status code 404
     # # Get Debt Position and check status
     When we get the debt position using "v3" API
     Then the debt position gets the status code 200

@@ -202,7 +202,6 @@ public class PaymentPositionCRUDService {
 
       List<PaymentOption> poList = paymentOptionRepository.findAll(specPO);
       pp.setPaymentOption(poList);
-      
     }
 
     return CommonUtil.toPage(positions, page.getNumber(), page.getSize(), page.getTotalElements());
