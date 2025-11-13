@@ -12,8 +12,8 @@ Feature: Verify payment options by NAV
     When I call verifyPaymentOptions for organization "700123456789001" with nav "1234563"
     Then the HTTP status is 200
     And the payload has at least 2 payment option groups
-    And there is at least one group with 1 installment described as "Payment in a single installment"
-    And there is at least one group with more than 1 installment described starting with "Installment plan of"
+    And there is at least one group with 1 installment described as "Pagamento in un'unica soluzione"
+    And there is at least one group with more than 1 installment described starting with "Piano rateale"
     And groups are ordered by ascending dueDate
 
   Scenario: 404 - NAV not found
