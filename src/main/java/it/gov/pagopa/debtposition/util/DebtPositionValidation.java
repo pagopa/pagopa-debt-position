@@ -149,12 +149,13 @@ public class DebtPositionValidation {
       (pp.getValidityDate() != null && po.getDueDate().compareTo(pp.getValidityDate()) < 0)
           ||
 
-          // Case 2: validity_date is null and due_date < current time
-          (pp.getValidityDate() == null && po.getDueDate().compareTo(today) < 0)
+          // Case 2: switch_to_expire is true, validity_date is null and due_date < current time
+          (pp.getSwitchToExpired() && pp.getValidityDate() == null && po.getDueDate().compareTo(today) < 0)
           ||
 
-          // Case 3: Action is "update" and due_date < current time
-          (!ArrayUtils.isEmpty(action)
+          // Case 3: switch_to_expire is true, Action is "update" and due_date < current time
+          (pp.getSwitchToExpired()
+              && !ArrayUtils.isEmpty(action)
               && UPDATE_ACTION.equalsIgnoreCase(action[0])
               && po.getDueDate().compareTo(today) < 0)) {
         throw new ValidationException(
