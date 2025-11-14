@@ -9,7 +9,7 @@ Feature: Verify payment options by NAV
 
   Scenario: 200 - grouping single and plan, descriptions and ordering
     Given a V3 debt position with one single-payment and one 2-installment plan exists for organization "700123456789001"
-    When I call verifyPaymentOptions for organization "700123456789001" with nav "1234563"
+    When I call verifyPaymentOptions for organization "700123456789001" with the single installment nav
     Then the HTTP status is 200
     And the payload has at least 2 payment option groups
     And there is at least one group with 1 installment described as "Pagamento in un'unica soluzione"

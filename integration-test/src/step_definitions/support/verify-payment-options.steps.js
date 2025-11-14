@@ -24,6 +24,17 @@ Given(
   'a V3 debt position with one single-payment and one 2-installment plan exists for organization {string}',
   async function (org) {
     const payload = Data.v3.singleAndPlan(org);
+
+    if (
+      payload &&
+      payload.paymentOption &&
+      payload.paymentOption[0] &&
+      payload.paymentOption[0].installments &&
+      payload.paymentOption[0].installments[0]
+    ) {
+      ctx.singleNav = payload.paymentOption[0].installments[0].nav;
+    }
+
     const res = await createDebtPosition(org, payload, undefined, false, 'v3');
     assert.ok([200, 201, 409].includes(res.status), `Unexpected status: ${res.status} - ${JSON.stringify(res.data)}`);
   }
@@ -37,6 +48,18 @@ When('I call verifyPaymentOptions for organization {string} with nav {string}', 
   ctx.lastResponse = res || gpdSessionBundle.responseToCheck;
   if (!ctx.lastResponse) throw new Error('verifyPaymentOptions returned no response');
 });
+
+When(
+  'I call verifyPaymentOptions for organization {string} with the single installment nav',
+  async function (org) {
+    if (!ctx.singleNav) {
+      throw new Error('singleNav not set in context – make sure the Given step ran correctly');
+    }
+    const res = await executeVerifyPaymentOptions(gpdSessionBundle, org, ctx.singleNav);
+    ctx.lastResponse = res || gpdSessionBundle.responseToCheck;
+    if (!ctx.lastResponse) throw new Error('verifyPaymentOptions returned no response');
+  }
+);
 
 /*
  *  Assertions
@@ -103,10 +126,24 @@ Then('there is at least one group with more than 1 installment and null po descr
 
 // ---------- UTILITIES ----------
 
+function randomNav(maxDigits) {
+  const len = Math.max(1, Math.min(maxDigits, 25)); // sicurezza
+  let out = '';
+  for (let i = 0; i < len; i++) {
+    out += Math.floor(Math.random() * 10); // 0–9
+  }
+  return out;
+}
+
 // Build a PD V3 with:
 // - 1 SINGLE option (1 installment) 
 // - 1 2-installment plan
 function buildPpV3SingleAndPlan(orgFiscalCode) {
+  // NAV/IUV random generation
+  const singleNav = randomNav(25);
+  const planNav1  = randomNav(25);
+  const planNav2  = randomNav(25);
+
   const pp = {
     iupd: `IUPD-E2E-VERIFY-${Math.floor(Math.random() * 1e9)}`,
     payStandIn: true,
@@ -134,8 +171,8 @@ function buildPpV3SingleAndPlan(orgFiscalCode) {
         },
         installments: [
           {
-            nav: '1234563',
-            iuv: '1234563',
+            nav: singleNav,
+            iuv: singleNav,
             amount: 1000,
             description: 'Saldo unico',
             dueDate: '2026-02-15T09:00:00',
@@ -176,8 +213,8 @@ function buildPpV3SingleAndPlan(orgFiscalCode) {
         },
         installments: [
           {
-            nav: '2234564',
-            iuv: '2234564',
+            nav: planNav1,
+            iuv: planNav1,
             amount: 600,
             description: 'Piano A - Rata 1/2',
             dueDate: '2026-03-15T09:00:00',
@@ -199,8 +236,8 @@ function buildPpV3SingleAndPlan(orgFiscalCode) {
             installmentMetadata: [{ key: 'gruppo', value: 'PianoA' }],
           },
           {
-            nav: '2234565',
-            iuv: '2234565',
+            nav: planNav2,
+            iuv: planNav2,
             amount: 400,
             description: 'Piano A - Rata 2/2',
             dueDate: '2026-04-15T09:00:00',
@@ -228,6 +265,7 @@ function buildPpV3SingleAndPlan(orgFiscalCode) {
 
   return pp;
 }
+
 
 Data.v3 = Data.v3 || {};
 Data.v3.singleAndPlan = buildPpV3SingleAndPlan;
