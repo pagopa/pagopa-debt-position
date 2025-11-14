@@ -8,12 +8,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import it.gov.pagopa.debtposition.model.OdPErrorResponse;
 import it.gov.pagopa.debtposition.model.ProblemJson;
 import it.gov.pagopa.debtposition.model.payments.AlreadyPaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
+import it.gov.pagopa.debtposition.model.payments.verify.response.VerifyPaymentOptionsResponse;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
 import jakarta.validation.Valid;
@@ -350,4 +352,85 @@ public interface IPaymentsController {
             @RequestParam(required = false)
             String segregationCodes,
             @Valid @RequestBody AlreadyPaidPaymentOptionModel paidPaymentOptionModel);
+    
+    
+    
+    @Operation(
+    		summary = "Verify payment options for a given notice number.",
+    		security = {
+    				@SecurityRequirement(name = "ApiKey")
+    		},
+    		operationId = "verifyPaymentOptions")
+    @ApiResponses(
+    		value = {
+    				@ApiResponse(
+    						responseCode = "200",
+    						description = "Payment options successfully retrieved.",
+    						content = @Content(
+    								mediaType = MediaType.APPLICATION_JSON_VALUE,
+    								schema = @Schema(implementation = VerifyPaymentOptionsResponse.class))),
+    				@ApiResponse(
+    						responseCode = "400",
+    						description = "Malformed request.",
+    						content = @Content(
+    								mediaType = MediaType.APPLICATION_JSON_VALUE,
+    								schema = @Schema(implementation = OdPErrorResponse.class)
+    								)
+    						),
+    				@ApiResponse(
+    						responseCode = "401",
+    						description = "Wrong or missing function key.",
+    						content = @Content(schema = @Schema())),
+    				@ApiResponse(
+    						responseCode = "404",
+    						description = "No payment option found.",
+    						content = @Content(
+    								mediaType = MediaType.APPLICATION_JSON_VALUE,
+    								schema = @Schema(implementation = OdPErrorResponse.class)
+    								)
+    						),
+    				@ApiResponse(
+    						responseCode = "409",
+    						description = "Conflict.",
+    						content = @Content(
+    								mediaType = MediaType.APPLICATION_JSON_VALUE,
+    								schema = @Schema(implementation = OdPErrorResponse.class)
+    								)
+    						),
+    				@ApiResponse(
+    						responseCode = "422",
+    						description = "Unprocessable Entity.",
+    						content = @Content(
+    								mediaType = MediaType.APPLICATION_JSON_VALUE,
+    								schema = @Schema(implementation = OdPErrorResponse.class)
+    								)
+    						),
+    				@ApiResponse(
+    						responseCode = "500",
+    						description = "Service unavailable.",
+    						content = @Content(
+    								mediaType = MediaType.APPLICATION_JSON_VALUE,
+    								schema = @Schema(implementation = OdPErrorResponse.class)))
+    		})
+    @PostMapping(
+    		value = "/payment-options/organizations/{organization-fiscal-code}/notices/{notice-number}",
+    		produces = { MediaType.APPLICATION_JSON_VALUE })
+    ResponseEntity<VerifyPaymentOptionsResponse> verifyPaymentOptions(
+    		@Parameter(
+    				description = "Organization fiscal code, the fiscal code of the Organization.",
+    				required = true)
+    		@Pattern(regexp = "\\d{1,30}")
+    		@PathVariable ("organization-fiscal-code") String organizationFiscalCode,
+    		@Parameter(
+    				description = "Notice number (NAV): [auxDigit][segregationCode][IUVBase][IUVCheckDigit].",
+    				required = true)
+    		@Pattern(regexp = "^\\d{1,30}$")
+    		@PathVariable("notice-number") String nav,
+    		@Valid
+    		@Parameter(
+    				description = "Segregation codes for which broker is authorized",
+    				hidden = true)
+    		@Pattern(regexp = "\\d{2}(,\\d{2})*")
+    		@RequestParam(required = false)
+    		String segregationCodes);
 }
