@@ -132,16 +132,6 @@ public class PaymentPosition implements Serializable {
   @Column(columnDefinition = "integer DEFAULT 0")
   private Integer version = 0;
 
-  // todo remove after v1.1.0 promotion
-  /*
-  @Column(name = "validity_date")
-  private LocalDateTime validityDate;*/
-
-  // todo remove after v1.1.0 promotion
-  /*@Builder.Default
-  @Column(name = "switch_to_expired", columnDefinition = "boolean DEFAULT false")
-  private Boolean switchToExpired = false;*/
-
   @Builder.Default
   @OneToMany(
       targetEntity = PaymentOption.class,

@@ -267,8 +267,4 @@ public class UtilityMapper {
           }
       }
   }
-
-  private boolean hasAnyMarkedExpired(List<PaymentOption> planInstallments) {
-    return planInstallments.stream().anyMatch(po-> Boolean.TRUE.equals(po.getSwitchToExpired()));
-  }
 }
