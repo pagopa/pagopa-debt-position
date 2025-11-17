@@ -43,8 +43,6 @@ public class PublishPaymentUtil {
 		    if (ppToPublish.getMinDueDate().isAfter(currentDate)) {
 		        // the validityDate is set on all PaymentOptions that do not have it
 		        setValidityDateIfAbsentOnAllOptions(ppToPublish, currentDate);
-		        // todo setValidityDate to ppToPublish remove after v1.1.0 promotion because useless
-		        ppToPublish.setValidityDate(currentDate);
 		        ppToPublish.setStatus(DebtPositionStatus.VALID);
 		        return;
 		    }
@@ -89,9 +87,6 @@ public class PublishPaymentUtil {
 		if (isUpdateAction && minValidityDate.isBefore(currentDate)) {
 		    ppToPublish.setStatus(DebtPositionStatus.VALID);
 		}
-
-		// [PP Alignment] PP exposes the actual min validity between POs
-		ppToPublish.setValidityDate(minValidityDate);
 	}
 
 	/* ====================== Helper ====================== */
@@ -101,7 +96,7 @@ public class PublishPaymentUtil {
 	private static void setValidityDateIfAbsentOnAllOptions(PaymentPosition pp, LocalDateTime value) {
 		if (pp.getPaymentOption() == null) return;
 		for (PaymentOption po : pp.getPaymentOption()) {
-			if (UtilityMapper.getValidityDate(pp, po) == null) {
+			if (UtilityMapper.getValidityDate(po) == null) {
 				po.setValidityDate(value);
 			}
 		}

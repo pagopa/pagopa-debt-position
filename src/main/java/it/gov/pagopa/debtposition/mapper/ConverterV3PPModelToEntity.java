@@ -41,10 +41,6 @@ public class ConverterV3PPModelToEntity
     destination.setFullName(UNDEFINED_DEBTOR);
     destination.setCompanyName(source.getCompanyName());
     destination.setOfficeName(source.getOfficeName());
-    // todo setValidityDate method remove after v1.1.0 promotion because useless
-    destination.setValidityDate(getValidityDate(source.getPaymentOption()));
-    // todo setSwitchToExpired method remove after v1.1.0 promotion because useless
-    destination.setSwitchToExpired(getSwitchToExpired(source.getPaymentOption()));
 
     mapAndUpdateInstallments(source, destination);
   }
@@ -300,35 +296,5 @@ public class ConverterV3PPModelToEntity
 	  } catch (IllegalArgumentException e) {
 		  return false;
 	  }
-  }
-
-  // todo getValidityDate method remove after v1.1.0 promotion because useless
-  private LocalDateTime getValidityDate(List<PaymentOptionModelV3> paymentOptions) {
-      if (paymentOptions == null) {
-          return null;
-      }
-
-      LocalDateTime validityDate = null;
-      // Find the minimum validityDate
-      Optional<LocalDateTime> minValidityDate =
-              paymentOptions.stream()
-                      .map(PaymentOptionModelV3::getValidityDate)
-                      .filter(Objects::nonNull) // Ensure we only deal with non-null values
-                      .min(Comparator.naturalOrder());
-
-      if (minValidityDate.isPresent()) validityDate = minValidityDate.get();
-
-      return validityDate;
-  }
-  // todo getSwitchToExpired method remove after v1.1.0 promotion because useless
-  private boolean getSwitchToExpired(List<PaymentOptionModelV3> paymentOptions) {
-      if (paymentOptions == null) {
-          return false;
-      }
-      // Check if any PaymentOptionModelV3 has switchToExpired as true
-      // OR operation for the boolean field
-      return paymentOptions.stream()
-              .filter(Objects::nonNull)
-              .anyMatch(PaymentOptionModelV3::getSwitchToExpired);
   }
 }

@@ -99,14 +99,7 @@ public class ConverterV3PPEntityToModelResponse
   private PaymentOptionModelResponseV3 convertPartialPO(PaymentPosition pp, List<PaymentOption> partialPOs, boolean switchToExpired) {
     // Get only the first to fill common data for partial PO (retentionDate, insertedDate, debtor)
     PaymentOptionModelResponseV3 pov3 = convert(partialPOs.get(0));
-    // todo re-enable when validityDate is read from payment option
-//    // validityDate = min between the validity of the plan installments
-//    LocalDateTime validityDate = partialPOs.stream()
-//    	      .map(PaymentOption::getValidityDate)
-//    	      .filter(Objects::nonNull)
-//    	      .min(LocalDateTime::compareTo)
-//    	      .orElse(null);
-    pov3.setValidityDate(UtilityMapper.getValidityDate(pp, partialPOs));
+    pov3.setValidityDate(UtilityMapper.getValidityDate(partialPOs));
     pov3.setSwitchToExpired(switchToExpired);
     // Set installments
     List<InstallmentModelResponse> installments =
@@ -122,8 +115,8 @@ public class ConverterV3PPEntityToModelResponse
   // 1 unique PO -> 1 PaymentOption composed by 1 installment
   private PaymentOptionModelResponseV3 convertUniquePO(PaymentPosition pp, PaymentOption po) {
     PaymentOptionModelResponseV3 pov3 = convert(po);
-    pov3.setValidityDate(UtilityMapper.getValidityDate(pp, po));
-    pov3.setSwitchToExpired(UtilityMapper.getSwitchToExpired(pp, po));
+    pov3.setValidityDate(UtilityMapper.getValidityDate(po));
+    pov3.setSwitchToExpired(UtilityMapper.getSwitchToExpired(po));
     // set installment
     List<InstallmentModelResponse> installments = Collections.singletonList(convertInstallment(po));
     pov3.setInstallments(installments);

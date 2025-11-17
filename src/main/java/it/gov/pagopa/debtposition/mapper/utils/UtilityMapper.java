@@ -23,12 +23,6 @@ public class UtilityMapper {
 
   public static final String UNDEFINED_DEBTOR = "NA";
 
-  private static String READ_FROM = "READ_FROM_PAYMENT_POSITION";
-
-  static void setReadFrom(String value) {
-    READ_FROM = (value == null ? "READ_FROM_PAYMENT_POSITION" : value.trim());
-  }
-
   public static DebtorModel extractDebtor(PaymentOption po) {
     DebtorModel debtor = new DebtorModel();
     // Set default value for Type, FullName and FiscalCode (tax code) if they are null
@@ -220,83 +214,45 @@ public class UtilityMapper {
     return destination;
   }
 
-  public static LocalDateTime getValidityDate(PaymentPosition pp, PaymentOption po) {
-      if (READ_FROM.equalsIgnoreCase("READ_FROM_PAYMENT_POSITION")) {
-        return pp.getValidityDate();
-      } else {
-        return po.getValidityDate();
-      }
+  public static LocalDateTime getValidityDate(PaymentOption po) {
+	  return po.getValidityDate();
   }
 
-  public static boolean getSwitchToExpired(PaymentPosition pp, PaymentOption po) {
-    if (READ_FROM.equalsIgnoreCase("READ_FROM_PAYMENT_POSITION")) {
-        return pp.getSwitchToExpired();
-    } else {
-        return po.getSwitchToExpired();
-    }
+  public static boolean getSwitchToExpired(PaymentOption po) {
+	  return po.getSwitchToExpired();
   }
 
-   public static LocalDateTime getValidityDate(PaymentPosition pp, List<PaymentOption> po) {
-      if (READ_FROM.equalsIgnoreCase("READ_FROM_PAYMENT_POSITION")) {
-          return pp.getValidityDate();
-      } else {
-          // validityDate = min between the validity of the plan installments
-          return po.stream()
-                  .map(PaymentOption::getValidityDate)
-                  .filter(Objects::nonNull)
-                  .min(LocalDateTime::compareTo)
-                  .orElse(null);
-      }
-    }
+  public static LocalDateTime getValidityDate(List<PaymentOption> po) {
+	  // validityDate = min between the validity of the plan installments
+	  return po.stream()
+			  .map(PaymentOption::getValidityDate)
+			  .filter(Objects::nonNull)
+			  .min(LocalDateTime::compareTo)
+			  .orElse(null);
+  }
 
   public static boolean getSwitchToExpired(PaymentPosition pp) {
-    if (READ_FROM.equalsIgnoreCase("READ_FROM_PAYMENT_POSITION")) {
-        return pp.getSwitchToExpired();
-    } else {
-        // the plan is marked expired if at least one installment is flagged expired (switchToExpired == TRUE),
-        // same as hasAnyMarkedExpired
-        return pp.getPaymentOption() != null && !pp.getPaymentOption().isEmpty() && pp.getPaymentOption()
-                .stream().anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
-    }
+	  // the plan is marked expired if at least one installment is flagged expired (switchToExpired == TRUE)
+	  return pp.getPaymentOption() != null && !pp.getPaymentOption().isEmpty() && pp.getPaymentOption()
+			  .stream().anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
   }
 
   /**
-   * Groups a list of PaymentOption.
-   * The grouping strategy depends on the READ_FROM constant and data integrity:
-   * 1. If READ_FROM is "READ_FROM_PAYMENT_POSITION" AND any PaymentOption has a
-   * null or blank paymentPlanId, it groups by the 'isPartialPayment' flag.
-   * 2. In all other cases (i.e., READ_FROM is different, OR all plan IDs are present),
-   * it groups by 'paymentPlanId'.
+   * Groups a list of PaymentOption by 'paymentPlanId'.
    *
    * @param partialPO A list of partial PaymentOption.
    * @return A Map where keys are grouping criteria (String) and values are lists of PaymentOptions.
    * */
   public static Map<String, List<PaymentOption>> groupByPlanId(List<PaymentOption> partialPO) {
-      if (partialPO == null || partialPO.isEmpty()) {
-          return Collections.emptyMap();
-      }
+	  if (partialPO == null || partialPO.isEmpty()) {
+		  return Collections.emptyMap();
+	  }
 
-      if (READ_FROM.equalsIgnoreCase("READ_FROM_PAYMENT_POSITION")) {
+	  // Validate all partial installments have a non-blank paymentPlanId; if missing, raises an exception
+	  validateAllHavePlanId(partialPO);
 
-          // Check if *any* payment_plan_id is null or blank
-          boolean anyMissingPlanId = partialPO.stream()
-                  .anyMatch(po -> po.getPaymentPlanId() == null || po.getPaymentPlanId().isBlank());
-
-          if(anyMissingPlanId) {
-              // Group by the partial payment flag as a fallback
-              return partialPO.stream().collect(Collectors.groupingBy(
-                      paymentOption -> paymentOption.getIsPartialPayment().toString()));
-          } else {
-              // If all plan IDs are present, fall through to the default grouping
-              return partialPO.stream().collect(Collectors.groupingBy(PaymentOption::getPaymentPlanId));
-          }
-      } else {
-          // Validate all partial installments have a non-blank paymentPlanId; if missing, raises an exception
-          validateAllHavePlanId(partialPO);
-
-          // default grouping by payment_plan_id
-          return partialPO.stream().collect(Collectors.groupingBy(PaymentOption::getPaymentPlanId));
-      }
+	  // default grouping by payment_plan_id
+	  return partialPO.stream().collect(Collectors.groupingBy(PaymentOption::getPaymentPlanId));
   }
 
   private static void validateAllHavePlanId(List<PaymentOption> partialPO) {
