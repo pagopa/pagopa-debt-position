@@ -45,10 +45,6 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     destination.setPhone(source.getPhone());
     destination.setCompanyName(source.getCompanyName());
     destination.setOfficeName(source.getOfficeName());
-    // todo validityDate mapping remove after v1.1.0 promotion
-    destination.setValidityDate(source.getValidityDate());
-    // todo switchToExpired mapping remove after v1.1.0 promotion
-    destination.setSwitchToExpired(source.getSwitchToExpired());
     
     mapAndUpdatePaymentOptions(source, destination);
   }
