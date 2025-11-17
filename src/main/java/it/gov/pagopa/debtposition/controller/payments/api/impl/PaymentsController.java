@@ -10,6 +10,7 @@ import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
+import it.gov.pagopa.debtposition.model.payments.verify.response.VerifyPaymentOptionsResponse;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionMetadataModelResponse;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
@@ -18,13 +19,12 @@ import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.CustomHttpStatus;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +33,7 @@ import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADAT
 import static it.gov.pagopa.debtposition.util.Constants.PO_MARKED_AS_PAID_FIELD_PLACEHOLDER;
 
 @Controller
+@Validated
 @Slf4j
 public class PaymentsController implements IPaymentsController {
 
@@ -42,7 +43,6 @@ public class PaymentsController implements IPaymentsController {
   private final ModelMapper modelMapper;
   private final PaymentsService paymentsService;
 
-  @Autowired
   public PaymentsController(ModelMapper modelMapper, PaymentsService paymentsService) {
     this.modelMapper = modelMapper;
     this.paymentsService = paymentsService;
@@ -199,5 +199,20 @@ public class PaymentsController implements IPaymentsController {
     }
 
     return new ResponseEntity<>(paymentOptionModelResponse, HttpStatus.OK);
+  }
+
+  @Override
+  public ResponseEntity<VerifyPaymentOptionsResponse> verifyPaymentOptions(String organizationFiscalCode, String nav,
+		  String segregationCodes) {
+	  
+	  ArrayList<String> segCodes = segregationCodes != null
+			  ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
+					  : null;
+	  if (segCodes != null && !CommonUtil.isAuthorizedOnNavBySegregationCode(nav, segCodes)) {
+		  throw new AppException(AppError.DEBT_POSITION_FORBIDDEN_ON_NAV, organizationFiscalCode, nav);
+	  }
+		
+	  VerifyPaymentOptionsResponse resp = paymentsService.verifyPaymentOptions(organizationFiscalCode, nav);
+	  return ResponseEntity.ok(resp);
   }
 }

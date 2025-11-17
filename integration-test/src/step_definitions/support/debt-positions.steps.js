@@ -58,11 +58,6 @@ BeforeAll(async function() {
  });
 
 /*
- *  'Given' precondition for health checks on various services.
- */
-Given('GPD running', () => executeHealthCheckForGPD());
-
-/*
  *  Debt position creation
  */
 Given('a random iupd', async function () {
@@ -72,7 +67,7 @@ Given('a random iupd', async function () {
     await executeDebtPositionDeletion(gpdSessionBundle, idOrg, iupd);
 });
 When(/^the debt position with IUPD (.*) and payment option with IUV (.*) is created$/, (IUPD_input, iuv) => executeDebtPositionCreation(gpdSessionBundle, idOrg, IUPD_input, version = "v1", iuv));
-When('the debt position is created using {string} API', (version) => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, version));
+When('the debt position is created using {string} API', (version) => executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, version, makeidNumber(17)));
 When('the debt position with validityDate in {int} seconds is created', async (seconds) => {
     await executeDebtPositionCreation(gpdSessionBundle, idOrg, iupd, version = "v1", iuv = makeidNumber(17), validityDate = addSeconds(seconds), toPublish = true);
 });

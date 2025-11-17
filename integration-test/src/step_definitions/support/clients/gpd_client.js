@@ -235,6 +235,18 @@ function updateTransferIbanMassive(orgId, oldIban, newIban, version = "v1") {
     })
 }
 
+async function verifyPaymentOptions(organizationFiscalCode, nav) {
+	const url = GPD_HOST + `/payment-options/organizations/${organizationFiscalCode}/notices/${nav}`;
+	toLog("[verifyPaymentOptions] URL:" + url);
+	return await post(url, {}, {
+		timeout: API_TIMEOUT,
+		headers: {
+			"Ocp-Apim-Subscription-Key": process.env.API_SUBSCRIPTION_KEY,
+			"Content-Type": "application/json"
+		}
+	});
+}
+
 module.exports = {
     gpdHealthCheck,
     createDebtPosition,
@@ -252,5 +264,6 @@ module.exports = {
     getPaymentOptionByIuv,
     invalidateDebtPosition,
     createMassiveDebtPositions,
-    updateTransferIbanMassive
+    updateTransferIbanMassive,
+	verifyPaymentOptions
 }
