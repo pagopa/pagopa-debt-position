@@ -68,7 +68,7 @@ public class ConverterV3PPEntityToModel
 
     if (uniquePO != null && !uniquePO.isEmpty()) {
     	paymentOptionsToAdd.addAll(uniquePO.stream()
-    			.map(po -> convertUniquePO(po))
+    			.map(this::convertUniquePO)
     			.toList());
     }
 

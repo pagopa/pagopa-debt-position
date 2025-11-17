@@ -78,7 +78,7 @@ public class ConverterV3PPEntityToModelResponse
     
     if (null != uniquePO && !uniquePO.isEmpty()) {
     	List<PaymentOptionModelResponseV3> pov3List = uniquePO.stream()
-    			.map(po -> convertUniquePO(po))
+    			.map(this::convertUniquePO)
     			.toList();
     	paymentOptionsToAdd.addAll(pov3List);
     }
