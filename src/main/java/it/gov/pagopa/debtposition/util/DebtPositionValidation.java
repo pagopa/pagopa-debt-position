@@ -132,7 +132,7 @@ public class DebtPositionValidation {
 
 	  for (PaymentOption po : pp.getPaymentOption()) {
 
-		  LocalDateTime poValidity = UtilityMapper.getValidityDate(pp, po);
+		  LocalDateTime poValidity = UtilityMapper.getValidityDate(po);
 
 		  // Regola 1 - must be validity_date ≥ current time (applied only at creation stage)
 		  if (!ArrayUtils.isEmpty(action)
