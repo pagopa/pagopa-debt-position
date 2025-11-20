@@ -60,7 +60,7 @@ public class DebtPositionValidation {
 
   // PAGOPA-2459 - optional action parameter to specify checks based on create or update mode.
   public static void checkPaymentPositionInputDataAccuracy(PaymentPosition pp, String... action) {
-    checkPaymentPositionContentCongruency(pp, action);
+    checkPaymentPositionCongruency(pp, action);
   }
 
   public static void checkPaymentPositionPayability(PaymentPosition ppToPay, String nav) {
@@ -124,52 +124,48 @@ public class DebtPositionValidation {
 
     return Arrays.asList(from, to);
   }
-  
-  private static void checkPaymentPositionContentCongruency(final PaymentPosition pp, String... action) {
 
-	  LocalDateTime today = LocalDateTime.now(ZoneOffset.UTC);
-	  DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
+  // Validation based on validityDate, dueDate, retentionDate, currentDate
+  private static void checkPaymentPositionCongruency(final PaymentPosition pp, String... action) {
 
-	  for (PaymentOption po : pp.getPaymentOption()) {
+    LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
 
-		  LocalDateTime poValidity = UtilityMapper.getValidityDate(pp, po);
+    for (PaymentOption po : pp.getPaymentOption()) {
 
-		  // Regola 1 - must be validity_date ≥ current time (applied only at creation stage)
-		  if (!ArrayUtils.isEmpty(action)
-				  && CREATE_ACTION.equalsIgnoreCase(action[0])
-				  && poValidity != null
-				  && poValidity.isBefore(today)) {
-			  throw new ValidationException(
-					  String.format(
-							  VALIDITY_DATE_VALIDATION_ERROR,
-							  dateFormatter.format(poValidity),
-							  dateFormatter.format(today)));
-		  }
+      LocalDateTime poValidity = UtilityMapper.getValidityDate(pp, po);
 
-		  // Regola 4 - must be due_date ≥ validity_date || due_date ≥ current time
-		  if (isDueDateInvalid(po, poValidity, today, action)) {
-			  throw new ValidationException(
-					  String.format(
-							  DUE_DATE_VALIDATION_ERROR,
-							  dateFormatter.format(po.getDueDate()),
-							  (poValidity != null ? dateFormatter.format(poValidity) : null),
-							  dateFormatter.format(today)));
-		  }
+      // In CREATE action, validity_date must be greater than current_time
+      if (poValidity != null && !poValidity.isAfter(now)) {
+        throw new ValidationException(
+            String.format(
+                VALIDITY_DATE_VALIDATION_ERROR,
+                dateFormatter.format(poValidity),
+                dateFormatter.format(now)));
+      }
 
-		  // must be retention_date ≥ due_date
-		  if (po.getRetentionDate() != null && po.getRetentionDate().isBefore(po.getDueDate())) {
-			  throw new ValidationException(
-					  String.format(
-							  RETENTION_DATE_VALIDATION_ERROR,
-							  dateFormatter.format(po.getRetentionDate()),
-							  dateFormatter.format(po.getDueDate())));
-		  }
+      if (isDueDateInvalid(po, poValidity, now, action)) {
+        throw new ValidationException(
+            String.format(
+                DUE_DATE_VALIDATION_ERROR,
+                dateFormatter.format(po.getDueDate()),
+                (poValidity != null ? dateFormatter.format(poValidity) : null),
+                dateFormatter.format(now)));
+      }
 
-		  checkPaymentOptionTransfers(po);
-		  checkPaymentOptionAmounts(po);
-	  }
+      // Regardless of the action, retention_date must be greater than due_date
+      if (po.getRetentionDate() != null && po.getRetentionDate().isBefore(po.getDueDate())) {
+        throw new ValidationException(
+            String.format(
+                RETENTION_DATE_VALIDATION_ERROR,
+                dateFormatter.format(po.getRetentionDate()),
+                dateFormatter.format(po.getDueDate())));
+      }
+
+      checkPaymentOptionTransfers(po);
+      checkPaymentOptionAmounts(po);
+    }
   }
-
 
   private static void checkPaymentOptionTransfers(final PaymentOption po) {
     int maxNumberOfTrasfersForPO = TransferId.values().length;
@@ -196,8 +192,6 @@ public class DebtPositionValidation {
     long totalTranfersAmout = 0;
     long poAmount = po.getAmount();
     for (Transfer t : po.getTransfer()) {
-      checkTransferCategory(t);
-      checkTransferIban(t);
       checkMutualExclusive(po.getIuv(), t);
       totalTranfersAmout += t.getAmount();
     }
@@ -225,20 +219,10 @@ public class DebtPositionValidation {
     }
   }
 
-  private static void checkTransferCategory(final Transfer t) {
-    // TODO Da capire come validare il dato
-    t.getCategory();
-  }
-
-  private static void checkTransferIban(final Transfer t) {
-    // TODO Da capire come validare il dato
-    t.getOrganizationFiscalCode();
-    t.getIban();
-  }
-
   private static void checkPaymentPositionOpen(PaymentPosition ppToPay, String nav) {
     for (PaymentOption po : ppToPay.getPaymentOption()) {
-      if (isPaid(po)) {
+      if (!po.getStatus().equals(PaymentOptionStatus.PO_UNPAID)
+          && !po.getIsPartialPayment().equals(true)) {
         throw new AppException(
             AppError.PAYMENT_OPTION_ALREADY_PAID, po.getOrganizationFiscalCode(), nav);
       }
@@ -254,14 +238,7 @@ public class DebtPositionValidation {
             .findFirst()
             .orElseThrow(
                 () -> {
-                  log.error(
-                      "Obtained unexpected empty payment option - ["
-                          + String.format(
-                              LOG_BASE_PARAMS_DETAIL,
-                              CommonUtil.sanitize(ppToPay.getOrganizationFiscalCode()),
-                              CommonUtil.sanitize(ppToPay.getIupd()),
-                              CommonUtil.sanitize(nav))
-                          + "]");
+                  logErrorEmptyPaymentOption(ppToPay, nav);
                   return new AppException(
                       AppError.PAYMENT_OPTION_PAY_FAILED, ppToPay.getOrganizationFiscalCode(), nav);
                 });
@@ -301,11 +278,6 @@ public class DebtPositionValidation {
     }
   }
 
-  private static boolean isPaid(PaymentOption po) {
-    return !po.getStatus().equals(PaymentOptionStatus.PO_UNPAID)
-        && !po.getIsPartialPayment().equals(true);
-  }
-
   private static void checkTransferAccountable(
       PaymentPosition ppToReport, String iuv, String transferId) {
     PaymentOption poToReport =
@@ -314,14 +286,7 @@ public class DebtPositionValidation {
             .findFirst()
             .orElseThrow(
                 () -> {
-                  log.error(
-                      "Obtained unexpected empty payment option - ["
-                          + String.format(
-                              LOG_BASE_PARAMS_DETAIL,
-                              ppToReport.getOrganizationFiscalCode(),
-                              ppToReport.getIupd(),
-                              iuv)
-                          + "]");
+                  logErrorEmptyPaymentOption(ppToReport, iuv);
                   return new AppException(
                       AppError.TRANSFER_REPORTING_FAILED,
                       ppToReport.getOrganizationFiscalCode(),
@@ -346,16 +311,14 @@ public class DebtPositionValidation {
             .orElseThrow(
                 () -> {
                   log.error(
-                      "Obtained unexpected empty transfer - ["
-                          + String.format(
-                              LOG_BASE_PARAMS_DETAIL,
-                              ppToReport.getOrganizationFiscalCode(),
-                              ppToReport.getIupd(),
-                              iuv)
-                          + "idTransfer= "
-                          + transferId
-                          + "]");
-                  throw new AppException(
+                      "Obtained unexpected empty transfer - [{}idTransfer= {}]",
+                      String.format(
+                          LOG_BASE_PARAMS_DETAIL,
+                          ppToReport.getOrganizationFiscalCode(),
+                          ppToReport.getIupd(),
+                          iuv),
+                      transferId);
+                  return new AppException(
                       AppError.TRANSFER_REPORTING_FAILED,
                       ppToReport.getOrganizationFiscalCode(),
                       iuv,
@@ -369,6 +332,12 @@ public class DebtPositionValidation {
           iuv,
           transferId);
     }
+  }
+
+  private static void logErrorEmptyPaymentOption(PaymentPosition pp, String iuv) {
+    log.error(
+        "Obtained unexpected empty payment option - [{}]",
+        String.format(LOG_BASE_PARAMS_DETAIL, pp.getOrganizationFiscalCode(), pp.getIupd(), iuv));
   }
 
   private enum TransferId {
@@ -398,19 +367,26 @@ public class DebtPositionValidation {
       return value;
     }
   }
-  
+
+  /* In CREATE action, due_date must be greater than validity_date and current_time
+   * In UPDATE action, if switchToExpired is false and validityDate is null,
+   *                   due_date could be lower than validity_date and current_time
+   */
   private static boolean isDueDateInvalid(
-		  PaymentOption po,
-		  LocalDateTime poValidity,
-		  LocalDateTime today,
-		  String... action) {
+      PaymentOption po, LocalDateTime poValidityIn, LocalDateTime now, String... actions) {
+    String action = ArrayUtils.isEmpty(actions) ? "NO_ACTION" : actions[0];
+    LocalDateTime validityDate = (poValidityIn == null) ? now : poValidityIn;
+    boolean isSTE = Boolean.TRUE.equals(po.getSwitchToExpired());
 
-	  boolean dueBeforeValidity = (poValidity != null && po.getDueDate().isBefore(poValidity)); // Case 1: validity_date is not null and due_date < validity_date
-	  boolean dueBeforeNowWhenNoValidity = (poValidity == null && po.getDueDate().isBefore(today)); // Case 2: validity_date is null and due_date < current time
-	  boolean updateWithPastDue = (!ArrayUtils.isEmpty(action)  // Case 3: Action is "update" and due_date < current time
-			  && UPDATE_ACTION.equalsIgnoreCase(action[0])
-			  && po.getDueDate().isBefore(today)); 
+    if (CREATE_ACTION.equalsIgnoreCase(action)
+        || (UPDATE_ACTION.equalsIgnoreCase(action) && isSTE)) {
+      // due_date must be greater than validity_date and current_time
+      return po.getDueDate().isBefore(now) || po.getDueDate().isBefore(validityDate);
+    }
 
-	  return dueBeforeValidity || dueBeforeNowWhenNoValidity || updateWithPastDue;
+    // In Update action, if switchToExpired is false due_date could be lower than current_time and
+    // validity_date ( = now if null)
+
+    return false;
   }
 }
