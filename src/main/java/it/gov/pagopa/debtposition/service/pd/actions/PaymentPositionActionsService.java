@@ -1,5 +1,7 @@
 package it.gov.pagopa.debtposition.service.pd.actions;
 
+import static it.gov.pagopa.debtposition.util.Constants.CREATE_ACTION;
+
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
@@ -7,10 +9,10 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.service.pd.crud.PaymentPositionCRUDService;
 import it.gov.pagopa.debtposition.util.PublishPaymentUtil;
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
-import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,7 +39,7 @@ public class PaymentPositionActionsService {
     if (DebtPositionStatus.getPaymentPosNotPublishableStatus().contains(ppToPublish.getStatus())) {
       throw new AppException(AppError.DEBT_POSITION_NOT_PUBLISHABLE, organizationFiscalCode, iupd);
     }
-    PublishPaymentUtil.publishProcess(ppToPublish);
+    PublishPaymentUtil.publishProcess(ppToPublish, CREATE_ACTION);
     return paymentPositionRepository.saveAndFlush(ppToPublish);
   }
 
