@@ -11,7 +11,6 @@ import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
 import it.gov.pagopa.debtposition.util.CommonUtil;
-
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -317,7 +316,6 @@ public class DebtPositionMock {
     return pPMock;
   }
 
-
   public static PaymentPositionDTO createPaymentPosition400Mock2() {
 
     PaymentPositionDTO pPMock = new PaymentPositionDTO();
@@ -360,6 +358,7 @@ public class DebtPositionMock {
     pPMock.setCompanyName("Comune di Firenze");
     pPMock.setOfficeName("Ufficio tributario");
     pPMock.addPaymentOptions(createPaymentOptionsMock2());
+    pPMock.setSwitchToExpired(true);
 
     return pPMock;
   }
@@ -650,6 +649,7 @@ public class DebtPositionMock {
     pPMock.setOfficeName("Ufficio tributario");
     pPMock.setStatus(DebtPositionStatus.DRAFT);
     pPMock.addPaymentOptions(createPaymentOptions400Mock1());
+    pPMock.setSwitchToExpired(true);
 
     return pPMock;
   }
@@ -803,13 +803,13 @@ public class DebtPositionMock {
 
   public static PaymentOptionDTO createPaymentOptionsMock10() {
 
-      return createPaymentOption(
-              1000,
-              "12345610",
-              false,
-              createTransfersMock1(),
-              LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
-              LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
+    return createPaymentOption(
+        1000,
+        "12345610",
+        false,
+        createTransfersMock1(),
+        LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
+        LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
   }
 
   public static PaymentOptionDTO createPaymentOptionMock9(
