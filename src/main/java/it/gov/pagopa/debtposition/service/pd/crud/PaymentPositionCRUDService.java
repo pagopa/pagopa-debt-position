@@ -72,12 +72,12 @@ public class PaymentPositionCRUDService {
     final String ERROR_CREATION_LOG_MSG = "Error during debt position creation: %s";
 
     try {
-    	// Inserts (and possibly brings to published status) the debt position
-    	PaymentPosition toSave =
-    	        this.checkAndBuildDebtPositionToSave(
-    	            debtPosition, organizationFiscalCode, toPublish, segCodes, action);
-    	
-    	return paymentPositionRepository.saveAndFlush(toSave);
+      // Inserts (and possibly brings to published status) the debt position
+      PaymentPosition toSave =
+          this.checkAndBuildDebtPositionToSave(
+              debtPosition, organizationFiscalCode, toPublish, segCodes, action);
+
+      return paymentPositionRepository.saveAndFlush(toSave);
     } catch (DataIntegrityViolationException e) {
       log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
       if (e.getCause() instanceof ConstraintViolationException constraintviolationexception) {
@@ -101,7 +101,7 @@ public class PaymentPositionCRUDService {
       String organizationFiscalCode, String iupd, List<String> segCodes) {
 
     Specification<PaymentPosition> spec =
-    		allOf(
+        allOf(
             new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
                 .and(new PaymentPositionByIUPD(iupd)));
 
@@ -109,9 +109,9 @@ public class PaymentPositionCRUDService {
     if (ppOptional.isEmpty()) {
       throw new AppException(AppError.DEBT_POSITION_NOT_FOUND, organizationFiscalCode, iupd);
     }
-    
+
     PaymentPosition pp = ppOptional.get();
-    
+
     if (segCodes != null && !isAuthorizedBySegregationCode(pp, segCodes)) {
       throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, iupd);
     }
@@ -141,8 +141,9 @@ public class PaymentPositionCRUDService {
       String organizationFiscalCode, List<String> iupdList, List<String> segCodes) {
     // findAll query by IUPD list
     Specification<PaymentPosition> spec =
-    		allOf(new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
-                            .and(new PaymentPositionByIUPDList(iupdList)));
+        allOf(
+            new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
+                .and(new PaymentPositionByIUPDList(iupdList)));
 
     Pageable pageable = PageRequest.of(0, iupdList.size());
     Page<PaymentPosition> result = paymentPositionRepository.findAll(spec, pageable);
@@ -193,7 +194,7 @@ public class PaymentPositionCRUDService {
     // fetch, are not used by JPA
     for (PaymentPosition pp : positions) {
       Specification<PaymentOption> specPO =
-    		  allOf(
+          allOf(
               new PaymentOptionByAttribute(
                   pp,
                   filterAndOrder.getFilter().getDueDateFrom(),
@@ -252,7 +253,7 @@ public class PaymentPositionCRUDService {
       var ppUpdated =
           this.checkDebtPositionToUpdate(
               ppToUpdate, organizationFiscalCode, toPublish, segregationCodes, action);
-      
+
       return paymentPositionRepository.saveAndFlush(ppUpdated);
 
     } catch (ValidationException e) {
@@ -310,12 +311,13 @@ public class PaymentPositionCRUDService {
 
     try {
 
-     for (PaymentPosition debtPosition : debtPositions) {
-    		PaymentPosition pp = this.checkDebtPositionToUpdate(
-    				debtPosition, organizationFiscalCode, toPublish, segCodes, action);
-    		
-    		ppToSaveList.add(pp);
-     }
+      for (PaymentPosition debtPosition : debtPositions) {
+        PaymentPosition pp =
+            this.checkDebtPositionToUpdate(
+                debtPosition, organizationFiscalCode, toPublish, segCodes, action);
+
+        ppToSaveList.add(pp);
+      }
 
       // Inserisce il blocco di posizioni debitorie
       return paymentPositionRepository.saveAllAndFlush(ppToSaveList);
@@ -370,7 +372,7 @@ public class PaymentPositionCRUDService {
 
         // update amounts adding notification fee
         updateAmounts(organizationFiscalCode, currentPP);
-        
+
         // check data
         DebtPositionValidation.checkPaymentPositionInputDataAccuracy(currentPP, action);
       }
@@ -537,9 +539,9 @@ public class PaymentPositionCRUDService {
       }
     }
 
-    // Se la pubblicazione immediata è richiesta, si procede
+    // If immediate publication is required, proceed as follows
     if (toPublish) {
-      PublishPaymentUtil.publishProcess(pp, action);
+      PublishPaymentUtil.publishProcess(pp, LocalDateTime.now());
     }
 
     return pp;
