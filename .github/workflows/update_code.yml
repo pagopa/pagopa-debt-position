@@ -2,7 +2,9 @@ name: Update Code
 
 on:
   pull_request:
-    types: [closed]
+    branches:
+      - main
+    types: [ closed ]
 
 permissions:
   contents: write
