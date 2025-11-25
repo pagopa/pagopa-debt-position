@@ -50,7 +50,7 @@ jobs:
           ./generate_openapi.sh
 
       - name: Formatting
-        uses: axel-op/googlejavaformat-action@v3
+        uses: axel-op/googlejavaformat-action@dbff853fb823671ec5781365233bf86543b13215
         with:
           args: "--replace"
           commit-message: "Google Java format"
