@@ -35,7 +35,7 @@ module "apim_api_gpd_api" {
   protocols    = ["https"]
 
   content_format = "openapi"
-  content_value = templatefile("../openapi/openapi_internal_v1.json", {
+  content_value = templatefile("../../openapi/openapi_internal_v1.json", {
     service = local.apim.internal_gpd_product_id
   })
 
@@ -64,7 +64,7 @@ module "apim_api_gpd_api_v2" {
   protocols    = ["https"]
 
   content_format = "openapi"
-  content_value = templatefile("../openapi/openapi_internal_v2.json", {
+  content_value = templatefile("../../openapi/openapi_internal_v2.json", {
     service = local.apim.internal_gpd_product_id
   })
 
@@ -108,7 +108,7 @@ module "apim_api_debt_positions_api_v1" {
   service_url  = local.gpd_core_service_url
 
   content_format = "openapi"
-  content_value = templatefile("../openapi/openapi_external_v1.json", {
+  content_value = templatefile("../../openapi/openapi_external_v1.json", {
     service = local.apim.external_gpd_product_id
   })
 
@@ -135,7 +135,7 @@ module "apim_api_debt_positions_api_v2" {
   service_url  = local.gpd_core_service_url
 
   content_format = "openapi"
-  content_value = templatefile("../openapi/openapi_external_v2.json", {
+  content_value = templatefile("../../openapi/openapi_external_v2.json", {
     service = local.apim.external_gpd_product_id
   })
   // warning: ad-hoc base policy because there is a rewrite URI
@@ -162,7 +162,7 @@ module "apim_api_debt_positions_api_v3" {
   service_url  = "${local.gpd_core_service_url}/v3"
 
   content_format = "openapi"
-  content_value = templatefile("../openapi/openapi_external_v3.json", {
+  content_value = templatefile("../../openapi/openapi_external_v3.json", {
     service = local.apim.external_gpd_product_id
   })
 

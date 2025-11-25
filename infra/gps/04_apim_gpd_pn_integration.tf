@@ -50,7 +50,7 @@ module "apim_api_pn_integration_gpd_api_v1" {
 
   content_format = "openapi"
 
-  content_value = templatefile("../openapi/openapi_send_v1.json", {
+  content_value = templatefile("../../openapi/openapi_send_v1.json", {
     service = local.apim_pn_integration_rest_api.gpd_service.path
   })
 

@@ -28,7 +28,7 @@ module "apim_api_debt_positions_for_aca_api_v1" {
 
   content_format = "openapi"
   // the content value is the GPD API v1
-  content_value = templatefile("../openapi/openapi_aca_v1.json", {
+  content_value = templatefile("../../openapi/openapi_aca_v1.json", {
     service = local.apim.aca_integration_product_id
   })
 
@@ -45,8 +45,8 @@ resource "terraform_data" "sha256_create_debt_position_v1_policy" {
 
 resource "azurerm_api_management_api_operation_policy" "create_debt_position_v1_policy" {
   api_name            = format("%s-debt-positions-for-aca-service-api-v1", local.product)
-  api_management_name = local.pagopa_apim_name
-  resource_group_name = local.pagopa_apim_rg
+  api_management_name = local.apim.name
+  resource_group_name = local.apim.rg
   operation_id        = "createPosition"
   xml_content = templatefile("./api/create_base_policy.xml", {
     service_type_value = "ACA"
