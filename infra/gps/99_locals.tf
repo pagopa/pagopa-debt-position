@@ -8,8 +8,11 @@ locals {
     internal_gpd_product_id = "product-gpd"
     external_gpd_product_id = "debt-positions"
     gpd_integration_product_id = "debt-positions-integration"
-    aca_integration_product_id = "aca-integration"
     pn_integration_product_id = "pn-integration"
+  }
+  
+  aca = {
+    product = "${var.prefix}-${var.env_short}"
   }
 
   gpd_core_service_url        = var.env == "prod" ? "https://weu${var.env}.gps.internal.platform.pagopa.it/pagopa-gpd-core" : "https://weu${var.env}.gps.internal.${var.env}.platform.pagopa.it/pagopa-gpd-core"

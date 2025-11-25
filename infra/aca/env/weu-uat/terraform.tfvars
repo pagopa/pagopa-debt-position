@@ -1,20 +1,20 @@
 prefix          = "pagopa"
-env_short       = "d"
-env             = "dev"
-domain          = "gps"
+env_short       = "u"
+env             = "uat"
+domain          = "aca"
 location        = "westeurope"
 location_short  = "weu"
 location_string = "West Europe"
-instance        = "dev"
+instance        = "uat"
 
 tags = {
   CreatedBy   = "Terraform"
-  Environment = "Dev"
+  Environment = "Uat"
   Owner       = "pagoPA"
   Source      = "https://github.com/pagopa/pagopa-debt-position"
   CostCenter  = "TS310 - PAGAMENTI & SERVIZI"
 }
 
-apim_dns_zone_prefix = "dev.platform"
+apim_dns_zone_prefix = "uat.platform"
 external_domain      = "pagopa.it"
-hostname             = "weudev.gps.internal.dev.platform.pagopa.it"
+hostname             = "weuuat.aca.internal.uat.platform.pagopa.it"
