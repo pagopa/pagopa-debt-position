@@ -12,9 +12,6 @@ locals {
     aca_integration_product_id = "aca-integration"
   }
 
-  aks_name                = "${local.product}-${var.location_short}-${var.instance}-aks"
-  aks_resource_group_name = "${local.product}-${var.location_short}-${var.instance}-aks-rg"
-
   gpd_core_service_url        = var.env == "prod" ? "https://weu${var.env}.gps.internal.platform.pagopa.it/pagopa-gpd-core" : "https://weu${var.env}.gps.internal.${var.env}.platform.pagopa.it/pagopa-gpd-core"
 
   external = {

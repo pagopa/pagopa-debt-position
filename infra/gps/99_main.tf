@@ -12,23 +12,6 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "<= 3.116.0"
     }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "<= 2.16.0"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "<= 2.30.0"
-    }
-    null = {
-      source  = "hashicorp/null"
-      version = "<= 3.2.3"
-    }
-
-    kubectl = {
-      source  = "gavinbunney/kubectl"
-      version = "1.14.0"
-    }
   }
 
   backend "azurerm" {}
@@ -49,20 +32,6 @@ data "azurerm_client_config" "current" {}
 
 provider "azapi" {
   skip_provider_registration = true
-}
-
-provider "kubernetes" {
-  config_path = "${var.k8s_kube_config_path_prefix}/config-${local.aks_name}"
-}
-
-provider "helm" {
-  kubernetes {
-    config_path = "${var.k8s_kube_config_path_prefix}/config-${local.aks_name}"
-  }
-}
-
-provider "kubectl" {
-  config_path = "${var.k8s_kube_config_path_prefix}/config-${local.aks_name}"
 }
 
 module "__v3__" {
