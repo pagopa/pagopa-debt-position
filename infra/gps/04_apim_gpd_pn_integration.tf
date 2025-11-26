@@ -4,7 +4,7 @@
 
 locals {
   apim_pn_integration_rest_api = {
-    display_name          = 
+    display_name          = "GPD PN Integration"
     description           = "GPD REST API for PN for retrieve payment options and update payment option fee"
     published             = false
     subscription_required = true
@@ -54,6 +54,5 @@ module "apim_api_pn_integration_gpd_api_v1" {
     service = local.apim_pn_integration_rest_api.gpd_service.path
   })
 
-  xml_content = file("./api/pn_integration_api/v1/_base_policy${var.env_short != "p" ? "_mock" : ""}" {
-  })
+  xml_content = file("./api/pn_integration_api/v1/_base_policy${var.env_short != "p" ? "_mock" : ""}.xml")
 }
