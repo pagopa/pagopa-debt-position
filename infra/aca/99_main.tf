@@ -1,24 +1,16 @@
 terraform {
   required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "<= 3.116.0"
+    azapi = {
+      source  = "azure/azapi"
+      version = "<= 1.3.0"
     }
     azuread = {
       source  = "hashicorp/azuread"
-      version = "<= 2.33.0"
+      version = "<= 3.0.2"
     }
-    null = {
-      source  = "hashicorp/null"
-      version = "<= 3.2.1"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "<= 2.30.0"
-    }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "<= 2.12.1"
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "<= 3.116.0"
     }
   }
 
@@ -26,6 +18,7 @@ terraform {
 }
 
 provider "azurerm" {
+  skip_provider_registration = true
   features {
     key_vault {
       purge_soft_delete_on_destroy = false
@@ -37,18 +30,11 @@ data "azurerm_subscription" "current" {}
 
 data "azurerm_client_config" "current" {}
 
-provider "kubernetes" {
-  config_path = "${var.k8s_kube_config_path_prefix}/config-${local.aks_name}"
-}
-
-provider "helm" {
-  kubernetes {
-    config_path = "${var.k8s_kube_config_path_prefix}/config-${local.aks_name}"
-  }
+provider "azapi" {
+  skip_provider_registration = true
 }
 
 module "__v3__" {
-  # v8.83.1
-  source = "git::https://github.com/pagopa/terraform-azurerm-v3?ref=087a57940a67444c3b883030c54ceb78562c64ef"
+  # v8.103.0
+  source = "git::https://github.com/pagopa/terraform-azurerm-v3?ref=d0a0b3a81963169bdc974f79eba31e41e918e63d"
 }
-

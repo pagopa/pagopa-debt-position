@@ -1,5 +1,4 @@
 ## API ##
-
 resource "azurerm_api_management_api_version_set" "api_debt_positions_for_aca_api" {
   name                = format("%s-debt-positions-for-aca-service-api", var.env_short)
   api_management_name = local.apim.name
@@ -14,7 +13,7 @@ module "apim_api_debt_positions_for_aca_api_v1" {
   name                = format("%s-debt-positions-for-aca-service-api", local.product)
   api_management_name = local.apim.name
   resource_group_name = local.apim.rg
-  product_ids         = [local.apim.aca_integration_product_id]
+  product_ids         = [local.apim.aca_product_id]
 
   subscription_required = true
   version_set_id        = azurerm_api_management_api_version_set.api_debt_positions_for_aca_api.id
@@ -29,7 +28,7 @@ module "apim_api_debt_positions_for_aca_api_v1" {
   content_format = "openapi"
   // the content value is the GPD API v1
   content_value = templatefile("../../openapi/openapi_aca_v1.json", {
-    service = local.apim.aca_integration_product_id
+    service = local.apim.aca_product_id
   })
 
   xml_content = file("./api/aca_api/v1/_base_policy.xml")
