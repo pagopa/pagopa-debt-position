@@ -24,8 +24,6 @@
             "isPartialPayment": false,
             "dueDate": "2026-11-17T11:32:20.554Z",
             "retentionDate": "2027-01-21T11:32:20.554Z",
-            "fee": 0,
-            "notificationFee": 0,
             "transfer": [
                 {
                     "idTransfer": "1",
