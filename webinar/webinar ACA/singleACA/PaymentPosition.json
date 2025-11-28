@@ -1,5 +1,5 @@
 {
-    "iupd": "placeholder",
+    "iupd": "IUPD-WEBINAR-1",
     "type": "F",
     "payStandIn": true,
     "fiscalCode": "JHNDOE00A01F205N",
@@ -18,7 +18,7 @@
     "switchToExpired": false,
     "paymentOption": [
         {
-            "iuv": "placeholder",
+            "iuv": "12345678912345678",
             "amount": 8000,
             "description": "Posizione debitoria ACA test",
             "isPartialPayment": false,
