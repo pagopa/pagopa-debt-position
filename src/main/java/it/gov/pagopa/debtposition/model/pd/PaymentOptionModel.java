@@ -39,6 +39,9 @@ public class PaymentOptionModel implements Serializable {
   private LocalDateTime dueDate;
 
   private LocalDateTime retentionDate;
+
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  @Schema(accessMode = Schema.AccessMode.READ_ONLY)
   private long fee;
 
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
