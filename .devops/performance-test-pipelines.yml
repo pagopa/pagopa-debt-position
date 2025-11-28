@@ -34,6 +34,7 @@
         - "publish_workflow"
         - "just_payments_workflow"
         - "upd_workflow"
+        - "verify_payment_option"
       default: "publish_workflow"
 
   variables:
