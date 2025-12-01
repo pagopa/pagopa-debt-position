@@ -1,5 +1,6 @@
 package it.gov.pagopa.debtposition.service.pd.actions;
 
+import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
@@ -61,14 +62,23 @@ public class PaymentPositionActionsService {
   }
 
   /**
-   * This method handles validation of the current status of the payment position
-   * (verifying that is publishable) and calling the publication process.
+   * This method handles validation of the current status of the payment position (verifying that is
+   * publishable) and calling the publication process.
    *
    * @param ppToPublish PaymentPosition that the user wants to publish
    * @param publishDatetime LocalDateTime when the publish API or workflow is called
    */
   private void publishFlowHandler(PaymentPosition ppToPublish, LocalDateTime publishDatetime) {
-    // 0. Due date must be greater than validity date, it's already a property for a debt position created and saved on database
+    // 0. Due date must be greater than validity date, it's already a property for a debt position
+    // created and saved on database
+    for (PaymentOption po : ppToPublish.getPaymentOption()) {
+      validateDate(
+          po.getDueDate(),
+          po.getValidityDate(),
+          "due date of a payment option",
+          AppError.DEBT_POSITION_PUBLISH_DUE_DATE_MISMATCH,
+          ppToPublish);
+    }
 
     // 1. Check Min Due Date: minDueDate must be greater than publishDate
     validateDate(
@@ -78,10 +88,12 @@ public class PaymentPositionActionsService {
         AppError.DEBT_POSITION_PUBLISH_DUE_DATE_MISMATCH,
         ppToPublish);
 
-    // Get minValidityDate: the min value among the validity dates of the plan installments; may be null
+    // Get minValidityDate: the min value among the validity dates of the plan installments; may be
+    // null
     LocalDateTime minValidityDate = CommonUtil.resolveMinValidity(ppToPublish);
 
-    // 2. Check Validity Date: validityDate must be greater or equal than publishDate, null value is valid
+    // 2. Check Validity Date: validityDate must be greater or equal than publishDate, null value is
+    // valid
     validateDate(
         minValidityDate,
         publishDatetime,
@@ -95,14 +107,15 @@ public class PaymentPositionActionsService {
 
   // ----------- Helper methods -----------
 
+  // Check if dateToCheck >= targetDateTime
   private void validateDate(
       LocalDateTime dateToCheck,
       LocalDateTime targetDateTime,
       String dateDescription,
       AppError appError,
       PaymentPosition pp) {
-    // Guard clause: if date is null (optional safety) or in the future, do nothing
-    if (dateToCheck == null || !dateToCheck.isBefore(targetDateTime)) {
+    // Guard clause: if date is null or in the future, do nothing
+    if (dateToCheck == null || targetDateTime == null || !dateToCheck.isBefore(targetDateTime)) {
       return;
     }
 
@@ -114,7 +127,7 @@ public class PaymentPositionActionsService {
     // Log the specific error
     log.error(
         "Publish request occurred after the {} has expired - "
-            + "[organizationFiscalCode= {}; iupd= {}; {}= {}; requestPublishDate= {}]",
+            + "[organizationFiscalCode= {}; IUPD= {}; {}= {}; requestPublishDate= {}]",
         dateDescription,
         safeFiscalCode,
         safeIupd,
