@@ -1,0 +1,4 @@
+# pip install -r requirements.txt
+load_dotenv==0.1.0
+requests==2.32.4
+ipykernel==6.29.5
