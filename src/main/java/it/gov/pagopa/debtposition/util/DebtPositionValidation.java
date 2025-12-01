@@ -1,5 +1,6 @@
 package it.gov.pagopa.debtposition.util;
 
+import static it.gov.pagopa.debtposition.util.CommonUtil.sanitize;
 import static it.gov.pagopa.debtposition.util.Constants.CREATE_ACTION;
 import static it.gov.pagopa.debtposition.util.Constants.UPDATE_ACTION;
 
@@ -268,9 +269,9 @@ public class DebtPositionValidation {
               + "Payment Option Status: {} || "
               + "Is Partial Payment: {} || "
               + "Timestamp: {}",
-          CommonUtil.sanitize(ppToPay.getOrganizationFiscalCode()),
-          CommonUtil.sanitize(ppToPay.getIupd()),
-          CommonUtil.sanitize(nav),
+          sanitize(ppToPay.getOrganizationFiscalCode()),
+          sanitize(ppToPay.getIupd()),
+          sanitize(nav),
           ppToPay.getStatus(),
           poToPay.getStatus(),
           poToPay.getIsPartialPayment(),
@@ -314,10 +315,10 @@ public class DebtPositionValidation {
                       "Obtained unexpected empty transfer - [{}idTransfer= {}]",
                       String.format(
                           LOG_BASE_PARAMS_DETAIL,
-                          ppToReport.getOrganizationFiscalCode(),
-                          ppToReport.getIupd(),
-                          iuv),
-                      transferId);
+                          sanitize(ppToReport.getOrganizationFiscalCode()),
+                          sanitize(ppToReport.getIupd()),
+                          sanitize(iuv)),
+                          sanitize(transferId));
                   return new AppException(
                       AppError.TRANSFER_REPORTING_FAILED,
                       ppToReport.getOrganizationFiscalCode(),
@@ -337,7 +338,7 @@ public class DebtPositionValidation {
   private static void logErrorEmptyPaymentOption(PaymentPosition pp, String iuv) {
     log.error(
         "Obtained unexpected empty payment option - [{}]",
-        String.format(LOG_BASE_PARAMS_DETAIL, pp.getOrganizationFiscalCode(), pp.getIupd(), iuv));
+        String.format(LOG_BASE_PARAMS_DETAIL, sanitize(pp.getOrganizationFiscalCode()), sanitize(pp.getIupd()), sanitize(iuv)));
   }
 
   private enum TransferId {
