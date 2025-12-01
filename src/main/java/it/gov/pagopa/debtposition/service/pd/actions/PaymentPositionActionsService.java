@@ -75,8 +75,8 @@ public class PaymentPositionActionsService {
       validateDate(
           po.getDueDate(),
           po.getValidityDate(),
-          "due date of a payment option",
-          AppError.DEBT_POSITION_PUBLISH_DUE_DATE_MISMATCH,
+          "payment option due_date",
+          AppError.DEBT_POSITION_PUBLISH_DUE_DATE_BEFORE_VALIDITY_DATE,
           ppToPublish);
     }
 
@@ -84,7 +84,7 @@ public class PaymentPositionActionsService {
     validateDate(
         ppToPublish.getMinDueDate(),
         publishDatetime,
-        "due date of a payment option",
+        "min due_date",
         AppError.DEBT_POSITION_PUBLISH_DUE_DATE_MISMATCH,
         ppToPublish);
 
@@ -97,7 +97,7 @@ public class PaymentPositionActionsService {
     validateDate(
         minValidityDate,
         publishDatetime,
-        "validity date",
+        "validity_date",
         AppError.DEBT_POSITION_PUBLISH_VALIDITY_DATE_MISMATCH,
         ppToPublish);
 
@@ -127,7 +127,7 @@ public class PaymentPositionActionsService {
     // Log the specific error
     log.error(
         "Publish request occurred after the {} has expired - "
-            + "[organizationFiscalCode= {}; IUPD= {}; {}= {}; requestPublishDate= {}]",
+            + "[organizationFiscalCode= {}; IUPD= {}; {}= {}; targetDateTime= {}]",
         dateDescription,
         safeFiscalCode,
         safeIupd,
