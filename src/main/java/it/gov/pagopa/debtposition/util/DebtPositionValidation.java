@@ -61,7 +61,7 @@ public class DebtPositionValidation {
 
   // PAGOPA-2459 - optional action parameter to specify checks based on create or update mode.
   public static void checkPaymentPositionInputDataAccuracy(PaymentPosition pp, String... action) {
-    checkPaymentPositionCongruency(pp, action);
+    checkPaymentPositionDatesCongruency(pp, action);
   }
 
   public static void checkPaymentPositionPayability(PaymentPosition ppToPay, String nav) {
@@ -127,8 +127,9 @@ public class DebtPositionValidation {
   }
 
   // Validation based on validityDate, dueDate, retentionDate, currentDate
-  private static void checkPaymentPositionCongruency(final PaymentPosition pp, String... action) {
+  private static void checkPaymentPositionDatesCongruency(final PaymentPosition pp, String... actions) {
 
+    String action = ArrayUtils.isEmpty(actions) ? "NO_ACTION" : actions[0];
     LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
     DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
 
@@ -136,8 +137,8 @@ public class DebtPositionValidation {
 
       LocalDateTime poValidity = UtilityMapper.getValidityDate(pp, po);
 
-      // In CREATE action, validity_date must be greater than current_time
-      if (poValidity != null && !poValidity.isAfter(now)) {
+      // 1. Validity Date Check: in CREATE action, validity_date must be greater than current_time
+      if (CREATE_ACTION.equalsIgnoreCase(action) && poValidity != null && !poValidity.isAfter(now)) {
         throw new ValidationException(
             String.format(
                 VALIDITY_DATE_VALIDATION_ERROR,
@@ -145,6 +146,7 @@ public class DebtPositionValidation {
                 dateFormatter.format(now)));
       }
 
+      // 2. Due Date Check: action is used as param to differentiate cases
       if (isDueDateInvalid(po, poValidity, now, action)) {
         throw new ValidationException(
             String.format(
@@ -154,7 +156,7 @@ public class DebtPositionValidation {
                 dateFormatter.format(now)));
       }
 
-      // Regardless of the action, retention_date must be greater than due_date
+      // 3. Retention Date Check: regardless of the action, retention_date must be greater than due_date
       if (po.getRetentionDate() != null && po.getRetentionDate().isBefore(po.getDueDate())) {
         throw new ValidationException(
             String.format(
@@ -223,7 +225,7 @@ public class DebtPositionValidation {
   private static void checkPaymentPositionOpen(PaymentPosition ppToPay, String nav) {
     for (PaymentOption po : ppToPay.getPaymentOption()) {
       if (!po.getStatus().equals(PaymentOptionStatus.PO_UNPAID)
-          && !po.getIsPartialPayment().equals(true)) {
+          && po.getIsPartialPayment().equals(false)) {
         throw new AppException(
             AppError.PAYMENT_OPTION_ALREADY_PAID, po.getOrganizationFiscalCode(), nav);
       }
@@ -373,9 +375,7 @@ public class DebtPositionValidation {
    * In UPDATE action, if switchToExpired is false and validityDate is null,
    *                   due_date could be lower than validity_date and current_time
    */
-  private static boolean isDueDateInvalid(
-      PaymentOption po, LocalDateTime poValidityIn, LocalDateTime now, String... actions) {
-    String action = ArrayUtils.isEmpty(actions) ? "NO_ACTION" : actions[0];
+  private static boolean isDueDateInvalid(PaymentOption po, LocalDateTime poValidityIn, LocalDateTime now, String action) {
     LocalDateTime validityDate = (poValidityIn == null) ? now : poValidityIn;
     boolean isSTE = Boolean.TRUE.equals(po.getSwitchToExpired());
 
