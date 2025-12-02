@@ -1,77 +1,61 @@
-  # azure-pipelines.yml
-  trigger: none
+# azure-pipelines.yml
+trigger: none
 
-  parameters:
-    - name: "ENVIRONMENT"
-      displayName: "Environment"
-      type: string
-      values:
-        - "dev"
-        - "uat"
-        - "dev_aks"
-        - "uat_aks"
-      default: "dev"
-    - name: "TEST_TYPE"
-      displayName: "Test type"
-      type: string
-      values:
-        - "load"
-        - "spike"
-        - "stress"
-        - "ramping"
-        - "constant"
-        - "smoke"
-    - name: "PD_TO_PRELOAD"
-      displayName: "Debt Positions to preload"
-      type: number
-      default: 10
-    - name: "SCRIPT"
-      displayName: "Script name"
-      type: string
-      values:
-        - "create_debt_position"
-        - "payments_workflow"
-        - "publish_workflow"
-        - "just_payments_workflow"
-        - "upd_workflow"
-        - "verify_payment_option"
-      default: "publish_workflow"
- 
-  variables:
-     # If the script is verify_payment_option and PD_TO_PRELOAD < 150, use 150.
-     # Otherwise, use PD_TO_PRELOAD as is.
-   - ${{ if and(eq(parameters.SCRIPT, 'verify_payment_option'), lt(parameters.PD_TO_PRELOAD, 150)) }}:
-     - name: PD_TO_PRELOAD_EFFECTIVE
-       value: 150
-   
-   - ${{ if or(ne(parameters.SCRIPT, 'verify_payment_option'), ge(parameters.PD_TO_PRELOAD, 150)) }}:
-     - name: PD_TO_PRELOAD_EFFECTIVE
-       value: ${{ parameters.PD_TO_PRELOAD }}
-   
-   # Environment-specific variables
-   - ${{ if contains(parameters.ENVIRONMENT, 'dev') }}:
-     - name: poolImage
-       value: pagopa-dev-loadtest-linux
-     - name: API_SUBSCRIPTION_KEY
-       value: $(DEV_API_SUBSCRIPTION_KEY)
-   
-   - ${{ if contains(parameters.ENVIRONMENT, 'uat') }}:
-     - name: poolImage
-       value: pagopa-uat-loadtest-linux
-     - name: API_SUBSCRIPTION_KEY
-       value: $(UAT_API_SUBSCRIPTION_KEY)
+parameters:
+  - name: "ENVIRONMENT"
+    displayName: "Environment"
+    type: string
+    values:
+      - "dev"
+      - "uat"
+      - "dev_aks"
+      - "uat_aks"
+    default: "dev"
+  - name: "TEST_TYPE"
+    displayName: "Test type"
+    type: string
+    values:
+      - "load"
+      - "spike"
+      - "stress"
+      - "ramping"
+      - "constant"
+      - "smoke"
+  - name: "PD_TO_PRELOAD"
+    displayName: "Debt Positions to preload"
+    type: number
+    default: 10
+  - name: "SCRIPT"
+    displayName: "Script name"
+    type: string
+    values:
+      - "create_debt_position"
+      - "payments_workflow"
+      - "publish_workflow"
+      - "just_payments_workflow"
+      - "upd_workflow"
+      - "verify_payment_option"
+    default: "publish_workflow"
 
+variables:
+  # Environment-specific variables
+  ${{ if contains(parameters['ENVIRONMENT'], 'dev') }}:
+    poolImage: 'pagopa-dev-loadtest-linux'
+    API_SUBSCRIPTION_KEY: $(DEV_API_SUBSCRIPTION_KEY)
+  ${{ if contains(parameters['ENVIRONMENT'], 'uat') }}:
+    poolImage: 'pagopa-uat-loadtest-linux'
+    API_SUBSCRIPTION_KEY: $(UAT_API_SUBSCRIPTION_KEY)
 
-  pool:
-    name: $(poolImage)
+pool:
+  name: $(poolImage)
 
-  steps:
-    - script: |
-        cd ./load-test/src
-        docker pull grafana/k6
-      displayName: Pull k6 image
+steps:
+  - script: |
+      cd ./load-test/src
+      docker pull grafana/k6
+    displayName: Pull k6 image
 
-    - script: |
-        cd ./load-test
-        sh ./run_performance_test.sh ${{ parameters.ENVIRONMENT }} ${{ parameters.TEST_TYPE }} ${{ parameters.SCRIPT }} gpdk6 $(API_SUBSCRIPTION_KEY) $(PD_TO_PRELOAD_EFFECTIVE)
-      displayName: Run k6 ${{ parameters.SCRIPT }} on ${{ parameters.ENVIRONMENT }}
+  - script: |
+      cd ./load-test
+      sh ./run_performance_test.sh ${{ parameters.ENVIRONMENT }} ${{ parameters.TEST_TYPE }} ${{ parameters.SCRIPT }} gpdk6 $(API_SUBSCRIPTION_KEY) ${{ parameters.PD_TO_PRELOAD }}
+    displayName: Run k6 ${{ parameters.SCRIPT }} on ${{ parameters.ENVIRONMENT }}

@@ -20,8 +20,6 @@ const varsArray = new SharedArray('vars', function() {
 
 const vars = varsArray[0];
 const rootUrl = `${vars.host}`;
-// Base URL for v3 APIs: Removes the trailing /v1, if present
-const v3BaseUrl = rootUrl.replace(/\/v1\/?$/, '');
 const numberOfPositionsToPreload = __ENV.PRELOAD_PD_NUMBER;
 const batchSize = 150;
 
@@ -63,7 +61,7 @@ export function setup() {
 		for (let j = 0; j < batchSize && created < numberOfPositionsToPreload; j++) {
 			const organizationFiscalCode = randomString(11, '0123456789');
 
-			const iupd = `IUPD-V3-${makeidMix(24)}`;
+			const iupd = `IUPD-V1-${makeidMix(24)}`;
 			const nav = makeidNumber(18);   // es. "300000000000000001"
 			const iuv = makeidNumber(17);   // es. "10000000000000001"
 
@@ -72,60 +70,56 @@ export function setup() {
 
 			const payload = JSON.stringify({
 			  iupd: iupd,
+			  type: 'F',
 			  payStandIn: true,
+			  fiscalCode: 'RSSMRA80A01H501Z',
+			  fullName: 'Mario Rossi',
+			  streetName: 'Via Roma',
+			  civicNumber: '10',
+			  postalCode: '00100',
+			  city: 'Roma',
+			  province: 'RM',
+			  region: 'Lazio',
+			  country: 'IT',
+			  email: 'mario.rossi@example.com',
+			  phone: '+39061234567',
+			  switchToExpired: false,
 			  companyName: 'Comune di Esempio',
 			  officeName: 'Ufficio Entrate',
+			  validityDate: null,
 			  paymentOption: [
 			    {
+			      nav: nav,
+			      iuv: iuv,
+			      amount: 10000,
 			      description: "Pagamento in un'unica soluzione",
-			      retentionDate: retentionDate,       
-			      switchToExpired: false,               
-
-			      debtor: {
-			        type: 'F',
-			        fiscalCode: 'RSSMRA80A01H501Z',
-			        fullName: 'Mario Rossi',
-			        streetName: 'Via Roma',
-			        civicNumber: '10',
-			        postalCode: '00100',
-			        city: 'Roma',
-			        province: 'RM',
-			        region: 'Lazio',
-			        country: 'IT',
-			        email: 'mario.rossi@example.com',
-			        phone: '+39061234567',
-			      },
-
-			      installments: [
+			      isPartialPayment: false,
+			      dueDate: dueDate,
+			      retentionDate: retentionDate,
+			      fee: 0,
+			      transfer: [
 			        {
-			          nav: nav,                         
-			          iuv: iuv,                        
+			          idTransfer: '1',
 			          amount: 10000,
-			          description: 'Saldo unico',
-			          dueDate: dueDate,             
-			          transfer: [
-			            {
-			              idTransfer: '1',
-			              amount: 10000,
-			              organizationFiscalCode: '12345678901',
-			              remittanceInformation: 'TARI 2026 - saldo',
-			              category: '10/22252/20',
-			              iban: 'IT60X0542811101000000123456',
-			              companyName: 'Comune di Esempio',
-			              transferMetadata: [{ key: 'capitolo', value: 'TARI' }],
-			            },
-			          ],
-			          installmentMetadata: [
-			            { key: 'note', value: 'Pagamento in unica soluzione' },
+			          organizationFiscalCode: '12345678901',
+			          remittanceInformation: 'TARI 2026 - saldo',
+			          category: '010110',
+			          iban: 'IT60X0542811101000000123456',
+			          companyName: 'Comune di Esempio',
+			          transferMetadata: [
+			            { key: 'capitolo', value: 'TARI' },
 			          ],
 			        },
+			      ],
+			      paymentOptionMetadata: [
+			        { key: 'note', value: 'Saldo unico' },
 			      ],
 			    },
 			  ],
 			});
 
 
-			const url = `${v3BaseUrl}/v3/organizations/${organizationFiscalCode}/debtpositions?toPublish=true&serviceType=GPD`;
+			const url = `${rootUrl}/organizations/${organizationFiscalCode}/debtpositions?toPublish=true&serviceType=GPD`;
 			batchArrayDebtPosition.push(['POST', url, payload, createParams]);
 
 			// stores the NAV that will be used in the verify call
@@ -136,7 +130,7 @@ export function setup() {
 		const responses = http.batch(batchArrayDebtPosition);
 		for (let r of responses) {
 			check(r, {
-				'CreateDebtPositionV3 status is 201': (res) => res.status === 201,
+				'CreateDebtPosition status is 201': (res) => res.status === 201,
 			});
 			if (r.status !== 201) {
 				console.log(`Error ${r.status} on create debt position: ${r.body}`);
