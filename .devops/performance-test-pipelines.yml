@@ -21,10 +21,10 @@
         - "ramping"
         - "constant"
         - "smoke"
-    - name: "PD_TO_PRELOAD"
-      displayName: "Debt Positions to preload"
-      type: number
-      default: 10
+#    - name: "PD_TO_PRELOAD"
+#      displayName: "Debt Positions to preload"
+#      type: number
+#      default: 10
     - name: "SCRIPT"
       displayName: "Script name"
       type: string
@@ -36,14 +36,33 @@
         - "upd_workflow"
         - "verify_payment_option"
       default: "publish_workflow"
+    # If SCRIPT = verify_payment_option -> default 150
+    - ${{ if eq(parameters.SCRIPT, 'verify_payment_option') }}:
+      - name: "PD_TO_PRELOAD"
+        displayName: "Debt Positions to preload"
+        type: number
+        default: 150
+    - ${{ if ne(parameters.SCRIPT, 'verify_payment_option') }}:
+      - name: "PD_TO_PRELOAD"
+        displayName: "Debt Positions to preload"
+        type: number
+        default: 10
 
   variables:
-    ${{ if contains(parameters['ENVIRONMENT'], 'dev') }}:
-      poolImage: 'pagopa-dev-loadtest-linux'
-      API_SUBSCRIPTION_KEY: $(DEV_API_SUBSCRIPTION_KEY)
-    ${{ if contains(parameters['ENVIRONMENT'], 'uat') }}:
-      poolImage: 'pagopa-uat-loadtest-linux'
-      API_SUBSCRIPTION_KEY: $(UAT_API_SUBSCRIPTION_KEY)
+   #If the script is verify_payment_option and PD_TO_PRELOAD < 150, use 150.
+   #Otherwise, use PD_TO_PRELOAD as is.
+#  ${{ if and(eq(parameters.SCRIPT, 'verify_payment_option'), lt(parameters.PD_TO_PRELOAD, 150)) }}:
+#    PD_TO_PRELOAD_EFFECTIVE: 150
+#  ${{ else }}:
+#    PD_TO_PRELOAD_EFFECTIVE: ${{ parameters.PD_TO_PRELOAD }}
+
+  ${{ if contains(parameters['ENVIRONMENT'], 'dev') }}:
+    poolImage: 'pagopa-dev-loadtest-linux'
+    API_SUBSCRIPTION_KEY: $(DEV_API_SUBSCRIPTION_KEY)
+  ${{ if contains(parameters['ENVIRONMENT'], 'uat') }}:
+    poolImage: 'pagopa-uat-loadtest-linux'
+    API_SUBSCRIPTION_KEY: $(UAT_API_SUBSCRIPTION_KEY)
+
 
   pool:
     name: $(poolImage)

@@ -20,6 +20,8 @@ const varsArray = new SharedArray('vars', function() {
 
 const vars = varsArray[0];
 const rootUrl = `${vars.host}`;
+// Base URL for v3 APIs: Removes the trailing /v1, if present
+const v3BaseUrl = rootUrl.replace(/\/v1\/?$/, '');
 const numberOfPositionsToPreload = __ENV.PRELOAD_PD_NUMBER;
 const batchSize = 150;
 
@@ -123,7 +125,7 @@ export function setup() {
 			});
 
 
-			const url = `${rootUrl}/v3/organizations/${organizationFiscalCode}/debtpositions?toPublish=true&serviceType=GPD`;
+			const url = `${v3BaseUrl}/v3/organizations/${organizationFiscalCode}/debtpositions?toPublish=true&serviceType=GPD`;
 			batchArrayDebtPosition.push(['POST', url, payload, createParams]);
 
 			// stores the NAV that will be used in the verify call
