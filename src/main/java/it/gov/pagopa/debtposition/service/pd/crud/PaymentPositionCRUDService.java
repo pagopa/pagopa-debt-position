@@ -242,11 +242,11 @@ public class PaymentPositionCRUDService {
     }
 
     // Save the actual validity date because if the validity date entered is null and the status is VALID, these must be retained.
-    Map<Long, LocalDateTime> validityDatesMap = ppToUpdate.getPaymentOption().stream()
-            .collect(Collectors.toMap(
-                    PaymentOption::getId,           // key = Payment Option entity ID
-                    PaymentOption::getValidityDate  // Value = Payment Option entity validity_date
-            ));
+    Map<Long, LocalDateTime> actualValidityDatesMap = new HashMap<>();
+    for (PaymentOption po : ppToUpdate.getPaymentOption()) {
+      // (key,value) = (Payment Option entity ID, Payment Option entity validity_date)
+      actualValidityDatesMap.put(po.getId(), po.getValidityDate());
+    }
 
     try {
 
@@ -257,7 +257,7 @@ public class PaymentPositionCRUDService {
       // update amounts adding notification fee
       updateAmounts(organizationFiscalCode, ppToUpdate);
       // If the input is null and the actual (database) validity_date is before now preserve it
-      preserveValidityDateIfValidStatus(ppToUpdate, validityDatesMap);
+      preserveValidityDateIfValidStatus(ppToUpdate, actualValidityDatesMap);
 
       // check the data
       DebtPositionValidation.checkPaymentPositionInputDataAccuracy(ppToUpdate, action);
@@ -292,13 +292,13 @@ public class PaymentPositionCRUDService {
    * @param ppToUpdate the Payment Position Entity mixed with new inputs entered.
    *                   values such as fee, notificationFee, PSP etc are not modified, while
    *                   values such as company name, due date, amount etc are updated with user input.
-   * @param validityDatesMap The validity dates actually persisted on the database before update.
+   * @param actualValidityDatesMap The validity dates actually persisted on the database before update.
    */
-  private static void preserveValidityDateIfValidStatus(PaymentPosition ppToUpdate, Map<Long, LocalDateTime> validityDatesMap) {
+  private static void preserveValidityDateIfValidStatus(PaymentPosition ppToUpdate, Map<Long, LocalDateTime> actualValidityDatesMap) {
     // po.validity_date is the input, actualValidityDate is the value on the database.
     LocalDateTime now = LocalDateTime.now();
     for(PaymentOption po : ppToUpdate.getPaymentOption()) {
-      LocalDateTime actualValidityDate = validityDatesMap.get(po.getId());
+      LocalDateTime actualValidityDate = actualValidityDatesMap.get(po.getId());
       // If the input is null and the actual (database) validity_date is before now preserve it.
       if (po.getValidityDate() == null && actualValidityDate != null && actualValidityDate.isBefore(now)
               && ppToUpdate.getStatus().equals(DebtPositionStatus.VALID)) {
