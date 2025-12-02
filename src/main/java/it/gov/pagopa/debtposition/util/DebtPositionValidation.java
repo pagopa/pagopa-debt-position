@@ -371,23 +371,26 @@ public class DebtPositionValidation {
     }
   }
 
-  /* In CREATE action, due_date must be greater than validity_date and current_time
-   * In UPDATE action, if switchToExpired is false and validityDate is null,
-   *                   due_date could be lower than validity_date and current_time
+  /* In CREATE, due_date must be greater than validity_date and current_time.
+   * In UPDATE, due_date must be greater than validity_date. If switchToExpired is false,
+   * due_date could be lower than current_time.
    */
   private static boolean isDueDateInvalid(PaymentOption po, LocalDateTime poValidityIn, LocalDateTime now, String action) {
     LocalDateTime validityDate = (poValidityIn == null) ? now : poValidityIn;
+    boolean isInvalid = false;
     boolean isSTE = Boolean.TRUE.equals(po.getSwitchToExpired());
 
-    if (CREATE_ACTION.equalsIgnoreCase(action)
-        || (UPDATE_ACTION.equalsIgnoreCase(action) && isSTE)) {
+    // Regardless of the action, the due date must be later than the validity date.
+    // Otherwise, when the citizen retrieves the option, they get an inconsistent response (validity date > due date).
+    isInvalid = po.getDueDate().isBefore(validityDate);
+
+    if (CREATE_ACTION.equalsIgnoreCase(action) || (UPDATE_ACTION.equalsIgnoreCase(action) && isSTE)) {
       // due_date must be greater than validity_date and current_time
-      return po.getDueDate().isBefore(now) || po.getDueDate().isBefore(validityDate);
+      isInvalid = po.getDueDate().isBefore(now) || isInvalid;
     }
 
-    // In Update action, if switchToExpired is false due_date could be lower than current_time and
-    // validity_date ( = now if null)
+    // In Update action, if switchToExpired is false due_date could be lower than current_time
 
-    return false;
+    return isInvalid;
   }
 }

@@ -27,6 +27,8 @@ import it.gov.pagopa.debtposition.util.PublishPaymentUtil;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -239,13 +241,23 @@ public class PaymentPositionCRUDService {
           AppError.DEBT_POSITION_NOT_UPDATABLE, organizationFiscalCode, ppModel.getIupd());
     }
 
+    // Save the actual validity date because if the validity date entered is null and the status is VALID, these must be retained.
+    Map<Long, LocalDateTime> validityDatesMap = ppToUpdate.getPaymentOption().stream()
+            .collect(Collectors.toMap(
+                    PaymentOption::getId,           // key = Payment Option entity ID
+                    PaymentOption::getValidityDate  // Value = Payment Option entity validity_date
+            ));
+
     try {
 
-      // flip model to entity
+      // Flip the model into entities. This mapper is safe and does not overwrite protected values:
+      // for example, for a value such as fee, GPD is the only possible writer, while the organization can only read.
       modelMapper.map(ppModel, ppToUpdate);
 
       // update amounts adding notification fee
       updateAmounts(organizationFiscalCode, ppToUpdate);
+      // If the input is null and the actual (database) validity_date is before now preserve it
+      preserveValidityDateIfValidStatus(ppToUpdate, validityDatesMap);
 
       // check the data
       DebtPositionValidation.checkPaymentPositionInputDataAccuracy(ppToUpdate, action);
@@ -270,6 +282,28 @@ public class PaymentPositionCRUDService {
     } catch (Exception e) {
       log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
       throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
+    }
+  }
+
+  /**
+   * This method preserves the validity date if the validity date in input is null and
+   * if the validity date on the database are valid and already in use, i.e. later than now.
+   *
+   * @param ppToUpdate the Payment Position Entity mixed with new inputs entered.
+   *                   values such as fee, notificationFee, PSP etc are not modified, while
+   *                   values such as company name, due date, amount etc are updated with user input.
+   * @param validityDatesMap The validity dates actually persisted on the database before update.
+   */
+  private static void preserveValidityDateIfValidStatus(PaymentPosition ppToUpdate, Map<Long, LocalDateTime> validityDatesMap) {
+    // po.validity_date is the input, actualValidityDate is the value on the database.
+    LocalDateTime now = LocalDateTime.now();
+    for(PaymentOption po : ppToUpdate.getPaymentOption()) {
+      LocalDateTime actualValidityDate = validityDatesMap.get(po.getId());
+      // If the input is null and the actual (database) validity_date is before now preserve it.
+      if (po.getValidityDate() == null && actualValidityDate != null && actualValidityDate.isBefore(now)
+              && ppToUpdate.getStatus().equals(DebtPositionStatus.VALID)) {
+        ppToUpdate.setValidityDate(actualValidityDate);
+      }
     }
   }
 
