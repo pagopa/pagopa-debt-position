@@ -183,7 +183,9 @@ resource "azurerm_api_management_api_operation_policy" "create_debt_position_v1_
   api_management_name = local.apim.name
   resource_group_name = local.apim.rg
   operation_id        = "createPosition"
-  xml_content = file("./api/create_base_policy.xml")
+  xml_content = templatefile("./api/create_base_policy.xml", {
+    service_type_value = "GPD"
+  })
 }
 
 # v2
@@ -200,6 +202,6 @@ resource "azurerm_api_management_api_operation_policy" "create_debt_position_v2_
   resource_group_name = local.apim.rg
   operation_id        = "createMultiplePositions"
   xml_content = templatefile("./api/create_base_policy.xml", {
-    service_type_value = "ACA"
+    service_type_value = "GPD"
   })
 }
