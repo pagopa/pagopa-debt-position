@@ -19,7 +19,8 @@ const varsArray = new SharedArray('vars', function() {
 });
 
 const vars = varsArray[0];
-const rootUrl = `${vars.host}`;
+const rootOrgUrl = `${vars.host}`;
+const rootInternalUrl = `${vars.host_internal}`;
 const numberOfPositionsToPreload = __ENV.PRELOAD_PD_NUMBER;
 const batchSize = 150;
 
@@ -119,7 +120,7 @@ export function setup() {
 			});
 
 
-			const url = `${rootUrl}/organizations/${organizationFiscalCode}/debtpositions?toPublish=true&serviceType=GPD`;
+			const url = `${rootOrgUrl}/organizations/${organizationFiscalCode}/debtpositions?toPublish=true&serviceType=GPD`;
 			batchArrayDebtPosition.push(['POST', url, payload, createParams]);
 
 			// stores the NAV that will be used in the verify call
@@ -156,7 +157,7 @@ export default function(data) {
 	const nav = pair[1];
 
 	// verifyPaymentOption: /payment-options/organizations/{organizationFiscalCode}/notices/{nav}
-	const url = `${rootUrl}/payment-options/organizations/${organizationFiscalCode}/notices/${nav}`;
+	const url = `${rootInternalUrl}/payment-options/organizations/${organizationFiscalCode}/notices/${nav}`;
 	const r = http.post(url, null, verifyParams);
 
 	if (r.status !== 200) {
