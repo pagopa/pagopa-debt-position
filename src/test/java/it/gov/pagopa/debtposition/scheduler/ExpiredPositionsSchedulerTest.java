@@ -321,9 +321,10 @@ class ExpiredPositionsSchedulerTest {
 
     // aggiorno la posizione debitoria (stato atteso DRAFT)
     pp7.setCompanyName("Comune di Napoli");
+    pp7.setValidityDate(null);
     pp7.getPaymentOption()
         .get(0)
-        .setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.SECONDS));
+        .setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(10, ChronoUnit.SECONDS));
     mvc.perform(
             put("/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions/12345678901IUPDMOCK3")
                 .content(TestUtil.toJson(pp7))
