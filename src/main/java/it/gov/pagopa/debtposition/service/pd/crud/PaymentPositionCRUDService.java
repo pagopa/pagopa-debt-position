@@ -27,6 +27,8 @@ import it.gov.pagopa.debtposition.util.PublishPaymentUtil;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -72,12 +74,12 @@ public class PaymentPositionCRUDService {
     final String ERROR_CREATION_LOG_MSG = "Error during debt position creation: %s";
 
     try {
-    	// Inserts (and possibly brings to published status) the debt position
-    	PaymentPosition toSave =
-    	        this.checkAndBuildDebtPositionToSave(
-    	            debtPosition, organizationFiscalCode, toPublish, segCodes, action);
-    	
-    	return paymentPositionRepository.saveAndFlush(toSave);
+      // Inserts (and possibly brings to published status) the debt position
+      PaymentPosition toSave =
+          this.checkAndBuildDebtPositionToSave(
+              debtPosition, organizationFiscalCode, toPublish, segCodes, action);
+
+      return paymentPositionRepository.saveAndFlush(toSave);
     } catch (DataIntegrityViolationException e) {
       log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
       if (e.getCause() instanceof ConstraintViolationException constraintviolationexception) {
@@ -101,7 +103,7 @@ public class PaymentPositionCRUDService {
       String organizationFiscalCode, String iupd, List<String> segCodes) {
 
     Specification<PaymentPosition> spec =
-    		allOf(
+        allOf(
             new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
                 .and(new PaymentPositionByIUPD(iupd)));
 
@@ -109,9 +111,9 @@ public class PaymentPositionCRUDService {
     if (ppOptional.isEmpty()) {
       throw new AppException(AppError.DEBT_POSITION_NOT_FOUND, organizationFiscalCode, iupd);
     }
-    
+
     PaymentPosition pp = ppOptional.get();
-    
+
     if (segCodes != null && !isAuthorizedBySegregationCode(pp, segCodes)) {
       throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, iupd);
     }
@@ -141,8 +143,9 @@ public class PaymentPositionCRUDService {
       String organizationFiscalCode, List<String> iupdList, List<String> segCodes) {
     // findAll query by IUPD list
     Specification<PaymentPosition> spec =
-    		allOf(new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
-                            .and(new PaymentPositionByIUPDList(iupdList)));
+        allOf(
+            new PaymentPositionByOrganizationFiscalCode(organizationFiscalCode)
+                .and(new PaymentPositionByIUPDList(iupdList)));
 
     Pageable pageable = PageRequest.of(0, iupdList.size());
     Page<PaymentPosition> result = paymentPositionRepository.findAll(spec, pageable);
@@ -193,7 +196,7 @@ public class PaymentPositionCRUDService {
     // fetch, are not used by JPA
     for (PaymentPosition pp : positions) {
       Specification<PaymentOption> specPO =
-    		  allOf(
+          allOf(
               new PaymentOptionByAttribute(
                   pp,
                   filterAndOrder.getFilter().getDueDateFrom(),
@@ -238,13 +241,23 @@ public class PaymentPositionCRUDService {
           AppError.DEBT_POSITION_NOT_UPDATABLE, organizationFiscalCode, ppModel.getIupd());
     }
 
+    // Save the actual validity date because if the validity date entered is null and the status is VALID, these must be retained.
+    Map<Long, LocalDateTime> actualValidityDatesMap = new HashMap<>();
+    for (PaymentOption po : ppToUpdate.getPaymentOption()) {
+      // (key,value) = (Payment Option entity ID, Payment Option entity validity_date)
+      actualValidityDatesMap.put(po.getId(), po.getValidityDate());
+    }
+
     try {
 
-      // flip model to entity
+      // Flip the model into entities. This mapper is safe and does not overwrite protected values:
+      // for example, for a value such as fee, GPD is the only possible writer, while the organization can only read.
       modelMapper.map(ppModel, ppToUpdate);
 
       // update amounts adding notification fee
       updateAmounts(organizationFiscalCode, ppToUpdate);
+      // If the input is null and the actual (database) validity_date is before now preserve it
+      preserveValidityDateIfValidStatus(ppToUpdate, actualValidityDatesMap, toPublish);
 
       // check the data
       DebtPositionValidation.checkPaymentPositionInputDataAccuracy(ppToUpdate, action);
@@ -252,7 +265,7 @@ public class PaymentPositionCRUDService {
       var ppUpdated =
           this.checkDebtPositionToUpdate(
               ppToUpdate, organizationFiscalCode, toPublish, segregationCodes, action);
-      
+
       return paymentPositionRepository.saveAndFlush(ppUpdated);
 
     } catch (ValidationException e) {
@@ -269,6 +282,28 @@ public class PaymentPositionCRUDService {
     } catch (Exception e) {
       log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
       throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
+    }
+  }
+
+  /**
+   * This method preserves the validity date if the validity date in input is null and
+   * if the validity date on the database are valid and already in use, i.e. later than now.
+   *
+   * @param ppToUpdate the Payment Position Entity mixed with new inputs entered.
+   *                   values such as fee, notificationFee, PSP etc are not modified, while
+   *                   values such as company name, due date, amount etc are updated with user input.
+   * @param actualValidityDatesMap The validity dates actually persisted on the database before update.
+   */
+  private static void preserveValidityDateIfValidStatus(PaymentPosition ppToUpdate, Map<Long, LocalDateTime> actualValidityDatesMap, boolean toPublish) {
+    // po.validity_date is the input, actualValidityDate is the value on the database.
+    LocalDateTime now = LocalDateTime.now();
+    for(PaymentOption po : ppToUpdate.getPaymentOption()) {
+      LocalDateTime actualValidityDate = actualValidityDatesMap.get(po.getId());
+      // If the input is null and the actual (database) validity_date is before now preserve it.
+      if (po.getValidityDate() == null && actualValidityDate != null && actualValidityDate.isBefore(now)
+              && ppToUpdate.getStatus().equals(DebtPositionStatus.VALID) && toPublish) {
+        po.setValidityDate(actualValidityDate);
+      }
     }
   }
 
@@ -310,12 +345,13 @@ public class PaymentPositionCRUDService {
 
     try {
 
-     for (PaymentPosition debtPosition : debtPositions) {
-    		PaymentPosition pp = this.checkDebtPositionToUpdate(
-    				debtPosition, organizationFiscalCode, toPublish, segCodes, action);
-    		
-    		ppToSaveList.add(pp);
-     }
+      for (PaymentPosition debtPosition : debtPositions) {
+        PaymentPosition pp =
+            this.checkDebtPositionToUpdate(
+                debtPosition, organizationFiscalCode, toPublish, segCodes, action);
+
+        ppToSaveList.add(pp);
+      }
 
       // Inserisce il blocco di posizioni debitorie
       return paymentPositionRepository.saveAllAndFlush(ppToSaveList);
@@ -365,12 +401,21 @@ public class PaymentPositionCRUDService {
               inputPaymentPosition.getIupd());
         }
 
+        // Save the actual validity date because if the validity date entered is null and the status is VALID, these must be retained.
+        Map<Long, LocalDateTime> actualValidityDatesMap = new HashMap<>();
+        for (PaymentOption po : currentPP.getPaymentOption()) {
+          // (key,value) = (Payment Option entity ID, Payment Option entity validity_date)
+          actualValidityDatesMap.put(po.getId(), po.getValidityDate());
+        }
+
         // map model to entity
         modelMapper.map(inputPaymentPosition, currentPP);
 
         // update amounts adding notification fee
         updateAmounts(organizationFiscalCode, currentPP);
-        
+        // If the input is null and the actual (database) validity_date is before now preserve it
+        preserveValidityDateIfValidStatus(currentPP, actualValidityDatesMap, toPublish);
+
         // check data
         DebtPositionValidation.checkPaymentPositionInputDataAccuracy(currentPP, action);
       }
@@ -537,9 +582,9 @@ public class PaymentPositionCRUDService {
       }
     }
 
-    // Se la pubblicazione immediata è richiesta, si procede
+    // If immediate publication is required, proceed as follows
     if (toPublish) {
-      PublishPaymentUtil.publishProcess(pp, action);
+      PublishPaymentUtil.publishProcess(pp, LocalDateTime.now());
     }
 
     return pp;
