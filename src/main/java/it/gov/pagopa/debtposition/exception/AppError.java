@@ -66,6 +66,11 @@ public enum AppError {
 		      "Publish request occurred after the due date of a payment options has expired",
 		      "A publish request occurred after the due date of a payment options has expired for the debt"
 		          + " position with Organization Fiscal Code %s and IUPD %s"),
+      DEBT_POSITION_PUBLISH_DUE_DATE_BEFORE_VALIDITY_DATE(
+              HttpStatus.CONFLICT,
+              "The due date of a payment option is before the validity date",
+              "Invalid publish request: the payment option due date cannot be before the validity date for the debt"
+                      + " position with Organization Fiscal Code %s and IUPD %s"),
 		  DEBT_POSITION_PUBLISH_FAILED(
 		      HttpStatus.INTERNAL_SERVER_ERROR,
 		      "The debt position publish is failed",
