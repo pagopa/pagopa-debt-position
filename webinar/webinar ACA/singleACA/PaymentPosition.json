@@ -1,0 +1,40 @@
+{
+    "iupd": "IUPD-WEBINAR-1",
+    "type": "F",
+    "payStandIn": true,
+    "fiscalCode": "JHNDOE00A01F205N",
+    "fullName": "John Doe",
+    "streetName": "streetName",
+    "civicNumber": "11",
+    "postalCode": "00100",
+    "city": "city",
+    "province": "RM",
+    "region": "RM",
+    "country": "IT",
+    "email": "lorem@lorem.com",
+    "phone": "333-123456789",
+    "companyName": "companyName",
+    "officeName": "officeName",
+    "switchToExpired": false,
+    "paymentOption": [
+        {
+            "iuv": "12345678912345678",
+            "amount": 8000,
+            "description": "Posizione debitoria ACA test",
+            "isPartialPayment": false,
+            "dueDate": "2026-11-17T11:32:20.554Z",
+            "retentionDate": "2027-01-21T11:32:20.554Z",
+            "transfer": [
+                {
+                    "idTransfer": "1",
+                    "organizationFiscalCode": "77777777777",
+                    "amount": 8000,
+                    "remittanceInformation": "remittanceInformation 1",
+                    "category": "categoryWebinar",
+                    "iban": "IT0000000000000000000000000"
+                }
+            ],
+            "paymentOptionMetadata": null
+        }
+    ]
+}
