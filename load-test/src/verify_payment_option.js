@@ -63,7 +63,7 @@ export function setup() {
 			const organizationFiscalCode = randomString(11, '0123456789');
 
 			const iupd = `IUPD-V1-${makeidMix(24)}`;
-			const nav = makeidNumber(18);   // es. "300000000000000001"
+			const nav = '3' + makeidNumber(17);   // es. "300000000000000001"
 			const iuv = makeidNumber(17);   // es. "10000000000000001"
 
 			const dueDate = new Date().addDays(30).toISOString();
