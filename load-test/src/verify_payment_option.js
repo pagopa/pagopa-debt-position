@@ -9,8 +9,8 @@ export let options = JSON.parse(open(__ENV.TEST_TYPE));
 
 options.thresholds = {
 	'http_req_duration{name:POST /payment-options/organizations/{organizationFiscalCode}/notices/{nav}}': [
-		'p(95)<1000',
-		'p(99)<1500',
+		'p(95)<500',
+		'p(99)<1000',
 	],
 };
 
