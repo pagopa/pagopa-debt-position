@@ -27,10 +27,14 @@ on:
     secrets:
       CLIENT_ID: 
         required: true
+        type: string
       TENANT_ID: 
         required: true
+        type: string
       SUBSCRIPTION_ID: 
         required: true
+        type: string
+
 
 env:
   APP_NAME: gpd-core

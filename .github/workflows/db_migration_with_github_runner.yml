@@ -12,13 +12,16 @@ on:
         description: Which schema to migrate (apd|odp|all)
         type: string
         default: all
-      secrets:
-          FLYWAY_DATASOURCE_URL: 
-            required: true
-          SPRING_DATASOURCE_USERNAME: 
-            required: true
-          SPRING_DATASOURCE_PASSWORD: 
-            required: true
+    secrets:
+        FLYWAY_DATASOURCE_URL: 
+          required: true
+          type: string
+        SPRING_DATASOURCE_USERNAME: 
+          required: true
+          ype: string
+        SPRING_DATASOURCE_PASSWORD: 
+          required: true
+          type: string
   workflow_dispatch:
     inputs:
       environment:
