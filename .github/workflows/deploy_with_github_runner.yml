@@ -95,7 +95,7 @@ jobs:
         env:
           ENV: ${{ inputs.environment }}
         run: |
-          if ["$ENV" != "dev" && "$ENV" != "uat" && "$ENV" != "prod" ]; then
+          if [[ "$ENV" != "dev" && "$ENV" != "uat" && "$ENV" != "prod" ]]; then
             echo "Input environment is invalid"
             exit 0
           fi
