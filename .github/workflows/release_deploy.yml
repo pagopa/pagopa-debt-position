@@ -96,12 +96,13 @@ jobs:
     name: Create a New Release
     runs-on: ubuntu-latest
     needs: [setup]
+    if: ${{ needs.setup.outputs.semver != 'skip' }}
     outputs:
       version: ${{ steps.release.outputs.version }}
     steps:
       - name: Make Release
         id: release
-        uses: pagopa/github-actions-template/maven-release@d91a1fd0b913c9830589be5d86cdb71c90813fae # v1.5.4
+        uses: pagopa/github-actions-template/maven-release@38203c7599bcac41a743237ccb17c733ff9c2eee # v1.12.0
         with:
           semver: ${{ needs.setup.outputs.semver }}
           github_token: ${{ secrets.BOT_TOKEN_GITHUB }}
@@ -119,7 +120,10 @@ jobs:
     with:
       environment: ${{ matrix.environment }}
       schema: ${{ inputs.schema || 'all' }}
-    secrets: inherit
+    secrets:
+        FLYWAY_DATASOURCE_URL: ${{ secrets.FLYWAY_DATASOURCE_URL }}
+        SPRING_DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
+        SPRING_DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
 
 
   image:
@@ -145,7 +149,10 @@ jobs:
       suffix_name: ${{ inputs.is_canary && '-canary' || '' }}
       is_canary: ${{ inputs.is_canary }}
       traffic_weight: ${{ inputs.traffic_weight }}
-    secrets: inherit
+    secrets:
+        CLIENT_ID: ${{ secrets.CLIENT_ID }}
+        TENANT_ID: ${{ secrets.TENANT_ID }}
+        SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
 
   notify:
     needs: [ setup, release, deploy_aks ]
