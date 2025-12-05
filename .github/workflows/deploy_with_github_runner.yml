@@ -35,7 +35,9 @@ permissions:
 
 jobs:
   verifyInputs:
+    runs-on: ubuntu-latest
     name: Verify Inputs
+    environment: ${{ inputs.environment }}
     env:
       ENV: ${{ inputs.environment }}
     run: |
@@ -46,6 +48,7 @@ jobs:
 
 
   deploy:
+    needs: [ verifyInputs ]
     runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
     name: Deploy on AKS
     environment: ${{ inputs.environment }}
