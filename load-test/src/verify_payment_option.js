@@ -143,30 +143,31 @@ export function setup() {
 	return { notices: noticesArray };
 }
 
+export default function (data) {
+  const notices = data.notices;
+  const length = notices.length;
 
-export default function(data) {
-	const idx = exec.scenario.iterationInInstance;
-	const pair = data.notices[idx];
+  if (length === 0) {
+    return;
+  }
 
-	// If there is no orgFiscalCode/nav pair for this iteration, skip
-	if (!pair) {
-		return;
-	}
+  const globalIdx = exec.scenario.iterationInTest;
+  const idx = globalIdx % length;
 
-	const organizationFiscalCode = pair[0];
-	const nav = pair[1];
+  const [organizationFiscalCode, nav] = notices[idx];
 
-	// verifyPaymentOption: /payment-options/organizations/{organizationFiscalCode}/notices/{nav}
-	const url = `${rootInternalUrl}/payment-options/organizations/${organizationFiscalCode}/notices/${nav}`;
-	const r = http.post(url, null, verifyParams);
+  // verifyPaymentOption: /payment-options/organizations/{organizationFiscalCode}/notices/{nav}
+  const url = `${rootInternalUrl}/payment-options/organizations/${organizationFiscalCode}/notices/${nav}`;
+  const r = http.post(url, null, verifyParams);
 
-	if (r.status !== 200) {
-		console.log(
-			`Error ${r.status} calling verifyPaymentOption for org=${organizationFiscalCode}, nav=${nav} - body=${r.body}`,
-		);
-	}
+  if (r.status !== 200) {
+    console.log(
+      `Error ${r.status} calling verifyPaymentOption for org=${organizationFiscalCode}, nav=${nav} - body=${r.body}`,
+    );
+  }
 
-	check(r, { 'VerifyPaymentOption status is 200': (res) => res.status === 200 });
+  check(r, { 'VerifyPaymentOption status is 200': (res) => res.status === 200 });
 
-	verifyCounter.add(1);
+  verifyCounter.add(1);
 }
+
