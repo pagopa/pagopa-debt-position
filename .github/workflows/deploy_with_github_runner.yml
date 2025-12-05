@@ -5,8 +5,12 @@ on:
     inputs:
       environment:
         required: true
-        description: The name of the environment where to deploy
-        type: string
+        type: choice
+        description: Select the Environment
+        options:
+          - dev
+          - uat
+          - prod
       branch:
         required: false
         default: ${{ github.ref_name }}
@@ -85,11 +89,18 @@ jobs:
       - name: Terraform Apply
         shell: bash
         run: |
-          cd ./infra
           export ARM_CLIENT_ID=$(az account show --query clientId --output tsv)
           export ARM_SUBSCRIPTION_ID=$(az account show --query id --output tsv)
           export ARM_TENANT_ID=$(az account show --query tenantId --output tsv)
           export ARM_USE_OIDC=true
           export ARM_ACCESS_KEY=$(az storage account keys list --resource-group io-infra-rg --account-name pagopainfraterraform${{inputs.environment}} --query '[0].value' -o tsv)
+
+          cd ./infra/aca
+
+          bash ./terraform.sh init weu-${{ inputs.environment }}
+          bash ./terraform.sh apply weu-${{ inputs.environment }} -auto-approve
+
+          cd ../gps
+
           bash ./terraform.sh init weu-${{ inputs.environment }}
           bash ./terraform.sh apply weu-${{ inputs.environment }} -auto-approve
