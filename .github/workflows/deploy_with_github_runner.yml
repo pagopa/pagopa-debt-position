@@ -34,19 +34,6 @@ permissions:
   contents: read
 
 jobs:
-  verifyInputs:
-    runs-on: ubuntu-latest
-    name: Verify Inputs
-    environment: ${{ inputs.environment }}
-    env:
-      ENV: ${{ inputs.environment }}
-    run: |
-      if ["$ENV" != "dev" && "$ENV" != "uat" && "$ENV" != "prod" ]; then
-        echo "Input environment is invalid"
-        exit 0
-      fi
-
-
   deploy:
     needs: [ verifyInputs ]
     runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
@@ -95,6 +82,16 @@ jobs:
           client-id: ${{ secrets.CLIENT_ID }}
           tenant-id: ${{ secrets.TENANT_ID }}
           subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+
+      - name: Verify Environment Input
+        shell: bash
+        env:
+          ENV: ${{ inputs.environment }}
+        run: |
+          if ["$ENV" != "dev" && "$ENV" != "uat" && "$ENV" != "prod" ]; then
+            echo "Input environment is invalid"
+            exit 0
+          fi
 
       - name: Terraform Apply
         shell: bash
