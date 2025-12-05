@@ -5,8 +5,8 @@ on:
     inputs:
       environment:
         required: true
+        description: The name of the environment where to deploy
         type: string
-        description: Select the Environment
       branch:
         required: false
         default: ${{ github.ref_name }}
