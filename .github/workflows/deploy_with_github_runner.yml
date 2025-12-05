@@ -5,12 +5,8 @@ on:
     inputs:
       environment:
         required: true
-        type: choice
+        type: string
         description: Select the Environment
-        options:
-          - dev
-          - uat
-          - prod
       branch:
         required: false
         default: ${{ github.ref_name }}
@@ -38,6 +34,17 @@ permissions:
   contents: read
 
 jobs:
+  verifyInputs:
+    name: Verify Inputs
+    env:
+      ENV: ${{ inputs.environment }}
+    run: |
+      if ["$ENV" != "dev" && "$ENV" != "uat" && "$ENV" != "prod" ]; then
+        echo "Input environment is invalid"
+        exit 0
+      fi
+
+
   deploy:
     runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
     name: Deploy on AKS
