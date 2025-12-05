@@ -35,7 +35,6 @@ permissions:
 
 jobs:
   deploy:
-    needs: [ verifyInputs ]
     runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
     name: Deploy on AKS
     environment: ${{ inputs.environment }}
