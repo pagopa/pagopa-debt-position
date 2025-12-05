@@ -14,10 +14,10 @@
     "contacts": {
       "executor": "constant-arrival-rate",
       "duration": "5m",
-      "rate": 200,
+      "rate": 100,
       "timeUnit": "1s",
-      "preAllocatedVUs": 150,
-      "maxVUs": 200
+      "preAllocatedVUs": 50,
+      "maxVUs": 100
     }
   },
   "thresholds": {
