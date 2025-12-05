@@ -24,6 +24,13 @@ on:
         type: boolean
         description: 'Mark the release as canary on AKS'
         default: false
+    secrets:
+      CLIENT_ID: 
+        required: true
+      TENANT_ID: 
+        required: true
+      SUBSCRIPTION_ID: 
+        required: true
 
 env:
   APP_NAME: gpd-core
