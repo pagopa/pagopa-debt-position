@@ -71,6 +71,7 @@ jobs:
   update_openapi:
     needs: [ deploy ]
     runs-on: ubuntu-latest
+    if: inputs.uninstall == false
     name: Update OpenAPI
     environment: ${{ inputs.environment }}
     steps:
