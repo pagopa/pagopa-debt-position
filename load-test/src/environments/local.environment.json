@@ -2,7 +2,8 @@
   "environment": [
     {
       "env": "local",
-      "host": "http://host.docker.internal:8080"
+      "host": "http://host.docker.internal:8080",
+	  "host_internal": "http://host.docker.internal:8080"
     }
   ]
 }
