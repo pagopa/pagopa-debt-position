@@ -67,18 +67,20 @@ jobs:
 
           echo "final_app_name=$FINAL_APP_NAME" >> "$GITHUB_OUTPUT"
 
-  remove_deploy_dry_run:
+  helm_setup:
+    name: Helm / AKS setup
     needs: [ setup ]
     runs-on: [ self-hosted-job, "${{ needs.setup.outputs.environment }}" ]
-    name: Remove deployment dry run
-    environment: ${{ needs.setup.outputs.environment }}
+    outputs:
+      # Se ti serve segnare qualcosa come output, puoi aggiungerlo qui
+      environment: ${{ needs.setup.outputs.environment }}
     env:
       FINAL_APP_NAME: ${{ needs.setup.outputs.final_app_name }}
       NAMESPACE: ${{ vars.NAMESPACE }}
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ github.ref }}
 
       - name: Login
         uses: azure/login@89d153571fe9a34ed70fcf9f1d95ab8debea7a73
@@ -102,7 +104,16 @@ jobs:
           helm dep build helm
           echo "✅ aks blueprint configured"
 
-      - name: 🗑Remove deployment with dry run
+  remove_deploy_dry_run:
+    name: Remove deployment dry run
+    needs: [ setup, helm_setup ]
+    runs-on: [ self-hosted-job, "${{ needs.setup.outputs.environment }}" ]
+    environment: ${{ needs.setup.outputs.environment }}
+    env:
+      FINAL_APP_NAME: ${{ needs.setup.outputs.final_app_name }}
+      NAMESPACE: ${{ vars.NAMESPACE }}
+    steps:
+      - name: 🗑 Remove deployment with dry run
         shell: bash
         run: |
           echo "🗑 Launch helm uninstall (dry run)"
@@ -110,18 +121,18 @@ jobs:
 
           helm uninstall "$FINAL_APP_NAME" -n "$NAMESPACE" --dry-run
 
-          echo "Check the results from the uninsstall dry run"
+          echo "Check the results from the uninstall dry run"
 
   confirm-remove-deploy:
-    needs: [ remove_deploy_dry_run, setup ]
-    runs-on: [ self-hosted-job, "${{ needs.setup.outputs.environment }}" ]
     name: Confirm remove deployment
+    needs: [ setup, helm_setup, remove_deploy_dry_run ]
+    runs-on: [ self-hosted-job, "${{ needs.setup.outputs.environment }}" ]
     environment: ${{ needs.setup.outputs.environment }}
     env:
       FINAL_APP_NAME: ${{ needs.setup.outputs.final_app_name }}
       NAMESPACE: ${{ vars.NAMESPACE }}
     steps:
-      - name: 🗑Remove deployment
+      - name: 🗑 Remove deployment (CONFIRMED)
         shell: bash
         run: |
           echo "🗑 Launch helm uninstall"
@@ -132,9 +143,9 @@ jobs:
           echo "✔️ Helm uninstall completed"
 
   notify:
+    name: Notify
     needs: [ setup, remove_deploy_dry_run, confirm-remove-deploy ]
     runs-on: ubuntu-latest
-    name: Notify
     if: always()
     steps:
       - name: Report Status
@@ -143,7 +154,7 @@ jobs:
         with:
           status: ${{ needs.confirm-remove-deploy.result }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          notification_title: 'Delete Release on Production ${{ needs.release.outputs.version }} has {status_message}'
+          notification_title: 'Delete Release on Production has {status_message}'
           message_format: '{emoji} <{run_url}|{workflow}> {status_message} in <{repo_url}|{repo}>'
           footer: 'Linked to <{workflow_url}| workflow file>'
           icon_success: ':wastebasket:'
