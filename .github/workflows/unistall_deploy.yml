@@ -18,13 +18,15 @@ on:
         description: Uninstall the canary version on AKS
         default: true
 
+env:
+  APP_NAME: gpd-core
+
 permissions:
   packages: write
   contents: write
   issues: write
   id-token: write
   actions: read
-
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -33,6 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       environment: ${{ steps.get_env.outputs.environment }}
+      final_app_name: ${{ steps.set_app_name.outputs.final_app_name }}
     steps:
       # Set Environment
       - run: echo "ENVIRONMENT=${{ inputs.environment }}" >> $GITHUB_ENV
@@ -41,14 +44,37 @@ jobs:
         run: echo "ENVIRONMENT=dev" >> $GITHUB_ENV
 
       - id: get_env
-        name: Set Output
+        name: Set Environment Output
         run: echo "environment=${{ env.ENVIRONMENT }}" >> $GITHUB_OUTPUT
+
+      # Set App name
+      - id: set_app_name
+        name: Compute FINAL_APP_NAME
+        shell: bash
+        env:
+          BASE_APP_NAME: ${{ env.APP_NAME }}
+          IS_CANARY: ${{ inputs.is_canary }}
+        run: |
+          if [ -z "$BASE_APP_NAME" ]; then
+            echo "BASE_APP_NAME (APP_NAME) not defined."
+            exit 1
+          fi
+
+          FINAL_APP_NAME="$BASE_APP_NAME"
+          if [ "$IS_CANARY" = "true" ]; then
+            FINAL_APP_NAME="${FINAL_APP_NAME}-canary"
+          fi
+
+          echo "final_app_name=$FINAL_APP_NAME" >> "$GITHUB_OUTPUT"
 
   remove_deploy_dry_run:
     needs: [ setup ]
-    runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
+    runs-on: [ self-hosted-job, "${{ needs.setup.outputs.environment }}" ]
     name: Remove deployment dry run
-    environment: ${{ inputs.environment }}
+    environment: ${{ needs.setup.outputs.environment }}
+    env:
+      FINAL_APP_NAME: ${{ needs.setup.outputs.final_app_name }}
+      NAMESPACE: ${{ vars.NAMESPACE }}
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
         with:
@@ -78,45 +104,32 @@ jobs:
 
       - name: 🗑Remove deployment with dry run
         shell: bash
-        env:
-          APP_NAME: ${{ env.APP_NAME }}
-          NAMESPACE: ${{ vars.NAMESPACE }}
-          IS_CANARY: ${{ inputs.is_canary }}
         run: |
-          echo "🗑Launch helm uninstall"
-
-          FINAL_APP_NAME="$APP_NAME"
-          if [ "$IS_CANARY" = "true" ]; then
-            FINAL_APP_NAME="${FINAL_APP_NAME}-canary"
-          fi
-
+          echo "🗑 Launch helm uninstall (dry run)"
           echo "Uninstalling release (dry-run): $FINAL_APP_NAME from namespace: $NAMESPACE"
+
           helm uninstall "$FINAL_APP_NAME" -n "$NAMESPACE" --dry-run
-          echo "✔️Helm uninstall (dry run)"
+
+          echo "Check the results from the uninsstall dry run"
 
   confirm-remove-deploy:
-    needs: [ remove_deploy_dry_run ]
-    runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
+    needs: [ remove_deploy_dry_run, setup ]
+    runs-on: [ self-hosted-job, "${{ needs.setup.outputs.environment }}" ]
     name: Confirm remove deployment
-    environment: ${{ inputs.environment }}
+    environment: ${{ needs.setup.outputs.environment }}
+    env:
+      FINAL_APP_NAME: ${{ needs.setup.outputs.final_app_name }}
+      NAMESPACE: ${{ vars.NAMESPACE }}
     steps:
       - name: 🗑Remove deployment
         shell: bash
-        env:
-          APP_NAME: ${{ env.APP_NAME }}
-          NAMESPACE: ${{ vars.NAMESPACE }}
-          IS_CANARY: ${{ inputs.is_canary }}
         run: |
-          echo "🗑Launch helm uninstall"
-
-          FINAL_APP_NAME="$APP_NAME"
-          if [ "$IS_CANARY" = "true" ]; then
-            FINAL_APP_NAME="${FINAL_APP_NAME}-canary"
-          fi
-
+          echo "🗑 Launch helm uninstall"
           echo "Uninstalling release: $FINAL_APP_NAME from namespace: $NAMESPACE"
+
           helm uninstall "$FINAL_APP_NAME" -n "$NAMESPACE"
-          echo "✔️Helm uninstall"
+
+          echo "✔️ Helm uninstall completed"
 
   notify:
     needs: [ setup, remove_deploy_dry_run, confirm-remove-deploy ]
