@@ -1612,7 +1612,8 @@
           },
           "fee": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "readOnly": true
           },
           "notificationFee": {
             "type": "integer",
