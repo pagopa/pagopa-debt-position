@@ -102,7 +102,7 @@ jobs:
   remove_deploy_dry_run:
     name: Remove deployment dry run
     needs: [ setup, helm_setup ]
-    runs-on: [ self-hosted-job, "${{ needs.setup.outputs.environment }}" ]
+    runs-on: ${{ needs.helm_setup.outputs.RUNNER }}
     environment: ${{ needs.setup.outputs.environment }}
     env:
       FINAL_APP_NAME: ${{ needs.setup.outputs.final_app_name }}
@@ -121,7 +121,7 @@ jobs:
   confirm-remove-deploy:
     name: Confirm remove deployment
     needs: [ setup, helm_setup, remove_deploy_dry_run ]
-    runs-on: [ self-hosted-job, "${{ needs.setup.outputs.environment }}" ]
+    runs-on: ${{ needs.helm_setup.outputs.RUNNER }}
     environment: ${{ needs.setup.outputs.environment }}
     env:
       FINAL_APP_NAME: ${{ needs.setup.outputs.final_app_name }}
