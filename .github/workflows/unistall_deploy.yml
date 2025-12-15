@@ -48,7 +48,7 @@ jobs:
   remove_deploy_dry_run:
     needs: [ setup ]
     runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
-    name: 🗑Remove deployment dry run
+    name: Remove deployment dry run
     environment: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
@@ -80,7 +80,7 @@ jobs:
       - name: 🗑Remove deployment with dry run
         shell: bash
         env:
-          APP_NAME: "${{ env.APP_NAME }}${{inputs.is_canary && '-canary' || ''}}"
+          APP_NAME: '${{ env.APP_NAME }}${{inputs.is_canary && "-canary" || ""}}'
           NAMESPACE: ${{ vars.NAMESPACE }}
         run: |
           echo "🗑Launch helm uninstall"
@@ -90,13 +90,13 @@ jobs:
   confirm-remove-deploy:
     needs: [ remove_deploy_dry_run ]
     runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
-    name: 🗑Confirm remove deployment 
+    name: Confirm remove deployment
     environment: ${{ inputs.environment }}
     steps:
       - name: 🗑Remove deployment
         shell: bash
         env:
-          APP_NAME: "${{ env.APP_NAME }}${{inputs.is_canary && '-canary' || ''}}"
+          APP_NAME: '${{ env.APP_NAME }}${{inputs.is_canary && "-canary" || ""}}'
           NAMESPACE: ${{ vars.NAMESPACE }}
         run: |
           echo "🗑Launch helm uninstall"
