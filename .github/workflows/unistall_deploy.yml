@@ -33,37 +33,8 @@ jobs:
     name: Setup
     runs-on: ubuntu-latest
     outputs:
-      semver: ${{ steps.get_semver.outputs.semver }}
       environment: ${{ steps.get_env.outputs.environment }}
     steps:
-      - name: pull request rejected
-        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged != true
-        run: |
-          echo "❌ PR was closed without a merge"
-          exit 1
-
-      # Set Semvar
-      - run: echo "SEMVER=patch" >> $GITHUB_ENV
-
-      - if: ${{ (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'breaking-change ')) }}
-        run: echo "SEMVER=major" >> $GITHUB_ENV
-
-      - if: ${{ inputs.environment == 'uat' }}
-        run: echo "SEMVER=minor" >> $GITHUB_ENV
-
-      - if: ${{ inputs.environment == 'prod' }}
-        run: echo "SEMVER=skip" >> $GITHUB_ENV
-
-      - if: ${{ github.ref_name != 'main' }}
-        run: echo "SEMVER=buildNumber" >> $GITHUB_ENV
-
-      - if: ${{ inputs.skip_release }}
-        run: echo "SEMVER=skip" >> $GITHUB_ENV
-
-      - id: get_semver
-        name: Set Output
-        run: echo "semver=${{env.SEMVER}}" >> $GITHUB_OUTPUT
-
       # Set Environment
       - run: echo "ENVIRNOMENT=${{ inputs.environment}}" >> $GITHUB_ENV
 
@@ -114,13 +85,13 @@ jobs:
           NAMESPACE: ${{ inputs.namespace }}
         run: |
           echo "🗑Launch helm uninstall"
-          helm uninstall '$APP_NAME$SUFFIX_NAME' -n "$NAMESPACE" --dry-run
+          helm uninstall '${{ env.APP_NAME }}${{ env.SUFFIX_NAME }}' -n "$NAMESPACE" --dry-run
           echo "✔️Helm uninstall"
 
-  remove-deploy-final:
+  confirm-remove-deploy:
     needs: [ remove_deploy_dry_run ]
     runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
-    name: 🗑Remove deployment dry run
+    name: 🗑Confirm remove deployment 
     environment: ${{ inputs.environment }}
     steps:
       - name: 🗑Remove deployment
@@ -135,7 +106,7 @@ jobs:
           echo "✔️Helm uninstall"
 
   notify:
-    needs: [ setup, remove_deploy_dry_run, remove-deploy-final ]
+    needs: [ setup, remove_deploy_dry_run, confirm-remove-deploy ]
     runs-on: ubuntu-latest
     name: Notify
     if: always()
