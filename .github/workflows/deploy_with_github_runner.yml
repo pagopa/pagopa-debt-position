@@ -24,11 +24,6 @@ on:
         type: boolean
         description: 'Mark the release as canary on AKS'
         default: false
-      uninstall:
-        description: 'true if you want to uninstall instead of install'
-        required: false
-        type: boolean
-        default: false
     secrets:
       CLIENT_ID: 
         required: true
@@ -66,12 +61,10 @@ jobs:
           app_name: '${{ env.APP_NAME }}${{inputs.suffix_name}}'
           helm_upgrade_options: '--debug --set microservice-chart.azure.workloadIdentityClientId=${{vars.WORKLOAD_IDENTITY_ID}} --set microservice-chart.canaryDelivery.ingress.weightPercent=${{ inputs.traffic_weight }} --set microservice-chart.canaryDelivery.create=${{ inputs.is_canary }}'
           timeout: '10m0s'
-          uninstall: ${{ inputs.uninstall }}
 
   update_openapi:
     needs: [ deploy ]
     runs-on: ubuntu-latest
-    if: inputs.uninstall == false
     name: Update OpenAPI
     environment: ${{ inputs.environment }}
     steps:

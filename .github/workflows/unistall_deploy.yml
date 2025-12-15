@@ -74,21 +74,68 @@ jobs:
         name: Set Output
         run: echo "environment=${{env.ENVIRNOMENT}}" >> $GITHUB_OUTPUT
 
-  deploy_aks:
-    name: Deploy on AKS
+  remove_deploy_dry_run:
     needs: [ setup ]
-    uses: ./.github/workflows/deploy_with_github_runner.yml
-    with:
-      environment: ${{ needs.setup.outputs.environment }}
-      suffix_name: ${{ inputs.is_canary && '-canary' || '' }}
-      uninstall: true
-    secrets:
-      CLIENT_ID: ${{ secrets.CLIENT_ID }}
-      TENANT_ID: ${{ secrets.TENANT_ID }}
-      SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
+    runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
+    name: 🗑Remove deployment dry run
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+        with:
+          ref: ${{ inputs.branch}}
+
+      - name: Login
+        uses: azure/login@89d153571fe9a34ed70fcf9f1d95ab8debea7a73
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          tenant-id: ${{ secrets.TENANT_ID }}
+          subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+
+      - name: Gets K8s context
+        uses: azure/aks-set-context@4edaee69f820359371ee8bc85189ac03a21d3a58 # v3
+        with:
+          resource-group: ${{ vars.CLUSTER_RESOURCE_GROUP }}
+          cluster-name: ${{ vars.CLUSTER_NAME }}
+          admin: 'false'
+          use-kubelogin: 'true'
+
+      - name: 🛠️ Helm configure repos
+        shell: bash
+        run: |
+          helm repo add microservice-chart https://pagopa.github.io/aks-microservice-chart-blueprint
+          helm dep build helm
+          echo "✅ aks blueprint configured"
+
+      - name: 🗑Remove deployment with dry run
+        shell: bash
+        env:
+          APP_NAME: ${{ inputs.app_name }}
+          SUFFIX_NAME: ${{ inputs.suffix_name }}
+          NAMESPACE: ${{ inputs.namespace }}
+        run: |
+          echo "🗑Launch helm uninstall"
+          helm uninstall '$APP_NAME$SUFFIX_NAME' -n "$NAMESPACE" --dry-run
+          echo "✔️Helm uninstall"
+
+  remove-deploy-final:
+    needs: [ remove_deploy_dry_run ]
+    runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
+    name: 🗑Remove deployment dry run
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: 🗑Remove deployment
+        shell: bash
+        env:
+          APP_NAME: ${{ inputs.app_name }}
+          SUFFIX_NAME: ${{ inputs.suffix_name }}
+          NAMESPACE: ${{ inputs.namespace }}
+        run: |
+          echo "🗑Launch helm uninstall"
+          helm uninstall '$APP_NAME$SUFFIX_NAME' -n "$NAMESPACE"
+          echo "✔️Helm uninstall"
 
   notify:
-    needs: [ setup, deploy_aks ]
+    needs: [ setup, remove_deploy_dry_run, remove-deploy-final ]
     runs-on: ubuntu-latest
     name: Notify
     if: always()
