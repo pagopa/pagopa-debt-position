@@ -71,6 +71,7 @@ jobs:
     name: Helm / AKS setup
     needs: [ setup ]
     runs-on: [ self-hosted-job, "${{ needs.setup.outputs.environment }}" ]
+    environment: ${{ needs.setup.outputs.environment }}
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
         with:
