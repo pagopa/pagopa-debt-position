@@ -84,7 +84,7 @@ jobs:
           NAMESPACE: ${{ vars.NAMESPACE }}
         run: |
           echo "🗑Launch helm uninstall"
-          if[ inputs.is_canary == 'true']
+          if[ ${{ inputs.is_canary }} == 'true']
           then
           APP_NAME+='-canary'
           end
@@ -105,7 +105,7 @@ jobs:
           NAMESPACE: ${{ vars.NAMESPACE }}
         run: |
           echo "🗑Launch helm uninstall"
-          if[ inputs.is_canary == 'true']
+          if[ ${{ inputs.is_canary }} == 'true']
           then
           APP_NAME+='-canary'
           end
