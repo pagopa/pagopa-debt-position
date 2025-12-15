@@ -7,6 +7,18 @@ on:
         required: true
         description: The name of the environment where to run DB migration
         type: string
+      schema:
+        required: true
+        description: Which schema to migrate (apd|odp|all)
+        type: string
+        default: all
+    secrets:
+        FLYWAY_DATASOURCE_URL: 
+          required: true
+        SPRING_DATASOURCE_USERNAME: 
+          required: true
+        SPRING_DATASOURCE_PASSWORD: 
+          required: true
   workflow_dispatch:
     inputs:
       environment:
@@ -25,6 +37,7 @@ on:
           - apd
           - odp
           - all
+        default: apd
 
 permissions:
   id-token: write
@@ -56,27 +69,33 @@ jobs:
       # ============================
       # - Run Flyway
       # ============================  
-      - name: Run Flyway Migration
+      - name: Run Flyway (APD)
+        if: ${{ inputs.schema == 'apd' || inputs.schema == 'all' }}
         shell: bash
+        env:
+          FLYWAY_DATASOURCE_URL: ${{ secrets.FLYWAY_DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
+          SCHEMA_NAME: ${{ vars.APD_SCHEMA_NAME }}
         run: |
-          export FLYWAY_DATASOURCE_URL='${{ secrets.FLYWAY_DATASOURCE_URL }}'
-          export SPRING_DATASOURCE_USERNAME='${{ secrets.DATASOURCE_USERNAME }}'
-          export SPRING_DATASOURCE_PASSWORD='${{ secrets.DATASOURCE_PASSWORD }}'
+          set -euo pipefail
+          CFG=gpdFlywayConfig.conf
+          COMMON="-Dflyway.configFiles=${CFG} -Dflyway.validateMigrationNaming=true -Dflyway.cleanDisabled=true"
+          echo "▶ Running APD: validate on migrate"
+          mvn -B flyway:migrate -Dflyway.validateOnMigrate=true ${COMMON}
 
-          if [[ "${{ inputs.schema }}" == "apd" ]]; then
-            echo "▶ Running migration for schema APD..."
-            export SCHEMA_NAME='${{ vars.APD_SCHEMA_NAME }}'
-            mvn flyway:migrate -Dflyway.configFiles=gpdFlywayConfig.conf
-          elif [[ "${{ inputs.schema }}" == "odp" ]]; then
-            echo "▶ Running migration for schema ODP..."
-            export SCHEMA_NAME='${{ vars.ODP_SCHEMA_NAME }}'
-            mvn flyway:migrate -Dflyway.configFiles=gpdFlywayConfig.conf 
-          else
-            echo "▶ Running migration for ALL schemas..."
-            # APD
-            export SCHEMA_NAME='${{ vars.APD_SCHEMA_NAME }}'
-            mvn flyway:migrate -Dflyway.configFiles=gpdFlywayConfig.conf
-            # ODP
-            export SCHEMA_NAME='${{ vars.ODP_SCHEMA_NAME }}'
-            mvn flyway:migrate -Dflyway.configFiles=gpdFlywayConfig.conf                  
-          fi
+      - name: Run Flyway (ODP)
+        if: ${{ inputs.schema == 'odp' || inputs.schema == 'all' }}
+        shell: bash
+        env:
+          FLYWAY_DATASOURCE_URL: ${{ secrets.FLYWAY_DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
+          SCHEMA_NAME: ${{ vars.ODP_SCHEMA_NAME }}
+        run: |
+          set -euo pipefail
+          CFG=gpdFlywayConfig.conf
+          COMMON="-Dflyway.configFiles=${CFG} -Dflyway.validateMigrationNaming=true -Dflyway.cleanDisabled=true"
+          echo "▶ Running ODP: validate on migrate"
+          mvn -B flyway:migrate -Dflyway.validateOnMigrate=true ${COMMON}
+

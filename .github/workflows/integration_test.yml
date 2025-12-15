@@ -13,6 +13,7 @@ on:
         options:
           - dev
           - uat
+        default: uat
       canary:
         description: 'run the tests on canary version'
         required: false
@@ -28,7 +29,7 @@ permissions:
 jobs:
   integration_test:
     name: Test
-    runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
+    runs-on: [ self-hosted-job, "${{(github.event.inputs == null && 'uat') || inputs.environment }}" ]
     environment: ${{(github.event.inputs == null && 'uat') || inputs.environment }}
     steps:
       - name: Checkout
@@ -73,7 +74,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_INTEGRATION_TEST }}
 
   delete_github_deployments:
-    runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
+    runs-on: [ self-hosted-job, "${{(github.event.inputs == null && 'uat') || inputs.environment }}" ]
     needs: integration_test
     if: ${{ always() }}
     steps:

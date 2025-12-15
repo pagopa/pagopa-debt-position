@@ -13,13 +13,11 @@ import io.swagger.v3.oas.models.servers.Server;
 
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.springdoc.core.GroupedOpenApi;
-import org.springdoc.core.customizers.OpenApiCustomiser;
+import org.springdoc.core.models.GroupedOpenApi;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,7 +32,7 @@ public class SwaggerConfig {
   private static final String DEBT_POSITION_API_BLOCK = "/organizations/{organizationfiscalcode}/debtpositions/**";
 
   @Bean
-  public OpenAPI customOpenAPI(
+  OpenAPI customOpenAPI(
       @Value("${info.application.description}") String appDescription,
       @Value("${info.application.version}") String appVersion) {
 
@@ -58,7 +56,7 @@ public class SwaggerConfig {
   }
 
   @Bean
-  public OpenApiCustomiser sortOperationsAlphabetically() {
+  OpenApiCustomizer sortOperationsAlphabetically() {
     return openApi -> {
       Paths paths =
           openApi.getPaths().entrySet().stream()
@@ -73,15 +71,15 @@ public class SwaggerConfig {
   }
 
   @Bean
-  public Map<String, GroupedOpenApi> configureGroupOpenApi(
+  Map<String, GroupedOpenApi> configureGroupOpenApi(
       Map<String, GroupedOpenApi> groupOpenApi) {
     groupOpenApi.forEach(
-        (id, groupedOpenApi) -> groupedOpenApi.getOpenApiCustomisers().add(addCommonHeaders()));
+        (id, groupedOpenApi) -> groupedOpenApi.getOpenApiCustomizers().add(addCommonHeaders()));
     return groupOpenApi;
   }
 
   @Bean
-  public OpenApiCustomiser addCommonHeaders() {
+  OpenApiCustomizer addCommonHeaders() {
     return openApi ->
         openApi
             .getPaths()
@@ -118,7 +116,7 @@ public class SwaggerConfig {
   }
 
   @Bean
-  public GroupedOpenApi internalV1Api() {
+  GroupedOpenApi internalV1Api() {
 
     // api to remove
     Map<String, Set<String>> removeFromInternalV1 = Map.of(
@@ -141,15 +139,15 @@ public class SwaggerConfig {
             .displayName("GPD - Internal API - v1")
             .pathsToMatch("/**/**")
             .pathsToExclude("/v3/**")
-            .addOpenApiCustomiser(customizeServer(serverInfo))
-            .addOpenApiCustomiser(customizeOpenApi(removeFromInternalV1))
-            .addOpenApiCustomiser(removeSchema(schemasToRemove))
-            .addOpenApiCustomiser(sortOpenApi())
+            .addOpenApiCustomizer(customizeServer(serverInfo))
+            .addOpenApiCustomizer(customizeOpenApi(removeFromInternalV1))
+            .addOpenApiCustomizer(removeSchema(schemasToRemove))
+            .addOpenApiCustomizer(sortOpenApi())
             .build();
   }
 
   @Bean
-  public GroupedOpenApi internalV2Api() {
+  GroupedOpenApi internalV2Api() {
 
     // api to remove
     Map<String, Set<String>> removeFromInternalV2 = Map.of(
@@ -166,17 +164,17 @@ public class SwaggerConfig {
             .displayName("GPD - Internal API - v2")
             .pathsToMatch("/**/**")
             .pathsToExclude("/v3/**")
-            .addOpenApiCustomiser(customizeServer(serverInfo))
-            .addOpenApiCustomiser(customizeOpenApi(removeFromInternalV2))
-            .addOpenApiCustomiser(renamePath(DEBT_POSITIONS_BULK_API, DEBT_POSITIONS_API))
-            .addOpenApiCustomiser(sortOpenApi())
+            .addOpenApiCustomizer(customizeServer(serverInfo))
+            .addOpenApiCustomizer(customizeOpenApi(removeFromInternalV2))
+            .addOpenApiCustomizer(renamePath(DEBT_POSITIONS_BULK_API, DEBT_POSITIONS_API))
+            .addOpenApiCustomizer(sortOpenApi())
             .build();
 
     return openapi;
   }
 
   @Bean
-  public GroupedOpenApi externalV1Api() {
+  GroupedOpenApi externalV1Api() {
     Map<String, Set<String>> removeFromExternalV1 = Map.of(
             DEBT_POSITIONS_API, Set.of("put", "delete")
     );
@@ -196,15 +194,15 @@ public class SwaggerConfig {
             .displayName("GPD - External API - v1")
             .pathsToMatch(DEBT_POSITION_API_BLOCK, PAYMENTS_MARK_AS_PAID_API, INFO_API)
             .pathsToExclude(DEBT_POSITIONS_BULK_API)
-            .addOpenApiCustomiser(customizeServer(serverInfo))
-            .addOpenApiCustomiser(customizeOpenApi(removeFromExternalV1))
-            .addOpenApiCustomiser(removeSchema(schemasToRemove))
-            .addOpenApiCustomiser(sortOpenApi())
+            .addOpenApiCustomizer(customizeServer(serverInfo))
+            .addOpenApiCustomizer(customizeOpenApi(removeFromExternalV1))
+            .addOpenApiCustomizer(removeSchema(schemasToRemove))
+            .addOpenApiCustomizer(sortOpenApi())
             .build();
   }
 
   @Bean
-  public GroupedOpenApi externalV2Api() {
+  GroupedOpenApi externalV2Api() {
     Map<String, Set<String>> removeFromExternalV2 = Map.of(
             DEBT_POSITIONS_API, Set.of("get", "post")
     );
@@ -218,15 +216,15 @@ public class SwaggerConfig {
             .group("external_v2")
             .displayName("GPD - External API - v2")
             .pathsToMatch(DEBT_POSITIONS_API, DEBT_POSITIONS_BULK_API, PAYMENTS_MARK_AS_PAID_API, INFO_API)
-            .addOpenApiCustomiser(customizeServer(serverInfo))
-            .addOpenApiCustomiser(customizeOpenApi(removeFromExternalV2))
-            .addOpenApiCustomiser(renamePath(DEBT_POSITIONS_BULK_API, DEBT_POSITIONS_API))
-            .addOpenApiCustomiser(sortOpenApi())
+            .addOpenApiCustomizer(customizeServer(serverInfo))
+            .addOpenApiCustomizer(customizeOpenApi(removeFromExternalV2))
+            .addOpenApiCustomizer(renamePath(DEBT_POSITIONS_BULK_API, DEBT_POSITIONS_API))
+            .addOpenApiCustomizer(sortOpenApi())
             .build();
   }
 
   @Bean
-  public GroupedOpenApi externalV3Api() {
+  GroupedOpenApi externalV3Api() {
     Map<String, Set<String>> removeFromExternalV3 = Map.of();
 
     // server list
@@ -238,15 +236,15 @@ public class SwaggerConfig {
             .group("external_v3")
             .displayName("GPD - External API - v3")
             .pathsToMatch("/v3/**")
-            .addOpenApiCustomiser(customizeServer(serverInfo))
-            .addOpenApiCustomiser(customizeOpenApi(removeFromExternalV3))
-            .addOpenApiCustomiser(removePrefixFromPaths("/v3"))
-            .addOpenApiCustomiser(sortOpenApi())
+            .addOpenApiCustomizer(customizeServer(serverInfo))
+            .addOpenApiCustomizer(customizeOpenApi(removeFromExternalV3))
+            .addOpenApiCustomizer(removePrefixFromPaths("/v3"))
+            .addOpenApiCustomizer(sortOpenApi())
             .build();
   }
 
   @Bean
-  public GroupedOpenApi acaV1Api() {
+  GroupedOpenApi acaV1Api() {
     Map<String, Set<String>> removeFromAcaV1 = Map.of(
             DEBT_POSITIONS_API, Set.of("put", "delete"),
             "/organizations/{organizationfiscalcode}/debtpositions/transfers", Set.of("patch")
@@ -269,15 +267,15 @@ public class SwaggerConfig {
             .displayName("GPD - ACA API - v1")
             .pathsToMatch(DEBT_POSITION_API_BLOCK, PAYMENTS_MARK_AS_PAID_API, INFO_API)
             .pathsToExclude(DEBT_POSITIONS_BULK_API)
-            .addOpenApiCustomiser(customizeServer(serverInfo))
-            .addOpenApiCustomiser(customizeOpenApi(removeFromAcaV1))
-            .addOpenApiCustomiser(removeSchema(schemasToRemove))
-            .addOpenApiCustomiser(sortOpenApi())
+            .addOpenApiCustomizer(customizeServer(serverInfo))
+            .addOpenApiCustomizer(customizeOpenApi(removeFromAcaV1))
+            .addOpenApiCustomizer(removeSchema(schemasToRemove))
+            .addOpenApiCustomizer(sortOpenApi())
             .build();
   }
 
   @Bean
-  public GroupedOpenApi sendV1Api() {
+  GroupedOpenApi sendV1Api() {
     Map<String, Set<String>> removeFromSendV1 = Map.of();
 
     // server list
@@ -289,9 +287,9 @@ public class SwaggerConfig {
             .group("send_v1")
             .displayName("GPD - Send API - v1")
             .pathsToMatch("/organizations/{organizationfiscalcode}/paymentoptions/{iuv}/notificationfee","/organizations/{organizationfiscalcode}/paymentoptions/{iuv}", INFO_API)
-            .addOpenApiCustomiser(customizeServer(serverInfo))
-            .addOpenApiCustomiser(customizeOpenApi(removeFromSendV1))
-            .addOpenApiCustomiser(sortOpenApi())
+            .addOpenApiCustomizer(customizeServer(serverInfo))
+            .addOpenApiCustomizer(customizeOpenApi(removeFromSendV1))
+            .addOpenApiCustomizer(sortOpenApi())
             .build();
   }
 
@@ -307,7 +305,7 @@ public class SwaggerConfig {
     return server;
   }
 
-  private OpenApiCustomiser customizeServer(List<Server> serverInfo) {
+  private OpenApiCustomizer customizeServer(List<Server> serverInfo) {
     return openApi -> {
       if (openApi.getPaths() == null) return;
 
@@ -316,7 +314,7 @@ public class SwaggerConfig {
     };
   }
 
-  private OpenApiCustomiser removePrefixFromPaths(String prefix) {
+  private OpenApiCustomizer removePrefixFromPaths(String prefix) {
     return openApi -> {
       if (openApi.getPaths() == null) {
         return;
@@ -340,7 +338,7 @@ public class SwaggerConfig {
     };
   }
 
-  private OpenApiCustomiser renamePath(String oldPath, String newPath) {
+  private OpenApiCustomizer renamePath(String oldPath, String newPath) {
     return openApi -> {
       if (openApi.getPaths() == null || !openApi.getPaths().containsKey(oldPath)) {
         return; // Esce se il vecchio path non esiste
@@ -364,7 +362,7 @@ public class SwaggerConfig {
     });
   }
 
-  private OpenApiCustomiser customizeOpenApi(Map<String, Set<String>> pathsToRemove) {
+  private OpenApiCustomizer customizeOpenApi(Map<String, Set<String>> pathsToRemove) {
     return openApi -> {
       if (openApi.getPaths() == null) return;
 
@@ -401,7 +399,7 @@ public class SwaggerConfig {
     };
   }
 
-  private OpenApiCustomiser removeSchema(Set<String> schemasToRemove) {
+  private OpenApiCustomizer removeSchema(Set<String> schemasToRemove) {
     return openApi -> {
       if (openApi.getPaths() == null) return;
 
@@ -412,7 +410,7 @@ public class SwaggerConfig {
     };
   }
 
-  private OpenApiCustomiser sortOpenApi() {
+  private OpenApiCustomizer sortOpenApi() {
     return openApi -> {
       if (openApi.getPaths() == null) return;
 

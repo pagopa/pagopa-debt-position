@@ -9,8 +9,8 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 /**
@@ -29,12 +29,6 @@ import lombok.*;
       @UniqueConstraint(
           name = "UniquePaymentPos",
           columnNames = {"iupd", "organization_fiscal_code"})
-    },
-    indexes = {
-      @Index(
-          name = "payment_position_status_validity_date_idx",
-          columnList = "status, validity_date"),
-      @Index(name = "idx_fiscal_code", columnList = "fiscal_code")
     })
 @JsonIdentityInfo(
     generator = ObjectIdGenerators.IntSequenceGenerator.class,
@@ -113,9 +107,6 @@ public class PaymentPosition implements Serializable {
   @Column(name = "publish_date")
   private LocalDateTime publishDate;
 
-  @Column(name = "validity_date")
-  private LocalDateTime validityDate;
-
   @NotNull
   @Column(name = "min_due_date")
   private LocalDateTime minDueDate;
@@ -136,14 +127,19 @@ public class PaymentPosition implements Serializable {
   private LocalDateTime paymentDate;
 
   @Builder.Default
-  @Column(name = "switch_to_expired", columnDefinition = "boolean DEFAULT false")
-  private Boolean switchToExpired = false;
-
-  @Builder.Default
   @NotNull
   @Version
   @Column(columnDefinition = "integer DEFAULT 0")
   private Integer version = 0;
+
+  // todo remove after v1.1.0 promotion
+  @Column(name = "validity_date")
+  private LocalDateTime validityDate;
+
+  // todo remove after v1.1.0 promotion
+  @Builder.Default
+  @Column(name = "switch_to_expired", columnDefinition = "boolean DEFAULT false")
+  private Boolean switchToExpired = false;
 
   @Builder.Default
   @OneToMany(

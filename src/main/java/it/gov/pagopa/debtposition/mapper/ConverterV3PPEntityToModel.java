@@ -1,5 +1,17 @@
 package it.gov.pagopa.debtposition.mapper;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.modelmapper.Converter;
+import org.modelmapper.spi.MappingContext;
+
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.entity.Transfer;
@@ -9,14 +21,8 @@ import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
 import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import org.modelmapper.Converter;
-import org.modelmapper.spi.MappingContext;
+
+import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.groupByPlanId;
 
 public class ConverterV3PPEntityToModel
     implements Converter<PaymentPosition, PaymentPositionModelV3> {
@@ -33,9 +39,6 @@ public class ConverterV3PPEntityToModel
     destination.setPaymentDate(source.getPaymentDate());
     destination.setStatus(DebtPositionStatusV3.valueOf(source.getStatus().name()));
 
-    LocalDateTime validityDate = source.getValidityDate();
-    Boolean switchToExpired = source.getSwitchToExpired();
-
     List<PaymentOption> paymentOptions = source.getPaymentOption();
     if (paymentOptions == null || paymentOptions.isEmpty()) {
       return destination;
@@ -44,51 +47,75 @@ public class ConverterV3PPEntityToModel
     // Partitioning the payment options into partial and unique POs
     Map<Boolean, List<PaymentOption>> partitionedPO =
         paymentOptions.stream()
-            .collect(Collectors.partitioningBy(PaymentOption::getIsPartialPayment));
+            .collect(Collectors.partitioningBy(po -> Boolean.TRUE.equals(po.getIsPartialPayment())));
 
     // Extracting the partial and unique POs
     List<PaymentOption> partialPO = partitionedPO.get(true);
-    List<PaymentOption> uniquePO = partitionedPO.get(false);
+    List<PaymentOption> uniquePO  = partitionedPO.get(false);
     List<PaymentOptionModelV3> paymentOptionsToAdd = new ArrayList<>();
 
-    if (null != partialPO && !partialPO.isEmpty()) {
-      PaymentOptionModelV3 pov3 = this.convertPartialPO(partialPO, validityDate, switchToExpired);
-      paymentOptionsToAdd.add(pov3);
+    if (partialPO != null && !partialPO.isEmpty()) {
+      //Group installments by paymentPlanId
+      Map<String, List<PaymentOption>> byPlan = groupByPlanId(partialPO);
+
+      for (List<PaymentOption> planInstallments : byPlan.values()) {
+    	// the plan is marked expired if at least one installment is flagged expired (switchToExpired == TRUE)  
+        boolean planAnyMarkedExpired = UtilityMapper.getSwitchToExpired(source); // hasAnyMarkedExpired(planInstallments);
+        PaymentOptionModelV3 pov3 = this.convertPartialPO(source, planInstallments, planAnyMarkedExpired);
+        paymentOptionsToAdd.add(pov3);
+      }
     }
 
-    if (null != uniquePO && !uniquePO.isEmpty()) {
-      List<PaymentOptionModelV3> pov3List =
-          uniquePO.stream().map(po -> convertUniquePO(po, validityDate, switchToExpired)).toList();
-      paymentOptionsToAdd.addAll(pov3List);
+    if (uniquePO != null && !uniquePO.isEmpty()) {
+    	paymentOptionsToAdd.addAll(uniquePO.stream()
+    			.map(po -> convertUniquePO(source, po))
+    			.toList());
     }
 
-    destination.setPaymentOption(paymentOptionsToAdd);
+    // sort options by minimum dueDate between the installments
+    paymentOptionsToAdd.sort(Comparator.comparing(
+        this::minDueDateOrNull,
+        Comparator.nullsLast(Comparator.naturalOrder())));
+
+    destination.setPaymentOption(
+        paymentOptionsToAdd.isEmpty() ? Collections.emptyList() : paymentOptionsToAdd
+    );
 
     return destination;
   }
 
+
   // 1 unique PO -> 1 PaymentOption composed by 1 installment
-  private PaymentOptionModelV3 convertUniquePO(
-      PaymentOption po, LocalDateTime validityDate, boolean switchToExpired) {
-    PaymentOptionModelV3 pov3 = convert(po);
-    pov3.setValidityDate(validityDate);
-    pov3.setSwitchToExpired(switchToExpired);
-    // set installment
-    List<InstallmentModel> installments = Collections.singletonList(convertInstallment(po));
-    pov3.setInstallments(installments);
-    return pov3;
+  private PaymentOptionModelV3 convertUniquePO(PaymentPosition pp, PaymentOption po) {
+	  PaymentOptionModelV3 pov3 = convert(po);
+	  pov3.setValidityDate(UtilityMapper.getValidityDate(pp, po));
+	  pov3.setSwitchToExpired(UtilityMapper.getSwitchToExpired(pp, po));
+	  pov3.setDescription(po.getPaymentOptionDescription());
+	  List<InstallmentModel> installments = Collections.singletonList(convertInstallment(po));
+	  pov3.setInstallments(installments);
+	  return pov3;
   }
 
   // N partial PO -> 1 PaymentOption composed by N installment
-  private PaymentOptionModelV3 convertPartialPO(
-      List<PaymentOption> partialPOs, LocalDateTime validityDate, boolean switchToExpired) {
+  private PaymentOptionModelV3 convertPartialPO(PaymentPosition pp, List<PaymentOption> partialPOs, boolean switchToExpired) {
     // Get only the first to fill common data for partial PO (retentionDate, insertedDate, debtor)
     PaymentOptionModelV3 pov3 = convert(partialPOs.get(0));
-    pov3.setValidityDate(validityDate);
+    // todo re-enable when validityDate is read from payment option
+//    // validityDate = min between the validity of the plan installments
+//    LocalDateTime validityDate = partialPOs.stream()
+//    	      .map(PaymentOption::getValidityDate)
+//    	      .filter(Objects::nonNull)
+//    	      .min(LocalDateTime::compareTo)
+//    	      .orElse(null);
+    pov3.setValidityDate(UtilityMapper.getValidityDate(pp, partialPOs));
     pov3.setSwitchToExpired(switchToExpired);
     // Set installments
     List<InstallmentModel> installments =
-        partialPOs.stream().map(this::convertInstallment).toList();
+    		partialPOs.stream()
+    	    .sorted(Comparator.comparing(PaymentOption::getDueDate,
+    	        Comparator.nullsLast(Comparator.naturalOrder())))
+    	    .map(this::convertInstallment)
+    	    .toList();
     pov3.setInstallments(installments);
     return pov3;
   }
@@ -97,7 +124,7 @@ public class ConverterV3PPEntityToModel
     PaymentOptionModelV3 pov3 = new PaymentOptionModelV3();
     pov3.setRetentionDate(po.getRetentionDate());
     pov3.setDebtor(UtilityMapper.extractDebtor(po));
-
+    pov3.setDescription(po.getPaymentOptionDescription());
     return pov3;
   }
 
@@ -125,5 +152,19 @@ public class ConverterV3PPEntityToModel
     inst.setTransfer(UtilityMapper.convertTransfers(transfers));
 
     return inst;
+  }
+
+  private boolean hasAnyMarkedExpired(List<PaymentOption> planInstallments) {
+	  return planInstallments.stream().anyMatch(i -> Boolean.TRUE.equals(i.getSwitchToExpired()));
+  }
+
+  private LocalDateTime minDueDateOrNull(PaymentOptionModelV3 p) {
+	  var inst = p.getInstallments();
+	  if (inst == null || inst.isEmpty()) return null;
+	  return inst.stream()
+			  .map(InstallmentModel::getDueDate)
+			  .filter(Objects::nonNull)
+			  .min(LocalDateTime::compareTo)
+			  .orElse(null);
   }
 }

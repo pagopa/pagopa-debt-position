@@ -3,18 +3,19 @@ package it.gov.pagopa.debtposition.entity;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import java.io.Serializable;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,7 +26,7 @@ import lombok.NoArgsConstructor;
     uniqueConstraints = {
       @UniqueConstraint(
           name = "UniquePaymentOptMetadata",
-          columnNames = {"key", "payment_option_id"})
+          columnNames = {"\"key\"", "payment_option_id"})
     })
 @Data
 @NoArgsConstructor
@@ -33,8 +34,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Builder
 @JsonIdentityInfo(
-    generator = ObjectIdGenerators.IntSequenceGenerator.class,
-    property = "@paymentOptionMetadataId")
+	    generator = ObjectIdGenerators.PropertyGenerator.class,
+	    property = "id")
 public class PaymentOptionMetadata implements Serializable {
 
   /** generated serialVersionUID */
@@ -48,8 +49,11 @@ public class PaymentOptionMetadata implements Serializable {
       allocationSize = 1)
   private Long id;
 
-  @NotNull private String key;
+  @NotNull
+  @Column(name = "\"key\"", nullable = false)
+  private String key;
 
+  @Column(name = "\"value\"")
   private String value;
 
   @ManyToOne(

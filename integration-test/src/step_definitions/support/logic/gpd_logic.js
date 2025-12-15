@@ -14,7 +14,8 @@ const {
     invalidateDebtPosition,
     createMassiveDebtPositions,
     getDebtPositionByIUV,
-    updateTransferIbanMassive
+    updateTransferIbanMassive,
+	verifyPaymentOptions
 } = require("../clients/gpd_client");
 
 const {
@@ -26,10 +27,24 @@ const {
     buildCreateMassiveDebtPositionRequest
 } = require("../utility/request_builders");
 
-async function executeDebtPositionCreation(bundle, idOrg, iupd, iuv, validityDate = null, toPublish = false) {
+const {
+    buildCreateDebtPositionRequestV3,
+    buildUpdateDebtPositionRequestV3,
+    buildDebtPositionDynamicDataV3,
+    buildCreateOK_KODebtPositionRequestV3,
+    buildUpdateDebtPositionInfoRequestV3
+} = require("../utility/request_builders_v3");
+
+async function executeDebtPositionCreation(bundle, idOrg, iupd, version = "v1", iuv, validityDate = null, toPublish = false) {
     bundle.organizationCode = idOrg;
-    bundle.debtPosition = buildDebtPositionDynamicData(bundle, iupd, iuv, validityDate);
-    let response = await createDebtPosition(bundle.organizationCode, buildCreateDebtPositionRequest(bundle.debtPosition, bundle.payer), segCodes = undefined, toPublish = toPublish);
+    if(version === "v3"){
+        bundle.debtPosition = buildDebtPositionDynamicDataV3(bundle, iupd, iuv, validityDate);
+        body = buildCreateDebtPositionRequestV3(bundle.debtPosition, bundle.payer);
+    } else {
+        bundle.debtPosition = buildDebtPositionDynamicData(bundle, iupd, iuv, validityDate);
+        body = buildCreateDebtPositionRequest(bundle.debtPosition, bundle.payer);
+    }
+    let response = await createDebtPosition(bundle.organizationCode, body, segCodes = undefined, toPublish = toPublish, version);
     bundle.responseToCheck = response;
     bundle.createdDebtPosition = bundle.responseToCheck.data;
 }
@@ -74,10 +89,15 @@ async function executeKODebtPositionCreation(bundle, idOrg, iupd) {
     bundle.createdDebtPosition = bundle.responseToCheck.data;
 }
 
-async function executeDebtPositionUpdate(bundle, payer, idOrg, iupd) {
-	let updatedDebtPosition=buildUpdateDebtPositionInfoRequest(bundle.createdDebtPosition, payer)
+async function executeDebtPositionUpdate(bundle, payer, idOrg, iupd, version = "v1") {
+	let updatedDebtPosition
+    if(version === "v3"){
+        updatedDebtPosition=buildUpdateDebtPositionInfoRequestV3(bundle.createdDebtPosition, payer)
+    } else {
+        updatedDebtPosition=buildUpdateDebtPositionInfoRequest(bundle.createdDebtPosition, payer)
+    }
     updateDebtPosition.iupd = iupd;
-    let response = await updateDebtPosition(idOrg, iupd, updatedDebtPosition);
+    let response = await updateDebtPosition(idOrg, iupd, updatedDebtPosition, segCodes = undefined, version);
     bundle.responseToCheck = response;
     bundle.updatedDebtPosition = bundle.responseToCheck.data;
 }
@@ -109,8 +129,8 @@ async function executeDebtPositionNotificationFeeUpdateNodeKO(bundle, idOrg, fee
     bundle.responseToCheck = response;    
 }
 
-async function executeDebtPositionGetList(bundle, idOrg, dueDateFrom, dueDateTo, paymentDateFrom, paymentDateTo, status) {
-    let response = await getDebtPositionList(idOrg, dueDateFrom, dueDateTo, paymentDateFrom, paymentDateTo, status);
+async function executeDebtPositionGetList(bundle, idOrg, dueDateFrom, dueDateTo, paymentDateFrom, paymentDateTo, status, version = "v1") {
+    let response = await getDebtPositionList(idOrg, dueDateFrom, dueDateTo, paymentDateFrom, paymentDateTo, status, segCodes = undefined, version);
     bundle.responseToCheck = response;
 }
 
@@ -120,8 +140,8 @@ async function executeDebtPositionGetListWithSegregationCodes(bundle, idOrg){
 	bundle.responseToCheck = response;
 }
 
-async function executeDebtPositionGet(bundle, idOrg, iupd) {
-    let response = await getDebtPosition(idOrg, iupd);
+async function executeDebtPositionGet(bundle, idOrg, iupd, version = "v1") {
+    let response = await getDebtPosition(idOrg, iupd, segCodes = undefined, version);
     bundle.payer.companyName = response.data.companyName;
     bundle.responseToCheck = response;
 }
@@ -144,8 +164,8 @@ async function executePaymentOptionGetByIuv(bundle, idOrg, iuv) {
     bundle.responseToCheck = response;
 }
 
-async function executeDebtPositionDeletion(bundle, idOrg, iupd) {
-    let response = await deleteDebtPosition(idOrg, iupd);
+async function executeDebtPositionDeletion(bundle, idOrg, iupd, version = "v1") {
+    let response = await deleteDebtPosition(idOrg, iupd, segCodes = undefined, version);
     bundle.responseToCheck = response;
 }
 
@@ -155,9 +175,9 @@ async function executeDebtPositionDeletionWithSegregationCodes(bundle, idOrg, iu
     bundle.responseToCheck = response;
 }
 
-async function executeDebtPositionPublish(bundle, idOrg, iupd) {
+async function executeDebtPositionPublish(bundle, idOrg, iupd, version = "v1") {
     delete bundle.responseToCheck;
-    let response = await publishDebtPosition(idOrg, iupd);
+    let response = await publishDebtPosition(idOrg, iupd, segCodes = undefined, version);
     bundle.responseToCheck = response;
 }
 
@@ -176,6 +196,8 @@ async function executeDebtPositionInvalidateWithSegregationCodes(bundle, idOrg, 
 }
 
 async function executePaymentOptionPay(bundle, idOrg, iuv) {
+    // pre-cleaning of bundle.responseToCheck, possibly enhanced in previous iterations
+    bundle.responseToCheck = undefined;
     bundle.paymentDate = new Date();
     let response = await payPaymentOption(idOrg, iuv, bundle);
     bundle.responseToCheck = response;
@@ -187,22 +209,35 @@ async function executeReportTransfer(bundle, idOrg) {
     let response = await reportTransfer(idOrg, iuv, idTransfer);
 }
 
-async function executeDebtPositionCreationAndPublication(bundle, idOrg, iupd) {
+async function executeDebtPositionCreationAndPublication(bundle, idOrg, iupd, version = "v1") {
     bundle.organizationCode = idOrg;
     bundle.debtPosition = buildDebtPositionDynamicData(bundle, iupd);
-    let response = await createAndPublishDebtPosition(bundle.organizationCode, buildUpdateDebtPositionRequest(bundle.debtPosition, bundle.payer));
+    let response = await createAndPublishDebtPosition(bundle.organizationCode, buildUpdateDebtPositionRequest(bundle.debtPosition, bundle.payer), version);
     bundle.responseToCheck = response;
 }
 
-async function executeDebtPositionUpdateAndPublication(bundle, idOrg, iupd) {
+async function executeDebtPositionUpdateAndPublication(bundle, idOrg, iupd, version = "v1") {
     bundle.organizationCode = idOrg;
-    let response = await updateAndPublishDebtPosition(bundle.organizationCode, iupd, buildCreateDebtPositionRequest(bundle.debtPosition, bundle.payer));
+    if(version === "v3") {
+        body = buildCreateDebtPositionRequestV3(bundle.debtPosition, bundle.payer);
+    } else  {
+        body = buildCreateDebtPositionRequest(bundle.debtPosition, bundle.payer);
+    }
+    let response = await updateAndPublishDebtPosition(bundle.organizationCode, iupd, body, version);
     bundle.responseToCheck = response;
 }
 
 async function executeUpdateTransferIbanMassive(idOrg, oldIban, newIban) {
     let response = await updateTransferIbanMassive(idOrg, oldIban, newIban);
     return response;
+}
+
+async function executeVerifyPaymentOptions(bundle, organizationFiscalCode, nav) {
+  const res = await verifyPaymentOptions(organizationFiscalCode, nav, {
+    tolerateStatus: [200, 400, 404, 500],
+  });
+  if (bundle) bundle.responseToCheck = res;
+  return res;
 }
 
 module.exports = {
@@ -232,5 +267,6 @@ module.exports = {
     executeDebtPositionInvalidateWithSegregationCodes,
     executeMassiveDebtPositionsCreation,
     executeMassiveDebtPositionCreationWithSegregationCodes,
-    executeUpdateTransferIbanMassive
+    executeUpdateTransferIbanMassive,
+	executeVerifyPaymentOptions
 }

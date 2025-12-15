@@ -4,7 +4,7 @@ import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import java.time.LocalDateTime;
 import java.util.List;
-import javax.persistence.criteria.*;
+import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 
 public class PaymentPositionByOptionsAttribute implements Specification<PaymentPosition> {
@@ -29,7 +29,6 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
 
   public Predicate toPredicate(
       Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-
     Join<?, ?> ppOptionsJoin = root.join(PAYMENT_OPT_JOIN, JoinType.INNER);
 
     Predicate dueDatePredicate = cb.isTrue(cb.literal(true));

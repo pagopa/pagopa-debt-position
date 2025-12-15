@@ -44,23 +44,23 @@ class ConcurrentPartiallyReportedPaymentsControllerTest {
         "initDebtPosition_for_partially_reporting start => " + Thread.currentThread().getName());
     // creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato)
     mvc.perform(
-            post("/organizations/REPORT_Concurrent_Partially_Reported_12345678901/debtpositions?toPublish=true")
+            post("/organizations/1234567890100000/debtpositions?toPublish=true")
                 .content(TestUtil.toJson(DebtPositionMock.getMock8()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
     // effettuo la notifica di pagamento
     mvc.perform(
-            post("/organizations/REPORT_Concurrent_Partially_Reported_12345678901/paymentoptions/"
+            post("/organizations/1234567890100000/paymentoptions/"
                     + auxDigit
-                    + "123456IUVMULTIPLEMOCK8/pay")
+                    + "1234568/pay")
                 .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 
     // recupero l'intera posizione debitoria e verifico che lo stato sia passato in paid
     mvc.perform(
-            get("/organizations/REPORT_Concurrent_Partially_Reported_12345678901/debtpositions/12345678901IUPDMULTIPLEMOCK8")
+            get("/organizations/1234567890100000/debtpositions/12345678901IUPDMULTIPLEMOCK8")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -83,7 +83,7 @@ class ConcurrentPartiallyReportedPaymentsControllerTest {
     // effettuo la rendicontazione per una delle 2 transazioni della PO (si continua ad utilizzare
     // lo IUV e non il NAV)
     mvc.perform(
-            post("/organizations/REPORT_Concurrent_Partially_Reported_12345678901/paymentoptions/123456IUVMULTIPLEMOCK8/transfers/1/report")
+            post("/organizations/1234567890100000/paymentoptions/1234568/transfers/1/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is(oneOf(200, 409)));
     log.trace(
@@ -99,9 +99,9 @@ class ConcurrentPartiallyReportedPaymentsControllerTest {
         "checkDebtPosition_after_partially_reporting start => " + Thread.currentThread().getName());
     // recupero la PO e verifico lo stato in PO_PARTIALLY_REPORTED
     String url =
-        "/organizations/REPORT_Concurrent_Partially_Reported_12345678901/paymentoptions/"
+        "/organizations/1234567890100000/paymentoptions/"
             + auxDigit
-            + "123456IUVMULTIPLEMOCK8";
+            + "1234568";
     mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -111,7 +111,7 @@ class ConcurrentPartiallyReportedPaymentsControllerTest {
 
     // recupero la PP e verifico lo stato sia rimasto PAID
     mvc.perform(
-            get("/organizations/REPORT_Concurrent_Partially_Reported_12345678901/debtpositions/12345678901IUPDMULTIPLEMOCK8")
+            get("/organizations/1234567890100000/debtpositions/12345678901IUPDMULTIPLEMOCK8")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(

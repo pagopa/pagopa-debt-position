@@ -1,6 +1,7 @@
 #!/bin/bash
+set -euo pipefail
 
-ENV="local"
+ENV="dev"
 
 image="service-local:latest"
 
@@ -8,15 +9,15 @@ export image=${image}
 
 FILE=.env
 if test -f "$FILE"; then
-    rm .env
+  rm .env
 fi
 
 config=$(yq -r '."microservice-chart".envConfig' ../helm/values-$ENV.yaml)
 IFS=$'\n'
 for line in $(echo "$config" | yq -r '. | to_entries[] | select(.key) | "\(.key)=\(.value)"'); do
-    # Estrai la chiave e il valore dalla linea
-    key=$(echo "$line" | cut -d'=' -f1)
-    value=$(echo "$line" | cut -d'=' -f2-)
+  # Estrai la chiave e il valore dalla linea
+  key=$(echo "$line" | cut -d'=' -f1)
+  value=$(echo "$line" | cut -d'=' -f2-)
 
     # Se la chiave è SPRING_DATASOURCE_URL, assegna il valore specifico
     if [[ "$key" == "SPRING_DATASOURCE_URL" ]]; then
@@ -43,17 +44,32 @@ docker compose -f ./docker-compose-local.yml -p "${stack_name}" up -d --remove-o
 
 
 # waiting the containers
-printf 'Waiting for the service'
-attempt_counter=0
-max_attempts=50
-until $(curl --output /dev/null --silent --head --fail http://localhost:8080/info); do
-    if [ ${attempt_counter} -eq ${max_attempts} ];then
-      echo "Max attempts reached"
-      exit 1
-    fi
+printf 'Waiting for the service\n'
+attempts=0
+max_attempts=60
+while true; do
+  rc=0
+  err="$(curl -fsS -o /dev/null "http://localhost:8080/info" 2>&1)" || rc=$?
+  if [ $rc -eq 0 ]; then
+    echo 'Service Started'
+    break
+  fi
 
-    printf '.'
-    attempt_counter=$((attempt_counter+1))
-    sleep 5
+  if [ $rc -eq 56 ] || [[ "$err" == *"Recv failure"* ]]; then
+    echo ' . waiting: app not ready yet (connection reset)'
+  else
+    echo " . waiting: $err"
+  fi
+
+  sleep 5
+  attempts=$((attempts+1))
+  if [ $attempts -ge $max_attempts ]; then
+    echo " Max attempts reached"
+    docker compose -f ./docker-compose-local.yml -p "${stack_name}" ps || true
+    docker compose -f ./docker-compose-local.yml -p "${stack_name}" logs gpd || true
+    docker compose -f ./docker-compose-local.yml -p "${stack_name}" logs pgbouncer || true
+    # final check to show endpoint status
+    curl -i "http://localhost:8080/info" || true
+    exit 1
+  fi
 done
-echo 'Service Started'

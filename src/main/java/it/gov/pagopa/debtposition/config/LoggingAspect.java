@@ -6,9 +6,9 @@ import it.gov.pagopa.debtposition.util.CommonUtil;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -136,7 +136,7 @@ public class LoggingAspect {
   @AfterReturning(value = "execution(* *..exception.ErrorHandler.*(..))", returning = "result")
   public void trowingApiInvocation(JoinPoint joinPoint, ResponseEntity<ProblemJson> result) {
     MDC.put(STATUS, "KO");
-    MDC.put(CODE, String.valueOf(result.getStatusCodeValue()));
+    MDC.put(CODE, Integer.toString(result.getStatusCode().value()));
     MDC.put(RESPONSE_TIME, getExecutionTime());
     MDC.put(FAULT_CODE, getTitle(result));
     MDC.put(FAULT_DETAIL, getDetail(result));

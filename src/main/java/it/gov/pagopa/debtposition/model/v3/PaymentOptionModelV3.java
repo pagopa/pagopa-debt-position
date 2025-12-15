@@ -7,9 +7,9 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -17,8 +17,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PaymentOptionModelV3 implements Serializable {
 
-  @Size(max = 140) // todo save also this value, the installment property is used
-  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+  @Size(max = 140) // compliant to paForNode.xsd
+  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) //TODO to be made available on output to the new version of SANP
   private String description;
 
   private LocalDateTime validityDate;

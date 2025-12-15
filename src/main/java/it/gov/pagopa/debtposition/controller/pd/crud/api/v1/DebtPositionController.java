@@ -1,5 +1,6 @@
 package it.gov.pagopa.debtposition.controller.pd.crud.api.v1;
 
+import static it.gov.pagopa.debtposition.util.CommonUtil.isMultiInstallments;
 import static it.gov.pagopa.debtposition.util.Constants.CREATE_ACTION;
 import static it.gov.pagopa.debtposition.util.Constants.UPDATE_ACTION;
 
@@ -7,6 +8,7 @@ import it.gov.pagopa.debtposition.config.ExclusiveParamGroup;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
+import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.filterandorder.Filter;
@@ -25,16 +27,16 @@ import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.Constants;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.validation.Valid;
-import javax.validation.constraints.Pattern;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
@@ -53,7 +55,6 @@ public class DebtPositionController implements IDebtPositionController {
   private final ModelMapper modelMapper;
   private final PaymentPositionCRUDService paymentPositionService;
 
-  @Autowired
   public DebtPositionController(
       ModelMapper modelMapper, PaymentPositionCRUDService paymentPositionService) {
     this.modelMapper = modelMapper;
@@ -89,9 +90,14 @@ public class DebtPositionController implements IDebtPositionController {
         paymentPositionService.create(
             debtPosition, organizationFiscalCode, toPublish, segCodes, CREATE_ACTION);
 
-    if (null != createdDebtPos) {
-      PaymentPositionModel paymentPosition =
-          ObjectMapperUtils.map(createdDebtPos, PaymentPositionModel.class);
+	if (null != createdDebtPos) {
+		PaymentPositionModel paymentPosition = ObjectMapperUtils.map(createdDebtPos, PaymentPositionModel.class);
+		// set the switchToExpired flag in the response
+		boolean anyMatchSwitchToExpired = UtilityMapper.getSwitchToExpired(createdDebtPos);
+		paymentPosition.setSwitchToExpired(anyMatchSwitchToExpired);
+		// set validityDate as min of the validityDate on the PaymentOption
+		LocalDateTime minValidityDate = CommonUtil.resolveMinValidity(createdDebtPos);
+		paymentPosition.setValidityDate(minValidityDate);
       return new ResponseEntity<>(paymentPosition, HttpStatus.CREATED);
     }
 
@@ -145,12 +151,19 @@ public class DebtPositionController implements IDebtPositionController {
             .order(Order.builder().orderBy(orderBy).ordering(ordering).build())
             .build();
 
-    Page<PaymentPosition> pagePP =
-        paymentPositionService.getOrganizationDebtPositions(limit, page, filterOrder);
+    Page<PaymentPosition> pagePP = paymentPositionService.getOrganizationDebtPositions(limit, page, filterOrder);
 
-    // flip entity to model
-    List<PaymentPositionModelBaseResponse> ppResponseList =
-        ObjectMapperUtils.mapAll(pagePP.toList(), PaymentPositionModelBaseResponse.class);
+    List<PaymentPosition> entities = pagePP.getContent();
+    List<PaymentPositionModelBaseResponse> ppResponseList = entities.stream()
+            .filter(entity -> !isMultiInstallments(entity))
+            .map(entity -> {
+                PaymentPositionModelBaseResponse dto = ObjectMapperUtils.map(entity, PaymentPositionModelBaseResponse.class);
+                LocalDateTime minValidity = CommonUtil.resolveMinValidity(entity);
+                dto.setValidityDate(minValidity);
+
+                return dto;
+            })
+            .collect(Collectors.toList());
 
     return new ResponseEntity<>(
         PaymentPositionsInfo.builder()
@@ -180,10 +193,19 @@ public class DebtPositionController implements IDebtPositionController {
             ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
             : null;
     // flip entity to model
+    PaymentPosition entity =
+    	    paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segCodes);
+
+    if (isMultiInstallments(entity)) {
+        // Return 422 because MULTI_INSTALLMENTS debt-position is not readable by v1 API.
+        throw new AppException(AppError.V1_UNPROCESSABLE_ENTITY_MULTI_INSTALLMENTS, organizationFiscalCode, iupd);
+    }
+
     PaymentPositionModelBaseResponse paymentPositionResponse =
-        ObjectMapperUtils.map(
-            paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segCodes),
-            PaymentPositionModelBaseResponse.class);
+            ObjectMapperUtils.map(entity, PaymentPositionModelBaseResponse.class);
+
+    // set validityDate as min of the validityDate on the PaymentOption
+    paymentPositionResponse.setValidityDate(CommonUtil.resolveMinValidity(entity));
 
     return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
   }
@@ -208,7 +230,7 @@ public class DebtPositionController implements IDebtPositionController {
             ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
             : null;
     paymentPositionService.delete(organizationFiscalCode, iupd, segCodes);
-    return new ResponseEntity<>(Constants.DEBT_POSITION_DELETED, HttpStatus.OK);
+    return new ResponseEntity<>(CommonUtil.escapeString(Constants.DEBT_POSITION_DELETED), HttpStatus.OK);
   }
 
   @Override
@@ -257,6 +279,12 @@ public class DebtPositionController implements IDebtPositionController {
     if (null != updatedDebtPos) {
       PaymentPositionModel paymentPosition =
           ObjectMapperUtils.map(updatedDebtPos, PaymentPositionModel.class);
+      // set the switchToExpired flag in the response
+   	  boolean anyMatchSwitchToExpired = UtilityMapper.getSwitchToExpired(updatedDebtPos);
+   	  paymentPosition.setSwitchToExpired(anyMatchSwitchToExpired);
+   	  // set validityDate as min of the validityDate on the PaymentOption
+   	  LocalDateTime minValidityDate = CommonUtil.resolveMinValidity(updatedDebtPos);
+   	  paymentPosition.setValidityDate(minValidityDate);
       return new ResponseEntity<>(paymentPosition, HttpStatus.OK);
     }
 
@@ -378,10 +406,14 @@ public class DebtPositionController implements IDebtPositionController {
             ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
             : null;
     // flip entity to model
-    PaymentPositionModelBaseResponse paymentPositionResponse =
-        ObjectMapperUtils.map(
-            paymentPositionService.getDebtPositionByIUV(organizationFiscalCode, iuv, segCodes),
-            PaymentPositionModelBaseResponse.class);
+    PaymentPosition entity =
+    	    paymentPositionService.getDebtPositionByIUV(organizationFiscalCode, iuv, segCodes);
+
+    	PaymentPositionModelBaseResponse paymentPositionResponse =
+    	    ObjectMapperUtils.map(entity, PaymentPositionModelBaseResponse.class);
+
+    	// set validityDate as min of the validityDate on the PaymentOption
+    	paymentPositionResponse.setValidityDate(CommonUtil.resolveMinValidity(entity));
 
     return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
   }

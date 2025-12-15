@@ -10,12 +10,12 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
+import it.gov.pagopa.debtposition.util.CommonUtil;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang3.RandomStringUtils;
 
 public class DebtPositionMock {
   public static final PaymentPositionDTO getMock1() {
@@ -316,7 +316,6 @@ public class DebtPositionMock {
     return pPMock;
   }
 
-
   public static PaymentPositionDTO createPaymentPosition400Mock2() {
 
     PaymentPositionDTO pPMock = new PaymentPositionDTO();
@@ -359,6 +358,7 @@ public class DebtPositionMock {
     pPMock.setCompanyName("Comune di Firenze");
     pPMock.setOfficeName("Ufficio tributario");
     pPMock.addPaymentOptions(createPaymentOptionsMock2());
+    pPMock.setSwitchToExpired(true);
 
     return pPMock;
   }
@@ -649,6 +649,7 @@ public class DebtPositionMock {
     pPMock.setOfficeName("Ufficio tributario");
     pPMock.setStatus(DebtPositionStatus.DRAFT);
     pPMock.addPaymentOptions(createPaymentOptions400Mock1());
+    pPMock.setSwitchToExpired(true);
 
     return pPMock;
   }
@@ -701,7 +702,7 @@ public class DebtPositionMock {
     PaymentOptionDTO poMock =
         createPaymentOption(
             1000,
-            "123456IUVMOCK1",
+            "1234561",
             false,
             createTransfersMock1(),
             LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.SECONDS),
@@ -715,7 +716,7 @@ public class DebtPositionMock {
     PaymentOptionDTO poMock =
         createPaymentOption(
             1000,
-            "123456IUVMOCK2",
+            "1234562",
             false,
             createTransfersMock1(),
             LocalDateTime.now(ZoneOffset.UTC).minus(1, ChronoUnit.DAYS),
@@ -729,7 +730,7 @@ public class DebtPositionMock {
     PaymentOptionDTO poMock =
         createPaymentOption(
             1000,
-            "123456IUVMOCK3",
+            "1234563",
             false,
             createTransfersMock2(),
             LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
@@ -742,7 +743,7 @@ public class DebtPositionMock {
     PaymentOptionDTO poMock =
         createPaymentOption(
             1000,
-            "123456IUVMOCK4",
+            "1234564",
             false,
             createTransfersMock1(),
             LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
@@ -755,7 +756,7 @@ public class DebtPositionMock {
     PaymentOptionDTO poMock =
         createPaymentOption(
             1000,
-            "123456IUVMOCK6",
+            "1234566",
             false,
             createTransfersMock1(),
             LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
@@ -768,7 +769,7 @@ public class DebtPositionMock {
     PaymentOptionDTO poMock =
         createPaymentOption(
             1000,
-            "123456IUVMOCK7",
+            "1234567",
             false,
             createTransfersMock1(),
             LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
@@ -787,7 +788,7 @@ public class DebtPositionMock {
     PaymentOptionDTO poMock =
         createPaymentOption(
             1000,
-            "123456IUVMOCK8",
+            "1234568",
             false,
             createTransfersMock1(),
             LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
@@ -802,13 +803,13 @@ public class DebtPositionMock {
 
   public static PaymentOptionDTO createPaymentOptionsMock10() {
 
-      return createPaymentOption(
-              1000,
-              "123456IUVMOCK10",
-              false,
-              createTransfersMock1(),
-              LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
-              LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
+    return createPaymentOption(
+        1000,
+        "12345610",
+        false,
+        createTransfersMock1(),
+        LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
+        LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
   }
 
   public static PaymentOptionDTO createPaymentOptionMock9(
@@ -835,7 +836,7 @@ public class DebtPositionMock {
     PaymentOptionDTO poMock =
         createPaymentOption(
             1000,
-            "123456IUVMETADATAMOCK9",
+            "1234569",
             false,
             createTransfersMetadataMock3(),
             LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
@@ -854,7 +855,7 @@ public class DebtPositionMock {
     PaymentOptionDTO poMock =
         createPaymentOption(
             1000,
-            "123456IUVMOCK1",
+            "1234561",
             false,
             createTransfersMultipleMock1(),
             LocalDateTime.now(ZoneOffset.UTC).plus(3, ChronoUnit.SECONDS),
@@ -867,7 +868,7 @@ public class DebtPositionMock {
     PaymentOptionDTO poMock =
         createPaymentOption(
             500,
-            "123456IUVMOCK2",
+            "1234562",
             false,
             createTransfersMultipleMock2(),
             LocalDateTime.now(ZoneOffset.UTC).plus(1, ChronoUnit.DAYS),
@@ -880,7 +881,7 @@ public class DebtPositionMock {
     PaymentOptionDTO poMock =
         createPaymentOption(
             1000,
-            "123456IUVMULTIPLEMOCK1",
+            "1234561",
             false,
             createTransfersMultipleMock1(),
             LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.HOURS),
@@ -893,7 +894,7 @@ public class DebtPositionMock {
     PaymentOptionDTO poMock =
         createPaymentOption(
             500,
-            "123456IUVMULTIPLEMOCK2",
+            "1234562",
             false,
             createTransfersMultipleMock2(),
             LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
@@ -906,7 +907,7 @@ public class DebtPositionMock {
     PaymentOptionDTO poMock =
         createPaymentOption(
             10000,
-            "123456IUVMULTIPLEMOCK3",
+            "1234563",
             false,
             createTransfersMultipleMock3(),
             LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.HOURS),
@@ -919,7 +920,7 @@ public class DebtPositionMock {
     PaymentOptionDTO poMock =
         createPaymentOption(
             5000,
-            "123456IUVMULTIPLEMOCK4",
+            "1234564",
             true,
             createTransfersMultipleMock4(),
             LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.HOURS),
@@ -933,7 +934,7 @@ public class DebtPositionMock {
     PaymentOptionDTO poMock =
         createPaymentOption(
             5000,
-            "123456IUVMULTIPLEMOCK5",
+            "1234565",
             true,
             createTransfersMultipleMock4(),
             LocalDateTime.now(ZoneOffset.UTC).plus(4, ChronoUnit.HOURS),
@@ -947,7 +948,7 @@ public class DebtPositionMock {
     PaymentOptionDTO poMock =
         createPaymentOptionMock9(
             2000,
-            "123456IUVMULTIPLEMOCK8",
+            "1234568",
             false,
             createTransfersMultipleMock8(),
             LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.HOURS),
@@ -1138,8 +1139,8 @@ public class DebtPositionMock {
   public static MultiplePaymentPositionDTO createMultipleDebtPositionsMock1() {
     List<PaymentPositionDTO> pPMockList = new ArrayList<>();
     PaymentPositionDTO pp = createPaymentPositionMock5();
-    pp.setIupd(RandomStringUtils.randomNumeric(20));
-    pp.getPaymentOption().get(0).setIuv(RandomStringUtils.randomNumeric(17));
+    pp.setIupd(CommonUtil.randomDigits(20));
+    pp.getPaymentOption().get(0).setIuv(CommonUtil.randomDigits(17));
     pPMockList.add(pp);
     return MultiplePaymentPositionDTO.builder().paymentPositions(pPMockList).build();
   }
@@ -1147,8 +1148,8 @@ public class DebtPositionMock {
   public static MultiplePaymentPositionDTO createMultipleDebtPositionsMock2() {
     List<PaymentPositionDTO> pPMockList = new ArrayList<>();
     PaymentPositionDTO pp = createPaymentPositionMock2();
-    pp.setIupd(RandomStringUtils.randomNumeric(20));
-    pp.getPaymentOption().get(0).setIuv(RandomStringUtils.randomNumeric(17));
+    pp.setIupd(CommonUtil.randomDigits(20));
+    pp.getPaymentOption().get(0).setIuv(CommonUtil.randomDigits(17));
     pPMockList.add(pp);
     return MultiplePaymentPositionDTO.builder().paymentPositions(pPMockList).build();
   }

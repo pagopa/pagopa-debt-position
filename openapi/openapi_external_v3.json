@@ -1,10 +1,10 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.1.0",
   "info": {
     "title": "PagoPA API Debt Position ${service}",
     "description": "Progetto Gestione Posizioni Debitorie",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "0.17.0"
+    "version": "1.1.11"
   },
   "servers": [
     {
@@ -40,10 +40,10 @@
             "description": "Number of elements on one page. Default = 50",
             "required": false,
             "schema": {
-              "maximum": 50,
               "type": "integer",
               "format": "int32",
-              "default": 10
+              "default": 10,
+              "maximum": 50
             }
           },
           {
@@ -52,10 +52,10 @@
             "description": "Page number. Page value starts from 0",
             "required": false,
             "schema": {
-              "minimum": 0,
               "type": "integer",
               "format": "int32",
-              "default": 0
+              "default": 0,
+              "minimum": 0
             }
           },
           {
@@ -420,8 +420,8 @@
             "description": "Organization fiscal code, the fiscal code of the Organization.",
             "required": true,
             "schema": {
-              "pattern": "[\\w*\\h-]+",
-              "type": "string"
+              "type": "string",
+              "pattern": "[\\w*\\h-]+"
             }
           },
           {
@@ -430,8 +430,8 @@
             "description": "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.",
             "required": true,
             "schema": {
-              "pattern": "[\\w*\\h-]+",
-              "type": "string"
+              "type": "string",
+              "pattern": "[\\w*\\h-]+"
             }
           }
         ],
@@ -713,8 +713,8 @@
             "description": "Organization fiscal code, the fiscal code of the Organization.",
             "required": true,
             "schema": {
-              "pattern": "[\\w*\\h-]+",
-              "type": "string"
+              "type": "string",
+              "pattern": "[\\w*\\h-]+"
             }
           },
           {
@@ -723,8 +723,8 @@
             "description": "IUPD (Unique identifier of the debt position). Format could be `<Organization fiscal code + UUID>` this would make it unique within the new PD management system. It's the responsibility of the EC to guarantee uniqueness. The pagoPa system shall verify that this is `true` and if not, notify the EC.",
             "required": true,
             "schema": {
-              "pattern": "[\\w*\\h-]+",
-              "type": "string"
+              "type": "string",
+              "pattern": "[\\w*\\h-]+"
             }
           }
         ],
@@ -1001,11 +1001,6 @@
   "components": {
     "schemas": {
       "DebtorModel": {
-        "required": [
-          "fiscalCode",
-          "fullName",
-          "type"
-        ],
         "type": "object",
         "properties": {
           "type": {
@@ -1040,9 +1035,9 @@
             "type": "string"
           },
           "country": {
-            "pattern": "[A-Z]{2}",
             "type": "string",
-            "example": "IT"
+            "example": "IT",
+            "pattern": "[A-Z]{2}"
           },
           "email": {
             "type": "string",
@@ -1051,12 +1046,14 @@
           "phone": {
             "type": "string"
           }
-        }
+        },
+        "required": [
+          "fiscalCode",
+          "fullName",
+          "type"
+        ]
       },
       "InstallmentMetadataModel": {
-        "required": [
-          "key"
-        ],
         "type": "object",
         "properties": {
           "key": {
@@ -1065,15 +1062,12 @@
           "value": {
             "type": "string"
           }
-        }
+        },
+        "required": [
+          "key"
+        ]
       },
       "InstallmentModel": {
-        "required": [
-          "amount",
-          "description",
-          "dueDate",
-          "iuv"
-        ],
         "type": "object",
         "properties": {
           "nav": {
@@ -1083,14 +1077,14 @@
             "type": "string"
           },
           "amount": {
-            "minimum": 1,
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "minimum": 1
           },
           "description": {
+            "type": "string",
             "maxLength": 140,
-            "minLength": 0,
-            "type": "string"
+            "minLength": 0
           },
           "dueDate": {
             "type": "string",
@@ -1108,7 +1102,6 @@
           },
           "status": {
             "type": "string",
-            "readOnly": true,
             "enum": [
               "UNPAID",
               "PAID",
@@ -1116,39 +1109,41 @@
               "REPORTED",
               "UNPAYABLE",
               "EXPIRED"
-            ]
+            ],
+            "readOnly": true
           },
           "transfer": {
-            "maxItems": 2147483647,
-            "minItems": 1,
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TransferModel"
-            }
+            },
+            "maxItems": 2147483647,
+            "minItems": 1
           },
           "installmentMetadata": {
-            "maxItems": 10,
-            "minItems": 0,
             "type": "array",
             "description": "it can added a maximum of 10 key-value pairs for metadata",
             "items": {
               "$ref": "#/components/schemas/InstallmentMetadataModel"
-            }
+            },
+            "maxItems": 10,
+            "minItems": 0
           }
-        }
+        },
+        "required": [
+          "amount",
+          "description",
+          "dueDate",
+          "iuv"
+        ]
       },
       "PaymentOptionModelV3": {
-        "required": [
-          "debtor",
-          "installments",
-          "switchToExpired"
-        ],
         "type": "object",
         "properties": {
           "description": {
+            "type": "string",
             "maxLength": 140,
             "minLength": 0,
-            "type": "string",
             "writeOnly": true
           },
           "validityDate": {
@@ -1161,29 +1156,29 @@
           },
           "switchToExpired": {
             "type": "boolean",
+            "default": "false",
             "description": "feature flag to enable the payment option to expire after the due date",
-            "example": false,
-            "default": false
+            "example": false
           },
           "debtor": {
             "$ref": "#/components/schemas/DebtorModel"
           },
           "installments": {
-            "maxItems": 100,
-            "minItems": 1,
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/InstallmentModel"
-            }
+            },
+            "maxItems": 100,
+            "minItems": 1
           }
-        }
+        },
+        "required": [
+          "debtor",
+          "installments",
+          "switchToExpired"
+        ]
       },
       "PaymentPositionModelV3": {
-        "required": [
-          "companyName",
-          "iupd",
-          "paymentOption"
-        ],
         "type": "object",
         "properties": {
           "iupd": {
@@ -1191,19 +1186,19 @@
           },
           "payStandIn": {
             "type": "boolean",
+            "default": "true",
             "description": "feature flag to enable a debt position in stand-in mode",
-            "example": true,
-            "default": true
+            "example": true
           },
           "companyName": {
+            "type": "string",
             "maxLength": 140,
-            "minLength": 0,
-            "type": "string"
+            "minLength": 0
           },
           "officeName": {
+            "type": "string",
             "maxLength": 140,
-            "minLength": 0,
-            "type": "string"
+            "minLength": 0
           },
           "paymentDate": {
             "type": "string",
@@ -1212,7 +1207,6 @@
           },
           "status": {
             "type": "string",
-            "readOnly": true,
             "enum": [
               "DRAFT",
               "PUBLISHED",
@@ -1220,73 +1214,72 @@
               "UNPAYABLE",
               "PARTIALLY_PAID",
               "PAID"
-            ]
+            ],
+            "readOnly": true
           },
           "paymentOption": {
-            "maxItems": 100,
-            "minItems": 1,
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PaymentOptionModelV3"
-            }
+            },
+            "maxItems": 100,
+            "minItems": 1
           }
-        }
+        },
+        "required": [
+          "companyName",
+          "iupd",
+          "paymentOption"
+        ]
       },
       "Stamp": {
+        "type": "object",
+        "properties": {
+          "hashDocument": {
+            "type": "string",
+            "description": "Document hash type is stBase64Binary72 as described in https://github.com/pagopa/pagopa-api.",
+            "maxLength": 72,
+            "minLength": 0
+          },
+          "stampType": {
+            "type": "string",
+            "description": "The type of the stamp",
+            "maxLength": 2,
+            "minLength": 2
+          },
+          "provincialResidence": {
+            "type": "string",
+            "description": "The provincial of the residence",
+            "example": "RM",
+            "pattern": "[A-Z]{2}"
+          }
+        },
         "required": [
           "hashDocument",
           "provincialResidence",
           "stampType"
-        ],
-        "type": "object",
-        "properties": {
-          "hashDocument": {
-            "maxLength": 72,
-            "minLength": 0,
-            "type": "string",
-            "description": "Document hash type is stBase64Binary72 as described in https://github.com/pagopa/pagopa-api."
-          },
-          "stampType": {
-            "maxLength": 2,
-            "minLength": 2,
-            "type": "string",
-            "description": "The type of the stamp"
-          },
-          "provincialResidence": {
-            "pattern": "[A-Z]{2}",
-            "type": "string",
-            "description": "The provincial of the residence",
-            "example": "RM"
-          }
-        }
+        ]
       },
       "TransferMetadataModel": {
-        "required": [
-          "key",
-          "value"
-        ],
         "type": "object",
         "properties": {
           "key": {
+            "type": "string",
             "maxLength": 140,
-            "minLength": 0,
-            "type": "string"
+            "minLength": 0
           },
           "value": {
+            "type": "string",
             "maxLength": 140,
-            "minLength": 0,
-            "type": "string"
+            "minLength": 0
           }
         },
-        "description": "it can added a maximum of 10 key-value pairs for metadata"
+        "required": [
+          "key",
+          "value"
+        ]
       },
       "TransferModel": {
-        "required": [
-          "amount",
-          "category",
-          "idTransfer",
-          "remittanceInformation"
-        ],
         "type": "object",
         "properties": {
           "idTransfer": {
@@ -1300,9 +1293,9 @@
             ]
           },
           "amount": {
-            "minimum": 1,
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "minimum": 1
           },
           "organizationFiscalCode": {
             "type": "string",
@@ -1310,47 +1303,54 @@
             "example": "00000000000"
           },
           "remittanceInformation": {
+            "type": "string",
             "maxLength": 140,
-            "minLength": 0,
-            "type": "string"
+            "minLength": 0
           },
           "category": {
             "type": "string"
           },
           "iban": {
-            "maxLength": 35,
-            "minLength": 1,
-            "pattern": "^[A-Za-z0-9]{1,35}$",
             "type": "string",
             "description": "mutual exclusive with stamp",
-            "example": "IT0000000000000000000000000"
-          },
-          "postalIban": {
+            "example": "IT0000000000000000000000000",
             "maxLength": 35,
             "minLength": 1,
-            "pattern": "^$|^[A-Za-z0-9]{1,35}$",
+            "pattern": "^[A-Za-z0-9]{1,35}$"
+          },
+          "postalIban": {
             "type": "string",
             "description": "optional - can be combined with iban but not with stamp",
-            "example": "IT0000000000000000000000000"
+            "example": "IT0000000000000000000000000",
+            "maxLength": 35,
+            "minLength": 1,
+            "pattern": "^$|^[A-Za-z0-9]{1,35}$"
           },
           "stamp": {
-            "$ref": "#/components/schemas/Stamp"
+            "$ref": "#/components/schemas/Stamp",
+            "description": "mutual exclusive with iban and postalIban"
           },
           "companyName": {
+            "type": "string",
             "maxLength": 140,
-            "minLength": 0,
-            "type": "string"
+            "minLength": 0
           },
           "transferMetadata": {
-            "maxItems": 10,
-            "minItems": 0,
             "type": "array",
             "description": "it can added a maximum of 10 key-value pairs for metadata",
             "items": {
               "$ref": "#/components/schemas/TransferMetadataModel"
-            }
+            },
+            "maxItems": 10,
+            "minItems": 0
           }
-        }
+        },
+        "required": [
+          "amount",
+          "category",
+          "idTransfer",
+          "remittanceInformation"
+        ]
       },
       "ProblemJson": {
         "type": "object",
@@ -1360,12 +1360,12 @@
             "description": "A short, summary of the problem type. Written in english and readable for engineers (usually not suited for non technical stakeholders and not localized); example: Service Unavailable"
           },
           "status": {
-            "maximum": 600,
-            "minimum": 100,
             "type": "integer",
-            "description": "The HTTP status code generated by the origin server for this occurrence of the problem.",
             "format": "int32",
-            "example": 200
+            "description": "The HTTP status code generated by the origin server for this occurrence of the problem.",
+            "example": 200,
+            "maximum": 600,
+            "minimum": 100
           },
           "detail": {
             "type": "string",
@@ -1455,35 +1455,35 @@
         }
       },
       "PageInfo": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Page number"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Required number of items per page"
+          },
+          "items_found": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of items found. (The last page may have fewer elements than required)"
+          },
+          "total_pages": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Total number of pages"
+          }
+        },
         "required": [
           "items_found",
           "limit",
           "page",
           "total_pages"
-        ],
-        "type": "object",
-        "properties": {
-          "page": {
-            "type": "integer",
-            "description": "Page number",
-            "format": "int32"
-          },
-          "limit": {
-            "type": "integer",
-            "description": "Required number of items per page",
-            "format": "int32"
-          },
-          "items_found": {
-            "type": "integer",
-            "description": "Number of items found. (The last page may have fewer elements than required)",
-            "format": "int32"
-          },
-          "total_pages": {
-            "type": "integer",
-            "description": "Total number of pages",
-            "format": "int32"
-          }
-        }
+        ]
       },
       "PaymentOptionModelResponseV3": {
         "type": "object",
@@ -1565,10 +1565,6 @@
         }
       },
       "PaymentPositionsInfoV3": {
-        "required": [
-          "page_info",
-          "payment_position_list"
-        ],
         "type": "object",
         "properties": {
           "payment_position_list": {
@@ -1580,7 +1576,11 @@
           "page_info": {
             "$ref": "#/components/schemas/PageInfo"
           }
-        }
+        },
+        "required": [
+          "page_info",
+          "payment_position_list"
+        ]
       },
       "TransferMetadataModelResponse": {
         "type": "object",

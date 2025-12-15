@@ -1,7 +1,7 @@
 package it.gov.pagopa.debtposition.exception;
 
 import java.util.Formatter;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.springframework.http.HttpStatus;
@@ -25,6 +25,9 @@ public class AppException extends RuntimeException {
 
   /** http status returned to the response when this exception occurred */
   HttpStatus httpStatus;
+  
+  /** originating AppError, present only when created via AppError-based constructors */
+  AppError appError;
 
   /**
    * @param httpStatus HTTP status returned to the response
@@ -40,6 +43,7 @@ public class AppException extends RuntimeException {
     super(message, cause);
     this.title = title;
     this.httpStatus = httpStatus;
+    this.appError = null;
   }
 
   /**
@@ -52,6 +56,7 @@ public class AppException extends RuntimeException {
     super(message);
     this.title = title;
     this.httpStatus = httpStatus;
+    this.appError = null;
   }
 
   /**
@@ -64,6 +69,7 @@ public class AppException extends RuntimeException {
     super(formatDetails(appError, args));
     this.httpStatus = appError.httpStatus;
     this.title = appError.title;
+    this.appError = appError;
   }
 
   /**
@@ -76,10 +82,13 @@ public class AppException extends RuntimeException {
     super(formatDetails(appError, args), cause);
     this.httpStatus = appError.httpStatus;
     this.title = appError.title;
+    this.appError = appError;
   }
 
   private static String formatDetails(AppError appError, Object[] args) {
-    return String.format(appError.details, args);
+	  // if appError.details is null, fallback to a single-string pattern
+	  String template = appError.details != null ? appError.details : "%s";
+	  return (args == null || args.length == 0) ? template.replace("%s", "") : String.format(template, args);
   }
 
   @Override

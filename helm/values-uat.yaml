@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.17.0"
+    tag: "1.1.11"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -96,6 +96,7 @@ microservice-chart:
     SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
     SPRING_JPA_HIBERNATE_SHOW_SQL: "false"
     SCHEMA_NAME: "apd"
+    MIGRATION_READ_FROM: "READ_FROM_PAYMENT_OPTION"
     CRON_JOB_SCHEDULE_ENABLED: "true"
     CRON_JOB_SCHEDULE_EXPRESSION_TO_VALID: "0 0 11,21 * * *" # 11, 21 (UTC+00) o'clock of every day.
     CRON_JOB_SCHEDULE_EXPRESSION_TO_EXPIRED: "0 30 11,21 * * *" # 11:30, 21:30 (UTC+00) o'clock of every day.
@@ -127,7 +128,7 @@ microservice-chart:
     MAX_DEBT_POSITIONS: "100"
     SERVICE_NAME: "pagopa-gpd-core"
     OTEL_SERVICE_NAME: "pagopa-gpd-core"
-    OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=prod"
+    OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=uat"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
     OTEL_TRACES_SAMPLER: "always_on"
     OTEL_TRACES_EXPORTER: otlp
@@ -165,7 +166,7 @@ microservice-chart:
       weightPercent: 0
     image:
       repository: ghcr.io/pagopa/pagopa-debt-position
-      tag: "0.16.0-2-hikari-switch"
+      tag: "1.0.0"
       pullPolicy: Always
     envConfig: {}
     envSecret: {}

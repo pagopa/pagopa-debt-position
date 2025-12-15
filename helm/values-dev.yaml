@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "0.17.0"
+    tag: "1.1.11"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -96,6 +96,7 @@ microservice-chart:
     SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
     SPRING_JPA_HIBERNATE_SHOW_SQL: "false"
     SCHEMA_NAME: "apd"
+    MIGRATION_READ_FROM: "READ_FROM_PAYMENT_OPTION"
     CRON_JOB_SCHEDULE_ENABLED: "true"
     CRON_JOB_SCHEDULE_EXPRESSION_TO_VALID: "0 */10 * * * *"
     CRON_JOB_SCHEDULE_EXPRESSION_TO_EXPIRED: "0 */20 * * * *"
@@ -163,7 +164,7 @@ microservice-chart:
       weightPercent: 0
     image:
       repository: ghcr.io/pagopa/pagopa-debt-position
-      tag: "0.16.0-2-hikari-switch"
+      tag: "1.0.0"
       pullPolicy: Always
     envConfig: {}
     envSecret: {}

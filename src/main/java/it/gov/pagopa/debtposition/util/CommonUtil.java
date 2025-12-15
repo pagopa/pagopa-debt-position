@@ -1,11 +1,17 @@
 package it.gov.pagopa.debtposition.util;
 
+import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 import it.gov.pagopa.debtposition.model.PageInfo;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
 import it.gov.pagopa.debtposition.model.filterandorder.OrderType;
-import java.util.List;
-import java.util.Optional;
+
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
+
 import lombok.experimental.UtilityClass;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -13,6 +19,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+
+import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.groupByPlanId;
 
 @UtilityClass
 public class CommonUtil {
@@ -102,5 +110,54 @@ public class CommonUtil {
   public static String sanitize(String input) {
     // Remove line-breaks, tabs, and anything non-alphanumeric/hyphen/asterisk
     return input == null ? null : input.replaceAll("[\\n\\r\\t]", "_").replaceAll("[^A-Za-z0-9\\-\\*]", "");
+  }
+
+  /**
+   * Generate a random numeric string of specified length.
+   *
+   * @param len Length of the desired numeric string.
+   * @return A random numeric string of the specified length.
+   */
+  @SuppressWarnings("java:S2245") // used only for testing/non-sensitive data
+  public static String randomDigits(int len) {
+	  ThreadLocalRandom rnd = ThreadLocalRandom.current();
+	  char[] out = new char[len];
+	  for (int i = 0; i < len; i++) {
+		  out[i] = (char) ('0' + rnd.nextInt(10));
+	  }
+	  return new String(out);
+  }
+
+  /**
+   * Generate an escaped string from input content.
+   *
+   * @param value the string not escaped (e.g. without "\"" char)
+   * @return the escaped string with "\"" prefix and suffix
+   */
+  public static String escapeString(String value) {
+      return "\"" + value + "\"";
+  }
+  
+  /**
+   * Resolves the minimum validity date among the payment options of a payment
+   * position
+   * 
+   * @param pp the payment position
+   * @return the minimum validity date, or null if no validity date is set
+   */
+  public static LocalDateTime resolveMinValidity(PaymentPosition pp) {
+	  if (pp == null || pp.getPaymentOption() == null || pp.getPaymentOption().isEmpty()) {
+		  return null;
+	  }
+	  return pp.getPaymentOption().stream()
+			  .map(po -> UtilityMapper.getValidityDate(pp, po))
+			  .filter(Objects::nonNull)
+			  .min(Comparator.naturalOrder())
+			  .orElse(null);
+  }
+
+  public static boolean isMultiInstallments(PaymentPosition pp) {
+      List<PaymentOption> paymentOptions = pp.getPaymentOption().stream().filter(PaymentOption::getIsPartialPayment).toList();
+      return groupByPlanId(paymentOptions).size() > 1;
   }
 }

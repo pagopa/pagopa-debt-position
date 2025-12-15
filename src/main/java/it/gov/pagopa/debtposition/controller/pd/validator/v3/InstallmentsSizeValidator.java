@@ -1,23 +1,56 @@
 package it.gov.pagopa.debtposition.controller.pd.validator.v3;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 public class InstallmentsSizeValidator
-    implements ConstraintValidator<ValidInstallmentsSize, PaymentPositionModelV3> {
+implements ConstraintValidator<ValidInstallmentsSize, PaymentPositionModelV3> {
 
-  @Override
-  public boolean isValid(PaymentPositionModelV3 value, ConstraintValidatorContext context) {
-    // Check installment distribution in payment options by filtering for those with more than 1
-    // installment
-    long count =
-        value.getPaymentOption().stream()
-            .filter(po -> po.getInstallments() != null && po.getInstallments().size() > 1)
-            .count();
+	@Override
+	public boolean isValid(PaymentPositionModelV3 value, ConstraintValidatorContext ctx) {
+	    if (value == null) return true; // nothing to validate
+	    var options = value.getPaymentOption();
+	    if (options == null) return true;
 
-    // N payment options with N Installment is not possible (ie Opzione Rateale Multipla) ->
-    // BAD_REQUEST
-    return count <= 1;
-  }
+	    ctx.disableDefaultConstraintViolation();
+
+	    return validateGlobalIuvUniqueness(options, ctx);
+	}
+    
+	private boolean validateGlobalIuvUniqueness(List<PaymentOptionModelV3> options,
+	                                            ConstraintValidatorContext ctx) {
+		// Global uniqueness of IUVs across all installments
+		boolean ok = true;
+	    Set<String> seenIuv = new HashSet<>();
+
+	    for (int i = 0; i < options.size(); i++) {
+	        var po = options.get(i);
+	        if (po == null || po.getInstallments() == null) continue;
+
+	        int j = 0;
+	        for (var inst : po.getInstallments()) {
+	            if (inst != null) {
+	                String iuv = inst.getIuv();
+	                if (iuv != null && !seenIuv.add(iuv)) {
+	                    addViolation(ctx, "duplicate IUV at paymentOption[" + i + "].installments[" + j + "]");
+	                    ok = false;
+	                }
+	            }
+	            j++;
+	        }
+	    }
+	    return ok;
+	}
+
+	private void addViolation(ConstraintValidatorContext ctx, String msg) {
+	    ctx.buildConstraintViolationWithTemplate(msg).addConstraintViolation();
+	}
+
 }
+
