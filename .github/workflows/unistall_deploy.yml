@@ -80,12 +80,11 @@ jobs:
       - name: 🗑Remove deployment with dry run
         shell: bash
         env:
-          APP_NAME: ${{ inputs.app_name }}
-          SUFFIX_NAME: ${{ inputs.suffix_name }}
-          NAMESPACE: ${{ inputs.namespace }}
+          APP_NAME: "${{ env.APP_NAME }}${{inputs.is_canary && '-canary' || ''}}"
+          NAMESPACE: ${{ vars.NAMESPACE }}
         run: |
           echo "🗑Launch helm uninstall"
-          helm uninstall '${{ env.APP_NAME }}${{ env.SUFFIX_NAME }}' -n "$NAMESPACE" --dry-run
+          helm uninstall "$APP_NAME" -n "$NAMESPACE" --dry-run
           echo "✔️Helm uninstall"
 
   confirm-remove-deploy:
@@ -97,12 +96,11 @@ jobs:
       - name: 🗑Remove deployment
         shell: bash
         env:
-          APP_NAME: ${{ inputs.app_name }}
-          SUFFIX_NAME: ${{ inputs.suffix_name }}
-          NAMESPACE: ${{ inputs.namespace }}
+          APP_NAME: "${{ env.APP_NAME }}${{inputs.is_canary && '-canary' || ''}}"
+          NAMESPACE: ${{ vars.NAMESPACE }}
         run: |
           echo "🗑Launch helm uninstall"
-          helm uninstall '$APP_NAME$SUFFIX_NAME' -n "$NAMESPACE"
+          helm uninstall "$APP_NAME" -n "$NAMESPACE"
           echo "✔️Helm uninstall"
 
   notify:
