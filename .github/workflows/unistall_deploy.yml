@@ -84,7 +84,12 @@ jobs:
           NAMESPACE: ${{ vars.NAMESPACE }}
         run: |
           echo "🗑Launch helm uninstall"
-          helm uninstall "$APP_NAME${{inputs.is_canary && '-canary' || ''}}" -n "$NAMESPACE" --dry-run
+          if[ inputs.is_canary == 'true']
+          then
+          APP_NAME+='-canary'
+          end
+          
+          helm uninstall "$APP_NAME" -n "$NAMESPACE" --dry-run
           echo "✔️Helm uninstall"
 
   confirm-remove-deploy:
@@ -100,7 +105,12 @@ jobs:
           NAMESPACE: ${{ vars.NAMESPACE }}
         run: |
           echo "🗑Launch helm uninstall"
-          helm uninstall "$APP_NAME${{inputs.is_canary && '-canary' || ''}}" -n "$NAMESPACE"
+          if[ inputs.is_canary == 'true']
+          then
+          APP_NAME+='-canary'
+          end
+          
+          helm uninstall "$APP_NAME" -n "$NAMESPACE"
           echo "✔️Helm uninstall"
 
   notify:
