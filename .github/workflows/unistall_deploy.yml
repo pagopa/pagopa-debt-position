@@ -67,13 +67,14 @@ jobs:
 
           echo "final_app_name=$FINAL_APP_NAME" >> "$GITHUB_OUTPUT"
 
-  helm_setup:
-    name: Helm / AKS setup
-    needs: [ setup ]
+  remove_deploy_dry_run:
+    name: Remove deployment dry run
+    needs: [ setup, helm_setup ]
     runs-on: [ self-hosted-job, "${{ needs.setup.outputs.environment }}" ]
     environment: ${{ needs.setup.outputs.environment }}
-    outputs:
-      RUNNER: ${{ runner.name }}
+    env:
+      FINAL_APP_NAME: ${{ needs.setup.outputs.final_app_name }}
+      NAMESPACE: ${{ vars.NAMESPACE }}
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
         with:
@@ -101,15 +102,6 @@ jobs:
           helm dep build helm
           echo "✅ aks blueprint configured"
 
-  remove_deploy_dry_run:
-    name: Remove deployment dry run
-    needs: [ setup, helm_setup ]
-    runs-on: ${{ needs.helm_setup.outputs.RUNNER }}
-    environment: ${{ needs.setup.outputs.environment }}
-    env:
-      FINAL_APP_NAME: ${{ needs.setup.outputs.final_app_name }}
-      NAMESPACE: ${{ vars.NAMESPACE }}
-    steps:
       - name: 🗑 Remove deployment with dry run
         shell: bash
         run: |
@@ -123,12 +115,38 @@ jobs:
   confirm-remove-deploy:
     name: Confirm remove deployment
     needs: [ setup, helm_setup, remove_deploy_dry_run ]
-    runs-on: ${{ needs.helm_setup.outputs.RUNNER }}
+    runs-on: [ self-hosted-job, "${{ needs.setup.outputs.environment }}" ]
     environment: ${{ needs.setup.outputs.environment }}
     env:
       FINAL_APP_NAME: ${{ needs.setup.outputs.final_app_name }}
       NAMESPACE: ${{ vars.NAMESPACE }}
     steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Login
+        uses: azure/login@89d153571fe9a34ed70fcf9f1d95ab8debea7a73
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          tenant-id: ${{ secrets.TENANT_ID }}
+          subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+
+      - name: Gets K8s context
+        uses: azure/aks-set-context@4edaee69f820359371ee8bc85189ac03a21d3a58 # v3
+        with:
+          resource-group: ${{ vars.CLUSTER_RESOURCE_GROUP }}
+          cluster-name: ${{ vars.CLUSTER_NAME }}
+          admin: 'false'
+          use-kubelogin: 'true'
+
+      - name: 🛠️ Helm configure repos
+        shell: bash
+        run: |
+          helm repo add microservice-chart https://pagopa.github.io/aks-microservice-chart-blueprint
+          helm dep build helm
+          echo "✅ aks blueprint configured"
+
       - name: 🗑 Remove deployment (CONFIRMED)
         shell: bash
         run: |
