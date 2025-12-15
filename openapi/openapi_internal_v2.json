@@ -4,7 +4,7 @@
     "title": "PagoPA API Debt Position ${service}",
     "description": "Progetto Gestione Posizioni Debitorie",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.1.8"
+    "version": "1.1.11"
   },
   "servers": [
     {
@@ -224,7 +224,6 @@
               "type": "integer",
               "format": "int32",
               "default": 10,
-              "exclusiveMinimum": 0,
               "maximum": 50
             }
           },
@@ -871,8 +870,7 @@
             "description": "The old iban to replace",
             "required": true,
             "schema": {
-              "type": "string",
-              "minLength": 1
+              "type": "string"
             }
           },
           {
@@ -3013,7 +3011,6 @@
             "type": "string",
             "description": "The provincial of the residence",
             "example": "RM",
-            "minLength": 1,
             "pattern": "[A-Z]{2}"
           }
         },
@@ -3095,8 +3092,7 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PaymentPositionModel"
-            },
-            "minItems": 1
+            }
           }
         },
         "required": [
@@ -3129,8 +3125,7 @@
             "type": "string"
           },
           "iuv": {
-            "type": "string",
-            "minLength": 1
+            "type": "string"
           },
           "amount": {
             "type": "integer",
@@ -3190,8 +3185,7 @@
         "type": "object",
         "properties": {
           "iupd": {
-            "type": "string",
-            "minLength": 1
+            "type": "string"
           },
           "type": {
             "type": "string",
@@ -3202,7 +3196,7 @@
           },
           "payStandIn": {
             "type": "boolean",
-            "default": true,
+            "default": "true",
             "description": "feature flag to enable a debt position in stand-in mode",
             "example": true
           },
@@ -3237,7 +3231,6 @@
           },
           "email": {
             "type": "string",
-            "format": "email",
             "example": "email@domain.com"
           },
           "phone": {
@@ -3245,7 +3238,7 @@
           },
           "switchToExpired": {
             "type": "boolean",
-            "default": false,
+            "default": "false",
             "description": "feature flag to enable the debt position to expire after the due date",
             "example": false
           },
@@ -3328,8 +3321,7 @@
               "3",
               "4",
               "5"
-            ],
-            "minLength": 1
+            ]
           },
           "amount": {
             "type": "integer",
@@ -3347,8 +3339,7 @@
             "minLength": 0
           },
           "category": {
-            "type": "string",
-            "minLength": 1
+            "type": "string"
           },
           "iban": {
             "type": "string",
@@ -3529,12 +3520,10 @@
             "minLength": 0
           },
           "pspCompany": {
-            "type": "string",
-            "minLength": 1
+            "type": "string"
           },
           "idReceipt": {
-            "type": "string",
-            "minLength": 1
+            "type": "string"
           },
           "fee": {
             "type": "string"

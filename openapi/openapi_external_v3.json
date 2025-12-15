@@ -4,7 +4,7 @@
     "title": "PagoPA API Debt Position ${service}",
     "description": "Progetto Gestione Posizioni Debitorie",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.1.8"
+    "version": "1.1.11"
   },
   "servers": [
     {
@@ -43,7 +43,6 @@
               "type": "integer",
               "format": "int32",
               "default": 10,
-              "exclusiveMinimum": 0,
               "maximum": 50
             }
           },
@@ -1042,7 +1041,6 @@
           },
           "email": {
             "type": "string",
-            "format": "email",
             "example": "email@domain.com"
           },
           "phone": {
@@ -1059,8 +1057,7 @@
         "type": "object",
         "properties": {
           "key": {
-            "type": "string",
-            "minLength": 1
+            "type": "string"
           },
           "value": {
             "type": "string"
@@ -1077,8 +1074,7 @@
             "type": "string"
           },
           "iuv": {
-            "type": "string",
-            "minLength": 1
+            "type": "string"
           },
           "amount": {
             "type": "integer",
@@ -1160,7 +1156,7 @@
           },
           "switchToExpired": {
             "type": "boolean",
-            "default": false,
+            "default": "false",
             "description": "feature flag to enable the payment option to expire after the due date",
             "example": false
           },
@@ -1186,12 +1182,11 @@
         "type": "object",
         "properties": {
           "iupd": {
-            "type": "string",
-            "minLength": 1
+            "type": "string"
           },
           "payStandIn": {
             "type": "boolean",
-            "default": true,
+            "default": "true",
             "description": "feature flag to enable a debt position in stand-in mode",
             "example": true
           },
@@ -1256,7 +1251,6 @@
             "type": "string",
             "description": "The provincial of the residence",
             "example": "RM",
-            "minLength": 1,
             "pattern": "[A-Z]{2}"
           }
         },
@@ -1296,8 +1290,7 @@
               "3",
               "4",
               "5"
-            ],
-            "minLength": 1
+            ]
           },
           "amount": {
             "type": "integer",
@@ -1315,8 +1308,7 @@
             "minLength": 0
           },
           "category": {
-            "type": "string",
-            "minLength": 1
+            "type": "string"
           },
           "iban": {
             "type": "string",
