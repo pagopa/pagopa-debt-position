@@ -1930,12 +1930,18 @@ class DebtPositionControllerTest {
   @Test
   void updateDebtPosition_CreateValidAndUpdate_200() throws Exception {
     // creo una posizione debitoria (con 'validity date' impostata)
-    LocalDateTime vd =
-        LocalDateTime.now(ZoneOffset.UTC)
-            .plus(5, ChronoUnit.SECONDS)
-            .truncatedTo(ChronoUnit.SECONDS);
     PaymentPositionDTO ppDto1 = DebtPositionMock.getMock1();
-    ppDto1.setValidityDate(vd);
+    
+    LocalDateTime futureValidity = LocalDateTime.now(ZoneOffset.UTC).plus(1, ChronoUnit.DAYS).truncatedTo(ChronoUnit.SECONDS);
+    LocalDateTime futureDue = LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.DAYS);
+
+    ppDto1.setValidityDate(futureValidity);
+    ppDto1.getPaymentOption().forEach(opt -> {
+    	opt.setStatus(PaymentOptionStatus.PO_UNPAID);
+    	opt.setSwitchToExpired(true);
+    	opt.setDueDate(futureDue);
+    	opt.setValidityDate(futureValidity);
+    });
     mvc.perform(
             post("/organizations/CREATE_UPD_12345678901/debtpositions?toPublish=True")
                 .content(TestUtil.toJson(ppDto1))
@@ -1953,11 +1959,17 @@ class DebtPositionControllerTest {
                 .value(DebtPositionStatus.PUBLISHED.toString()))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.validityDate")
-                .value(vd.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))));
+                .value(futureValidity.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))));
 
     // aggiorno la posizione debitoria con un body che contiene la 'validity date'
     PaymentPositionDTO ppDto4 = DebtPositionMock.getMock4();
-    ppDto4.setValidityDate(vd);
+    ppDto4.setValidityDate(futureValidity);
+    ppDto4.getPaymentOption().forEach(opt -> {
+    	opt.setStatus(PaymentOptionStatus.PO_UNPAID);
+    	opt.setSwitchToExpired(true);
+    	opt.setDueDate(futureDue);
+    	opt.setValidityDate(futureValidity);
+    });
     mvc.perform(
             put("/organizations/CREATE_UPD_12345678901/debtpositions/12345678901IUPDMOCK1?toPublish=True")
                 .content(TestUtil.toJson(ppDto4))
@@ -1978,7 +1990,7 @@ class DebtPositionControllerTest {
                 .value(DebtPositionStatus.PUBLISHED.toString()))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.validityDate")
-                .value(vd.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))))
+                .value(futureValidity.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))))
         .andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty());
   }
 
