@@ -107,17 +107,35 @@ public enum DebtPositionStatus {
   }
   
   public static void expirationCheckAndUpdate(LocalDateTime currentDate, PaymentOption po) {
-	PaymentPosition pp = po.getPaymentPosition();
 
-	// switchToExpired = true if at least one installment has switchToExpired = true
-	boolean anySwitchToExpired = UtilityMapper.getSwitchToExpired(pp);
+	  PaymentPosition pp = po.getPaymentPosition();
 
-	if (anySwitchToExpired && pp.getStatus() == DebtPositionStatus.VALID && pp.getMaxDueDate() != null
-			&& currentDate.isAfter(pp.getMaxDueDate())) {
-		pp.setStatus(DebtPositionStatus.EXPIRED);
-	}
+	  // PP must be in payable status, otherwise skip
+	  if (pp.getStatus() != DebtPositionStatus.VALID
+			  && pp.getStatus() != DebtPositionStatus.PARTIALLY_PAID) {
+		  return;
+	  }
+
+	  // The PO must be UNPAID, otherwise skip
+	  if (po.getStatus() != PaymentOptionStatus.PO_UNPAID) {
+		  return;
+	  }
+
+	  // The PO must be able to expire, otherwise skip
+	  if (!Boolean.TRUE.equals(po.getSwitchToExpired())) {
+		  return;
+	  }
+
+	  // The PO has expired, otherwise skip
+	  if (!po.getDueDate().isBefore(currentDate)) {
+		  return;
+	  }
+
+	  // Payment attempt on expired PO → set status to EXPIRED
+	  pp.setStatus(DebtPositionStatus.EXPIRED);
   }
 
+  
   /**
    * Checks if the user is trying to pay the full amount for the payment position but there is an
    * installment already paid.
