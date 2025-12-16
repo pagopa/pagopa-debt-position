@@ -18,6 +18,8 @@ on:
         description: Uninstall the canary version on AKS
         default: true
 
+env:
+  APP_NAME: gpd-core
 
 permissions:
   packages: write
@@ -26,77 +28,148 @@ permissions:
   id-token: write
   actions: read
 
-
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   setup:
     name: Setup
     runs-on: ubuntu-latest
     outputs:
-      semver: ${{ steps.get_semver.outputs.semver }}
       environment: ${{ steps.get_env.outputs.environment }}
+      final_app_name: ${{ steps.set_app_name.outputs.final_app_name }}
     steps:
-      - name: pull request rejected
-        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged != true
-        run: |
-          echo "❌ PR was closed without a merge"
-          exit 1
-
-      # Set Semvar
-      - run: echo "SEMVER=patch" >> $GITHUB_ENV
-
-      - if: ${{ (github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, 'breaking-change ')) }}
-        run: echo "SEMVER=major" >> $GITHUB_ENV
-
-      - if: ${{ inputs.environment == 'uat' }}
-        run: echo "SEMVER=minor" >> $GITHUB_ENV
-
-      - if: ${{ inputs.environment == 'prod' }}
-        run: echo "SEMVER=skip" >> $GITHUB_ENV
-
-      - if: ${{ github.ref_name != 'main' }}
-        run: echo "SEMVER=buildNumber" >> $GITHUB_ENV
-
-      - if: ${{ inputs.skip_release }}
-        run: echo "SEMVER=skip" >> $GITHUB_ENV
-
-      - id: get_semver
-        name: Set Output
-        run: echo "semver=${{env.SEMVER}}" >> $GITHUB_OUTPUT
-
       # Set Environment
-      - run: echo "ENVIRNOMENT=${{ inputs.environment}}" >> $GITHUB_ENV
+      - run: echo "ENVIRONMENT=${{ inputs.environment }}" >> $GITHUB_ENV
 
       - if: ${{ inputs.environment == null }}
-        run: echo "ENVIRNOMENT=dev" >> $GITHUB_ENV
+        run: echo "ENVIRONMENT=dev" >> $GITHUB_ENV
 
       - id: get_env
-        name: Set Output
-        run: echo "environment=${{env.ENVIRNOMENT}}" >> $GITHUB_OUTPUT
+        name: Set Environment Output
+        run: echo "environment=${{ env.ENVIRONMENT }}" >> $GITHUB_OUTPUT
 
-  deploy_aks:
-    name: Deploy on AKS
+      # Set App name
+      - id: set_app_name
+        name: Compute FINAL_APP_NAME
+        shell: bash
+        env:
+          BASE_APP_NAME: ${{ env.APP_NAME }}
+          IS_CANARY: ${{ inputs.is_canary }}
+        run: |
+          if [ -z "$BASE_APP_NAME" ]; then
+            echo "BASE_APP_NAME (APP_NAME) not defined."
+            exit 1
+          fi
+
+          FINAL_APP_NAME="$BASE_APP_NAME"
+          if [ "$IS_CANARY" = "true" ]; then
+            FINAL_APP_NAME="${FINAL_APP_NAME}-canary"
+          fi
+
+          echo "final_app_name=$FINAL_APP_NAME" >> "$GITHUB_OUTPUT"
+
+  remove_deploy_dry_run:
+    name: Remove deployment dry run
     needs: [ setup ]
-    uses: ./.github/workflows/deploy_with_github_runner.yml
-    with:
-      environment: ${{ needs.setup.outputs.environment }}
-      suffix_name: ${{ inputs.is_canary && '-canary' || '' }}
-      uninstall: true
-    secrets: inherit
+    runs-on: [ self-hosted-job, "${{ needs.setup.outputs.environment }}" ]
+    environment: ${{ needs.setup.outputs.environment }}
+    env:
+      FINAL_APP_NAME: ${{ needs.setup.outputs.final_app_name }}
+      NAMESPACE: ${{ vars.NAMESPACE }}
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Login
+        uses: azure/login@89d153571fe9a34ed70fcf9f1d95ab8debea7a73
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          tenant-id: ${{ secrets.TENANT_ID }}
+          subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+
+      - name: Gets K8s context
+        uses: azure/aks-set-context@4edaee69f820359371ee8bc85189ac03a21d3a58 # v3
+        with:
+          resource-group: ${{ vars.CLUSTER_RESOURCE_GROUP }}
+          cluster-name: ${{ vars.CLUSTER_NAME }}
+          admin: 'false'
+          use-kubelogin: 'true'
+
+      - name: 🛠️ Helm configure repos
+        shell: bash
+        run: |
+          helm repo add microservice-chart https://pagopa.github.io/aks-microservice-chart-blueprint
+          helm dep build helm
+          echo "✅ aks blueprint configured"
+
+      - name: 🗑 Remove deployment with dry run
+        shell: bash
+        run: |
+          echo "🗑 Launch helm uninstall (dry run)"
+          echo "Uninstalling release (dry-run): $FINAL_APP_NAME from namespace: $NAMESPACE"
+
+          helm uninstall "$FINAL_APP_NAME" -n "$NAMESPACE" --dry-run
+
+          echo "Check the results from the uninstall dry run"
+
+  confirm-remove-deploy:
+    name: Confirm remove deployment
+    needs: [ setup, remove_deploy_dry_run ]
+    runs-on: [ self-hosted-job, "${{ needs.setup.outputs.environment }}" ]
+    environment: ${{ needs.setup.outputs.environment }}
+    env:
+      FINAL_APP_NAME: ${{ needs.setup.outputs.final_app_name }}
+      NAMESPACE: ${{ vars.NAMESPACE }}
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Login
+        uses: azure/login@89d153571fe9a34ed70fcf9f1d95ab8debea7a73
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          tenant-id: ${{ secrets.TENANT_ID }}
+          subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+
+      - name: Gets K8s context
+        uses: azure/aks-set-context@4edaee69f820359371ee8bc85189ac03a21d3a58 # v3
+        with:
+          resource-group: ${{ vars.CLUSTER_RESOURCE_GROUP }}
+          cluster-name: ${{ vars.CLUSTER_NAME }}
+          admin: 'false'
+          use-kubelogin: 'true'
+
+      - name: 🛠️ Helm configure repos
+        shell: bash
+        run: |
+          helm repo add microservice-chart https://pagopa.github.io/aks-microservice-chart-blueprint
+          helm dep build helm
+          echo "✅ aks blueprint configured"
+
+      - name: 🗑 Remove deployment (CONFIRMED)
+        shell: bash
+        run: |
+          echo "🗑 Launch helm uninstall"
+          echo "Uninstalling release: $FINAL_APP_NAME from namespace: $NAMESPACE"
+
+          helm uninstall "$FINAL_APP_NAME" -n "$NAMESPACE"
+
+          echo "✔️ Helm uninstall completed"
 
   notify:
-    needs: [ setup, deploy_aks ]
-    runs-on: ubuntu-latest
     name: Notify
+    needs: [ setup, remove_deploy_dry_run, confirm-remove-deploy ]
+    runs-on: ubuntu-latest
     if: always()
     steps:
       - name: Report Status
         if: ${{ needs.setup.outputs.environment == 'prod' }}
         uses: ravsamhq/notify-slack-action@be814b201e233b2dc673608aa46e5447c8ab13f2 # v2
         with:
-          status: ${{ needs.deploy_aks.result }}
+          status: ${{ needs.confirm-remove-deploy.result }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          notification_title: 'Delete Release on Production ${{ needs.release.outputs.version }} has {status_message}'
+          notification_title: 'Delete Release on Production has {status_message}'
           message_format: '{emoji} <{run_url}|{workflow}> {status_message} in <{repo_url}|{repo}>'
           footer: 'Linked to <{workflow_url}| workflow file>'
           icon_success: ':wastebasket:'
