@@ -964,7 +964,7 @@ class DebtPositionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
-    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
     String url =
         "/organizations/LIST_12345678901/debtpositions?page=0"
             + "&due_date_from="
@@ -1020,7 +1020,7 @@ class DebtPositionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
-    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
     String url =
         "/organizations/LIST_NAV_12345678901/debtpositions?page=0"
             + "&due_date_from="
@@ -1076,7 +1076,7 @@ class DebtPositionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
-    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
     String url =
         "/organizations/LIST_12345678904/debtpositions?page=0"
             + "&due_date_from="
@@ -1129,7 +1129,7 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
 
     // effettuo la chiamata GET applicando il filtro sulla payment_date
-    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
     String url =
         "/organizations/123456789022/debtpositions?page=0"
             + "&payment_date_from="
@@ -1175,7 +1175,7 @@ class DebtPositionControllerTest {
         .andExpect(status().isOk());
 
     // effettuo la chiamata GET applicando il filtro sullo status
-    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
     String url =
         "/organizations/123456789030/debtpositions?page=0"
             + "&due_date_from="
@@ -1205,7 +1205,7 @@ class DebtPositionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
-    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
     String url =
         "/organizations/LIST_ORDERED_12345678901/debtpositions?page=0&orderby=INSERTED_DATE&ordering=DESC"
             + "&due_date_from="
@@ -1248,7 +1248,7 @@ class DebtPositionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
-    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
     String url =
         "/organizations/DUEDATEBETWEEN_12345678901/debtpositions?page=0"
             + "&due_date_from="
