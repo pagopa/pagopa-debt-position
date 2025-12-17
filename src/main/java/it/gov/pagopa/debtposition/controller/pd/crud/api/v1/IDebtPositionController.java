@@ -20,6 +20,8 @@ import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
@@ -233,8 +235,8 @@ public interface IDebtPositionController {
           String organizationFiscalCode,
       @Valid
           @Positive
-          @Max(50)
-          @Parameter(description = "Number of elements on one page. Default = 50")
+          @Max(100)
+          @Parameter(description = "Number of elements on one page. Default = 10")
           @RequestParam(required = false, defaultValue = "10")
           Integer limit,
       @Valid
@@ -249,7 +251,7 @@ public interface IDebtPositionController {
                       + " will be set to 30 days before the due_date_to.")
           @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
           @RequestParam(value = "due_date_from", required = false)
-          LocalDate dueDateFrom,
+          LocalDateTime dueDateFrom,
       @Valid
           @Parameter(
               description =
@@ -257,7 +259,7 @@ public interface IDebtPositionController {
                       + " be set to 30 days after the due_date_from.")
           @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
           @RequestParam(value = "due_date_to", required = false)
-          LocalDate dueDateTo,
+          LocalDateTime dueDateTo,
       @Valid
           @Parameter(
               description =
@@ -265,7 +267,7 @@ public interface IDebtPositionController {
                       + " provided will be set to 30 days before the payment_date_to.")
           @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
           @RequestParam(value = "payment_date_from", required = false)
-          LocalDate paymentDateFrom,
+          LocalDateTime paymentDateFrom,
       @Valid
           @Parameter(
               description =
@@ -273,7 +275,7 @@ public interface IDebtPositionController {
                       + " will be set to 30 days after the payment_date_from")
           @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
           @RequestParam(value = "payment_date_to", required = false)
-          LocalDate paymentDateTo,
+          LocalDateTime paymentDateTo,
       @Valid
           @Parameter(description = "Filter by debt position status")
           @RequestParam(value = "status", required = false)

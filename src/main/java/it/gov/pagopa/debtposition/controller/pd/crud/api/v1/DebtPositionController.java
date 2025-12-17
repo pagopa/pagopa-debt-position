@@ -112,10 +112,10 @@ public class DebtPositionController implements IDebtPositionController {
       String organizationFiscalCode,
       Integer limit,
       Integer page,
-      LocalDate dueDateFrom,
-      LocalDate dueDateTo,
-      LocalDate paymentDateFrom,
-      LocalDate paymentDateTo,
+      LocalDateTime dueDateFrom,
+      LocalDateTime dueDateTo,
+      LocalDateTime paymentDateFrom,
+      LocalDateTime paymentDateTo,
       DebtPositionStatus status,
       PaymentPositionOrder orderBy,
       Direction ordering,
@@ -139,12 +139,10 @@ public class DebtPositionController implements IDebtPositionController {
             .filter(
                 Filter.builder()
                     .organizationFiscalCode(organizationFiscalCode)
-                    .dueDateFrom(dueDateFrom != null ? dueDateFrom.atStartOfDay() : null)
-                    .dueDateTo(dueDateTo != null ? dueDateTo.atTime(LocalTime.MAX) : null)
-                    .paymentDateFrom(
-                        paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : null)
-                    .paymentDateTo(
-                        paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : null)
+                    .dueDateFrom(dueDateFrom)
+                    .dueDateTo(dueDateTo)
+                    .paymentDateFrom(paymentDateFrom)
+                    .paymentDateTo(paymentDateTo)
                     .status(status)
                     .segregationCodes(segCodesList)
                     .build())
