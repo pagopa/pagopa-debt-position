@@ -38,13 +38,13 @@ public class PublishPaymentUtil {
 
     // If forwardToValid is true, the position directly transitions to the VALID state
     if (defaultValidityDateApplied || existsValidOption) {
-      // setValidityDate to ppToPublish remove after v1.1.0 promotion because useless (todo)
+      // setValidityDate to ppToPublish
       ppToPublish.setValidityDate(publishDatetime);
       ppToPublish.setStatus(DebtPositionStatus.VALID);
     } else {
       // Actual publish process
       ppToPublish.setStatus(DebtPositionStatus.PUBLISHED);
-      // Update payment position validity date, status is PUBLISHED (todo)
+      // Update payment position validity date, status is PUBLISHED
       ppToPublish.setValidityDate(CommonUtil.resolveMinValidity(ppToPublish));
     }
   }
