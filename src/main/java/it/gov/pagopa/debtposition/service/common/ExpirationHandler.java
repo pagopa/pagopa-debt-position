@@ -67,7 +67,7 @@ public final class ExpirationHandler {
     PaymentPosition pp = po.getPaymentPosition();
 
     // PP must be in payable status, otherwise skip
-    if (getPaymentPosPayableStatus().contains(pp.getStatus())) {
+    if (!getPaymentPosPayableStatus().contains(pp.getStatus())) {
       return;
     }
 
