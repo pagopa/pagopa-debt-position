@@ -36,21 +36,21 @@ class OptionsServiceTest {
 
   private PaymentPosition mockPosition;
   private PaymentOption mockOptionSingle;
-  private final String FISCAL_CODE = "12345678901";
-  private final String NAV = "302000100000009483";
+  private final String fiscalCode = "12345678901";
+  private final String noticeNumber = "302000100000009483";
 
   @BeforeEach
   void setUp() {
     // Basic setup valid for most tests
     mockPosition = new PaymentPosition();
     mockPosition.setId(100L);
-    mockPosition.setOrganizationFiscalCode(FISCAL_CODE);
+    mockPosition.setOrganizationFiscalCode(fiscalCode);
     mockPosition.setCompanyName("Company SpA");
     mockPosition.setStatus(DebtPositionStatus.PUBLISHED); // Let's start with Published to test the transitions.
 
     mockOptionSingle = new PaymentOption();
     mockOptionSingle.setId(1L);
-    mockOptionSingle.setNav(NAV);
+    mockOptionSingle.setNav(noticeNumber);
     mockOptionSingle.setAmount(1000L);
     mockOptionSingle.setIsPartialPayment(false); // Single Payment
     mockOptionSingle.setStatus(PaymentOptionStatus.PO_UNPAID);
@@ -68,11 +68,11 @@ class OptionsServiceTest {
             .thenReturn(Optional.of(mockOptionSingle));
 
     // Act
-    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(FISCAL_CODE, NAV);
+    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode, noticeNumber);
 
     // Assert
     assertNotNull(response);
-    assertEquals(FISCAL_CODE, response.getOrganizationFiscalCode());
+    assertEquals(fiscalCode, response.getOrganizationFiscalCode());
     assertEquals(1, response.getPaymentOptions().size());
 
     PaymentOptionGroup group = response.getPaymentOptions().get(0);
@@ -91,7 +91,7 @@ class OptionsServiceTest {
     // Act & Assert
     AppException exception =
             assertThrows(
-                    AppException.class, () -> optionsService.verifyPaymentOptions(FISCAL_CODE, NAV));
+                    AppException.class, () -> optionsService.verifyPaymentOptions(fiscalCode, noticeNumber));
     assertEquals("Not found the payment option", exception.getTitle());
   }
 
@@ -104,7 +104,7 @@ class OptionsServiceTest {
             .thenReturn(Optional.of(mockOptionSingle));
 
     // Act
-    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(FISCAL_CODE, NAV);
+    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode, noticeNumber);
 
     // Assert
     PaymentOptionGroup group = response.getPaymentOptions().get(0);
@@ -127,7 +127,7 @@ class OptionsServiceTest {
             .thenReturn(Optional.of(mockOptionSingle));
 
     // Act
-    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(FISCAL_CODE, NAV);
+    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode, noticeNumber);
 
     // Assert
     PaymentOptionGroup group = response.getPaymentOptions().get(0);
@@ -151,7 +151,7 @@ class OptionsServiceTest {
             .thenReturn(Optional.of(mockOptionSingle));
 
     // Act
-    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(FISCAL_CODE, NAV);
+    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode, noticeNumber);
 
     // Assert
     PaymentOptionGroup group = response.getPaymentOptions().get(0);
@@ -175,7 +175,7 @@ class OptionsServiceTest {
             .thenReturn(Optional.of(install2));
 
     // Act
-    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(FISCAL_CODE, NAV);
+    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode, noticeNumber);
 
     // Assert
     // We expect two groups: one for FULL (Single) and one for PLAN_
@@ -205,7 +205,7 @@ class OptionsServiceTest {
             .thenReturn(Optional.of(mockOptionSingle));
 
     // Act
-    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(FISCAL_CODE, NAV);
+    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode, noticeNumber);
 
     // Assert
     assertTrue(response.getPaymentOptions().get(0).getAllCCP());
@@ -220,7 +220,7 @@ class OptionsServiceTest {
             .thenReturn(Optional.of(mockOptionSingle));
 
     // Act
-    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(FISCAL_CODE, NAV);
+    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode, noticeNumber);
 
     // Assert
     assertFalse(response.getPaymentOptions().get(0).getAllCCP());
