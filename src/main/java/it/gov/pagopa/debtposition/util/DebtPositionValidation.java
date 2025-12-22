@@ -10,7 +10,6 @@ import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.exception.ValidationException;
-import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
@@ -127,7 +126,8 @@ public class DebtPositionValidation {
   }
 
   // Validation based on validityDate, dueDate, retentionDate, currentDate
-  private static void checkPaymentPositionDatesCongruency(final PaymentPosition pp, String... actions) {
+  private static void checkPaymentPositionDatesCongruency(
+      final PaymentPosition pp, String... actions) {
 
     String action = ArrayUtils.isEmpty(actions) ? "NO_ACTION" : actions[0];
     LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
@@ -138,7 +138,9 @@ public class DebtPositionValidation {
       LocalDateTime poValidity = po.getValidityDate();
 
       // 1. Validity Date Check: in CREATE action, validity_date must be greater than current_time
-      if (CREATE_ACTION.equalsIgnoreCase(action) && poValidity != null && !poValidity.isAfter(now)) {
+      if (CREATE_ACTION.equalsIgnoreCase(action)
+          && poValidity != null
+          && !poValidity.isAfter(now)) {
         throw new ValidationException(
             String.format(
                 VALIDITY_DATE_VALIDATION_ERROR,
@@ -156,7 +158,8 @@ public class DebtPositionValidation {
                 dateFormatter.format(now)));
       }
 
-      // 3. Retention Date Check: regardless of the action, retention_date must be greater than due_date
+      // 3. Retention Date Check: regardless of the action, retention_date must be greater than
+      // due_date
       if (po.getRetentionDate() != null && po.getRetentionDate().isBefore(po.getDueDate())) {
         throw new ValidationException(
             String.format(
@@ -320,7 +323,7 @@ public class DebtPositionValidation {
                           sanitize(ppToReport.getOrganizationFiscalCode()),
                           sanitize(ppToReport.getIupd()),
                           sanitize(iuv)),
-                          sanitize(transferId));
+                      sanitize(transferId));
                   return new AppException(
                       AppError.TRANSFER_REPORTING_FAILED,
                       ppToReport.getOrganizationFiscalCode(),
@@ -340,7 +343,11 @@ public class DebtPositionValidation {
   private static void logErrorEmptyPaymentOption(PaymentPosition pp, String iuv) {
     log.error(
         "Obtained unexpected empty payment option - [{}]",
-        String.format(LOG_BASE_PARAMS_DETAIL, sanitize(pp.getOrganizationFiscalCode()), sanitize(pp.getIupd()), sanitize(iuv)));
+        String.format(
+            LOG_BASE_PARAMS_DETAIL,
+            sanitize(pp.getOrganizationFiscalCode()),
+            sanitize(pp.getIupd()),
+            sanitize(iuv)));
   }
 
   private enum TransferId {
@@ -375,16 +382,19 @@ public class DebtPositionValidation {
    * In UPDATE, due_date must be greater than validity_date. If switchToExpired is false,
    * due_date could be lower than current_time.
    */
-  private static boolean isDueDateInvalid(PaymentOption po, LocalDateTime poValidityIn, LocalDateTime now, String action) {
+  private static boolean isDueDateInvalid(
+      PaymentOption po, LocalDateTime poValidityIn, LocalDateTime now, String action) {
     LocalDateTime validityDate = (poValidityIn == null) ? now : poValidityIn;
     boolean isInvalid = false;
     boolean isSTE = Boolean.TRUE.equals(po.getSwitchToExpired());
 
     // Regardless of the action, the due date must be later than the validity date.
-    // Otherwise, when the citizen retrieves the option, they get an inconsistent response (validity date > due date).
+    // Otherwise, when the citizen retrieves the option, they get an inconsistent response (validity
+    // date > due date).
     isInvalid = po.getDueDate().isBefore(validityDate);
 
-    if (CREATE_ACTION.equalsIgnoreCase(action) || (UPDATE_ACTION.equalsIgnoreCase(action) && isSTE)) {
+    if (CREATE_ACTION.equalsIgnoreCase(action)
+        || (UPDATE_ACTION.equalsIgnoreCase(action) && isSTE)) {
       // due_date must be greater than validity_date and current_time
       isInvalid = po.getDueDate().isBefore(now) || isInvalid;
     }
