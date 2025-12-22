@@ -41,9 +41,7 @@ public class ConverterV3PPModelToEntity
     destination.setFullName(UNDEFINED_DEBTOR);
     destination.setCompanyName(source.getCompanyName());
     destination.setOfficeName(source.getOfficeName());
-    // todo setValidityDate method remove after v1.1.0 promotion because useless
     destination.setValidityDate(getValidityDate(source.getPaymentOption()));
-    // todo setSwitchToExpired method remove after v1.1.0 promotion because useless
     destination.setSwitchToExpired(getSwitchToExpired(source.getPaymentOption()));
 
     mapAndUpdateInstallments(source, destination);
@@ -73,7 +71,7 @@ public class ConverterV3PPModelToEntity
 			  String planIdForThisOption = null;
 			  if (isPartial) {
 				  planIdForThisOption =
-						  findExistingPlanUuidAmongManaged(sourceOption.getInstallments(), managedOptionsByIuv)
+						  findExistingPlanUUIDAmongManaged(sourceOption.getInstallments(), managedOptionsByIuv)
 						  .orElseGet(() -> java.util.UUID.randomUUID().toString());
 			  }
 
@@ -151,9 +149,8 @@ public class ConverterV3PPModelToEntity
     	}
     } else {
     	// single option
-        destination.setPaymentPlanId(PaymentOption.SINGLE_OPTION);
+      destination.setPaymentPlanId(PaymentOption.SINGLE_OPTION);
     }
-
 
     mapAndUpdateTransfers(sourceInstallment, destination);
     mapAndUpdateOptionMetadata(sourceInstallment, destination);
@@ -168,19 +165,17 @@ public class ConverterV3PPModelToEntity
     List<TransferModel> sourceTransfers = sourceInstallment.getTransfer().stream().toList();
     List<Transfer> transfersToRemove = new ArrayList<>(destination.getTransfer());
 
-    if (sourceTransfers != null) {
-      for (TransferModel sourceTx : sourceTransfers) {
-        Transfer managedTx = managedTransfersById.get(sourceTx.getIdTransfer());
-        if (managedTx != null) {
-          // UPDATE
-          mapAndUpdateSingleTransfer(sourceTx, managedTx);
-          transfersToRemove.remove(managedTx);
-        } else {
-          // CREATE
-          Transfer tr = Transfer.builder().build();
-          mapAndUpdateSingleTransfer(sourceTx, tr);
-          destination.getTransfer().add(tr);
-        }
+    for (TransferModel sourceTx : sourceTransfers) {
+      Transfer managedTx = managedTransfersById.get(sourceTx.getIdTransfer());
+      if (managedTx != null) {
+        // UPDATE
+        mapAndUpdateSingleTransfer(sourceTx, managedTx);
+        transfersToRemove.remove(managedTx);
+      } else {
+        // CREATE
+        Transfer tr = Transfer.builder().build();
+        mapAndUpdateSingleTransfer(sourceTx, tr);
+        destination.getTransfer().add(tr);
       }
     }
     // DELETE
@@ -218,28 +213,26 @@ public class ConverterV3PPModelToEntity
     List<PaymentOptionMetadata> metadataToRemove =
         new ArrayList<>(destination.getPaymentOptionMetadata());
 
-    if (sourcePaymentOptionMetadata != null) {
-      for (InstallmentMetadataModel sourceMetadata : sourcePaymentOptionMetadata) {
-        PaymentOptionMetadata managedMetadata =
-            managedPaymentOptionMetadataByKey.get(sourceMetadata.getKey());
+    for (InstallmentMetadataModel sourceMetadata : sourcePaymentOptionMetadata) {
+      PaymentOptionMetadata managedMetadata =
+          managedPaymentOptionMetadataByKey.get(sourceMetadata.getKey());
 
-        if (managedMetadata != null) {
-          // UPDATE:
-          managedMetadata.setValue(sourceMetadata.getValue());
-          metadataToRemove.remove(managedMetadata);
-        } else {
-          // CREATE:
-          PaymentOptionMetadata md =
-              PaymentOptionMetadata.builder()
-                  .key(sourceMetadata.getKey())
-                  .value(sourceMetadata.getValue())
-                  .paymentOption(destination)
-                  .build();
-          destination.getPaymentOptionMetadata().add(md);
-        }
+      if (managedMetadata != null) {
+        // UPDATE existing metadata
+        managedMetadata.setValue(sourceMetadata.getValue());
+        metadataToRemove.remove(managedMetadata);
+      } else {
+        // CREATE new metadata
+        PaymentOptionMetadata md =
+            PaymentOptionMetadata.builder()
+                .key(sourceMetadata.getKey())
+                .value(sourceMetadata.getValue())
+                .paymentOption(destination)
+                .build();
+        destination.getPaymentOptionMetadata().add(md);
       }
     }
-    // DELETE:the orphans metadata are removed
+    // DELETE the orphans metadata are removed
     destination.getPaymentOptionMetadata().removeAll(metadataToRemove);
   }
 
@@ -257,11 +250,11 @@ public class ConverterV3PPModelToEntity
             managedTransferMetadataByKey.get(sourceMetadata.getKey());
 
         if (managedMetadata != null) {
-          // UPDATE:
+          // UPDATE existing metadata
           managedMetadata.setValue(sourceMetadata.getValue());
           metadataToRemove.remove(managedMetadata);
         } else {
-          // CREATE:
+          // CREATE new metadata
           TransferMetadata md =
               TransferMetadata.builder()
                   .key(sourceMetadata.getKey())
@@ -272,11 +265,11 @@ public class ConverterV3PPModelToEntity
         }
       }
     }
-    // DELETE:
+    // DELETE the orphans metadata are removed
     destination.getTransferMetadata().removeAll(metadataToRemove);
   }
   
-  private Optional<String> findExistingPlanUuidAmongManaged(
+  private Optional<String> findExistingPlanUUIDAmongManaged(
 		  List<InstallmentModel> installments,
 		  Map<String, PaymentOption> managedByIuv) {
 
@@ -292,7 +285,7 @@ public class ConverterV3PPModelToEntity
 	  return Optional.empty();
   }
 
-  // valid UUID (case-insensitive)
+  // Valid UUID (case-insensitive)
   private boolean isUuid(String s) {
 	  try {
 		  java.util.UUID.fromString(s);
@@ -302,7 +295,6 @@ public class ConverterV3PPModelToEntity
 	  }
   }
 
-  // todo getValidityDate method remove after v1.1.0 promotion because useless
   private LocalDateTime getValidityDate(List<PaymentOptionModelV3> paymentOptions) {
       if (paymentOptions == null) {
           return null;
@@ -320,15 +312,14 @@ public class ConverterV3PPModelToEntity
 
       return validityDate;
   }
-  // todo getSwitchToExpired method remove after v1.1.0 promotion because useless
+
   private boolean getSwitchToExpired(List<PaymentOptionModelV3> paymentOptions) {
       if (paymentOptions == null) {
           return false;
       }
-      // Check if any PaymentOptionModelV3 has switchToExpired as true
-      // OR operation for the boolean field
+      // Check if all PaymentOptionModelV3 has switchToExpired as true
       return paymentOptions.stream()
               .filter(Objects::nonNull)
-              .anyMatch(PaymentOptionModelV3::getSwitchToExpired);
+              .allMatch(PaymentOptionModelV3::getSwitchToExpired);
   }
 }

@@ -64,35 +64,39 @@ public enum DebtPositionStatus {
     LocalDateTime minValidity = CommonUtil.resolveMinValidity(pp);
     // Validity check on the fly
     if (pp.getStatus().equals(DebtPositionStatus.PUBLISHED)
-    		&& minValidity != null
-    		&& currentDate.isAfter(minValidity)) {
-    	pp.setStatus(DebtPositionStatus.VALID);
+        && minValidity != null
+        && currentDate.isAfter(minValidity)) {
+      pp.setStatus(DebtPositionStatus.VALID);
     }
     return pp;
   }
-  
+
   public static PaymentPosition expirationCheckAndUpdate(PaymentPosition pp) {
-	LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+    LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
 
-	// switchToExpired = true if at least one installment has switchToExpired = true
-	boolean anySwitchToExpired = UtilityMapper.getSwitchToExpired(pp);
+    // switchToExpired = true if all installment has switchToExpired = true
+    boolean anySwitchToExpired = UtilityMapper.hasAllMarkedExpired(pp.getPaymentOption());
 
-	if (anySwitchToExpired && pp.getStatus() == DebtPositionStatus.VALID && pp.getMaxDueDate() != null
-			&& currentDate.isAfter(pp.getMaxDueDate())) {
-		pp.setStatus(DebtPositionStatus.EXPIRED);
-	}
-	return pp;
+    if (anySwitchToExpired
+        && pp.getStatus() == DebtPositionStatus.VALID
+        && pp.getMaxDueDate() != null
+        && currentDate.isAfter(pp.getMaxDueDate())) {
+      pp.setStatus(DebtPositionStatus.EXPIRED);
+    }
+    return pp;
   }
 
-    /**
-     * This method check for Installment validity. An Installment (payment option) could be valid from a specific datetime.
-     * @param currentDate is the LocalDateTime at the moment of the check
-     * @param po payment option is the installment (ie rata) associated with a notice number (NAV)
-     * @return true if is before or equal to currentDate
-     */
+  /**
+   * This method check for Installment validity. An Installment (payment option) could be valid from
+   * a specific datetime.
+   *
+   * @param currentDate is the LocalDateTime at the moment of the check
+   * @param po payment option is the installment (ie rata) associated with a notice number (NAV)
+   * @return true if is before or equal to currentDate
+   */
   public static boolean isInstallmentValid(LocalDateTime currentDate, PaymentOption po) {
-      LocalDateTime validityDate = po.getValidityDate();
-      return validityDate == null || !po.getValidityDate().isAfter(currentDate);
+    LocalDateTime validityDate = po.getValidityDate();
+    return validityDate == null || !po.getValidityDate().isAfter(currentDate);
   }
 
   public static void validityCheckAndUpdate(LocalDateTime currentDate, PaymentOption po) {
@@ -100,12 +104,12 @@ public enum DebtPositionStatus {
     LocalDateTime minValidity = CommonUtil.resolveMinValidity(pp);
     // Validity check on the fly
     if (pp.getStatus().equals(DebtPositionStatus.PUBLISHED)
-    		&& minValidity != null
-    		&& currentDate.isAfter(minValidity)) {
-    	pp.setStatus(DebtPositionStatus.VALID);
+        && minValidity != null
+        && currentDate.isAfter(minValidity)) {
+      pp.setStatus(DebtPositionStatus.VALID);
     }
   }
-  
+
   public static void expirationCheckAndUpdate(LocalDateTime currentDate, PaymentOption po) {
 
 	  PaymentPosition pp = po.getPaymentPosition();
@@ -138,12 +142,10 @@ public enum DebtPositionStatus {
   
   /**
    * Checks if the user is trying to pay the full amount for the payment position but there is an
-   * installment already paid.
-   * Cross-payment guard executed on DB-locked siblings to avoid races.
-   * Rules:
-   *  - If parent is PAID or REPORTED -> block everything.
-   *  - If paying a single option: block when ANY sibling is already paid (installment or single).
-   *  - If paying an installment: allow ONLY if every already paid sibling belongs to the SAME plan.
+   * installment already paid. Cross-payment guard executed on DB-locked siblings to avoid races.
+   * Rules: - If parent is PAID or REPORTED -> block everything. - If paying a single option: block
+   * when ANY sibling is already paid (installment or single). - If paying an installment: allow
+   * ONLY if every already paid sibling belongs to the SAME plan.
    */
   public static void checkAlreadyPaidInstallments(
       PaymentOption poToPay, String nav, PaymentOptionRepository poRepo) {
@@ -162,7 +164,8 @@ public enum DebtPositionStatus {
     List<PaymentOption> siblingsLocked = poRepo.lockAllByPaymentPositionId(pp.getId());
 
     // 2) Hard guard on parent status
-    if (pp.getStatus() == DebtPositionStatus.PAID || pp.getStatus() == DebtPositionStatus.REPORTED) {
+    if (pp.getStatus() == DebtPositionStatus.PAID
+        || pp.getStatus() == DebtPositionStatus.REPORTED) {
       throw new AppException(
           AppError.PAYMENT_OPTION_NOT_FOUND, poToPay.getOrganizationFiscalCode(), nav);
     }
@@ -189,20 +192,20 @@ public enum DebtPositionStatus {
     boolean conflict =
         siblingsLocked.stream()
             .filter(isAlreadyPaid)
-            .anyMatch(paid -> {
-              boolean paidIsInstallment = Boolean.TRUE.equals(paid.getIsPartialPayment());
-              if (!paidIsInstallment) {
-                // single payment already paid -> conflict
-                return true;
-              }
-              // paid installment -> conflict if plan IDs differ
-              return !Objects.equals(planId, paid.getPaymentPlanId());
-            });
+            .anyMatch(
+                paid -> {
+                  boolean paidIsInstallment = Boolean.TRUE.equals(paid.getIsPartialPayment());
+                  if (!paidIsInstallment) {
+                    // single payment already paid -> conflict
+                    return true;
+                  }
+                  // paid installment -> conflict if plan IDs differ
+                  return !Objects.equals(planId, paid.getPaymentPlanId());
+                });
 
     if (conflict) {
       throw new AppException(
           AppError.PAYMENT_OPTION_NOT_FOUND, poToPay.getOrganizationFiscalCode(), nav);
     }
   }
-
 }

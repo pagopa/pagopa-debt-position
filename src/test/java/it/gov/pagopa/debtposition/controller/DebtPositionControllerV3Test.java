@@ -281,28 +281,25 @@ class DebtPositionControllerV3Test {
           .andExpect(jsonPath("$.paymentOption[0].validityDate").isNotEmpty())
           .andExpect(jsonPath("$.paymentOption[1].validityDate").isNotEmpty());
   }
-  
+
   @Test
   void createDebtPosition_MixedValidity_toPublishFalse() throws Exception {
       String uri = String.format("/v3/organizations/%s/debtpositions?toPublish=false", ORG_FISCAL_CODE);
       PaymentPositionModelV3 paymentPosition = createPaymentPositionV3(2, 1);
-      
+
       // PO_1 with validity valued
       paymentPosition.getPaymentOption().get(0).setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plusDays(1));
       // PO_2 with validity = null
       paymentPosition.getPaymentOption().get(1).setValidityDate(null);
-      
+
       var mvcResult =
-    	        mvc.perform(post(uri)
-    	                .content(TestUtil.toJson(paymentPosition))
-    	                .contentType(MediaType.APPLICATION_JSON))
-    	           .andExpect(status().isCreated())
-    	           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-    	           .andReturn();
-      
-      String flag = env.getProperty("database.migration.fields.read.from", "");
-      boolean readFromPP = "READ_FROM_PAYMENT_POSITION".equals(flag);
-      
+              mvc.perform(post(uri)
+                              .content(TestUtil.toJson(paymentPosition))
+                              .contentType(MediaType.APPLICATION_JSON))
+                      .andExpect(status().isCreated())
+                      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                      .andReturn();
+
       // parse response
       ObjectMapper om = new ObjectMapper();
       JsonNode root = om.readTree(mvcResult.getResponse().getContentAsByteArray());
@@ -313,22 +310,11 @@ class DebtPositionControllerV3Test {
       assertThat(po1.get("description")).isNull();
       JsonNode vd0 = po0.get("validityDate");
       JsonNode vd1 = po1.get("validityDate");
-      
-      if (!readFromPP) {
-    	  // correct behaviour: PO_1 remains valued, PO_2 remains null
-    	  assertThat(vd0).isNotNull();
-          assertThat(vd0.isNull()).isFalse();
-          assertThat(vd1 == null || vd1.isNull()).isTrue();
-      }
-      else {
-    	  // TODO remove when validityDate is read from payment option
-    	  // fallback behaviour: both valued and equal to each other
-    	  assertThat(vd0).isNotNull();
-    	  assertThat(vd0.isNull()).isFalse();
-    	  assertThat(vd1).isNotNull();
-    	  assertThat(vd1.isNull()).isFalse();
-    	  assertThat(vd0.asText()).isEqualTo(vd1.asText());
-      }
+
+      // correct behaviour: PO_1 remains valued, PO_2 remains null
+      assertThat(vd0).isNotNull();
+      assertThat(vd0.isNull()).isFalse();
+      assertThat(vd1 == null || vd1.isNull()).isTrue();
   }
   
   @Test

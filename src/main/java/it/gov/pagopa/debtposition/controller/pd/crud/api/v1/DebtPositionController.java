@@ -86,18 +86,19 @@ public class DebtPositionController implements IDebtPositionController {
         segregationCodes != null
             ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
             : null;
-    PaymentPosition createdDebtPos =
+    PaymentPosition createdPaymentPositionModel =
         paymentPositionService.create(
             debtPosition, organizationFiscalCode, toPublish, segCodes, CREATE_ACTION);
 
-	if (null != createdDebtPos) {
-		PaymentPositionModel paymentPosition = ObjectMapperUtils.map(createdDebtPos, PaymentPositionModel.class);
-		// set the switchToExpired flag in the response
-		boolean anyMatchSwitchToExpired = UtilityMapper.getSwitchToExpired(createdDebtPos);
-		paymentPosition.setSwitchToExpired(anyMatchSwitchToExpired);
-		// set validityDate as min of the validityDate on the PaymentOption
-		LocalDateTime minValidityDate = CommonUtil.resolveMinValidity(createdDebtPos);
-		paymentPosition.setValidityDate(minValidityDate);
+    if (null != createdPaymentPositionModel) {
+      PaymentPositionModel paymentPosition = ObjectMapperUtils.map(createdPaymentPositionModel, PaymentPositionModel.class);
+      // set the switchToExpired flag in the response
+      boolean allMatchSwitchToExpired = UtilityMapper.hasAllMarkedExpired(createdPaymentPositionModel.getPaymentOption());
+      paymentPosition.setSwitchToExpired(allMatchSwitchToExpired);
+      // set validityDate as min of the validityDate on the PaymentOption
+      LocalDateTime minValidityDate = CommonUtil.resolveMinValidity(createdPaymentPositionModel);
+      paymentPosition.setValidityDate(minValidityDate);
+
       return new ResponseEntity<>(paymentPosition, HttpStatus.CREATED);
     }
 
@@ -272,19 +273,18 @@ public class DebtPositionController implements IDebtPositionController {
         segregationCodes != null
             ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
             : null;
-    PaymentPosition updatedDebtPos =
+    PaymentPosition updatedPaymentPositionModel =
         paymentPositionService.update(
             paymentPositionModel, organizationFiscalCode, toPublish, segCodes, UPDATE_ACTION);
 
-    if (null != updatedDebtPos) {
-      PaymentPositionModel paymentPosition =
-          ObjectMapperUtils.map(updatedDebtPos, PaymentPositionModel.class);
+    if (null != updatedPaymentPositionModel) {
+      PaymentPositionModel paymentPosition = ObjectMapperUtils.map(updatedPaymentPositionModel, PaymentPositionModel.class);
       // set the switchToExpired flag in the response
-   	  boolean anyMatchSwitchToExpired = UtilityMapper.getSwitchToExpired(updatedDebtPos);
-   	  paymentPosition.setSwitchToExpired(anyMatchSwitchToExpired);
-   	  // set validityDate as min of the validityDate on the PaymentOption
-   	  LocalDateTime minValidityDate = CommonUtil.resolveMinValidity(updatedDebtPos);
-   	  paymentPosition.setValidityDate(minValidityDate);
+      boolean allMatchSwitchToExpired = UtilityMapper.hasAllMarkedExpired(updatedPaymentPositionModel.getPaymentOption());
+      paymentPosition.setSwitchToExpired(allMatchSwitchToExpired );
+      // set validityDate as min of the validityDate on the PaymentOption
+      LocalDateTime minValidityDate = CommonUtil.resolveMinValidity(updatedPaymentPositionModel);
+      paymentPosition.setValidityDate(minValidityDate);
       return new ResponseEntity<>(paymentPosition, HttpStatus.OK);
     }
 

@@ -8,5 +8,12 @@ public enum DebtPositionStatusV3 {
   PARTIALLY_PAID,
   PAID;
 
-  // business logic todo
+  public static DebtPositionStatusV3 convert(DebtPositionStatus debtPositionStatusV1) {
+    return switch (debtPositionStatusV1) {
+      case EXPIRED, INVALID -> DebtPositionStatusV3.UNPAYABLE;
+      case REPORTED -> DebtPositionStatusV3.PAID;
+      default -> DebtPositionStatusV3.valueOf(debtPositionStatusV1.name());
+    };
+  }
+
 }
