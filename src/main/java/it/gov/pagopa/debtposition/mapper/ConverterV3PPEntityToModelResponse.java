@@ -84,6 +84,14 @@ public class ConverterV3PPEntityToModelResponse
     return destination;
   }
 
+  // 1 unique PO -> 1 PaymentOption composed by 1 installment
+  private PaymentOptionModelResponseV3 convertUniquePO(PaymentOption po) {
+    PaymentOptionModelResponseV3 pov3 = convert(po);
+    List<InstallmentModelResponse> installments = Collections.singletonList(convertInstallment(po));
+    pov3.setInstallments(installments);
+    return pov3;
+  }
+
   // N partial PO -> 1 PaymentOption composed by N installment
   private PaymentOptionModelResponseV3 convertPartialPO(List<PaymentOption> partialPOs) {
     // Get only the first to fill common data for partial PO (retentionDate, insertedDate, debtor)
@@ -95,15 +103,6 @@ public class ConverterV3PPEntityToModelResponse
     	        Comparator.nullsLast(Comparator.naturalOrder())))
     	    .map(this::convertInstallment)
     	    .toList();
-    pov3.setInstallments(installments);
-    return pov3;
-  }
-
-  // 1 unique PO -> 1 PaymentOption composed by 1 installment
-  private PaymentOptionModelResponseV3 convertUniquePO(PaymentOption po) {
-    PaymentOptionModelResponseV3 pov3 = convert(po);
-    // set installment
-    List<InstallmentModelResponse> installments = Collections.singletonList(convertInstallment(po));
     pov3.setInstallments(installments);
     return pov3;
   }

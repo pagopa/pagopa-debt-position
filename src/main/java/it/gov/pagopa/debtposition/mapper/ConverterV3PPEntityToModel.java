@@ -50,7 +50,7 @@ public class ConverterV3PPEntityToModel
             .collect(Collectors.partitioningBy(po -> Boolean.TRUE.equals(po.getIsPartialPayment())));
     // Extracting the partial and unique POs
     List<PaymentOption> partialPO = partitionedPO.get(true);
-    List<PaymentOption> uniquePO  = partitionedPO.get(false);
+    List<PaymentOption> uniquePO = partitionedPO.get(false);
 
     List<PaymentOptionModelV3> paymentOptionsModelV3 = new ArrayList<>();
 
@@ -66,7 +66,7 @@ public class ConverterV3PPEntityToModel
 
     if (uniquePO != null && !uniquePO.isEmpty()) {
     	paymentOptionsModelV3.addAll(uniquePO.stream()
-    			.map(po -> convertUniquePO(po))
+    			.map(this::convertUniquePO)
     			.toList());
     }
 
@@ -82,11 +82,9 @@ public class ConverterV3PPEntityToModel
     return destination;
   }
 
-
   // 1 unique PO -> 1 PaymentOption composed by 1 installment
   private PaymentOptionModelV3 convertUniquePO(PaymentOption po) {
 	  PaymentOptionModelV3 pov3 = convert(po);
-    pov3.setDescription(po.getPaymentOptionDescription());
 	  List<InstallmentModel> installments = Collections.singletonList(convertInstallment(po));
 	  pov3.setInstallments(installments);
 	  return pov3;
@@ -109,12 +107,14 @@ public class ConverterV3PPEntityToModel
 
   private PaymentOptionModelV3 convert(PaymentOption po) {
     PaymentOptionModelV3 pov3 = new PaymentOptionModelV3();
+
     pov3.setRetentionDate(po.getRetentionDate());
     pov3.setDebtor(UtilityMapper.extractDebtor(po));
     pov3.setDescription(po.getPaymentOptionDescription());
     // The value of the child (Installment) for the parent (Option)
     pov3.setValidityDate(po.getValidityDate());
     pov3.setSwitchToExpired(po.getSwitchToExpired());
+
     return pov3;
   }
 
@@ -128,6 +128,7 @@ public class ConverterV3PPEntityToModel
     inst.setDueDate(po.getDueDate());
     inst.setFee(po.getFee());
     inst.setNotificationFee(po.getNotificationFee());
+    // substring to exclude prefix "PO_"
     String poStatus = po.getStatus().name();
     if (poStatus.startsWith("PO_")) {
       inst.setStatus(InstallmentStatus.valueOf(poStatus.substring(3)));
