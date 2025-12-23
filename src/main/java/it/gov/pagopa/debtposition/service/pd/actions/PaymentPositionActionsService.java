@@ -1,5 +1,7 @@
 package it.gov.pagopa.debtposition.service.pd.actions;
 
+import static it.gov.pagopa.debtposition.service.common.ExpirationHandler.handlePaymentPositionExpirationLogic;
+
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
@@ -50,7 +52,7 @@ public class PaymentPositionActionsService {
     PaymentPosition ppToInvalidate =
         paymentPositionCRUDService.getDebtPositionByIUPD(
             organizationFiscalCode, iupd, segregationCodes);
-    DebtPositionStatus.expirationCheckAndUpdate(ppToInvalidate);
+    handlePaymentPositionExpirationLogic(ppToInvalidate);
     if (DebtPositionStatus.getPaymentPosNotInvalidableStatus()
         .contains(ppToInvalidate.getStatus())) {
       throw new AppException(AppError.DEBT_POSITION_NOT_INVALIDABLE, organizationFiscalCode, iupd);

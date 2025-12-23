@@ -1,5 +1,9 @@
 package it.gov.pagopa.debtposition.service.payments;
 
+import static it.gov.pagopa.debtposition.service.common.ExpirationHandler.*;
+import static it.gov.pagopa.debtposition.service.common.PaymentConflictValidator.checkAlreadyPaidInstallments;
+import static it.gov.pagopa.debtposition.service.common.ValidityHandler.*;
+
 import feign.FeignException;
 import it.gov.pagopa.debtposition.client.NodeClient;
 import it.gov.pagopa.debtposition.client.SendClient;
@@ -14,25 +18,21 @@ import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPosition
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
-import it.gov.pagopa.debtposition.model.payments.OrganizationModelQueryBean;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
-import it.gov.pagopa.debtposition.model.payments.verify.response.InstallmentSummary;
-import it.gov.pagopa.debtposition.model.payments.verify.response.PaymentOptionGroup;
-import it.gov.pagopa.debtposition.model.payments.verify.response.VerifyPaymentOptionsResponse;
+import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.send.response.NotificationPriceResponse;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
-import java.time.LocalDate;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,16 +45,19 @@ public class PaymentsService {
   private static final String SINGLE = "SINGLE:";
   private final PaymentOptionRepository paymentOptionRepository;
   private final PaymentPositionRepository paymentPositionRepository;
+  private final ModelMapper modelMapper;
   private final NodeClient nodeClient;
   private final SendClient sendClient;
 
   public PaymentsService(
       PaymentPositionRepository paymentPositionRepository,
       PaymentOptionRepository paymentOptionRepository,
+      ModelMapper modelMapper,
       NodeClient nodeClient,
       SendClient sendClient) {
     this.paymentPositionRepository = paymentPositionRepository;
     this.paymentOptionRepository = paymentOptionRepository;
+    this.modelMapper = modelMapper;
     this.nodeClient = nodeClient;
     this.sendClient = sendClient;
   }
@@ -65,7 +68,7 @@ public class PaymentsService {
   // TODO #naviuv: temporary regression management --> the nav variable can also be evaluated with
   // iuv. Remove the comment when only nav managment is enabled
   @Transactional
-  public PaymentOption getPaymentOptionByNAV(
+  public PaymentOptionWithDebtorInfoModelResponse getPaymentOptionByNAV(
       @NotBlank String organizationFiscalCode, @NotBlank String nav) {
 
     Optional<PaymentOption> po =
@@ -77,35 +80,43 @@ public class PaymentsService {
     }
 
     PaymentOption paymentOption = po.get();
-    
-    // Update PaymentPosition instance only in memory
-    // PaymentPosition used when converting PaymentOption to POWithDebtor
-    LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-    DebtPositionStatus.validityCheckAndUpdate(currentDate, paymentOption);
-    DebtPositionStatus.expirationCheckAndUpdate(currentDate, paymentOption);
 
-    // If the Installment is not valid it's as if the installment didn't officially exist.
-    if(!DebtPositionStatus.isInstallmentValid(currentDate, paymentOption)) {
-        throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav);
-    }
+    // FSM Logic: Update state (PaymentPosition status) based on current time
+    handlePaymentPositionValidTransition(paymentOption.getPaymentPosition());
+    handlePaymentPositionExpirationLogic(paymentOption.getPaymentPosition());
 
-    DebtPositionStatus.checkAlreadyPaidInstallments(paymentOption, nav, paymentOptionRepository);
+    checkAlreadyPaidInstallments(paymentOption, nav, paymentOptionRepository);
 
     // Synchronous update of notification fees
-    if (paymentOption.getSendSync()) {
+    if (Boolean.TRUE.equals(paymentOption.getSendSync())) {
       if (this.updateNotificationFeeSync(paymentOption)) {
-          log.info(
-                  "Notification fee amount of Payment Option with NAV {} has been updated with notification-fee: {}.",
-                  paymentOption.getNav(),
-                  paymentOption.getNotificationFee());
+        log.info(
+                "Notification fee amount of Payment Option with NAV {} has been updated with"
+                        + " notification-fee: {}.",
+                paymentOption.getNav(),
+                paymentOption.getNotificationFee());
       } else {
-          log.error(
-                  "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.",
-                  paymentOption.getNav());
+        log.error(
+                "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.",
+                paymentOption.getNav());
       }
     }
 
-    return paymentOption;
+    PaymentOptionWithDebtorInfoModelResponse paymentOptionResponse =
+            modelMapper.map(paymentOption, PaymentOptionWithDebtorInfoModelResponse.class);
+    LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+
+    // Update only in memory response
+    if (isInstallmentExpired(currentDate, paymentOption)) {
+      paymentOptionResponse.setDebtPositionStatus(DebtPositionStatus.EXPIRED);
+    }
+
+    // Treat installments that have not reached their validity date as non-existent
+    if (!isInstallmentValid(currentDate, paymentOption)) {
+      throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav);
+    }
+
+    return paymentOptionResponse;
   }
 
   @Transactional
@@ -124,17 +135,21 @@ public class PaymentsService {
 
     PaymentPosition paymentPositionToPay = paymentPositionToPayOpt.get();
 
-    // Update PaymentPosition instance only in memory
-    DebtPositionStatus.validityCheckAndUpdate(paymentPositionToPay);
+    // Update PaymentPosition if necessary
+    handlePaymentPositionValidTransition(paymentPositionToPay);
     DebtPositionValidation.checkPaymentPositionPayability(paymentPositionToPay, nav);
 
-    PaymentOption poToPay = paymentPositionToPay.getPaymentOption().stream()
-    	    .filter(po -> nav.equals(po.getNav()) || nav.equals(po.getIuv()))
-    	    .findFirst()
-    	    .orElseThrow(() -> new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav));
-    
-    DebtPositionStatus.checkAlreadyPaidInstallments(poToPay, nav, paymentOptionRepository);
-    
+    PaymentOption poToPay =
+        paymentPositionToPay.getPaymentOption().stream()
+            .filter(po -> nav.equals(po.getNav()) || nav.equals(po.getIuv()))
+            .findFirst()
+            .orElseThrow(
+                () ->
+                    new AppException(
+                        AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav));
+
+    checkAlreadyPaidInstallments(poToPay, nav, paymentOptionRepository);
+
     return this.executePaymentFlow(paymentPositionToPay, nav, paymentOptionModel);
   }
 
@@ -152,11 +167,12 @@ public class PaymentsService {
     }
 
     DebtPositionValidation.checkPaymentPositionAccountability(ppToReport.get(), iuv, transferId);
-    
+
     ppToReport.get().getPaymentOption().stream()
-    .filter(po -> iuv.equals(po.getIuv()))
-    .findFirst()
-    .orElseThrow(() -> new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, iuv));
+        .filter(po -> iuv.equals(po.getIuv()))
+        .findFirst()
+        .orElseThrow(
+            () -> new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, iuv));
 
     return this.updateTransferStatus(ppToReport.get(), iuv, transferId);
   }
@@ -276,108 +292,6 @@ public class PaymentsService {
     paymentOptionRepository.saveAndFlush(paymentOption);
     return paymentOption;
   }
-  
-  @Transactional(readOnly = true)
-  public VerifyPaymentOptionsResponse verifyPaymentOptions(String organizationFiscalCode, String nav) {
-    
-	PaymentOption paymentOption = paymentOptionRepository
-        .findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
-            organizationFiscalCode, nav, organizationFiscalCode, nav)
-        .orElseThrow(() -> new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav));
-		
-	PaymentPosition pp = paymentOption.getPaymentPosition();
-
-    DebtPositionStatus.validityCheckAndUpdate(pp);
-    DebtPositionStatus.expirationCheckAndUpdate(pp);
-    
-	final boolean ppInvalidOrExpired = 
-			pp.getStatus() == DebtPositionStatus.INVALID || pp.getStatus() == DebtPositionStatus.EXPIRED;
-    
-    List<PaymentOption> siblings = pp.getPaymentOption();
-
-    // Ec info
-    VerifyPaymentOptionsResponse.VerifyPaymentOptionsResponseBuilder resp = VerifyPaymentOptionsResponse.builder()
-        .organizationFiscalCode(pp.getOrganizationFiscalCode())
-        .companyName(pp.getCompanyName())
-        .officeName(pp.getOfficeName())
-        .standIn(Boolean.TRUE.equals(pp.getPayStandIn()));
-
-    // Group POs into:
-    // - "single" (isPartialPayment = false) => groupKey = "SINGLE:<POid>"
-    // - "plan"   (isPartialPayment = true)  => groupKey = "PLAN:<paymentPlanId>"
-    Map<String, List<PaymentOption>> grouped = siblings.stream().collect(Collectors.groupingBy(po -> {
-      if (Boolean.TRUE.equals(po.getIsPartialPayment())) {
-        return PLAN + po.getPaymentPlanId();
-      } else {
-        return SINGLE + po.getId();
-      }
-    }));
-    
-    // Find out if there is an "active plan" with an in progress payment
-    Optional<String> activePlanKey = findActivePlanKey(grouped);
-
-    List<PaymentOptionGroup> groups = new ArrayList<>();
-    for (Map.Entry<String, List<PaymentOption>> e : grouped.entrySet()) {
-      List<PaymentOption> list = e.getValue();
-
-      long totalAmount = list.stream().mapToLong(PaymentOption::getAmount).sum();
-
-      LocalDateTime maxDueDate = list.stream()
-          .map(PaymentOption::getDueDate)
-          .filter(Objects::nonNull)
-          .max(Comparator.naturalOrder())
-          .orElse(null);
-
-      LocalDateTime minValidity = list.stream()
-          .map(PaymentOption::getValidityDate)
-          .filter(Objects::nonNull)
-          .min(Comparator.naturalOrder())
-          .orElse(null);
-      
-      String groupKey = e.getKey();
-      String description = buildGroupDescription(list);
-      // true if the current group is NOT the active plan
-      boolean outsideActivePlan = activePlanKey.map(k -> !k.equals(groupKey)).orElse(false);
-      boolean forceInvalid = ppInvalidOrExpired || outsideActivePlan;
-
-      // allCCP: true if ALL transfers from ALL POs in the group have a valid postalIBAN (not null/blank)
-      boolean allCCP = list.stream()
-          .flatMap(po -> po.getTransfer().stream())
-          .allMatch(t -> t.getPostalIban() != null && !t.getPostalIban().isBlank());
-
-      /**
-       * Aggregate PO status for a group:
-       * - if PP is invalid -> all PO is PO_INVALID
-       * - else if all PAID -> PO_PAID
-       * - else if some PAID & some UNPAID within same group -> PO_PARTIALLY_PAID
-       * - else handle EXPIRED flavors using dueDate/validityDate/switchToExpired
-       * - else -> PO_UNPAID
-       */
-      GroupStatus gs = aggregateGroupPoStatus(list, ppInvalidOrExpired, forceInvalid); 
-      
-      List<InstallmentSummary> installments =
-    		    toInstallmentSummaries(list, ppInvalidOrExpired, forceInvalid);
-
-      PaymentOptionGroup group = PaymentOptionGroup.builder()
-          .description(description)
-          .numberOfInstallments(list.size())
-          .amount(totalAmount)
-          .dueDate(maxDueDate)
-          .validFrom(minValidity)
-          .status(gs.status)              // PO_INVALID / PO_UNPAID / PO_PAID / PO_PARTIALLY_PAID / PO_EXPIRED_*
-          .statusReason(gs.reason)        // optional free text
-          .allCCP(allCCP)
-          .installments(installments)
-          .build();
-
-      groups.add(group);
-    }
-
-    // order by duedate
-    groups.sort(Comparator.comparing(PaymentOptionGroup::getDueDate, Comparator.nullsLast(Comparator.naturalOrder())));
-
-    return resp.paymentOptions(groups).build();
-  }
 
   public static void updateAmountsWithNotificationFee(
       PaymentOption paymentOption, String organizationFiscalCode, long notificationFeeAmount) {
@@ -426,46 +340,39 @@ public class PaymentsService {
                     organizationFiscalCode));
   }
 
-  public List<OrganizationModelQueryBean> getOrganizationsToAdd(@NotNull LocalDate since) {
-    return paymentPositionRepository.findDistinctOrganizationsByInsertedDate(since.atStartOfDay());
-  }
-
-  public List<OrganizationModelQueryBean> getOrganizationsToDelete(@NotNull LocalDate since) {
-    paymentPositionRepository.findDistinctOrganizationsByInsertedDate(since.atStartOfDay());
-    return Collections.emptyList();
-  }
-
   private PaymentOption executePaymentFlow(
       PaymentPosition pp, String nav, PaymentOptionModel paymentOptionModel) {
 
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
     PaymentOption paidPO = null;
-    
+
     for (PaymentOption po : pp.getPaymentOption()) {
-    	// TODO #naviuv: temporary regression management --> remove "|| po.getIuv().equals(nav)" when
-        // only nav managment is enabled
-    	if (po.getNav().equals(nav) || po.getIuv().equals(nav)) {
-    		po.setLastUpdatedDate(currentDate);
-    		po.setPaymentDate(paymentOptionModel.getPaymentDate());
-    		po.setPaymentMethod(paymentOptionModel.getPaymentMethod());
-    		po.setPspCode(paymentOptionModel.getPspCode());
-    		po.setPspTaxCode(paymentOptionModel.getPspTaxCode());
-    		po.setPspCompany(paymentOptionModel.getPspCompany());
-    		po.setIdReceipt(paymentOptionModel.getIdReceipt());
-    		po.setFee(Long.parseLong(paymentOptionModel.getFee()));
-    		po.setStatus(PaymentOptionStatus.PO_PAID);
-    		paidPO = po;
-    		break; // IMPORTANTE
-    	}
+      // TODO #naviuv: temporary regression management --> remove "|| po.getIuv().equals(nav)" when
+      // only nav managment is enabled
+      if (po.getNav().equals(nav) || po.getIuv().equals(nav)) {
+        po.setLastUpdatedDate(currentDate);
+        po.setPaymentDate(paymentOptionModel.getPaymentDate());
+        po.setPaymentMethod(paymentOptionModel.getPaymentMethod());
+        po.setPspCode(paymentOptionModel.getPspCode());
+        po.setPspTaxCode(paymentOptionModel.getPspTaxCode());
+        po.setPspCompany(paymentOptionModel.getPspCompany());
+        po.setIdReceipt(paymentOptionModel.getIdReceipt());
+        po.setFee(Long.parseLong(paymentOptionModel.getFee()));
+        po.setStatus(PaymentOptionStatus.PO_PAID);
+        paidPO = po;
+        break; // IMPORTANTE
+      }
     }
     if (paidPO == null) {
-    	throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, pp.getOrganizationFiscalCode(), nav);
+      throw new AppException(
+          AppError.PAYMENT_OPTION_NOT_FOUND, pp.getOrganizationFiscalCode(), nav);
     }
 
     this.recomputePaymentPositionStatus(pp);
-    
-    if (pp.getStatus() == DebtPositionStatus.PAID || pp.getStatus() == DebtPositionStatus.REPORTED) {
-    	pp.setPaymentDate(paymentOptionModel.getPaymentDate());
+
+    if (pp.getStatus() == DebtPositionStatus.PAID
+        || pp.getStatus() == DebtPositionStatus.REPORTED) {
+      pp.setPaymentDate(paymentOptionModel.getPaymentDate());
     }
 
     pp.setLastUpdatedDate(currentDate);
@@ -497,7 +404,11 @@ public class PaymentsService {
             po.getTransfer().stream().filter(t -> t.getIdTransfer().equals(transferId)).findFirst();
 
         if (transferToReport.isEmpty()) {
-          String error = String.format("Obtained unexpected empty transfer - [organizationFiscalCode= %s; iupd= %s; iuv= %s; idTransfer= %s]", pp.getOrganizationFiscalCode(), pp.getIupd(), iuv, transferId);
+          String error =
+              String.format(
+                  "Obtained unexpected empty transfer - [organizationFiscalCode= %s; iupd= %s; iuv="
+                      + " %s; idTransfer= %s]",
+                  pp.getOrganizationFiscalCode(), pp.getIupd(), iuv, transferId);
           throw new AppException(AppError.TRANSFER_REPORTING_FAILED, error);
         }
 
@@ -523,205 +434,69 @@ public class PaymentsService {
 
     return reportedTransfer;
   }
-  
+
   /**
-   * Recompute PaymentPosition status (V3 semantics):
-   * - A "plan" is:
-   *   - a group of POs with the same paymentPlanId (isPartialPayment = TRUE), or
-   *   - a single non-installment PO (isPartialPayment = FALSE).
-   * - The PP becomes:
-   *   - REPORTED if at least one plan is fully REPORTED;
-   *   - otherwise PAID if at least one plan is fully {PAID|REPORTED};
-   *   - otherwise PARTIALLY_PAID if a subset of installments is paid/reported;
-   *   - otherwise the status remains unchanged.
+   * Recompute PaymentPosition status (V3 semantics): - A "plan" is: - a group of POs with the same
+   * paymentPlanId (isPartialPayment = TRUE), or - a single non-installment PO (isPartialPayment =
+   * FALSE). - The PP becomes: - REPORTED if at least one plan is fully REPORTED; - otherwise PAID
+   * if at least one plan is fully {PAID|REPORTED}; - otherwise PARTIALLY_PAID if a subset of
+   * installments is paid/reported; - otherwise the status remains unchanged.
    */
-   private void recomputePaymentPositionStatus(PaymentPosition pp) {
-	   Map<String, List<PaymentOption>> groups = pp.getPaymentOption().stream()
-			    .collect(Collectors.groupingBy(PaymentsService::groupKeyOf));
+  private void recomputePaymentPositionStatus(PaymentPosition pp) {
+    Map<String, List<PaymentOption>> groups =
+        pp.getPaymentOption().stream().collect(Collectors.groupingBy(PaymentsService::groupKeyOf));
 
-     boolean anyPlanInProgress = false;    // there is at least one installment paid/reported/partially reported 
-     boolean anyPlanFullyPaid = false;     // there is a fully {PAID|REPORTED} plan
-     boolean anyPlanFullyReported = false; // there is a fully REPORTED plan
+    boolean anyPlanInProgress =
+        false; // there is at least one installment paid/reported/partially reported
+    boolean anyPlanFullyPaid = false; // there is a fully {PAID|REPORTED} plan
+    boolean anyPlanFullyReported = false; // there is a fully REPORTED plan
 
-     for (List<PaymentOption> group : groups.values()) {
-       boolean allPaidOrReported = true;
-       boolean allReported = true;
-       boolean groupHasAnyProgress = false;
+    for (List<PaymentOption> group : groups.values()) {
+      boolean allPaidOrReported = true;
+      boolean allReported = true;
+      boolean groupHasAnyProgress = false;
 
-       for (PaymentOption po : group) {
-      
-         if (po.getStatus() == PaymentOptionStatus.PO_PAID
-             || po.getStatus() == PaymentOptionStatus.PO_REPORTED
-             || po.getStatus() == PaymentOptionStatus.PO_PARTIALLY_REPORTED) {
-           groupHasAnyProgress = true;
-         }
+      for (PaymentOption po : group) {
 
-         // fully paid if all installments of a plan are {PAID | PARTIALLY_REPORTED | REPORTED}
-         if (!(po.getStatus() == PaymentOptionStatus.PO_PAID
-             || po.getStatus() == PaymentOptionStatus.PO_PARTIALLY_REPORTED
-             || po.getStatus() == PaymentOptionStatus.PO_REPORTED)) {
-           allPaidOrReported = false;
-         }
+        if (po.getStatus() == PaymentOptionStatus.PO_PAID
+            || po.getStatus() == PaymentOptionStatus.PO_REPORTED
+            || po.getStatus() == PaymentOptionStatus.PO_PARTIALLY_REPORTED) {
+          groupHasAnyProgress = true;
+        }
 
-         // fully accounted for if all installments are REPORTED
-         if (po.getStatus() != PaymentOptionStatus.PO_REPORTED) {
-           allReported = false;
-         }
-       }
+        // fully paid if all installments of a plan are {PAID | PARTIALLY_REPORTED | REPORTED}
+        if (!(po.getStatus() == PaymentOptionStatus.PO_PAID
+            || po.getStatus() == PaymentOptionStatus.PO_PARTIALLY_REPORTED
+            || po.getStatus() == PaymentOptionStatus.PO_REPORTED)) {
+          allPaidOrReported = false;
+        }
 
-       if (groupHasAnyProgress) anyPlanInProgress = true;
-       if (allPaidOrReported)   anyPlanFullyPaid = true;
-       if (allReported)         anyPlanFullyReported = true;
-     }
+        // fully accounted for if all installments are REPORTED
+        if (po.getStatus() != PaymentOptionStatus.PO_REPORTED) {
+          allReported = false;
+        }
+      }
 
-     if (anyPlanFullyReported) {
-       pp.setStatus(DebtPositionStatus.REPORTED);
-     } else if (anyPlanFullyPaid) {
-       pp.setStatus(DebtPositionStatus.PAID);
-     } else if (anyPlanInProgress) {
-       pp.setStatus(DebtPositionStatus.PARTIALLY_PAID);
-     }
-   }
-  
-  private static class GroupStatus {
-	  final String status;
-	  final String reason;
-	  GroupStatus(String status, String reason) { this.status = status; this.reason = reason; }
-	}
+      if (groupHasAnyProgress) anyPlanInProgress = true;
+      if (allPaidOrReported) anyPlanFullyPaid = true;
+      if (allReported) anyPlanFullyReported = true;
+    }
 
-	/**
-	 * Aggregate PO status for a group:
-	 * - if PP is invalid -> all PO is PO_INVALID
-	 * - else if all PAID -> PO_PAID
-	 * - else if some PAID & some UNPAID within same group -> PO_PARTIALLY_PAID
-	 * - else handle EXPIRED flavors using dueDate/validityDate/switchToExpired
-	 * - else -> PO_UNPAID
-	 */
-  private GroupStatus aggregateGroupPoStatus(List<PaymentOption> list, boolean ppInvalid, boolean forceInvalid) {
-
-	  if (ppInvalid || forceInvalid) {
-		  return new GroupStatus("PO_INVALID", ppInvalid ? "Debt position is INVALID or EXPIRED" : "Not payable: another payment option has already been used");
-	  }
-
-	  boolean allPaid = list.stream().allMatch(po -> po.getStatus() == PaymentOptionStatus.PO_PAID);
-	  if (allPaid) return new GroupStatus("PO_PAID", "All installments have been paid");
-
-	  boolean anyPaid   = list.stream().anyMatch(po -> po.getStatus() == PaymentOptionStatus.PO_PAID);
-	  boolean anyUnpaid = list.stream().anyMatch(po -> po.getStatus() == PaymentOptionStatus.PO_UNPAID);
-
-	  if (anyPaid && anyUnpaid) {
-		  return new GroupStatus("PO_PARTIALLY_PAID", "Some installments already paid");
-	  }
-
-	  LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-
-	  // all expired?
-	  boolean allExpired = list.stream().allMatch(po -> isExpired(po, now));
-	  if (allExpired) {
-		  // NOT_PAYABLE if at least one PO has switchToExpired=true
-		  boolean anyNotPayable = list.stream().anyMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
-		  return anyNotPayable
-				  ? new GroupStatus("PO_EXPIRED_NOT_PAYABLE", "Group expired and not payable")
-						  : new GroupStatus("PO_EXPIRED_UNPAID", "Group expired but still payable");
-	  }
-
-	  // default
-	  return new GroupStatus("PO_UNPAID", "No installment has been paid");
+    if (anyPlanFullyReported) {
+      pp.setStatus(DebtPositionStatus.REPORTED);
+    } else if (anyPlanFullyPaid) {
+      pp.setStatus(DebtPositionStatus.PAID);
+    } else if (anyPlanInProgress) {
+      pp.setStatus(DebtPositionStatus.PARTIALLY_PAID);
+    }
   }
 
-	private boolean isExpired(PaymentOption po, LocalDateTime now) {
-		LocalDateTime due = po.getDueDate();
-		if (due == null) return false;
-		return now.isAfter(due);
-	}
-
-	private String toInstallmentStatus(PaymentOption po, boolean ppInvalid, boolean forceInvalid) {
-
-		if (ppInvalid || forceInvalid) return "POI_INVALID";
-
-		if (po.getStatus() == PaymentOptionStatus.PO_PAID)    return "POI_PAID";
-
-		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-		boolean expired = isExpired(po, now);
-
-		if (expired) {
-			boolean notPayable = Boolean.TRUE.equals(po.getSwitchToExpired());
-			return notPayable ? "POI_EXPIRED_NOT_PAYABLE" : "POI_EXPIRED_UNPAID";
-		}
-
-		return "POI_UNPAID";
-	}
-
-	private String toInstallmentReason(PaymentOption po, boolean ppInvalid, boolean forceInvalid) {
-		if (ppInvalid) return "Debt position is INVALID or EXPIRED";
-		if (forceInvalid) return "Not payable: another payment option has already been used";
-		if (po.getStatus() == PaymentOptionStatus.PO_PAID)    return null;
-
-		LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-		boolean expired = isExpired(po, now);
-
-		if (expired) {
-			boolean notPayable = Boolean.TRUE.equals(po.getSwitchToExpired());
-			return notPayable ? "Expired and not payable" : "Expired but payable";
-		}
-		return null;
-	}
-	
-	/** flag to identify a payment in progress */
-	private static boolean hasProgress(PaymentOption po) {
-	  return po.getStatus() == PaymentOptionStatus.PO_PAID
-	      || po.getStatus() == PaymentOptionStatus.PO_PARTIALLY_REPORTED
-	      || po.getStatus() == PaymentOptionStatus.PO_REPORTED;
-	}
-
-	/** Grouping key: PLAN:<paymentPlanId> or SINGLE:<id> */
-	private static String groupKeyOf(PaymentOption po) {
-	  if (Boolean.TRUE.equals(po.getIsPartialPayment())) {
-	    return PLAN + po.getPaymentPlanId();
-	  } else {
-	    return SINGLE + po.getId();
-	  }
-	}
-
-	/** Check if there is an "active plan," that is, an installment plan that is already being paid. */
-	private static Optional<String> findActivePlanKey(Map<String, List<PaymentOption>> groups) {
-	  return groups.entrySet().stream()
-	      .filter(e -> e.getValue().stream().anyMatch(PaymentsService::hasProgress))
-	      .map(Map.Entry::getKey)
-	      .findFirst();
-	}
-
-
-	/** 
-	* Builds the group description:
-	* - SINGLE -> paymentOptionDescription if present, otherwise null
-	* - PLAN -> paymentOptionDescription if present, otherwise null
-	*/
-	private static String buildGroupDescription(List<PaymentOption> list) {
-		return list.stream()
-				.map(PaymentOption::getPaymentOptionDescription)
-				.filter(s -> s != null && !s.isBlank())
-				.findFirst()
-				.orElse(null);
-	}
-
-	/** Converts the group's POs to InstallmentSummaries sorted by dueDate. */
-	private List<InstallmentSummary> toInstallmentSummaries(List<PaymentOption> list,
-	                                                        boolean ppInvalidOrExpired,
-	                                                        boolean forceInvalid) {
-	  return list.stream()
-	      .sorted(Comparator.comparing(PaymentOption::getDueDate, Comparator.nullsLast(Comparator.naturalOrder())))
-	      .map(po -> InstallmentSummary.builder()
-	          .nav(po.getNav())
-	          .iuv(po.getIuv())
-	          .amount(po.getAmount())
-	          .description(po.getDescription())
-	          .dueDate(po.getDueDate())
-	          .validFrom(po.getValidityDate())
-	          .status(toInstallmentStatus(po, ppInvalidOrExpired, forceInvalid))
-	          .statusReason(toInstallmentReason(po, ppInvalidOrExpired, forceInvalid))
-	          .build())
-	      .toList();
-	}
-
+  /** Grouping key: PLAN:<paymentPlanId> or SINGLE:<id> */
+  private static String groupKeyOf(PaymentOption po) {
+    if (Boolean.TRUE.equals(po.getIsPartialPayment())) {
+      return PLAN + po.getPaymentPlanId();
+    } else {
+      return SINGLE + po.getId();
+    }
+  }
 }
