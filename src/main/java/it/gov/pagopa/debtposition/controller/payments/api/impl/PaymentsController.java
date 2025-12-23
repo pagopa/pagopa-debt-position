@@ -66,9 +66,7 @@ public class PaymentsController implements IPaymentsController {
 
     // flip entity to model
     PaymentOptionWithDebtorInfoModelResponse paymentOptionResponse =
-        modelMapper.map(
-            paymentsService.getPaymentOptionByNAV(organizationFiscalCode, nav),
-            PaymentOptionWithDebtorInfoModelResponse.class);
+        paymentsService.getPaymentOptionByNAV(organizationFiscalCode, nav);
 
     // Add NOTIFICATION_FEE_METADATA_KEY to response on the fly
     paymentOptionResponse

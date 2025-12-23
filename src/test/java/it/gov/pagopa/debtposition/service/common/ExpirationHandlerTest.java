@@ -124,7 +124,7 @@ class ExpirationHandlerTest {
   // -------------------------------------------------------------------
 
   @Test
-  void testHandleInstallmentExpirationLogic_ShouldExpire_WhenConditionsMet() {
+  void testIsInstallmentExpired_ShouldExpire_WhenConditionsMet() {
     // Arrange
     LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
 
@@ -141,14 +141,14 @@ class ExpirationHandlerTest {
     paymentOption.setDueDate(now.minusDays(1));
 
     // Act
-    ExpirationHandler.handleInstallmentExpirationLogic(now, paymentOption);
+    boolean result = ExpirationHandler.isInstallmentExpired(now, paymentOption);
 
     // Assert
-    assertEquals(DebtPositionStatus.EXPIRED, paymentPosition.getStatus());
+    assertEquals(true, result);
   }
 
   @Test
-  void testHandleInstallmentExpirationLogic_ShouldExpire_WhenPartiallyPaid() {
+  void testIsInstallmentExpired_ShouldExpire_WhenPartiallyPaid() {
     // Arrange: PARTIALLY_PAID is considered “payable,” so it must proceed.
     LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
     paymentPosition.setStatus(DebtPositionStatus.PARTIALLY_PAID);
@@ -158,14 +158,14 @@ class ExpirationHandlerTest {
     paymentOption.setDueDate(now.minusDays(1));
 
     // Act
-    ExpirationHandler.handleInstallmentExpirationLogic(now, paymentOption);
+    boolean result = ExpirationHandler.isInstallmentExpired(now, paymentOption);
 
     // Assert
-    assertEquals(DebtPositionStatus.EXPIRED, paymentPosition.getStatus());
+    assertEquals(true, result);
   }
 
   @Test
-  void testHandleInstallmentExpirationLogic_ShouldSkip_WhenPositionStatusNotPayable() {
+  void testIsInstallmentExpired_ShouldSkip_WhenPositionStatusNotPayable() {
     // Arrange
     LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
 
@@ -177,14 +177,14 @@ class ExpirationHandlerTest {
     paymentOption.setDueDate(now.minusDays(1));
 
     // Act
-    ExpirationHandler.handleInstallmentExpirationLogic(now, paymentOption);
+    boolean result = ExpirationHandler.isInstallmentExpired(now, paymentOption);
 
-    // Assert: The state must not change
-    assertEquals(DebtPositionStatus.PAID, paymentPosition.getStatus());
+    // Assert
+    assertEquals(false, result);
   }
 
   @Test
-  void testHandleInstallmentExpirationLogic_ShouldSkip_WhenOptionNotUnpaid() {
+  void testIsInstallmentExpired_ShouldSkip_WhenOptionNotUnpaid() {
     // Arrange
     LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
     paymentPosition.setStatus(DebtPositionStatus.VALID);
@@ -194,14 +194,14 @@ class ExpirationHandlerTest {
     paymentOption.setDueDate(now.minusDays(1));
 
     // Act
-    ExpirationHandler.handleInstallmentExpirationLogic(now, paymentOption);
+    boolean result = ExpirationHandler.isInstallmentExpired(now, paymentOption);
 
     // Assert
-    assertEquals(DebtPositionStatus.VALID, paymentPosition.getStatus());
+    assertEquals(false, result);
   }
 
   @Test
-  void testHandleInstallmentExpirationLogic_ShouldSkip_WhenSwitchToExpiredFalse() {
+  void testIsInstallmentExpired_ShouldSkip_WhenSwitchToExpiredFalse() {
     // Arrange
     LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
     paymentPosition.setStatus(DebtPositionStatus.VALID);
@@ -211,14 +211,14 @@ class ExpirationHandlerTest {
     paymentOption.setDueDate(now.minusDays(1));
 
     // Act
-    ExpirationHandler.handleInstallmentExpirationLogic(now, paymentOption);
+    boolean result = ExpirationHandler.isInstallmentExpired(now, paymentOption);
 
     // Assert
-    assertEquals(DebtPositionStatus.VALID, paymentPosition.getStatus());
+    assertEquals(false, result);
   }
 
   @Test
-  void testHandleInstallmentExpirationLogic_ShouldSkip_WhenDateInFuture() {
+  void testIsInstallmentExpired_ShouldSkip_WhenDateInFuture() {
     // Arrange
     LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
     paymentPosition.setStatus(DebtPositionStatus.VALID);
@@ -228,10 +228,10 @@ class ExpirationHandlerTest {
     paymentOption.setDueDate(now.plusDays(1)); // Scadenza domani
 
     // Act
-    ExpirationHandler.handleInstallmentExpirationLogic(now, paymentOption);
+    boolean result = ExpirationHandler.isInstallmentExpired(now, paymentOption);
 
     // Assert
-    assertEquals(DebtPositionStatus.VALID, paymentPosition.getStatus());
+    assertEquals(false, result);
   }
 
   // -------------------------------------------------------------------

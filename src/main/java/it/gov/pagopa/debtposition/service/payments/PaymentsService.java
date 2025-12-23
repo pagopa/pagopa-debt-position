@@ -19,6 +19,7 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
+import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.send.response.NotificationPriceResponse;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
@@ -31,6 +32,7 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,16 +45,19 @@ public class PaymentsService {
   private static final String SINGLE = "SINGLE:";
   private final PaymentOptionRepository paymentOptionRepository;
   private final PaymentPositionRepository paymentPositionRepository;
+  private final ModelMapper modelMapper;
   private final NodeClient nodeClient;
   private final SendClient sendClient;
 
   public PaymentsService(
       PaymentPositionRepository paymentPositionRepository,
       PaymentOptionRepository paymentOptionRepository,
+      ModelMapper modelMapper,
       NodeClient nodeClient,
       SendClient sendClient) {
     this.paymentPositionRepository = paymentPositionRepository;
     this.paymentOptionRepository = paymentOptionRepository;
+    this.modelMapper = modelMapper;
     this.nodeClient = nodeClient;
     this.sendClient = sendClient;
   }
@@ -63,7 +68,7 @@ public class PaymentsService {
   // TODO #naviuv: temporary regression management --> the nav variable can also be evaluated with
   // iuv. Remove the comment when only nav managment is enabled
   @Transactional
-  public PaymentOption getPaymentOptionByNAV(
+  public PaymentOptionWithDebtorInfoModelResponse getPaymentOptionByNAV(
       @NotBlank String organizationFiscalCode, @NotBlank String nav) {
 
     Optional<PaymentOption> po =
@@ -75,35 +80,43 @@ public class PaymentsService {
     }
 
     PaymentOption paymentOption = po.get();
-    LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
 
-    // FSM Logic: Update state (PaymentPosition status) in-memory based on current time
+    // FSM Logic: Update state (PaymentPosition status) based on current time
     handlePaymentPositionValidTransition(paymentOption.getPaymentPosition());
-    handleInstallmentExpirationLogic(currentDate, paymentOption);
-
-    // If the Installment is not valid it's as if the installment didn't officially exist.
-    if (!isInstallmentValid(currentDate, paymentOption)) {
-      throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav);
-    }
+    handlePaymentPositionExpirationLogic(paymentOption.getPaymentPosition());
 
     checkAlreadyPaidInstallments(paymentOption, nav, paymentOptionRepository);
 
     // Synchronous update of notification fees
-    if (paymentOption.getSendSync()) {
+    if (Boolean.TRUE.equals(paymentOption.getSendSync())) {
       if (this.updateNotificationFeeSync(paymentOption)) {
         log.info(
-            "Notification fee amount of Payment Option with NAV {} has been updated with"
-                + " notification-fee: {}.",
-            paymentOption.getNav(),
-            paymentOption.getNotificationFee());
+                "Notification fee amount of Payment Option with NAV {} has been updated with"
+                        + " notification-fee: {}.",
+                paymentOption.getNav(),
+                paymentOption.getNotificationFee());
       } else {
         log.error(
-            "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.",
-            paymentOption.getNav());
+                "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.",
+                paymentOption.getNav());
       }
     }
 
-    return paymentOption;
+    PaymentOptionWithDebtorInfoModelResponse paymentOptionResponse =
+            modelMapper.map(paymentOption, PaymentOptionWithDebtorInfoModelResponse.class);
+    LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+
+    // Update only in memory response
+    if (isInstallmentExpired(currentDate, paymentOption)) {
+      paymentOptionResponse.setDebtPositionStatus(DebtPositionStatus.EXPIRED);
+    }
+
+    // Treat installments that have not reached their validity date as non-existent
+    if (!isInstallmentValid(currentDate, paymentOption)) {
+      throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav);
+    }
+
+    return paymentOptionResponse;
   }
 
   @Transactional
@@ -122,7 +135,7 @@ public class PaymentsService {
 
     PaymentPosition paymentPositionToPay = paymentPositionToPayOpt.get();
 
-    // Update PaymentPosition instance only in memory
+    // Update PaymentPosition if necessary
     handlePaymentPositionValidTransition(paymentPositionToPay);
     DebtPositionValidation.checkPaymentPositionPayability(paymentPositionToPay, nav);
 
