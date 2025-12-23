@@ -117,6 +117,8 @@ public class DebtPositionController implements IDebtPositionController {
       LocalDate dueDateTo,
       LocalDate paymentDateFrom,
       LocalDate paymentDateTo,
+      LocalDateTime paymentDateTimeFrom,
+      LocalDateTime paymentDateTimeTo,
       DebtPositionStatus status,
       PaymentPositionOrder orderBy,
       Direction ordering,
@@ -146,6 +148,8 @@ public class DebtPositionController implements IDebtPositionController {
                         paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : null)
                     .paymentDateTo(
                         paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : null)
+                    .paymentDateTimeFrom(paymentDateTimeFrom)
+                    .paymentDateTimeTo(paymentDateTimeTo)
                     .status(status)
                     .segregationCodes(segCodesList)
                     .build())
