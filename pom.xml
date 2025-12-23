@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>it.gov.pagopa.debtposition</groupId>
 	<artifactId>gpd</artifactId>
-	<version>1.1.13-1-PIDM-1322-EXPIRED-management</version>
+	<version>1.1.13-2-PIDM-1322-EXPIRED-management</version>
 	<name>Gestione Posizioni Debitorie</name>
 	<description>Progetto Gestione Posizioni Debitorie</description>
 	<properties>
