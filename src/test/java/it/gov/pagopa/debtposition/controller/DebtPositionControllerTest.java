@@ -1147,27 +1147,27 @@ class DebtPositionControllerTest {
   void getDebtPositionListByPaymentDateTime() throws Exception {
     // creo la posizione debitoria DRAFT
     mvc.perform(
-            post("/organizations/123456789022/debtpositions")
+            post("/organizations/DATE_TIME_123456789022/debtpositions")
                 .content(TestUtil.toJson(DebtPositionMock.getMock3()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
     // creo la posizione debitoria (senza 'validity date' impostata) che dopo il pagamento sarà PAID
     mvc.perform(
-            post("/organizations/123456789022/debtpositions")
+            post("/organizations/DATE_TIME_123456789022/debtpositions")
                 .content(TestUtil.toJson(DebtPositionMock.getMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
     // porto in pubblicata/validata lo stato della posizione debitoria
     mvc.perform(
-            post("/organizations/123456789022/debtpositions/12345678901IUPDMOCK1/publish")
+            post("/organizations/DATE_TIME_123456789022/debtpositions/12345678901IUPDMOCK1/publish")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 
     // effettuo la notifica di pagamento
     mvc.perform(
-            post("/organizations/123456789022/paymentoptions/"
+            post("/organizations/DATE_TIME_123456789022/paymentoptions/"
                 + auxDigit
                 + "1234561/pay")
                 .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
@@ -1175,10 +1175,10 @@ class DebtPositionControllerTest {
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
 
-    // effettuo la chiamata GET applicando il filtro sulla payment_date
+    // effettuo la chiamata GET applicando il filtro sulla payment_date_time
     DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
     String url =
-        "/organizations/123456789022/debtpositions?page=0"
+        "/organizations/DATE_TIME_123456789022/debtpositions?page=0"
             + "&payment_date_time_from="
             + df.format(LocalDateTime.now(ZoneOffset.UTC))
             + "&payment_date_time_to="
