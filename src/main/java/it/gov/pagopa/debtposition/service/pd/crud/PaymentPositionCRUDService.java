@@ -186,7 +186,8 @@ public class PaymentPositionCRUDService {
                         new PaymentPositionByPaymentDate(
                             filterAndOrder.getFilter().getPaymentDateFrom(),
                             filterAndOrder.getFilter().getPaymentDateTo()))
-                    .and(new PaymentPositionByStatus(filterAndOrder.getFilter().getStatus())));
+                    .and(new PaymentPositionByStatus(filterAndOrder.getFilter().getStatus())))
+                .and(new PaymentPositionByServiceType(filterAndOrder.getFilter().getServiceType()));
 
     Specification<PaymentPosition> specPP = allOf(paymentPositionSpecification);
 
@@ -584,7 +585,7 @@ public class PaymentPositionCRUDService {
 
     // If immediate publication is required, proceed as follows
     if (toPublish) {
-      PublishPaymentUtil.publishProcess(pp, LocalDateTime.now());
+      PublishPaymentUtil.publishProcess(pp, currentDate);
     }
 
     return pp;
