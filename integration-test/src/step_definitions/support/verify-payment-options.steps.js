@@ -196,7 +196,7 @@ function buildPpV3SingleAndPlan(orgFiscalCode) {
       {
         description: 'Piano rateale A (2 rate)',
         validityDate: addDays(1),
-        retentionDate: addDays(60),
+        retentionDate: addDays(90),
         switchToExpired: true,
         debtor: {
           type: 'F',
