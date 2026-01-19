@@ -241,7 +241,7 @@ function buildPpV3SingleAndPlan(orgFiscalCode) {
             iuv: planNav2,
             amount: 400,
             description: 'Piano A - Rata 2/2',
-            dueDate: dueDate: isoPlusDays(75),
+            dueDate: isoPlusDays(75),
             transfer: [
               {
                 idTransfer: '1',
