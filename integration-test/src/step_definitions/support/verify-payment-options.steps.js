@@ -6,7 +6,7 @@ const { createDebtPosition } = require('./clients/gpd_client');
 const { gpdSessionBundle } = require('./utility/data');
 const { executeVerifyPaymentOptions } = require('./logic/gpd_logic');
 const Data = require('./utility/data');
-const { isoPlusDays } = require('./utility/helper');
+const { addDays } = require('./utility/helper');
 
 setDefaultTimeout(30000);
 
@@ -153,8 +153,8 @@ function buildPpV3SingleAndPlan(orgFiscalCode) {
     paymentOption: [
       {
         description: "Pagamento in un'unica soluzione",
-        validityDate: isoPlusDays(1),
-        retentionDate: isoPlusDays(60),
+        validityDate: addDays(1),
+        retentionDate: addDays(60),
         switchToExpired: false,
         debtor: {
           type: 'F',
@@ -176,7 +176,7 @@ function buildPpV3SingleAndPlan(orgFiscalCode) {
             iuv: singleNav,
             amount: 1000,
             description: 'Saldo unico',
-            dueDate: isoPlusDays(30),
+            dueDate: addDays(30),
             transfer: [
               {
                 idTransfer: '1',
@@ -195,8 +195,8 @@ function buildPpV3SingleAndPlan(orgFiscalCode) {
       },
       {
         description: 'Piano rateale A (2 rate)',
-        validityDate: isoPlusDays(1),
-        retentionDate: isoPlusDays(60),
+        validityDate: addDays(1),
+        retentionDate: addDays(60),
         switchToExpired: true,
         debtor: {
           type: 'F',
@@ -218,7 +218,7 @@ function buildPpV3SingleAndPlan(orgFiscalCode) {
             iuv: planNav1,
             amount: 600,
             description: 'Piano A - Rata 1/2',
-            dueDate: isoPlusDays(45),
+            dueDate: addDays(45),
             transfer: [
               {
                 idTransfer: '1',
@@ -241,7 +241,7 @@ function buildPpV3SingleAndPlan(orgFiscalCode) {
             iuv: planNav2,
             amount: 400,
             description: 'Piano A - Rata 2/2',
-            dueDate: isoPlusDays(75),
+            dueDate: addDays(75),
             transfer: [
               {
                 idTransfer: '1',
