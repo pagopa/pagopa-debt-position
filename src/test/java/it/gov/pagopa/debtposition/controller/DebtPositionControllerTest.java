@@ -2317,7 +2317,7 @@ class DebtPositionControllerTest {
 
         // Retrieve debt positions; expect no results since the uploaded debt position has service type WISP
         mvc.perform(
-                        get("/organizations/12345678907/debtpositions/")
+                        get("/organizations/12345678907/debtpositions")
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
