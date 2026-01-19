@@ -6,7 +6,7 @@ const { createDebtPosition } = require('./clients/gpd_client');
 const { gpdSessionBundle } = require('./utility/data');
 const { executeVerifyPaymentOptions } = require('./logic/gpd_logic');
 const Data = require('./utility/data');
-const { addDays } = require('./utility/helper');
+const { addDays } = require('./utility/helpers');
 
 setDefaultTimeout(30000);
 
