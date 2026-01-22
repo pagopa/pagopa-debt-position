@@ -588,7 +588,7 @@ public class PaymentPositionCRUDService {
 
     // If immediate publication is required, proceed as follows
     if (toPublish) {
-      PublishPaymentUtil.publishProcess(pp, LocalDateTime.now());
+      PublishPaymentUtil.publishProcess(pp, currentDate);
     }
 
     return pp;
