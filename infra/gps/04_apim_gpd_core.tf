@@ -195,7 +195,7 @@ resource "azurerm_api_management_api_operation_policy" "get_debt_positions_v1_po
   resource_group_name = local.apim.rg
   operation_id        = "getOrganizationDebtPositions"
 
-  xml_content = templatefile("./api/get_base_policy.xml", {
+  xml_content = templatefile("./api/get_list_base_policy.xml", {
     service_type_value = "GPD"
   })
 }
@@ -214,19 +214,6 @@ resource "azurerm_api_management_api_operation_policy" "create_debt_position_v2_
   resource_group_name = local.apim.rg
   operation_id        = "createMultiplePositions"
   xml_content = templatefile("./api/create_base_policy.xml", {
-    service_type_value = "GPD"
-  })
-}
-# v2 - GET
-resource "azurerm_api_management_api_operation_policy" "get_debt_positions_v2_policy" {
-  count = var.env_short != "p" ? 1 : 0
-
-  api_name            = format("%s-debt-positions-service-api-v2", local.product)
-  api_management_name = local.apim.name
-  resource_group_name = local.apim.rg
-  operation_id        = "getOrganizationDebtPositions"
-
-  xml_content = templatefile("./api/get_base_policy.xml", {
     service_type_value = "GPD"
   })
 }
