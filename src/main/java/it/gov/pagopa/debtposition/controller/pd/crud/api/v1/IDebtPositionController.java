@@ -98,7 +98,7 @@ public interface IDebtPositionController {
           @RequestParam(required = false)
           String segregationCodes,
       @Parameter(
-              hidden = false,
+              hidden = true,
               description =
                   "The field must not be considered as its value is set via the API Management"
                       + " (APIM) policy")
@@ -167,7 +167,7 @@ public interface IDebtPositionController {
           @RequestParam(required = false)
           String segregationCodes,
       @Parameter(
-              hidden = false,
+              hidden = true,
               description =
                   "The field must not be considered as its value is set via the API Management"
                       + " (APIM) policy")
@@ -292,6 +292,7 @@ public interface IDebtPositionController {
           @RequestParam(required = false)
           String segregationCodes,
       @Parameter(
+              hidden = true,
               description =
               "The field must not be considered as its value is set via the API Management"
               + " (APIM) policy")

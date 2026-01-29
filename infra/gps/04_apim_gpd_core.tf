@@ -173,7 +173,7 @@ module "apim_api_debt_positions_api_v3" {
 ## GPD CREATE DEBT POSITION POLICIES ####
 #########################################
 
-# v1
+# v1 - CREATE
 resource "terraform_data" "sha256_create_debt_position_v1_policy" {
   input = sha256(file("./api/create_base_policy.xml"))
 }
@@ -188,7 +188,23 @@ resource "azurerm_api_management_api_operation_policy" "create_debt_position_v1_
   })
 }
 
-# v2
+# v1 - GET
+resource "terraform_data" "sha256_get_list_debt_position_v1_policy" {
+  input = sha256(file("./api/get_list_base_policy.xml"))
+}
+
+resource "azurerm_api_management_api_operation_policy" "get_debt_positions_v1_policy" {
+  api_name            = format("%s-debt-positions-service-api-v1", local.product)
+  api_management_name = local.apim.name
+  resource_group_name = local.apim.rg
+  operation_id        = "getOrganizationDebtPositions"
+
+  xml_content = templatefile("./api/get_list_base_policy.xml", {
+    service_type_value = "GPD"
+  })
+}
+
+# v2 - CREATE
 resource "terraform_data" "sha256_create_debt_position_v2_policy" {
   count = var.env_short != "p" ? 1 : 0 # disabled v2 external bulk prod
   input = sha256(file("./api/create_base_policy.xml"))
@@ -202,6 +218,18 @@ resource "azurerm_api_management_api_operation_policy" "create_debt_position_v2_
   resource_group_name = local.apim.rg
   operation_id        = "createMultiplePositions"
   xml_content = templatefile("./api/create_base_policy.xml", {
+    service_type_value = "GPD"
+  })
+}
+
+# V3 - GET
+resource "azurerm_api_management_api_operation_policy" "get_debt_positions_v3_policy" {
+  api_name            = format("%s-debt-positions-service-api-v3", local.product)
+  api_management_name = local.apim.name
+  resource_group_name = local.apim.rg
+  operation_id        = "getOrganizationDebtPositions"
+
+  xml_content = templatefile("./api/get_list_base_policy.xml", {
     service_type_value = "GPD"
   })
 }
