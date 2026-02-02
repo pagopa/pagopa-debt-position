@@ -51,3 +51,20 @@ resource "azurerm_api_management_api_operation_policy" "create_debt_position_v1_
     service_type_value = "ACA"
   })
 }
+
+# ACA v1 - GET
+resource "terraform_data" "sha256_get_list_debt_position_v1_policy" {
+  input = sha256(file("./api/get_list_base_policy.xml"))
+}
+
+
+resource "azurerm_api_management_api_operation_policy" "get_debt_positions_for_aca_v1_policy" {
+  api_name            = format("%s-debt-positions-for-aca-service-api-v1", local.product)
+  api_management_name = local.apim.name
+  resource_group_name = local.apim.rg
+  operation_id        = "getOrganizationDebtPositions"
+
+  xml_content = templatefile("./api/get_list_base_policy.xml", {
+    service_type_value = "ACA"
+  })
+}
