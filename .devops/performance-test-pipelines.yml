@@ -32,6 +32,7 @@ parameters:
       - "create_debt_position"
       - "payments_workflow"
       - "publish_workflow"
+      - "get_debt_position_list"
       - "just_payments_workflow"
       - "upd_workflow"
       - "verify_payment_option"
