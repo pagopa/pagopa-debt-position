@@ -33,7 +33,6 @@ parameters:
       - "payments_workflow"
       - "publish_workflow"
       - "get_debt_position_list"
-      - "get_debt_position_list_with_service_type"
       - "just_payments_workflow"
       - "upd_workflow"
       - "verify_payment_option"
