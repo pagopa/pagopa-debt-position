@@ -11,27 +11,29 @@ import org.springframework.data.jpa.domain.Specification;
 @AllArgsConstructor
 public class PaymentPositionByPaymentDate implements Specification<PaymentPosition> {
 
-  private LocalDateTime dateFrom;
-  private LocalDateTime dateTo;
+	private static final long serialVersionUID = -2050797176437259178L;
+	private LocalDateTime dateFrom;
+	private LocalDateTime dateTo;
 
-  private static final String DATE_FIELD = "paymentDate";
+	private static final String DATE_FIELD = "paymentDate";
 
-  @Override
-  public Predicate toPredicate(
-      Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+	@Override
+	public Predicate toPredicate(
+			Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
 
-    if (dateFrom != null && dateTo == null) {
-      return cb.greaterThanOrEqualTo(root.get(DATE_FIELD), dateFrom);
-    } else if (dateFrom == null && dateTo != null) {
-      return cb.lessThanOrEqualTo(root.get(DATE_FIELD), dateTo);
-    }
-    // The execution proceeds on this branch in only 2 cases: dateFrom and dateTo equal null or both
-    // different from null,
-    // to check the last case just apply the condition on one of the two dates
-    else if (dateFrom != null) {
-      return cb.between(root.get(DATE_FIELD), dateFrom, dateTo);
-    }
+		Path<LocalDateTime> paymentDate = root.get(DATE_FIELD);
 
-    return cb.isTrue(cb.literal(true));
-  }
+		if (dateFrom != null && dateTo != null) {
+			return cb.between(paymentDate, dateFrom, dateTo);
+		}
+		if (dateFrom != null) {
+			return cb.greaterThanOrEqualTo(paymentDate, dateFrom);
+		}
+		if (dateTo != null) {
+			return cb.lessThanOrEqualTo(paymentDate, dateTo);
+		}
+
+		// no filter
+		return cb.conjunction();
+	}
 }

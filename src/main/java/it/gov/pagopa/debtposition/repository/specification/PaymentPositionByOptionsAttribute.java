@@ -1,8 +1,10 @@
 package it.gov.pagopa.debtposition.repository.specification;
 
+import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -12,56 +14,76 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
   /** generated serialVersionUID */
   private static final long serialVersionUID = 6534338388239897792L;
 
-  private static final String PAYMENT_OPT_JOIN = "paymentOption";
-  private static final String DUEDATE_FIELD = "dueDate";
-  private static final String IUV_FIELD = "iuv";
+ private static final String PO_PAYMENT_POSITION_FIELD = "paymentPosition";
+ private static final String PO_ORG_FISCAL_CODE_FIELD = "organizationFiscalCode";
+ private static final String DUEDATE_FIELD = "dueDate";
+ private static final String IUV_FIELD = "iuv";
 
-  private LocalDateTime dateFrom;
-  private LocalDateTime dateTo;
-  private List<String> segregationCodes;
+ private final String organizationFiscalCode;
+ private final LocalDateTime dateFrom;
+ private final LocalDateTime dateTo;
+ private final List<String> segregationCodes;
 
-  public PaymentPositionByOptionsAttribute(
-      LocalDateTime dateFrom, LocalDateTime dateTo, List<String> segregationCodes) {
-    this.dateFrom = dateFrom;
-    this.dateTo = dateTo;
-    this.segregationCodes = segregationCodes;
-  }
+ public PaymentPositionByOptionsAttribute(String organizationFiscalCode,
+     LocalDateTime dateFrom, LocalDateTime dateTo, List<String> segregationCodes) {
+   this.organizationFiscalCode = organizationFiscalCode; 
+   this.dateFrom = dateFrom;
+   this.dateTo = dateTo;
+   this.segregationCodes = segregationCodes;
+ }
 
-  public Predicate toPredicate(
-      Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-    Join<?, ?> ppOptionsJoin = root.join(PAYMENT_OPT_JOIN, JoinType.INNER);
+ @Override
+ public Predicate toPredicate(Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
 
-    Predicate dueDatePredicate = cb.isTrue(cb.literal(true));
-    Predicate segregationCodesPredicate = cb.isTrue(cb.literal(false));
+   boolean hasDueFilter = (dateFrom != null || dateTo != null);
+   boolean hasSegFilter = (segregationCodes != null && !segregationCodes.isEmpty());
 
-    // due date predicate
-    if (dateFrom != null && dateTo == null) {
-      dueDatePredicate = cb.greaterThanOrEqualTo(ppOptionsJoin.get(DUEDATE_FIELD), dateFrom);
-    } else if (dateFrom == null && dateTo != null) {
-      dueDatePredicate = cb.lessThanOrEqualTo(ppOptionsJoin.get(DUEDATE_FIELD), dateTo);
-    }
-    // The execution proceeds on this branch in only 2 cases: dateFrom and dateTo equal null or both
-    // different from null,
-    // to check the last case just apply the condition on one of the two dates
-    else if (dateFrom != null) {
-      dueDatePredicate = cb.between(ppOptionsJoin.get(DUEDATE_FIELD), dateFrom, dateTo);
-    }
+   // If there are no filters on PaymentOption, no join/subquery is forced and the predicate is always true
+   if (!hasDueFilter && !hasSegFilter) {
+     return cb.conjunction();
+   }
 
-    // segregation code predicate
-    if (segregationCodes != null && !segregationCodes.isEmpty()) {
-      for (String segregationCode : segregationCodes) {
-        segregationCodesPredicate =
-            cb.or(
-                segregationCodesPredicate,
-                cb.between(
-                    ppOptionsJoin.get(IUV_FIELD),
-                    segregationCode,
-                    CommonUtil.getSegregationCodeEnd(segregationCode)));
-      }
-    } else {
-      segregationCodesPredicate = cb.isTrue(cb.literal(true));
-    }
+   // EXISTS (select 1 from PaymentOption po where po.paymentPosition = root and ...)
+   Subquery<Integer> sq = query.subquery(Integer.class);
+   Root<PaymentOption> po = sq.from(PaymentOption.class);
 
-    return cb.and(dueDatePredicate, segregationCodesPredicate);
-  }
+   List<Predicate> predicates = new ArrayList<>();
+
+   // correlation: po.paymentPosition = pp(root)
+   predicates.add(cb.equal(po.get(PO_PAYMENT_POSITION_FIELD), root));
+   
+   // add org filter inside EXISTS to enable index usage
+   if (organizationFiscalCode != null) {
+     predicates.add(cb.equal(po.get(PO_ORG_FISCAL_CODE_FIELD), organizationFiscalCode));
+   }
+
+   // two dates predicated (as subquery)
+   if (dateFrom != null && dateTo == null) {
+     predicates.add(cb.greaterThanOrEqualTo(po.get(DUEDATE_FIELD), dateFrom));
+   } else if (dateFrom == null && dateTo != null) {
+     predicates.add(cb.lessThanOrEqualTo(po.get(DUEDATE_FIELD), dateTo));
+   } else if (dateFrom != null) {
+     // dateFrom != null && dateTo != null
+     predicates.add(cb.between(po.get(DUEDATE_FIELD), dateFrom, dateTo));
+   }
+
+   // segregation code predicate
+   if (hasSegFilter) {
+     Predicate seg = cb.disjunction(); // false
+     for (String segregationCode : segregationCodes) {
+       seg =
+           cb.or(
+               seg,
+               cb.between(
+                   po.get(IUV_FIELD),
+                   segregationCode,
+                   CommonUtil.getSegregationCodeEnd(segregationCode)));
+     }
+     predicates.add(seg);
+   }
+
+   sq.select(cb.literal(1)).where(cb.and(predicates.toArray(new Predicate[0])));
+
+   return cb.exists(sq);
+ }
 }

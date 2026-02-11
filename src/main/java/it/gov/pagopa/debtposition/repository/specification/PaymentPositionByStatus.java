@@ -14,15 +14,16 @@ import org.springframework.data.jpa.domain.Specification;
 @AllArgsConstructor
 public class PaymentPositionByStatus implements Specification<PaymentPosition> {
 
-  private DebtPositionStatus status;
+	private static final long serialVersionUID = 3560241098850345279L;
+	private DebtPositionStatus status;
 
-  @Override
-  public Predicate toPredicate(
-      Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+	@Override
+	public Predicate toPredicate(
+			Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
 
-    if (status == null) {
-      return cb.isTrue(cb.literal(true)); // always true = no filtering
-    }
-    return cb.equal(root.get("status"), this.status);
-  }
+		if (status == null) {
+			return cb.conjunction(); // always true = no filtering
+		}
+		return cb.equal(root.get("status"), this.status);
+	}
 }
