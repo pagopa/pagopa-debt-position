@@ -31,12 +31,27 @@ public class PaymentOptionByAttribute implements Specification<PaymentOption> {
     this.dateTo = dateTo;
     this.segregationCodes = segregationCodes;
   }
+  
+  public PaymentOptionByAttribute(
+		  LocalDateTime dateFrom,
+		  LocalDateTime dateTo,
+		  List<String> segregationCodes) {
+	  this.paymentPosition = null; // bulk mode
+	  this.dateFrom = dateFrom;
+	  this.dateTo = dateTo;
+	  this.segregationCodes = segregationCodes;
+  }
 
+  @Override
   public Predicate toPredicate(
       Root<PaymentOption> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-
-    Predicate paymentPositionIdPredicate =
-        cb.equal(root.get("paymentPosition"), this.paymentPosition);
+ 
+    // payment position predicate (only if paymentPosition != null)
+    Predicate paymentPositionPredicate = cb.isTrue(cb.literal(true));
+    if (this.paymentPosition != null) {
+      paymentPositionPredicate = cb.equal(root.get("paymentPosition"), this.paymentPosition);
+    }
+    
     Predicate dueDatePredicate = cb.isTrue(cb.literal(true));
     Predicate segregationCodesPredicate = cb.isTrue(cb.literal(false));
 
@@ -68,6 +83,6 @@ public class PaymentOptionByAttribute implements Specification<PaymentOption> {
       segregationCodesPredicate = cb.isTrue(cb.literal(true));
     }
 
-    return cb.and(paymentPositionIdPredicate, dueDatePredicate, segregationCodesPredicate);
+    return cb.and(paymentPositionPredicate, dueDatePredicate, segregationCodesPredicate);
   }
 }
