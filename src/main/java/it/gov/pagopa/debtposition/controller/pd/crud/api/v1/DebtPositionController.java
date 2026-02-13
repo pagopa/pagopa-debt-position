@@ -108,7 +108,8 @@ public class DebtPositionController implements IDebtPositionController {
   @Override
   @ExclusiveParamGroup(
       firstGroup = {"due_date_to", "due_date_from"},
-      secondGroup = {"payment_date_from", "payment_date_to"})
+      secondGroup = {"payment_date_from", "payment_date_to"},
+      thirdGroup = {"payment_date_time_from", "payment_date_time_to"})
   public ResponseEntity<PaymentPositionsInfo> getOrganizationDebtPositions(
       String organizationFiscalCode,
       Integer limit,

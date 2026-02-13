@@ -490,11 +490,18 @@ public class PaymentPositionCRUDService {
             filterAndOrder.getFilter().getPaymentDateFrom(),
             filterAndOrder.getFilter().getPaymentDateTo(),
             Integer.parseInt(maxDaysInterval));
+    List<LocalDateTime> verifiedPaymentDateTimes =
+        DebtPositionValidation.checkDatesInterval(
+            filterAndOrder.getFilter().getPaymentDateTimeFrom(),
+            filterAndOrder.getFilter().getPaymentDateTimeTo(),
+            Integer.parseInt(maxDaysInterval));
 
     filterAndOrder.getFilter().setDueDateFrom(verifiedDueDates.get(0));
     filterAndOrder.getFilter().setDueDateTo(verifiedDueDates.get(1));
     filterAndOrder.getFilter().setPaymentDateFrom(verifiedPaymentDates.get(0));
     filterAndOrder.getFilter().setPaymentDateTo(verifiedPaymentDates.get(1));
+    filterAndOrder.getFilter().setPaymentDateFrom(verifiedPaymentDateTimes.get(0));
+    filterAndOrder.getFilter().setPaymentDateTo(verifiedPaymentDateTimes.get(1));
   }
 
   // Update all Organization's IBANs on Transfer of payable PaymentPosition
