@@ -9,34 +9,31 @@ on:
         type: string
       schema:
         required: true
-        description: Which schema to migrate (apd|odp|all)
+        description: Which schema to migrate (apd|odp|apd-archive)
         type: string
-        default: all
+        default: apd
     secrets:
-        FLYWAY_DATASOURCE_URL: 
-          required: true
-        SPRING_DATASOURCE_USERNAME: 
-          required: true
-        SPRING_DATASOURCE_PASSWORD: 
-          required: true
+      # Standard Secrets: primary database
+      FLYWAY_DATASOURCE_URL: { required: true }
+      DATASOURCE_USERNAME: { required: true }
+      DATASOURCE_PASSWORD: { required: true }
+      # Archive Specific Secrets
+      FLYWAY_ARCHIVE_DATASOURCE_URL: { required: false }
+      ARCHIVE_DATASOURCE_USERNAME: { required: false }
+      ARCHIVE_DATASOURCE_PASSWORD: { required: false }
+
   workflow_dispatch:
     inputs:
       environment:
         required: true
         type: choice
         description: Select the Environment
-        options:
-          - dev
-          - uat
-          - prod
-      schema:                
+        options: [dev, uat, prod]
+      schema:
         required: true
         type: choice
         description: Select the Schema to migrate
-        options:
-          - apd
-          - odp
-          - all
+        options: [apd, odp, apd-archive]
         default: apd
 
 permissions:
@@ -44,33 +41,56 @@ permissions:
   contents: read
 
 jobs:
-
   db_migration:
     runs-on: [ self-hosted-job, "${{ inputs.environment }}" ]
-    name: DB migration
+    name: DB migration (${{ inputs.schema }})
     environment: ${{ inputs.environment }}
     steps:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
+      # ==========================================================
+      # CASE APD-ARCHIVE Run Flyway with Docker
+      # ==========================================================
+      - name: Run Flyway (Archive)
+        if: ${{ inputs.schema == 'apd-archive' }}
+        uses: docker://flyway/flyway:10.7.2
+        env:
+          FLYWAY_URL: ${{ secrets.FLYWAY_ARCHIVE_DATASOURCE_URL }}
+          FLYWAY_USER: ${{ secrets.ARCHIVE_DATASOURCE_USERNAME }}
+          FLYWAY_PASSWORD: ${{ secrets.ARCHIVE_DATASOURCE_PASSWORD }}
+          FLYWAY_SCHEMAS: ${{ vars.APD_ARCHIVE_SCHEMAS }}
+        with:
+          args: >
+            -locations=filesystem:./<todo>
+            -validateOnMigrate=true
+            -cleanDisabled=true
+            migrate
+
+      # ==========================================================
+      # SETUP MAVEN (Only for APD and ODP)
+      # ==========================================================
       - name: Set up JDK 17
+        if: ${{ inputs.schema == 'apd' || inputs.schema == 'odp' }}
         uses: actions/setup-java@b6e674f4b717d7b0ae3baee0fbe79f498905dfde # v1
         with:
           java-version: 17
 
       - name: Set up Maven
+        if: ${{ inputs.schema == 'apd' || inputs.schema == 'odp' }}
         uses: stCarolas/setup-maven@07fbbe97d97ef44336b7382563d66743297e442f # v4.5
         with:
           maven-version: 3.8.2
 
       - name: Build project (compile resources)
+        if: ${{ inputs.schema == 'apd' || inputs.schema == 'odp' }}
         run: mvn -B clean compile
 
-      # ============================
-      # - Run Flyway
-      # ============================  
+      # ==========================================================
+      # CASE APD: Run Flyway with Maven
+      # ==========================================================
       - name: Run Flyway (APD)
-        if: ${{ inputs.schema == 'apd' || inputs.schema == 'all' }}
+        if: ${{ inputs.schema == 'apd' }}
         shell: bash
         env:
           FLYWAY_DATASOURCE_URL: ${{ secrets.FLYWAY_DATASOURCE_URL }}
@@ -84,8 +104,11 @@ jobs:
           echo "▶ Running APD: validate on migrate"
           mvn -B flyway:migrate -Dflyway.validateOnMigrate=true ${COMMON}
 
+      # ==========================================================
+      # CASE ODP: Run Flyway with Maven
+      # ==========================================================
       - name: Run Flyway (ODP)
-        if: ${{ inputs.schema == 'odp' || inputs.schema == 'all' }}
+        if: ${{ inputs.schema == 'odp' }}
         shell: bash
         env:
           FLYWAY_DATASOURCE_URL: ${{ secrets.FLYWAY_DATASOURCE_URL }}
