@@ -108,7 +108,8 @@ public class DebtPositionController implements IDebtPositionController {
   @Override
   @ExclusiveParamGroup(
       firstGroup = {"due_date_to", "due_date_from"},
-      secondGroup = {"payment_date_from", "payment_date_to"})
+      secondGroup = {"payment_date_from", "payment_date_to"},
+      thirdGroup = {"payment_date_time_from", "payment_date_time_to"})
   public ResponseEntity<PaymentPositionsInfo> getOrganizationDebtPositions(
       String organizationFiscalCode,
       Integer limit,
@@ -117,6 +118,8 @@ public class DebtPositionController implements IDebtPositionController {
       LocalDate dueDateTo,
       LocalDate paymentDateFrom,
       LocalDate paymentDateTo,
+      LocalDateTime paymentDateTimeFrom,
+      LocalDateTime paymentDateTimeTo,
       DebtPositionStatus status,
       PaymentPositionOrder orderBy,
       Direction ordering,
@@ -147,6 +150,8 @@ public class DebtPositionController implements IDebtPositionController {
                         paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : null)
                     .paymentDateTo(
                         paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : null)
+                    .paymentDateTimeFrom(paymentDateTimeFrom)
+                    .paymentDateTimeTo(paymentDateTimeTo)
                     .status(status)
                     .segregationCodes(segCodesList)
                     .serviceType(serviceType)

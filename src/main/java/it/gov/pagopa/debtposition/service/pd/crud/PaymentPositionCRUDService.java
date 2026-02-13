@@ -27,7 +27,6 @@ import it.gov.pagopa.debtposition.util.PublishPaymentUtil;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -186,6 +185,10 @@ public class PaymentPositionCRUDService {
                         new PaymentPositionByPaymentDate(
                             filterAndOrder.getFilter().getPaymentDateFrom(),
                             filterAndOrder.getFilter().getPaymentDateTo()))
+                    .and(
+                        new PaymentPositionByPaymentDate(
+                            filterAndOrder.getFilter().getPaymentDateTimeFrom(),
+                            filterAndOrder.getFilter().getPaymentDateTimeTo()))
                     .and(new PaymentPositionByStatus(filterAndOrder.getFilter().getStatus())))
                 .and(new PaymentPositionByServiceType(filterAndOrder.getFilter().getServiceType()));
 
@@ -486,11 +489,18 @@ public class PaymentPositionCRUDService {
             filterAndOrder.getFilter().getPaymentDateFrom(),
             filterAndOrder.getFilter().getPaymentDateTo(),
             Integer.parseInt(maxDaysInterval));
+    List<LocalDateTime> verifiedPaymentDateTimes =
+        DebtPositionValidation.checkDatesInterval(
+            filterAndOrder.getFilter().getPaymentDateTimeFrom(),
+            filterAndOrder.getFilter().getPaymentDateTimeTo(),
+            Integer.parseInt(maxDaysInterval));
 
     filterAndOrder.getFilter().setDueDateFrom(verifiedDueDates.get(0));
     filterAndOrder.getFilter().setDueDateTo(verifiedDueDates.get(1));
     filterAndOrder.getFilter().setPaymentDateFrom(verifiedPaymentDates.get(0));
     filterAndOrder.getFilter().setPaymentDateTo(verifiedPaymentDates.get(1));
+    filterAndOrder.getFilter().setPaymentDateTimeFrom(verifiedPaymentDateTimes.get(0));
+    filterAndOrder.getFilter().setPaymentDateTimeTo(verifiedPaymentDateTimes.get(1));
   }
 
   // Update all Organization's IBANs on Transfer of payable PaymentPosition

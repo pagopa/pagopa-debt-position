@@ -20,6 +20,7 @@ import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.Constants;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,6 +88,8 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
       LocalDate dueDateTo,
       LocalDate paymentDateFrom,
       LocalDate paymentDateTo,
+      LocalDateTime paymentDateTimeFrom,
+      LocalDateTime paymentDateTimeTo,
       DebtPositionStatusV3 status,
       Order.PaymentPositionOrder orderBy,
       Sort.Direction ordering,
@@ -109,6 +112,8 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
                         paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : null)
                     .paymentDateTo(
                         paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : null)
+                    .paymentDateTimeFrom(paymentDateTimeFrom)
+                    .paymentDateTimeTo(paymentDateTimeTo)
                     .status(status != null ? DebtPositionStatus.valueOf(status.name()) : null)
                     .segregationCodes(segCodesList)
                     .serviceType(serviceType)
