@@ -23,7 +23,7 @@ const params = {
 export default function() {
 
   // fixed value for the creditor_institution with multiple debt positions
-  const creditor_institution_code = '77777777777'
+  const creditor_institution_code = '80050050154'
   const iupd = makeidMix(35);
   const iuv = makeidMix(35);
   const due_date = new Date().addDays(1);

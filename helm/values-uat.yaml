@@ -27,7 +27,7 @@ microservice-chart:
       maxSurge: 1
   deployment:
     create: true
-    replicas: 1 # (default) same as HPA minReplica
+    replicas: 4 # (default) same as HPA minReplica
   service:
     create: true
     type: ClusterIP
@@ -51,14 +51,14 @@ microservice-chart:
   resources:
     requests:
       memory: "1024Mi"
-      cpu: "0.50"
-    limits:
-      memory: "2048Mi"
       cpu: "0.75"
+    limits:
+      memory: "1280Mi"
+      cpu: "0.80"
   autoscaling:
     enable: true
-    minReplica: 1
-    maxReplica: 1
+    minReplica: 4
+    maxReplica: 10
     pollingInterval: 1 # seconds
     cooldownPeriod: 50 # seconds
     triggers:
@@ -66,7 +66,7 @@ microservice-chart:
         metadata:
           # Required
           type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
-          value: "50"
+          value: "75"
       - type: metrics-api
         metadata:
           targetValue: "50" # milliseconds
