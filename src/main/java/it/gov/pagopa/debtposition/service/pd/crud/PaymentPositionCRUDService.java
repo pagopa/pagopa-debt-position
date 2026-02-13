@@ -499,8 +499,8 @@ public class PaymentPositionCRUDService {
     filterAndOrder.getFilter().setDueDateTo(verifiedDueDates.get(1));
     filterAndOrder.getFilter().setPaymentDateFrom(verifiedPaymentDates.get(0));
     filterAndOrder.getFilter().setPaymentDateTo(verifiedPaymentDates.get(1));
-    filterAndOrder.getFilter().setPaymentDateFrom(verifiedPaymentDateTimes.get(0));
-    filterAndOrder.getFilter().setPaymentDateTo(verifiedPaymentDateTimes.get(1));
+    filterAndOrder.getFilter().setPaymentDateTimeFrom(verifiedPaymentDateTimes.get(0));
+    filterAndOrder.getFilter().setPaymentDateTimeTo(verifiedPaymentDateTimes.get(1));
   }
 
   // Update all Organization's IBANs on Transfer of payable PaymentPosition
