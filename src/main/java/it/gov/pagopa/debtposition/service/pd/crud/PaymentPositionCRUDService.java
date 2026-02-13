@@ -190,7 +190,8 @@ public class PaymentPositionCRUDService {
                         new PaymentPositionByPaymentDate(
                             filterAndOrder.getFilter().getPaymentDateTimeFrom(),
                             filterAndOrder.getFilter().getPaymentDateTimeTo()))
-                    .and(new PaymentPositionByStatus(filterAndOrder.getFilter().getStatus())));
+                    .and(new PaymentPositionByStatus(filterAndOrder.getFilter().getStatus())))
+                .and(new PaymentPositionByServiceType(filterAndOrder.getFilter().getServiceType()));
 
     Specification<PaymentPosition> specPP = allOf(paymentPositionSpecification);
 

@@ -93,7 +93,8 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
       DebtPositionStatusV3 status,
       Order.PaymentPositionOrder orderBy,
       Sort.Direction ordering,
-      String segregationCodes) {
+      String segregationCodes,
+      ServiceType serviceType) {
     ArrayList<String> segCodesList =
         segregationCodes != null
             ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
@@ -115,6 +116,7 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
                     .paymentDateTimeTo(paymentDateTimeTo)
                     .status(status != null ? DebtPositionStatus.valueOf(status.name()) : null)
                     .segregationCodes(segCodesList)
+                    .serviceType(serviceType)
                     .build())
             .order(Order.builder().orderBy(orderBy).ordering(ordering).build())
             .build();

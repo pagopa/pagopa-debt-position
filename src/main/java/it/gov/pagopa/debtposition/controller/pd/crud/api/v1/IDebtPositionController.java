@@ -100,7 +100,7 @@ public interface IDebtPositionController {
           @RequestParam(required = false)
           String segregationCodes,
       @Parameter(
-              hidden = false,
+              hidden = true,
               description =
                   "The field must not be considered as its value is set via the API Management"
                       + " (APIM) policy")
@@ -169,7 +169,7 @@ public interface IDebtPositionController {
           @RequestParam(required = false)
           String segregationCodes,
       @Parameter(
-              hidden = false,
+              hidden = true,
               description =
                   "The field must not be considered as its value is set via the API Management"
                       + " (APIM) policy")
@@ -308,7 +308,15 @@ public interface IDebtPositionController {
               hidden = true)
           @Pattern(regexp = "\\d{2}(,\\d{2})*")
           @RequestParam(required = false)
-          String segregationCodes);
+          String segregationCodes,
+      @Parameter(
+              hidden = true,
+              description =
+              "The field must not be considered as its value is set via the API Management"
+              + " (APIM) policy")
+      @RequestParam(required = false)
+      ServiceType serviceType
+    );
 
   @Operation(
       summary = "Return the details of a specific debt position.",
