@@ -74,7 +74,10 @@ export default function() {
     }
   );
 
-  var r = http.post(url, payload, params);
+  var r = http.post(url, payload, {
+    ...params,
+    tags: { name: 'CreateDebtPosition' },
+  });
 
   check(r, {
     'CreateDebtPosition status is 201': (r) => r.status === 201,
@@ -89,14 +92,15 @@ export default function() {
   let due_date_to = new Date().addDays(5).toISOString().split('T')[0];
   
   url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions?limit=50&page=0&due_date_from=${due_date_from}&due_date_to=${due_date_to}&status=VALID&orderby=INSERTED_DATE&ordering=DESC`;
-
-  //r = http.get(url, params);
   
   let attempts = 0;
   let list = null;
 
   while (attempts < 3) {
-    r = http.get(url, params);
+	r = http.get(url, {
+	  ...params,
+	  tags: { name: 'GetOrganizationDebtPositions' },
+	});
 
     if (r.status !== 200) break;
 
@@ -132,9 +136,4 @@ export default function() {
   check(list, {
     'GetOrganizationsList size is >= 1': (l) => l.length >= 1,
   });
-
-  /*
-  check(r, {
-    'GetOrganizationsList size is >= 1': (r) => (JSON.parse(r.body)).payment_position_list.length >= 1,
-  });*/
 }
