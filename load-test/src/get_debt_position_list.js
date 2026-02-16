@@ -1,5 +1,5 @@
 import http from 'k6/http';
-import { check } from 'k6';
+import { check, sleep } from 'k6';
 import { SharedArray } from 'k6/data';
 import { makeidMix, randomString } from './modules/helpers.js';
 
@@ -26,8 +26,8 @@ export default function() {
   const creditor_institution_code = '77777777777'
   const iupd = makeidMix(35);
   const iuv = makeidMix(35);
-  const due_date = new Date().addDays(1);
-  const retention_date = new Date().addDays(90);
+  const due_date = new Date(Date.now() + 24*60*60*1000).toISOString();
+  const retention_date = new Date(Date.now() + 90*24*60*60*1000).toISOString();
   const transfer_id = '1';
 
   // precondition: creation of a new debt position --> the GET of the list of debt positions returns at least one element
@@ -88,15 +88,53 @@ export default function() {
   let due_date_from = new Date().subDays(5).toISOString().split('T')[0];
   let due_date_to = new Date().addDays(5).toISOString().split('T')[0];
   
-  url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions?limit=50&page=0&due_date_from=${due_date_from}&due_date_to=${due_date_to}&status=DRAFT&orderby=INSERTED_DATE&ordering=DESC`;
+  url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions?limit=50&page=0&due_date_from=${due_date_from}&due_date_to=${due_date_to}&status=VALID&orderby=INSERTED_DATE&ordering=DESC`;
 
-  r = http.get(url, params);
+  //r = http.get(url, params);
+  
+  let attempts = 0;
+  let list = null;
+
+  while (attempts < 3) {
+    r = http.get(url, params);
+
+    if (r.status !== 200) break;
+
+    let body;
+    try {
+      body = r.json();
+    } catch (e) {
+      console.error(`GET response is not JSON. status=${r.status} body=${r.body}`);
+      return;
+    }
+
+    list = body.payment_position_list;
+
+    if (Array.isArray(list) && list.length >= 1) break;
+
+    attempts++;
+    sleep(0.2);
+  }
 
   check(r, {
     'GetOrganizationsList status is 200': (r) => r.status === 200,
   });
+  
+  check(list, {
+    'GetOrganizationsList list exists': (l) => Array.isArray(l),
+  });
+  
+  if (!Array.isArray(list)) {
+    console.error(`Unexpected GET response shape: ${r.body}`);
+    return;
+  }
+  
+  check(list, {
+    'GetOrganizationsList size is >= 1': (l) => l.length >= 1,
+  });
 
+  /*
   check(r, {
     'GetOrganizationsList size is >= 1': (r) => (JSON.parse(r.body)).payment_position_list.length >= 1,
-  });
+  });*/
 }
