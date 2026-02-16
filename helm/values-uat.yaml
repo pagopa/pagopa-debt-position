@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "1.1.18-PIDM-1497-getOrganizationDebtPositions-query-optimization"
+    tag: "1.1.19-PIDM-1497-getOrganizationDebtPositions-query-optimization"
     pullPolicy: Always
   livenessProbe:
     httpGet:
