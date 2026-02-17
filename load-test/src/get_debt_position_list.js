@@ -75,7 +75,7 @@ export default function() {
   );
 
   var r = http.post(url, payload, {
-    ...params,
+    headers: params.headers,
     tags: { name: 'CreateDebtPosition' },
   });
 
@@ -98,7 +98,7 @@ export default function() {
 
   while (attempts < 3) {
 	r = http.get(url, {
-	  ...params,
+	  headers: params.headers,
 	  tags: { name: 'GetOrganizationDebtPositions' },
 	});
 
