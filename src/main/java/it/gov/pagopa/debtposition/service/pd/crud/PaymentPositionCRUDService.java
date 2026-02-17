@@ -16,6 +16,7 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
+import it.gov.pagopa.debtposition.model.filterandorder.Filter;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
@@ -172,130 +173,82 @@ public class PaymentPositionCRUDService {
   public Page<PaymentPosition> getOrganizationDebtPositions(
 		  @Positive Integer limit, @Positive Integer pageNum, FilterAndOrder filterAndOrder) {
 
-	  final long startTotalNs = System.nanoTime();
-
-	  // timings
-	  long q1Ns = 0L;
-	  long q2Ns = 0L;
-	  long attachNs = 0L;
-
-	  // counters
 	  int ppCount = 0;
-	  int poCount = 0;
-	  boolean q2Skipped = false;
-
-	  // page info
-	  long totalElements = -1L;
-	  int pageSize = limit != null ? limit : -1;
-	  int pageNumber = pageNum != null ? pageNum : -1;
-
 	  Page<PaymentPosition> page = Page.empty();
 	  List<PaymentPosition> positions = List.of();
 
 	  // filter snapshot to avoid repeated getters
 	  checkAndUpdateDates(filterAndOrder);
-	  final var f = filterAndOrder.getFilter();
+	  final Filter f = filterAndOrder.getFilter();
 	  final String orgFiscalCode = f.getOrganizationFiscalCode();
-	  final var dueFrom = f.getDueDateFrom();
-	  final var dueTo = f.getDueDateTo();
-	  final var payFrom = f.getPaymentDateFrom();
-	  final var payTo = f.getPaymentDateTo();
-	  final var status = f.getStatus();
+	  final LocalDateTime dueFrom = f.getDueDateFrom();
+	  final LocalDateTime dueTo = f.getDueDateTo();
+	  final LocalDateTime payFrom = f.getPaymentDateFrom();
+	  final LocalDateTime payTo = f.getPaymentDateTo();
+	  final DebtPositionStatus status = f.getStatus();
 	  final ServiceType serviceType = f.getServiceType();
 	  final List<String> segregationCodes = f.getSegregationCodes();
-	  final int segregationCodesCount = (segregationCodes == null) ? 0 : segregationCodes.size();
 
 	  final boolean hasDueFilter = (dueFrom != null || dueTo != null);
 	  final boolean hasSegFilter = (segregationCodes != null && !segregationCodes.isEmpty());
 	  final boolean hasPoFilters = hasDueFilter || hasSegFilter;
 	  final boolean hasPayFilter = (payFrom != null || payTo != null);
 
-	  try {
-		  Pageable pageable = PageRequest.of(pageNum, limit, CommonUtil.getSort(filterAndOrder));
+	  Pageable pageable = PageRequest.of(pageNum, limit, CommonUtil.getSort(filterAndOrder));
 
-		  // the base spec is built (filters on PaymentPosition only)
-		  Specification<PaymentPosition> paymentPositionSpecification =
-				  new PaymentPositionByOrganizationFiscalCodeNoDistinct(orgFiscalCode)
-				  .and(new PaymentPositionByStatus(status))
-				  .and(new PaymentPositionByServiceType(serviceType));
+	  // the base spec is built (filters on PaymentPosition only)
+	  Specification<PaymentPosition> paymentPositionSpecification =
+			  new PaymentPositionByOrganizationFiscalCodeNoDistinct(orgFiscalCode)
+			  .and(new PaymentPositionByStatus(status))
+			  .and(new PaymentPositionByServiceType(serviceType));
 
-		  // EXISTS is applied to PaymentOption ONLY if the user actually requested filters on the PO (otherwise, the expensive Nested Loop Semi-Join is avoided for "default" cases)
-		  if (hasPoFilters) {
-			  paymentPositionSpecification = paymentPositionSpecification.and(new PaymentPositionByOptionsAttribute(orgFiscalCode, dueFrom, dueTo, segregationCodes));
-		  }
-
-		  // filter is applied on payment_date ONLY if the user has passed it
-		  if (hasPayFilter) {
-			  paymentPositionSpecification = paymentPositionSpecification.and(new PaymentPositionByPaymentDate(payFrom, payTo));
-		  }
-
-		  Specification<PaymentPosition> specPP = allOf(paymentPositionSpecification);
-
-		  // Q1
-		  final long q1Start = System.nanoTime();
-		  page = paymentPositionRepository.findAll(specPP, pageable);
-		  q1Ns = System.nanoTime() - q1Start;
-
-		  positions = page.getContent();
-		  ppCount = (positions == null) ? 0 : positions.size();
-		  totalElements = page.getTotalElements();
-		  pageSize = page.getSize();
-		  pageNumber = page.getNumber();
-
-		  // empty page => skip Q2
-		  if (ppCount == 0) {
-			  q2Skipped = true;
-			  return page;
-		  }
-
-		  List<Long> ppIds = positions.stream()
-				  .map(PaymentPosition::getId)
-				  .filter(Objects::nonNull)
-				  .toList();
-
-		  Specification<PaymentOption> poSpecification =
-				  new PaymentOptionByPaymentPositionIdIn(ppIds);
-
-		  if (hasPoFilters) {
-			  poSpecification = poSpecification.and(new PaymentOptionByAttribute(dueFrom, dueTo, segregationCodes));
-		  }
-
-		  // Q2 - BULK LOAD of PaymentOptions for all the PaymentPositions
-		  final long q2Start = System.nanoTime();
-		  List<PaymentOption> options = paymentOptionRepository.findAll(allOf(poSpecification));
-		  q2Ns = System.nanoTime() - q2Start;
-
-		  poCount = (options == null) ? 0 : options.size();
-
-		  // attach in memory
-		  final long attachStart = System.nanoTime();
-
-		  Map<Long, List<PaymentOption>> optionsByPpId = options.stream()
-				  .collect(Collectors.groupingBy(po -> po.getPaymentPosition().getId()));
-
-		  for (PaymentPosition pp : positions) {
-			  List<PaymentOption> poList = optionsByPpId.getOrDefault(pp.getId(), List.of());
-			  pp.setPaymentOption(poList);
-		  }
-
-		  attachNs = System.nanoTime() - attachStart;
-
-		  return CommonUtil.toPage(positions, page.getNumber(), page.getSize(), page.getTotalElements());
-
-	  } finally {
-		  final long totalNs = System.nanoTime() - startTotalNs;
-
-		  // final log with execution statistics and filters info
-		  log.info(
-				  "[getOrganizationDebtPositions] END " +
-						  "orgFiscalCode={}, pageNum={}, limit={}, totalElements={}, ppCount={}, poCount={}, q2Skipped={}, " +
-						  "dueDateFrom={}, dueDateTo={}, paymentDateFrom={}, paymentDateTo={}, status={}, serviceType={}, segregationCodesCount={}, " +
-						  "tQ1Ms={}, tQ2Ms={}, tAttachMs={}, tTotalMs={}",
-						  CommonUtil.sanitize(orgFiscalCode), pageNumber, pageSize, totalElements, ppCount, poCount, q2Skipped,
-						  dueFrom, dueTo, payFrom, payTo, status, serviceType, segregationCodesCount,
-						  q1Ns / 1_000_000, q2Ns / 1_000_000, attachNs / 1_000_000, totalNs / 1_000_000
-				  );
+	  // EXISTS is applied to PaymentOption ONLY if the user actually requested filters on the PO (otherwise, the expensive Nested Loop Semi-Join is avoided for "default" cases)
+	  if (hasPoFilters) {
+		  paymentPositionSpecification = paymentPositionSpecification.and(new PaymentPositionByOptionsAttribute(orgFiscalCode, dueFrom, dueTo, segregationCodes));
 	  }
+
+	  // filter is applied on payment_date ONLY if the user has passed it
+	  if (hasPayFilter) {
+		  paymentPositionSpecification = paymentPositionSpecification.and(new PaymentPositionByPaymentDate(payFrom, payTo));
+	  }
+
+	  Specification<PaymentPosition> specPP = allOf(paymentPositionSpecification);
+
+	  // Q1 - initial query to load PaymentPositions with filters on PP
+	  page = paymentPositionRepository.findAll(specPP, pageable);
+
+	  positions = page.getContent();
+	  ppCount = (positions == null) ? 0 : positions.size();
+
+	  // empty page
+	  if (ppCount == 0) {
+		  return page;
+	  }
+
+	  List<Long> ppIds = positions.stream()
+			  .map(PaymentPosition::getId)
+			  .filter(Objects::nonNull)
+			  .toList();
+
+	  Specification<PaymentOption> poSpecification =
+			  new PaymentOptionByPaymentPositionIdIn(ppIds);
+
+	  if (hasPoFilters) {
+		  poSpecification = poSpecification.and(new PaymentOptionByAttribute(dueFrom, dueTo, segregationCodes));
+	  }
+
+	  // Q2 - BULK LOAD of PaymentOptions for all the PaymentPositions
+	  List<PaymentOption> options = paymentOptionRepository.findAll(allOf(poSpecification));
+
+	  Map<Long, List<PaymentOption>> optionsByPpId = options.stream()
+			  .collect(Collectors.groupingBy(po -> po.getPaymentPosition().getId()));
+
+	  for (PaymentPosition pp : positions) {
+		  List<PaymentOption> poList = optionsByPpId.getOrDefault(pp.getId(), List.of());
+		  pp.setPaymentOption(poList);
+	  }
+
+	  return CommonUtil.toPage(positions, page.getNumber(), page.getSize(), page.getTotalElements());
   }
 
 
