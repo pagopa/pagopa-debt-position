@@ -53,19 +53,16 @@ jobs:
       # SETUP MAVEN (Only for APD and ODP)
       # ==========================================================
       - name: Set up JDK 17
-        if: ${{ inputs.schema == 'apd' || inputs.schema == 'odp' }}
         uses: actions/setup-java@b6e674f4b717d7b0ae3baee0fbe79f498905dfde # v1
         with:
           java-version: 17
 
       - name: Set up Maven
-        if: ${{ inputs.schema == 'apd' || inputs.schema == 'odp' }}
         uses: stCarolas/setup-maven@07fbbe97d97ef44336b7382563d66743297e442f # v4.5
         with:
           maven-version: 3.8.2
 
       - name: Build project (compile resources)
-        if: ${{ inputs.schema == 'apd' || inputs.schema == 'odp' }}
         run: mvn -B clean compile
 
       # ==========================================================
