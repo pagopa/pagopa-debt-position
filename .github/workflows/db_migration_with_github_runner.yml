@@ -15,10 +15,16 @@ on:
     secrets:
         FLYWAY_DATASOURCE_URL: 
           required: true
-        SPRING_DATASOURCE_USERNAME: 
-          required: true
-        SPRING_DATASOURCE_PASSWORD: 
-          required: true
+        # Preferred
+        SPRING_DATASOURCE_USERNAME:
+          required: false
+        SPRING_DATASOURCE_PASSWORD:
+          required: false
+        # Fallback
+        DATASOURCE_USERNAME:
+          required: false
+        DATASOURCE_PASSWORD:
+          required: false
   workflow_dispatch:
     inputs:
       environment:
@@ -74,8 +80,8 @@ jobs:
         shell: bash
         env:
           FLYWAY_DATASOURCE_URL: ${{ secrets.FLYWAY_DATASOURCE_URL }}
-          SPRING_DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME || secrets.DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD || secrets.DATASOURCE_PASSWORD }}
           SCHEMA_NAME: ${{ vars.APD_SCHEMA_NAME }}
         run: |
           set -euo pipefail
@@ -89,8 +95,8 @@ jobs:
         shell: bash
         env:
           FLYWAY_DATASOURCE_URL: ${{ secrets.FLYWAY_DATASOURCE_URL }}
-          SPRING_DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME || secrets.DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD || secrets.DATASOURCE_PASSWORD }}
           SCHEMA_NAME: ${{ vars.ODP_SCHEMA_NAME }}
         run: |
           set -euo pipefail
