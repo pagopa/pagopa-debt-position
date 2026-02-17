@@ -174,8 +174,8 @@ public class PaymentPositionCRUDService {
 		  @Positive Integer limit, @Positive Integer pageNum, FilterAndOrder filterAndOrder) {
 
 	  int ppCount = 0;
-	  Page<PaymentPosition> page = Page.empty();
-	  List<PaymentPosition> positions = List.of();
+	  Page<PaymentPosition> page;
+	  List<PaymentPosition> positions;
 
 	  // filter snapshot to avoid repeated getters
 	  checkAndUpdateDates(filterAndOrder);
