@@ -78,10 +78,14 @@ jobs:
           SCHEMAS_NAME: ${{ vars.APD_ARCHIVE_SCHEMAS }}
         run: |
           set -euo pipefail
-          CFG=gpdArchiveFlywayConfig.conf
-          COMMON="-Dflyway.configFiles=${CFG} -Dflyway.validateMigrationNaming=true -Dflyway.cleanDisabled=true"
+          CFG="gpdArchiveFlywayConfig.conf"
+          EXTRA_PARAMS="-Dflyway.cleanDisabled=true"
           echo "▶ Running APD-Archive: validate on migrate"
-          mvn -B flyway:migrate -Dflyway.validateOnMigrate=true ${COMMON}
+          mvn -B flyway:migrate \
+            -Dflyway.configFiles=${CFG} \
+            -Dflyway.validateMigrationNaming=true
+            -Dflyway.validateOnMigrate=true \
+            ${EXTRA_PARAMS}
 
       # ==========================================================
       # CASE APD: Run Flyway with Maven
