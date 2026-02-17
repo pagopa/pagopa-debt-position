@@ -50,24 +50,6 @@ jobs:
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
       # ==========================================================
-      # CASE APD-ARCHIVE Run Flyway with Docker
-      # ==========================================================
-      - name: Run Flyway (Archive)
-        if: ${{ inputs.schema == 'apd-archive' }}
-        uses: docker://flyway/flyway:10.7.2
-        env:
-          FLYWAY_URL: ${{ secrets.FLYWAY_ARCHIVE_DATASOURCE_URL }}
-          FLYWAY_USER: ${{ secrets.ARCHIVE_DATASOURCE_USERNAME }}
-          FLYWAY_PASSWORD: ${{ secrets.ARCHIVE_DATASOURCE_PASSWORD }}
-          FLYWAY_SCHEMAS: ${{ vars.APD_ARCHIVE_SCHEMAS }}
-        with:
-          args: >
-            -locations=filesystem:./<todo>
-            -validateOnMigrate=true
-            -cleanDisabled=true
-            migrate
-
-      # ==========================================================
       # SETUP MAVEN (Only for APD and ODP)
       # ==========================================================
       - name: Set up JDK 17
@@ -85,6 +67,24 @@ jobs:
       - name: Build project (compile resources)
         if: ${{ inputs.schema == 'apd' || inputs.schema == 'odp' }}
         run: mvn -B clean compile
+
+      # ==========================================================
+      # CASE APD-ARCHIVE Run Flyway with Maven
+      # ==========================================================
+      - name: Run Flyway (Archive)
+        if: ${{ inputs.schema == 'apd-archive' }}
+        shell: bash
+        env:
+          FLYWAY_DATASOURCE_URL: ${{ secrets.FLYWAY_ARCHIVE_DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.ARCHIVE_DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.ARCHIVE_DATASOURCE_PASSWORD }}
+          SCHEMAS_NAME: ${{ vars.APD_ARCHIVE_SCHEMAS }}
+        run: |
+          set -euo pipefail
+          CFG=gpdArchiveFlywayConfig.conf
+          COMMON="-Dflyway.configFiles=${CFG} -Dflyway.validateMigrationNaming=true -Dflyway.cleanDisabled=true"
+          echo "▶ Running APD-Archive: validate on migrate"
+          mvn -B flyway:migrate -Dflyway.validateOnMigrate=true ${COMMON}
 
       # ==========================================================
       # CASE APD: Run Flyway with Maven
