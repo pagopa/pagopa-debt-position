@@ -6,4 +6,4 @@ flyway migrate \
   -user=${FLYWAY_USER} \
   -password=${FLYWAY_PASSWORD} \
   -schemas=apd,partman \
-  -locations=filesystem:../../src/main/resources/apd-archive
+  -locations=filesystem:../../src/main/resources/apd_archive

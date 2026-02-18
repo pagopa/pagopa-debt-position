@@ -83,7 +83,7 @@ jobs:
           echo "▶ Running APD-Archive: validate on migrate"
           mvn -B flyway:migrate \
             -Dflyway.configFiles=${CFG} \
-            -Dflyway.validateMigrationNaming=true
+            -Dflyway.validateMigrationNaming=true \
             -Dflyway.validateOnMigrate=true \
             ${EXTRA_PARAMS}
 
