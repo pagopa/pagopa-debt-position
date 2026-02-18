@@ -13,6 +13,7 @@ on:
         type: string
         default: apd
     secrets:
+<<<<<<< PAGOPA-3467
       # Standard Secrets: primary database
       FLYWAY_DATASOURCE_URL: { required: true }
       DATASOURCE_USERNAME: { required: true }
@@ -22,6 +23,20 @@ on:
       ARCHIVE_DATASOURCE_USERNAME: { required: false }
       ARCHIVE_DATASOURCE_PASSWORD: { required: false }
 
+=======
+        FLYWAY_DATASOURCE_URL: 
+          required: true
+        # Preferred
+        SPRING_DATASOURCE_USERNAME:
+          required: false
+        SPRING_DATASOURCE_PASSWORD:
+          required: false
+        # Fallback
+        DATASOURCE_USERNAME:
+          required: false
+        DATASOURCE_PASSWORD:
+          required: false
+>>>>>>> main
   workflow_dispatch:
     inputs:
       environment:
@@ -95,8 +110,8 @@ jobs:
         shell: bash
         env:
           FLYWAY_DATASOURCE_URL: ${{ secrets.FLYWAY_DATASOURCE_URL }}
-          SPRING_DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME || secrets.DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD || secrets.DATASOURCE_PASSWORD }}
           SCHEMA_NAME: ${{ vars.APD_SCHEMA_NAME }}
         run: |
           set -euo pipefail
@@ -113,8 +128,8 @@ jobs:
         shell: bash
         env:
           FLYWAY_DATASOURCE_URL: ${{ secrets.FLYWAY_DATASOURCE_URL }}
-          SPRING_DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME || secrets.DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD || secrets.DATASOURCE_PASSWORD }}
           SCHEMA_NAME: ${{ vars.ODP_SCHEMA_NAME }}
         run: |
           set -euo pipefail
