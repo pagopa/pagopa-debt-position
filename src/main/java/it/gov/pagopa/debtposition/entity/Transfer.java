@@ -7,6 +7,9 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.hibernate.annotations.BatchSize;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -117,6 +120,7 @@ public class Transfer implements Serializable {
   private PaymentOption paymentOption;
 
   @Builder.Default
+  @BatchSize(size = 25)
   @OneToMany(
       targetEntity = TransferMetadata.class,
       fetch = FetchType.LAZY,

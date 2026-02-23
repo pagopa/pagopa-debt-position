@@ -35,6 +35,7 @@ parameters:
       - "just_payments_workflow"
       - "upd_workflow"
       - "verify_payment_option"
+      - "get_debt_position_list"
     default: "publish_workflow"
 
 variables:

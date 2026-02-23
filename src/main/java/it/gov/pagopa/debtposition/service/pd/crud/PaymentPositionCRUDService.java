@@ -14,7 +14,9 @@ import it.gov.pagopa.debtposition.exception.ValidationException;
 import it.gov.pagopa.debtposition.model.IPaymentPositionModel;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
+import it.gov.pagopa.debtposition.model.filterandorder.Filter;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
@@ -166,53 +168,89 @@ public class PaymentPositionCRUDService {
     return paymentPositions;
   }
 
+  @Transactional(readOnly = true)
   public Page<PaymentPosition> getOrganizationDebtPositions(
-      @Positive Integer limit, @Positive Integer pageNum, FilterAndOrder filterAndOrder) {
+		  @Positive Integer limit, @Positive Integer pageNum, FilterAndOrder filterAndOrder) {
 
-    checkAndUpdateDates(filterAndOrder);
+	  int ppCount = 0;
+	  Page<PaymentPosition> page;
+	  List<PaymentPosition> positions;
 
-    Pageable pageable = PageRequest.of(pageNum, limit, CommonUtil.getSort(filterAndOrder));
+	  // filter snapshot to avoid repeated getters
+	  checkAndUpdateDates(filterAndOrder);
+	  final Filter f = filterAndOrder.getFilter();
+	  final String orgFiscalCode = f.getOrganizationFiscalCode();
+	  final LocalDateTime dueFrom = f.getDueDateFrom();
+	  final LocalDateTime dueTo = f.getDueDateTo();
+	  final LocalDateTime payFrom = f.getPaymentDateFrom();
+	  final LocalDateTime payTo = f.getPaymentDateTo();
+	  final DebtPositionStatus status = f.getStatus();
+	  final ServiceType serviceType = f.getServiceType();
+	  final List<String> segregationCodes = f.getSegregationCodes();
 
-    Specification<PaymentPosition> paymentPositionSpecification =
-        new PaymentPositionByOrganizationFiscalCode(
-                filterAndOrder.getFilter().getOrganizationFiscalCode())
-            .and(
-                new PaymentPositionByOptionsAttribute(
-                        filterAndOrder.getFilter().getDueDateFrom(),
-                        filterAndOrder.getFilter().getDueDateTo(),
-                        filterAndOrder.getFilter().getSegregationCodes())
-                    .and(
-                        new PaymentPositionByPaymentDate(
-                            filterAndOrder.getFilter().getPaymentDateFrom(),
-                            filterAndOrder.getFilter().getPaymentDateTo()))
-                    .and(
-                        new PaymentPositionByPaymentDate(
-                            filterAndOrder.getFilter().getPaymentDateTimeFrom(),
-                            filterAndOrder.getFilter().getPaymentDateTimeTo()))
-                    .and(new PaymentPositionByStatus(filterAndOrder.getFilter().getStatus())))
-                .and(new PaymentPositionByServiceType(filterAndOrder.getFilter().getServiceType()));
+	  final boolean hasDueFilter = (dueFrom != null || dueTo != null);
+	  final boolean hasSegFilter = (segregationCodes != null && !segregationCodes.isEmpty());
+	  final boolean hasPoFilters = hasDueFilter || hasSegFilter;
+	  final boolean hasPayFilter = (payFrom != null || payTo != null);
 
-    Specification<PaymentPosition> specPP = allOf(paymentPositionSpecification);
+	  Pageable pageable = PageRequest.of(pageNum, limit, CommonUtil.getSort(filterAndOrder));
 
-    Page<PaymentPosition> page = paymentPositionRepository.findAll(specPP, pageable);
-    List<PaymentPosition> positions = page.getContent();
-    // The retrieval of PaymentOptions is done manually to apply filters which, in the automatic
-    // fetch, are not used by JPA
-    for (PaymentPosition pp : positions) {
-      Specification<PaymentOption> specPO =
-          allOf(
-              new PaymentOptionByAttribute(
-                  pp,
-                  filterAndOrder.getFilter().getDueDateFrom(),
-                  filterAndOrder.getFilter().getDueDateTo(),
-                  filterAndOrder.getFilter().getSegregationCodes()));
+	  // the base spec is built (filters on PaymentPosition only)
+	  Specification<PaymentPosition> paymentPositionSpecification =
+			  new PaymentPositionByOrganizationFiscalCodeNoDistinct(orgFiscalCode)
+			  .and(new PaymentPositionByStatus(status))
+			  .and(new PaymentPositionByServiceType(serviceType));
 
-      List<PaymentOption> poList = paymentOptionRepository.findAll(specPO);
-      pp.setPaymentOption(poList);
-    }
+	  // EXISTS is applied to PaymentOption ONLY if the user actually requested filters on the PO (otherwise, the expensive Nested Loop Semi-Join is avoided for "default" cases)
+	  if (hasPoFilters) {
+		  paymentPositionSpecification = paymentPositionSpecification.and(new PaymentPositionByOptionsAttribute(orgFiscalCode, dueFrom, dueTo, segregationCodes));
+	  }
 
-    return CommonUtil.toPage(positions, page.getNumber(), page.getSize(), page.getTotalElements());
+	  // filter is applied on payment_date ONLY if the user has passed it
+	  if (hasPayFilter) {
+		  paymentPositionSpecification = paymentPositionSpecification.and(new PaymentPositionByPaymentDate(payFrom, payTo));
+	  }
+
+	  Specification<PaymentPosition> specPP = allOf(paymentPositionSpecification);
+
+	  // Q1 - initial query to load PaymentPositions with filters on PP
+	  page = paymentPositionRepository.findAll(specPP, pageable);
+
+	  positions = page.getContent();
+	  ppCount = (positions == null) ? 0 : positions.size();
+
+	  // empty page
+	  if (ppCount == 0) {
+		  return page;
+	  }
+
+	  List<Long> ppIds = positions.stream()
+			  .map(PaymentPosition::getId)
+			  .filter(Objects::nonNull)
+			  .toList();
+
+	  Specification<PaymentOption> poSpecification =
+			  new PaymentOptionByPaymentPositionIdIn(ppIds);
+
+	  if (hasPoFilters) {
+		  poSpecification = poSpecification.and(new PaymentOptionByAttribute(dueFrom, dueTo, segregationCodes));
+	  }
+
+	  // Q2 - BULK LOAD of PaymentOptions for all the PaymentPositions
+	  List<PaymentOption> options = paymentOptionRepository.findAll(allOf(poSpecification));
+
+	  Map<Long, List<PaymentOption>> optionsByPpId = options.stream()
+			  .collect(Collectors.groupingBy(po -> po.getPaymentPosition().getId()));
+
+	  for (PaymentPosition pp : positions) {
+		  List<PaymentOption> poList = optionsByPpId.getOrDefault(pp.getId(), List.of());
+		  pp.setPaymentOption(poList);
+	  }
+
+	  return CommonUtil.toPage(positions, page.getNumber(), page.getSize(), page.getTotalElements());
   }
+
+
 
   @Transactional
   public void delete(
