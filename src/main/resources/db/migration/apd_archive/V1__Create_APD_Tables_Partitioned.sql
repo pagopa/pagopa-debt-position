@@ -14,6 +14,7 @@ CREATE TABLE apd.payment_position (
     id bigint NOT NULL,
     organization_fiscal_code character varying(255) NOT NULL,
     last_updated_date timestamp without time zone NOT NULL,
+    last_updated_date_pp timestamp without time zone NOT NULL, -- Partition Key (Propagated to children)
     iupd character varying(255) NOT NULL,
     company_name character varying(255) NOT NULL,
     fiscal_code character varying(255) NOT NULL,
@@ -41,12 +42,12 @@ CREATE TABLE apd.payment_position (
     pull boolean NOT NULL DEFAULT true,
     pay_stand_in boolean NOT NULL DEFAULT true,
     service_type character varying(100) NOT NULL DEFAULT 'GPD'::character varying,
-    CONSTRAINT payment_position_pkey PRIMARY KEY (id, last_updated_date),
-    CONSTRAINT uniquepaymentpos UNIQUE (iupd, organization_fiscal_code, last_updated_date)
-) PARTITION BY RANGE (last_updated_date);
+    CONSTRAINT payment_position_pkey PRIMARY KEY (id, last_updated_date_pp),
+    CONSTRAINT uniquepaymentpos UNIQUE (iupd, organization_fiscal_code, last_updated_date_pp)
+) PARTITION BY RANGE (last_updated_date_pp);
 
--- pg_partman configuration (Interval: 1 month)
-SELECT partman.create_parent('apd.payment_position', 'last_updated_date', '1 month');
+-- pg_partman configuration on the _pp column (Interval: 1 month)
+SELECT partman.create_parent('apd.payment_position', 'last_updated_date_pp', '1 month');
 
 -- =============================================================================
 -- TABLE: PAYMENT_OPTION
@@ -54,6 +55,7 @@ SELECT partman.create_parent('apd.payment_position', 'last_updated_date', '1 mon
 CREATE TABLE apd.payment_option (
     id bigint NOT NULL,
     last_updated_date timestamp without time zone NOT NULL,
+    last_updated_date_pp timestamp without time zone NOT NULL, -- Inherited from payment_position
     payment_position_id bigint NOT NULL,
     organization_fiscal_code character varying(255) NOT NULL,
     iuv character varying(255) NOT NULL,
@@ -93,15 +95,15 @@ CREATE TABLE apd.payment_option (
     switch_to_expired boolean,
     validity_date timestamp without time zone,
     payment_option_description text,
-    CONSTRAINT payment_option_pkey PRIMARY KEY (id, last_updated_date),
-    CONSTRAINT uniquepaymentopt UNIQUE (iuv, organization_fiscal_code, last_updated_date),
-    CONSTRAINT uniquepaymentoptnav UNIQUE (nav, organization_fiscal_code, last_updated_date),
-    CONSTRAINT fk_payment_position_id FOREIGN KEY (payment_position_id, last_updated_date)
-        REFERENCES apd.payment_position (id, last_updated_date)
-) PARTITION BY RANGE (last_updated_date);
+    CONSTRAINT payment_option_pkey PRIMARY KEY (id, last_updated_date_pp),
+    CONSTRAINT uniquepaymentopt UNIQUE (iuv, organization_fiscal_code, last_updated_date_pp),
+    CONSTRAINT uniquepaymentoptnav UNIQUE (nav, organization_fiscal_code, last_updated_date_pp),
+    CONSTRAINT fk_payment_position_id FOREIGN KEY (payment_position_id, last_updated_date_pp)
+        REFERENCES apd.payment_position (id, last_updated_date_pp)
+) PARTITION BY RANGE (last_updated_date_pp);
 
-CREATE INDEX idx_payment_position_id ON apd.payment_option(payment_position_id, last_updated_date);
-SELECT partman.create_parent('apd.payment_option', 'last_updated_date', '1 month');
+CREATE INDEX idx_payment_position_id ON apd.payment_option(payment_position_id, last_updated_date_pp);
+SELECT partman.create_parent('apd.payment_option', 'last_updated_date_pp', '1 month');
 
 -- =============================================================================
 -- TABLE: PAYMENT_OPTION_METADATA
@@ -109,16 +111,16 @@ SELECT partman.create_parent('apd.payment_option', 'last_updated_date', '1 month
 CREATE TABLE apd.payment_option_metadata (
     id bigint NOT NULL,
     payment_option_id bigint NOT NULL,
-    last_updated_date timestamp without time zone NOT NULL,
+    last_updated_date_pp timestamp without time zone NOT NULL, -- Inherited from payment_position
     key character varying(140) NOT NULL,
     value character varying(140),
-    CONSTRAINT payment_option_metadata_pkey PRIMARY KEY (id, last_updated_date),
-    CONSTRAINT fk_payment_option_id FOREIGN KEY (payment_option_id, last_updated_date)
-        REFERENCES apd.payment_option (id, last_updated_date)
-) PARTITION BY RANGE (last_updated_date);
+    CONSTRAINT payment_option_metadata_pkey PRIMARY KEY (id, last_updated_date_pp),
+    CONSTRAINT fk_payment_option_id FOREIGN KEY (payment_option_id, last_updated_date_pp)
+        REFERENCES apd.payment_option (id, last_updated_date_pp)
+) PARTITION BY RANGE (last_updated_date_pp);
 
-CREATE INDEX idx_payment_option_metadata_id ON apd.payment_option_metadata(payment_option_id, last_updated_date);
-SELECT partman.create_parent('apd.payment_option_metadata', 'last_updated_date', '1 month');
+CREATE INDEX idx_payment_option_metadata_id ON apd.payment_option_metadata(payment_option_id, last_updated_date_pp);
+SELECT partman.create_parent('apd.payment_option_metadata', 'last_updated_date_pp', '1 month');
 
 -- =============================================================================
 -- TABLE: TRANSFER
@@ -127,6 +129,7 @@ CREATE TABLE apd.transfer (
     id bigint NOT NULL,
     payment_option_id bigint NOT NULL,
     last_updated_date timestamp without time zone NOT NULL,
+    last_updated_date_pp timestamp without time zone NOT NULL, -- Inherited from payment_position
     transfer_id character varying(255) NOT NULL,
     iuv character varying(255) NOT NULL,
     organization_fiscal_code character varying(255) NOT NULL,
@@ -141,14 +144,14 @@ CREATE TABLE apd.transfer (
     stamp_type character varying(255),
     provincial_residence character varying(255),
     company_name character varying(255),
-    CONSTRAINT transfer_pkey PRIMARY KEY (id, last_updated_date),
-    CONSTRAINT unique_transfer UNIQUE (iuv, organization_fiscal_code, transfer_id, payment_option_id, last_updated_date),
-    CONSTRAINT fk_payment_option_id FOREIGN KEY (payment_option_id, last_updated_date)
-        REFERENCES apd.payment_option (id, last_updated_date)
-) PARTITION BY RANGE (last_updated_date);
+    CONSTRAINT transfer_pkey PRIMARY KEY (id, last_updated_date_pp),
+    CONSTRAINT unique_transfer UNIQUE (iuv, organization_fiscal_code, transfer_id, payment_option_id, last_updated_date_pp),
+    CONSTRAINT fk_payment_option_id FOREIGN KEY (payment_option_id, last_updated_date_pp)
+        REFERENCES apd.payment_option (id, last_updated_date_pp)
+) PARTITION BY RANGE (last_updated_date_pp);
 
-CREATE INDEX idx_transfer_payment_option_id ON apd.transfer(payment_option_id, last_updated_date);
-SELECT partman.create_parent('apd.transfer', 'last_updated_date', '1 month');
+CREATE INDEX idx_transfer_payment_option_id ON apd.transfer(payment_option_id, last_updated_date_pp);
+SELECT partman.create_parent('apd.transfer', 'last_updated_date_pp', '1 month');
 
 -- =============================================================================
 -- TABLE: TRANSFER_METADATA
@@ -156,13 +159,13 @@ SELECT partman.create_parent('apd.transfer', 'last_updated_date', '1 month');
 CREATE TABLE apd.transfer_metadata (
     id bigint NOT NULL,
     transfer_id bigint NOT NULL,
-    last_updated_date timestamp without time zone NOT NULL,
+    last_updated_date_pp timestamp without time zone NOT NULL, -- Inherited from payment_position
     key character varying(140) NOT NULL,
     value character varying(140),
-    CONSTRAINT transfer_metadata_pkey PRIMARY KEY (id, last_updated_date),
-    CONSTRAINT fk_transfer_id FOREIGN KEY (transfer_id, last_updated_date)
-        REFERENCES apd.transfer (id, last_updated_date)
-) PARTITION BY RANGE (last_updated_date);
+    CONSTRAINT transfer_metadata_pkey PRIMARY KEY (id, last_updated_date_pp),
+    CONSTRAINT fk_transfer_id FOREIGN KEY (transfer_id, last_updated_date_pp)
+        REFERENCES apd.transfer (id, last_updated_date_pp)
+) PARTITION BY RANGE (last_updated_date_pp);
 
-CREATE INDEX idx_transfer_id_partitioned ON apd.transfer_metadata(transfer_id, last_updated_date);
-SELECT partman.create_parent('apd.transfer_metadata', 'last_updated_date', '1 month');
+CREATE INDEX idx_transfer_id ON apd.transfer_metadata(transfer_id, last_updated_date_pp);
+SELECT partman.create_parent('apd.transfer_metadata', 'last_updated_date_pp', '1 month');
