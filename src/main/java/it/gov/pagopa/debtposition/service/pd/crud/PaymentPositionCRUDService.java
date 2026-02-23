@@ -29,6 +29,7 @@ import it.gov.pagopa.debtposition.util.PublishPaymentUtil;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -184,6 +185,8 @@ public class PaymentPositionCRUDService {
 	  final LocalDateTime dueTo = f.getDueDateTo();
 	  final LocalDateTime payFrom = f.getPaymentDateFrom();
 	  final LocalDateTime payTo = f.getPaymentDateTo();
+    final LocalDateTime payTimeFrom = f.getPaymentDateTimeFrom();
+    final LocalDateTime payTimeTo = f.getPaymentDateTimeTo();
 	  final DebtPositionStatus status = f.getStatus();
 	  final ServiceType serviceType = f.getServiceType();
 	  final List<String> segregationCodes = f.getSegregationCodes();
@@ -192,6 +195,7 @@ public class PaymentPositionCRUDService {
 	  final boolean hasSegFilter = (segregationCodes != null && !segregationCodes.isEmpty());
 	  final boolean hasPoFilters = hasDueFilter || hasSegFilter;
 	  final boolean hasPayFilter = (payFrom != null || payTo != null);
+    final boolean hasPayTimeFilter = (payTimeFrom != null || payTimeTo != null);
 
 	  Pageable pageable = PageRequest.of(pageNum, limit, CommonUtil.getSort(filterAndOrder));
 
@@ -210,6 +214,10 @@ public class PaymentPositionCRUDService {
 	  if (hasPayFilter) {
 		  paymentPositionSpecification = paymentPositionSpecification.and(new PaymentPositionByPaymentDate(payFrom, payTo));
 	  }
+
+    if (hasPayTimeFilter) {
+      paymentPositionSpecification = paymentPositionSpecification.and(new PaymentPositionByPaymentDate(payTimeFrom, payTimeTo));
+    }
 
 	  Specification<PaymentPosition> specPP = allOf(paymentPositionSpecification);
 
