@@ -47,7 +47,13 @@ CREATE TABLE apd.payment_position (
 ) PARTITION BY RANGE (last_updated_date_pp);
 
 -- pg_partman configuration on the _pp column (Interval: 1 month)
-SELECT partman.create_parent('apd.payment_position', 'last_updated_date_pp', '1 month');
+SELECT partman.create_parent(
+    p_parent_table := 'apd.payment_position',
+    p_control := 'last_updated_date_pp',
+    p_interval := '1 month',
+    p_start_partition := '2016-01-01 00:00:00', -- Start from p_start_partition (10 years of retention)
+    p_premake := 4                              -- Create 4 months partitions in the future
+);
 
 -- =============================================================================
 -- TABLE: PAYMENT_OPTION
@@ -103,7 +109,13 @@ CREATE TABLE apd.payment_option (
 ) PARTITION BY RANGE (last_updated_date_pp);
 
 CREATE INDEX idx_payment_position_id ON apd.payment_option(payment_position_id, last_updated_date_pp);
-SELECT partman.create_parent('apd.payment_option', 'last_updated_date_pp', '1 month');
+SELECT partman.create_parent(
+    p_parent_table := 'apd.payment_option',
+    p_control := 'last_updated_date_pp',
+    p_interval := '1 month',
+    p_start_partition := '2016-01-01 00:00:00', -- Start from p_start_partition (10 years of retention)
+    p_premake := 4                              -- Create 4 months partitions in the future
+);
 
 -- =============================================================================
 -- TABLE: PAYMENT_OPTION_METADATA
@@ -120,7 +132,13 @@ CREATE TABLE apd.payment_option_metadata (
 ) PARTITION BY RANGE (last_updated_date_pp);
 
 CREATE INDEX idx_payment_option_metadata_id ON apd.payment_option_metadata(payment_option_id, last_updated_date_pp);
-SELECT partman.create_parent('apd.payment_option_metadata', 'last_updated_date_pp', '1 month');
+SELECT partman.create_parent(
+    p_parent_table := 'apd.payment_option_metadata',
+    p_control := 'last_updated_date_pp',
+    p_interval := '1 month',
+    p_start_partition := '2016-01-01 00:00:00', -- Start from p_start_partition (10 years of retention)
+    p_premake := 4                              -- Create 4 months partitions in the future
+);
 
 -- =============================================================================
 -- TABLE: TRANSFER
@@ -151,7 +169,13 @@ CREATE TABLE apd.transfer (
 ) PARTITION BY RANGE (last_updated_date_pp);
 
 CREATE INDEX idx_transfer_payment_option_id ON apd.transfer(payment_option_id, last_updated_date_pp);
-SELECT partman.create_parent('apd.transfer', 'last_updated_date_pp', '1 month');
+SELECT partman.create_parent(
+    p_parent_table := 'apd.transfer',
+    p_control := 'last_updated_date_pp',
+    p_interval := '1 month',
+    p_start_partition := '2016-01-01 00:00:00', -- Start from p_start_partition (10 years of retention)
+    p_premake := 4                              -- Create 4 months partitions in the future
+);
 
 -- =============================================================================
 -- TABLE: TRANSFER_METADATA
@@ -168,4 +192,10 @@ CREATE TABLE apd.transfer_metadata (
 ) PARTITION BY RANGE (last_updated_date_pp);
 
 CREATE INDEX idx_transfer_id ON apd.transfer_metadata(transfer_id, last_updated_date_pp);
-SELECT partman.create_parent('apd.transfer_metadata', 'last_updated_date_pp', '1 month');
+SELECT partman.create_parent(
+    p_parent_table := 'apd.transfer_metadata',
+    p_control := 'last_updated_date_pp',
+    p_interval := '1 month',
+    p_start_partition := '2016-01-01 00:00:00', -- Start from p_start_partition (10 years of retention)
+    p_premake := 4                              -- Create 4 months partitions in the future
+);
