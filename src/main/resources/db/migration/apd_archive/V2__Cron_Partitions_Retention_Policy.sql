@@ -38,8 +38,9 @@ SET retention = '10 years',
     retention_keep_table = true;
 
 
--- Schedule the Expiration (delete) Lifecycle Management job
-SELECT cron.schedule('expiration-lifecycle-management', '0 * * * *', $JOB$
+-- Schedule the Expiration (delete) Lifecycle Management Job
+-- At 06:00 AM, on day 1 of the month
+SELECT cron.schedule('expiration-lifecycle-management', '0 6 1 * *', $JOB$
 DO $$
 BEGIN
     -- PHASE 1: Detach old partitions
