@@ -1,10 +1,10 @@
 CREATE OR REPLACE FUNCTION apd.get_archiving_chunk(p_limit INT, p_offset INT)
-RETURNS TABLE(p_json_data JSONB)
+RETURNS TABLE(p_json_data JSONB, p_count INT)
 LANGUAGE plpgsql AS $$
 BEGIN
     RETURN QUERY
-    SELECT jsonb_agg(root)
-    FROM (
+    WITH root_data AS (
+        -- Extracting the complete hierarchy for the selected chunk
         SELECT pos.*,
             (SELECT jsonb_agg(opt_bundle)
              FROM (
@@ -22,12 +22,17 @@ BEGIN
             ) as options
         FROM apd.payment_position pos
         WHERE pos.id IN (
-            -- Navigate through the view materialized as a sequential list.
+            -- Navigate through the view materialized as a sequential list
             SELECT id
             FROM apd.archiving_selection_buffer
             ORDER BY id
             LIMIT p_limit
             OFFSET p_offset
         )
-    ) root;
+    )
+    -- Final aggregation and counting of elements
+    SELECT
+        COALESCE(jsonb_agg(root_data), '[]'::jsonb) as p_json_data,
+        COUNT(*)::INT as p_count
+    FROM root_data;
 END; $$;
