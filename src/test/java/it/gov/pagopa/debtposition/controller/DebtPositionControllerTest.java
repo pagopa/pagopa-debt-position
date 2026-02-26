@@ -1135,7 +1135,54 @@ class DebtPositionControllerTest {
             + "&payment_date_from="
             + df.format(LocalDateTime.now(ZoneOffset.UTC))
             + "&payment_date_to="
-            + df.format(LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
+            + df.format(LocalDateTime.now(ZoneOffset.UTC).plusDays(9));
+    mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.payment_position_list").value(Matchers.hasSize(1)));
+  }
+
+  @Test
+  void getDebtPositionListByPaymentDateTime() throws Exception {
+    // creo la posizione debitoria DRAFT
+    mvc.perform(
+            post("/organizations/DATE_TIME_123456789022/debtpositions")
+                .content(TestUtil.toJson(DebtPositionMock.getMock3()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    // creo la posizione debitoria (senza 'validity date' impostata) che dopo il pagamento sarà PAID
+    mvc.perform(
+            post("/organizations/DATE_TIME_123456789022/debtpositions")
+                .content(TestUtil.toJson(DebtPositionMock.getMock1()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    // porto in pubblicata/validata lo stato della posizione debitoria
+    mvc.perform(
+            post("/organizations/DATE_TIME_123456789022/debtpositions/12345678901IUPDMOCK1/publish")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    // effettuo la notifica di pagamento
+    mvc.perform(
+            post("/organizations/DATE_TIME_123456789022/paymentoptions/"
+                + auxDigit
+                + "1234561/pay")
+                .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+
+    // effettuo la chiamata GET applicando il filtro sulla payment_date_time
+    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+    String url =
+        "/organizations/DATE_TIME_123456789022/debtpositions?page=0"
+            + "&payment_date_time_from="
+            + df.format(LocalDateTime.now(ZoneOffset.UTC))
+            + "&payment_date_time_to="
+            + df.format(LocalDateTime.now(ZoneOffset.UTC).plusDays(9));
     mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
