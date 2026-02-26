@@ -174,11 +174,21 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     destination.setOrganizationFiscalCode(source.getOrganizationFiscalCode());
     destination.setPostalIban(source.getPostalIban());
     destination.setRemittanceInformation(source.getRemittanceInformation());
+    /** 
+    * [PIDM-1637] During update, if the incoming payload does not contain the stamp object,
+    * the existing stamp fields must be explicitly cleared. Otherwise the previous
+    * stamp values remain in the entity, causing an inconsistent state where both
+    * stamp data and IBAN may coexist and triggering validation errors. 
+    */
     Stamp stamp = source.getStamp();
     if (stamp != null) {
-      destination.setHashDocument(stamp.getHashDocument());
-      destination.setProvincialResidence(stamp.getProvincialResidence());
-      destination.setStampType(stamp.getStampType());
+    	destination.setHashDocument(stamp.getHashDocument());
+    	destination.setProvincialResidence(stamp.getProvincialResidence());
+    	destination.setStampType(stamp.getStampType());
+    } else {
+    	destination.setHashDocument(null);
+    	destination.setProvincialResidence(null);
+    	destination.setStampType(null);
     }
 
     mapAndUpdateTransferMetadata(source, destination);
