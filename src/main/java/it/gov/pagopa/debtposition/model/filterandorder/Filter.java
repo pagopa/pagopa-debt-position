@@ -22,8 +22,6 @@ public class Filter {
   private LocalDateTime dueDateTo;
   private LocalDateTime paymentDateFrom;
   private LocalDateTime paymentDateTo;
-  private LocalDateTime paymentDateTimeFrom;
-  private LocalDateTime paymentDateTimeTo;
   private DebtPositionStatus status;
   private ArrayList<String> segregationCodes;
   private ServiceType serviceType;

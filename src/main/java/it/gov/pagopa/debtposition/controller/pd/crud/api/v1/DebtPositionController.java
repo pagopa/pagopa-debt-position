@@ -147,11 +147,9 @@ public class DebtPositionController implements IDebtPositionController {
                     .dueDateFrom(dueDateFrom != null ? dueDateFrom.atStartOfDay() : null)
                     .dueDateTo(dueDateTo != null ? dueDateTo.atTime(LocalTime.MAX) : null)
                     .paymentDateFrom(
-                        paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : null)
+                        paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : paymentDateTimeFrom)
                     .paymentDateTo(
-                        paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : null)
-                    .paymentDateTimeFrom(paymentDateTimeFrom)
-                    .paymentDateTimeTo(paymentDateTimeTo)
+                        paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : paymentDateTimeTo)
                     .status(status)
                     .segregationCodes(segCodesList)
                     .serviceType(serviceType)
