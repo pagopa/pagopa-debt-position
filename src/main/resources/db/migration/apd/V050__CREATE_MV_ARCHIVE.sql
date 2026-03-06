@@ -1,6 +1,6 @@
 -- Creating the Materialized View
 -- Extract only the ID and date to keep the view lightweight.
-CREATE MATERIALIZED VIEW apd.archiving_selection_buffer AS
+CREATE MATERIALIZED VIEW IF NOT EXISTS apd.archiving_selection_buffer AS
 SELECT
     id,
     last_updated_date,
