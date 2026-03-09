@@ -10,7 +10,7 @@ CREATE SCHEMA IF NOT EXISTS apd;
 -- =============================================================================
 -- TABLE: PAYMENT_POSITION
 -- =============================================================================
-CREATE TABLE apd.payment_position (
+CREATE TABLE IF NOT EXISTS apd.payment_position (
     id bigint NOT NULL,
     organization_fiscal_code character varying(255) NOT NULL,
     last_updated_date timestamp without time zone NOT NULL,
@@ -46,19 +46,10 @@ CREATE TABLE apd.payment_position (
     CONSTRAINT uniquepaymentpos UNIQUE (iupd, organization_fiscal_code, last_updated_date_pp)
 ) PARTITION BY RANGE (last_updated_date_pp);
 
--- pg_partman configuration on the _pp column (Interval: 1 month)
-SELECT partman.create_parent(
-    p_parent_table := 'apd.payment_position',
-    p_control := 'last_updated_date_pp',
-    p_interval := '1 month',
-    p_start_partition := '2016-01-01 00:00:00', -- Start from p_start_partition (10 years of retention)
-    p_premake := 4                              -- Create 4 months partitions in the future
-);
-
 -- =============================================================================
 -- TABLE: PAYMENT_OPTION
 -- =============================================================================
-CREATE TABLE apd.payment_option (
+CREATE TABLE IF NOT EXISTS apd.payment_option (
     id bigint NOT NULL,
     last_updated_date timestamp without time zone NOT NULL,
     last_updated_date_pp timestamp without time zone NOT NULL, -- Inherited from payment_position
@@ -108,19 +99,12 @@ CREATE TABLE apd.payment_option (
         REFERENCES apd.payment_position (id, last_updated_date_pp)
 ) PARTITION BY RANGE (last_updated_date_pp);
 
-CREATE INDEX idx_payment_position_id ON apd.payment_option(payment_position_id, last_updated_date_pp);
-SELECT partman.create_parent(
-    p_parent_table := 'apd.payment_option',
-    p_control := 'last_updated_date_pp',
-    p_interval := '1 month',
-    p_start_partition := '2016-01-01 00:00:00', -- Start from p_start_partition (10 years of retention)
-    p_premake := 4                              -- Create 4 months partitions in the future
-);
+CREATE INDEX IF NOT EXISTS idx_payment_position_id ON apd.payment_option(payment_position_id, last_updated_date_pp);
 
 -- =============================================================================
 -- TABLE: PAYMENT_OPTION_METADATA
 -- =============================================================================
-CREATE TABLE apd.payment_option_metadata (
+CREATE TABLE IF NOT EXISTS apd.payment_option_metadata (
     id bigint NOT NULL,
     payment_option_id bigint NOT NULL,
     last_updated_date_pp timestamp without time zone NOT NULL, -- Inherited from payment_position
@@ -131,19 +115,12 @@ CREATE TABLE apd.payment_option_metadata (
         REFERENCES apd.payment_option (id, last_updated_date_pp)
 ) PARTITION BY RANGE (last_updated_date_pp);
 
-CREATE INDEX idx_payment_option_metadata_id ON apd.payment_option_metadata(payment_option_id, last_updated_date_pp);
-SELECT partman.create_parent(
-    p_parent_table := 'apd.payment_option_metadata',
-    p_control := 'last_updated_date_pp',
-    p_interval := '1 month',
-    p_start_partition := '2016-01-01 00:00:00', -- Start from p_start_partition (10 years of retention)
-    p_premake := 4                              -- Create 4 months partitions in the future
-);
+CREATE INDEX IF NOT EXISTS idx_payment_option_metadata_id ON apd.payment_option_metadata(payment_option_id, last_updated_date_pp);
 
 -- =============================================================================
 -- TABLE: TRANSFER
 -- =============================================================================
-CREATE TABLE apd.transfer (
+CREATE TABLE IF NOT EXISTS apd.transfer (
     id bigint NOT NULL,
     payment_option_id bigint NOT NULL,
     last_updated_date timestamp without time zone NOT NULL,
@@ -168,19 +145,12 @@ CREATE TABLE apd.transfer (
         REFERENCES apd.payment_option (id, last_updated_date_pp)
 ) PARTITION BY RANGE (last_updated_date_pp);
 
-CREATE INDEX idx_transfer_payment_option_id ON apd.transfer(payment_option_id, last_updated_date_pp);
-SELECT partman.create_parent(
-    p_parent_table := 'apd.transfer',
-    p_control := 'last_updated_date_pp',
-    p_interval := '1 month',
-    p_start_partition := '2016-01-01 00:00:00', -- Start from p_start_partition (10 years of retention)
-    p_premake := 4                              -- Create 4 months partitions in the future
-);
+CREATE INDEX IF NOT EXISTS idx_transfer_payment_option_id ON apd.transfer(payment_option_id, last_updated_date_pp);
 
 -- =============================================================================
 -- TABLE: TRANSFER_METADATA
 -- =============================================================================
-CREATE TABLE apd.transfer_metadata (
+CREATE TABLE IF NOT EXISTS apd.transfer_metadata (
     id bigint NOT NULL,
     transfer_id bigint NOT NULL,
     last_updated_date_pp timestamp without time zone NOT NULL, -- Inherited from payment_position
@@ -191,11 +161,44 @@ CREATE TABLE apd.transfer_metadata (
         REFERENCES apd.transfer (id, last_updated_date_pp)
 ) PARTITION BY RANGE (last_updated_date_pp);
 
-CREATE INDEX idx_transfer_id ON apd.transfer_metadata(transfer_id, last_updated_date_pp);
-SELECT partman.create_parent(
-    p_parent_table := 'apd.transfer_metadata',
-    p_control := 'last_updated_date_pp',
-    p_interval := '1 month',
-    p_start_partition := '2016-01-01 00:00:00', -- Start from p_start_partition (10 years of retention)
-    p_premake := 4                              -- Create 4 months partitions in the future
-);
+CREATE INDEX IF NOT EXISTS idx_transfer_id ON apd.transfer_metadata(transfer_id, last_updated_date_pp);
+
+CREATE SEQUENCE IF NOT EXISTS payment_pos_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 1
+	CACHE 1
+	NO CYCLE;
+
+CREATE SEQUENCE IF NOT EXISTS payment_opt_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 1
+	CACHE 1
+	NO CYCLE;
+
+CREATE SEQUENCE IF NOT EXISTS transfer_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 1
+	CACHE 1
+	NO CYCLE;
+
+CREATE SEQUENCE IF NOT EXISTS payment_opt_metadata_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 1
+	CACHE 1
+	NO CYCLE;
+
+CREATE SEQUENCE IF NOT EXISTS transfer_metadata_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 9223372036854775807
+	START 1
+	CACHE 1
+	NO CYCLE;

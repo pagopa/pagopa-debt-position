@@ -33,22 +33,46 @@ $$;
 
 
 -- Apply retention policy dynamically
-UPDATE partman.part_config
-SET retention = '10 years',
-    retention_keep_table = true;
+DO $MAIN$
+BEGIN
+    UPDATE partman.part_config
+    SET retention = '10 years',
+        retention_keep_table = true
+    WHERE retention IS DISTINCT FROM '10 years'
+       OR retention_keep_table IS DISTINCT FROM true;
+END
+$MAIN$;
 
 
 -- Schedule the Expiration (delete) Lifecycle Management Job
 -- At 06:00 AM, on day 1 of the month
-SELECT cron.schedule('expiration-lifecycle-management', '0 6 1 * *', $JOB$
-DO $$
+DO $MAIN$
 BEGIN
-    -- PHASE 1: Detach old partitions
-    -- This moves partitions out of the hierarchy without breaking Foreign Keys
-    PERFORM partman.run_maintenance();
+    -- Check if pg_cron is actually installed to prevent script crash in local/test environments
+    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
 
-    -- PHASE 2: Physical cleanup
-    -- This calls the procedure to drop detached tables
-    CALL apd.cleanup_expired_partitions();
-END $$;
-$JOB$);
+        -- Unschedule the job if it already exists
+        IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'expiration-lifecycle-management') THEN
+            PERFORM cron.unschedule('expiration-lifecycle-management');
+        END IF;
+
+        -- Schedule the new job using
+        PERFORM cron.schedule('expiration-lifecycle-management', '0 6 1 * *', $JOB$
+            DO $INNER$
+            BEGIN
+                -- PHASE 1: Detach old partitions
+                -- This moves partitions out of the hierarchy without breaking Foreign Keys
+                PERFORM partman.run_maintenance();
+
+                -- PHASE 2: Physical cleanup
+                -- This calls the procedure to drop detached tables
+                CALL apd.cleanup_expired_partitions();
+            END $INNER$;
+        $JOB$);
+
+        RAISE NOTICE 'Cron job expiration-lifecycle-management scheduled successfully.';
+    ELSE
+        RAISE WARNING 'Extension pg_cron is not installed. The maintenance job was NOT scheduled.';
+    END IF;
+END
+$MAIN$;
