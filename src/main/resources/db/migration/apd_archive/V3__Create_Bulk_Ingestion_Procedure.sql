@@ -1,16 +1,22 @@
 -- CROSS JOIN LATERAL are used as 'for each elem'
 -- https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-LATERAL
-CREATE OR REPLACE PROCEDURE apd.ingest_payment_positions_bulk(p_json_data JSONB)
+CREATE OR REPLACE PROCEDURE apd.ingest_payment_positions_bulk(
+    p_json_data JSONB,
+    p_migration_run_id TEXT DEFAULT NULL
+)
 LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Insert PAYMENT_POSITION
-    -- Add ‘last_updated_date_pp’ to the JSON object before conversion
+    -- Add ‘last_updated_date_pp’ and ‘migration_run_id’ to the JSON object before conversion
     INSERT INTO apd.payment_position
     SELECT pos.* FROM jsonb_array_elements(p_json_data) AS elem
     CROSS JOIN LATERAL jsonb_populate_record(
         NULL::apd.payment_position,
-        (elem - 'options') || jsonb_build_object('last_updated_date_pp', elem->'last_updated_date')
+        (elem - 'options') || jsonb_build_object(
+            'last_updated_date_pp', elem->'last_updated_date',
+            'migration_run_id', p_migration_run_id
+        )
     ) AS pos;
 
     -- Insert PAYMENT_OPTION
