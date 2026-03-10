@@ -365,6 +365,66 @@ class ConverterV3PPModelToEntityTest {
     assertEquals(pidX1, pidX2);
   }
   
+  @Test
+  void shouldClearExistingStampFieldsWhenSourceStampIsNull() {
+    PaymentPosition destination = new PaymentPosition();
+    destination.setPaymentOption(new java.util.ArrayList<>());
+
+    PaymentOption destinationPo = new PaymentOption();
+    destinationPo.setIuv("IUV-V3-1");
+    destinationPo.setPaymentPosition(destination);
+    destinationPo.setTransfer(new java.util.ArrayList<>());
+    destination.getPaymentOption().add(destinationPo);
+
+    it.gov.pagopa.debtposition.entity.Transfer destinationTransfer =
+        it.gov.pagopa.debtposition.entity.Transfer.builder()
+            .idTransfer("1")
+            .hashDocument("old-hash-v3")
+            .stampType("01")
+            .provincialResidence("RM")
+            .paymentOption(destinationPo)
+            .build();
+
+    destinationPo.getTransfer().add(destinationTransfer);
+
+    PaymentPositionModelV3 source = new PaymentPositionModelV3();
+    source.setIupd("IUPD-V3-1");
+    source.setCompanyName("Comune");
+
+    PaymentOptionModelV3 po = new PaymentOptionModelV3();
+    po.setSwitchToExpired(false);
+
+    InstallmentModel installment = new InstallmentModel();
+    installment.setIuv("IUV-V3-1");
+    installment.setAmount(100L);
+
+    TransferModel transfer = new TransferModel();
+    transfer.setIdTransfer("1");
+    transfer.setAmount(100L);
+    transfer.setIban("IT58C0200805403000102985524");
+    transfer.setStamp(null);
+
+    installment.setTransfer(java.util.List.of(transfer));
+    po.setInstallments(java.util.List.of(installment));
+    source.setPaymentOption(java.util.List.of(po));
+
+    ConverterV3PPModelToEntity mapper = new ConverterV3PPModelToEntity();
+
+    MappingContext<PaymentPositionModelV3, PaymentPosition> context = Mockito.mock(MappingContext.class);
+    Mockito.when(context.getSource()).thenReturn(source);
+    Mockito.when(context.getDestination()).thenReturn(destination);
+
+    PaymentPosition result = mapper.convert(context);
+
+    it.gov.pagopa.debtposition.entity.Transfer updatedTransfer =
+        result.getPaymentOption().get(0).getTransfer().get(0);
+
+    assertEquals("IT58C0200805403000102985524", updatedTransfer.getIban());
+    assertNull(updatedTransfer.getHashDocument());
+    assertNull(updatedTransfer.getStampType());
+    assertNull(updatedTransfer.getProvincialResidence());
+  }
+  
 //--- UTILITY: Find PaymentOption for IUV in the mapped entity ---
  private static PaymentOption findByIuv(PaymentPosition pp, String iuv) {
    return pp.getPaymentOption()
