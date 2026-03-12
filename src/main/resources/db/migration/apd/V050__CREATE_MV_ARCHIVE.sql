@@ -15,7 +15,7 @@ WHERE
         AND last_updated_date < (CURRENT_DATE - INTERVAL '2 years')
     ) OR (
         service_type = 'WISP'
-        AND status IN ('PAID', 'EXPIRED', 'REPORTED', 'INVALID')
-        AND last_updated_date < (CURRENT_DATE - INTERVAL '6 months')
+        AND status IN ('PAID', 'REPORTED', 'INVALID')
+        AND last_updated_date < (CURRENT_DATE - INTERVAL '1 years')
     )
 WITH DATA;

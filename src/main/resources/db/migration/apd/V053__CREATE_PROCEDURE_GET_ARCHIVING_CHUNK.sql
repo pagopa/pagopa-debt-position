@@ -1,5 +1,5 @@
-CREATE OR REPLACE FUNCTION apd.get_archiving_chunk(p_limit INT, p_offset INT)
-RETURNS TABLE(p_json_data JSONB, p_count INT)
+CREATE OR REPLACE FUNCTION apd.get_archiving_chunk_n_rows(p_limit INT, p_offset INT)
+RETURNS TABLE(p_json_data JSONB)
 LANGUAGE plpgsql AS $$
 BEGIN
     RETURN QUERY
@@ -30,9 +30,7 @@ BEGIN
             OFFSET p_offset
         )
     )
-    -- Final aggregation and counting of elements
-    SELECT
-        COALESCE(jsonb_agg(root_data), '[]'::jsonb) as p_json_data,
-        COUNT(*)::INT as p_count
+    -- Transform each row of the CTE into a single JSONB object
+    SELECT to_jsonb(root_data.*) AS p_json_data
     FROM root_data;
 END; $$;
