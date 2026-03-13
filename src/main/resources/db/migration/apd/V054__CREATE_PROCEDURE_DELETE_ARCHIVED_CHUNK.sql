@@ -58,7 +58,7 @@ BEGIN
 
         -- Counter updated and progress print
         v_processed := v_processed + v_current_limit;
-        RAISE NOTICE 'Micro-batch completed: % of total records deleted and committed.', v_processed, p_limit;
+		RAISE NOTICE 'Micro-batch completed: % of % total records deleted and committed.', v_processed, p_limit;
 
     END LOOP;
 END;
