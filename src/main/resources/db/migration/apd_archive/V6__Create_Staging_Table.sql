@@ -8,5 +8,6 @@ CREATE TABLE IF NOT EXISTS apd.archiving_staging (
     -- The JSONB payload
     p_json_data jsonb NOT NULL,
 
-	p_count INT
+    -- The ingestion timestamp
+    ingestion_timestamp timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
