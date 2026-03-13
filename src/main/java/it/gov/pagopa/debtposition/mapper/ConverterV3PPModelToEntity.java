@@ -1,12 +1,11 @@
 package it.gov.pagopa.debtposition.mapper;
 
 import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.UNDEFINED_DEBTOR;
+import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 
 import it.gov.pagopa.debtposition.entity.*;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import it.gov.pagopa.debtposition.model.pd.DebtorModel;
-import it.gov.pagopa.debtposition.model.pd.Stamp;
-import it.gov.pagopa.debtposition.model.pd.TransferMetadataModel;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import it.gov.pagopa.debtposition.model.v3.InstallmentMetadataModel;
 import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
@@ -169,37 +168,17 @@ public class ConverterV3PPModelToEntity
       Transfer managedTx = managedTransfersById.get(sourceTx.getIdTransfer());
       if (managedTx != null) {
         // UPDATE
-        mapAndUpdateSingleTransfer(sourceTx, managedTx);
+    	  UtilityMapper.mapAndUpdateSingleTransfer(sourceTx, managedTx);
         transfersToRemove.remove(managedTx);
       } else {
         // CREATE
         Transfer tr = Transfer.builder().build();
-        mapAndUpdateSingleTransfer(sourceTx, tr);
+        UtilityMapper.mapAndUpdateSingleTransfer(sourceTx, tr);
         destination.getTransfer().add(tr);
       }
     }
     // DELETE
     destination.getTransfer().removeAll(transfersToRemove);
-  }
-
-  private void mapAndUpdateSingleTransfer(TransferModel source, Transfer destination) {
-    destination.setAmount(source.getAmount());
-    destination.setCategory(source.getCategory());
-    destination.setCompanyName(source.getCompanyName());
-    destination.setIban(source.getIban());
-    destination.setIdTransfer(source.getIdTransfer());
-    destination.setLastUpdatedDate(LocalDateTime.now());
-    destination.setOrganizationFiscalCode(source.getOrganizationFiscalCode());
-    destination.setPostalIban(source.getPostalIban());
-    destination.setRemittanceInformation(source.getRemittanceInformation());
-    Stamp stamp = source.getStamp();
-    if (stamp != null) {
-      destination.setHashDocument(stamp.getHashDocument());
-      destination.setProvincialResidence(stamp.getProvincialResidence());
-      destination.setStampType(stamp.getStampType());
-    }
-
-    mapAndUpdateTransferMetadata(source, destination);
   }
 
   private void mapAndUpdateOptionMetadata(
@@ -235,39 +214,6 @@ public class ConverterV3PPModelToEntity
     // DELETE the orphans metadata are removed
     destination.getPaymentOptionMetadata().removeAll(metadataToRemove);
   }
-
-  private void mapAndUpdateTransferMetadata(TransferModel source, Transfer destination) {
-    Map<String, TransferMetadata> managedTransferMetadataByKey =
-        destination.getTransferMetadata().stream()
-            .collect(Collectors.toMap(TransferMetadata::getKey, po -> po));
-
-    List<TransferMetadataModel> sourceTransferMetadata = source.getTransferMetadata();
-    List<TransferMetadata> metadataToRemove = new ArrayList<>(destination.getTransferMetadata());
-
-    if (sourceTransferMetadata != null) {
-      for (TransferMetadataModel sourceMetadata : sourceTransferMetadata) {
-        TransferMetadata managedMetadata =
-            managedTransferMetadataByKey.get(sourceMetadata.getKey());
-
-        if (managedMetadata != null) {
-          // UPDATE existing metadata
-          managedMetadata.setValue(sourceMetadata.getValue());
-          metadataToRemove.remove(managedMetadata);
-        } else {
-          // CREATE new metadata
-          TransferMetadata md =
-              TransferMetadata.builder()
-                  .key(sourceMetadata.getKey())
-                  .value(sourceMetadata.getValue())
-                  .transfer(destination)
-                  .build();
-          destination.getTransferMetadata().add(md);
-        }
-      }
-    }
-    // DELETE the orphans metadata are removed
-    destination.getTransferMetadata().removeAll(metadataToRemove);
-  }
   
   private Optional<String> findExistingPlanUUIDAmongManaged(
 		  List<InstallmentModel> installments,
@@ -277,22 +223,12 @@ public class ConverterV3PPModelToEntity
 		  PaymentOption existing = managedByIuv.get(inst.getIuv());
 		  if (existing != null) {
 			  String pid = existing.getPaymentPlanId();
-			  if (pid != null && isUuid(pid)) {
+			  if (pid != null && UtilityMapper.isUuid(pid)) {
 				  return Optional.of(pid);
 			  }
 		  }
 	  }
 	  return Optional.empty();
-  }
-
-  // Valid UUID (case-insensitive)
-  private boolean isUuid(String s) {
-	  try {
-		  java.util.UUID.fromString(s);
-		  return true;
-	  } catch (IllegalArgumentException e) {
-		  return false;
-	  }
   }
 
   private LocalDateTime getValidityDate(List<PaymentOptionModelV3> paymentOptions) {
