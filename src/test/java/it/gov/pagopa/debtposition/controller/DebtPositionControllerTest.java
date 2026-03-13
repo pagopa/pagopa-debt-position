@@ -2390,5 +2390,128 @@ class DebtPositionControllerTest {
                 .andExpect(
                         MockMvcResultMatchers.jsonPath("$.page_info.items_found").value(Matchers.not(0)));
     }
+    
+    @Test
+    void updateDebtPosition_removeStampAndAddIban_200() throws Exception {
+      String orgFiscalCode = "UPD_STAMP_TO_IBAN_12345678901";
+
+      PaymentPositionDTO createRequest = DebtPositionMock.getMock1();
+      createRequest.setIupd("IUPD_STAMP_TO_IBAN_01");
+      createRequest.getPaymentOption().get(0).setIuv("12345000000000001");
+
+      TransferDTO transferWithStamp =
+          new TransferDTO(
+              orgFiscalCode,
+              "1",
+              createRequest.getPaymentOption().get(0).getAmount(),
+              "Marca da bollo",
+              "test",
+              null,
+              null,
+              new Stamp("hash-doc-1", "01", "RM"),
+              TransferStatus.T_UNREPORTED);
+
+      createRequest.getPaymentOption().get(0).getTransfer().set(0, transferWithStamp);
+
+      mvc.perform(
+              post("/organizations/" + orgFiscalCode + "/debtpositions")
+                  .content(TestUtil.toJson(createRequest))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isCreated())
+          .andExpect(jsonPath("$.paymentOption[0].transfer[0].stamp.hashDocument").value("hash-doc-1"))
+          .andExpect(jsonPath("$.paymentOption[0].transfer[0].stamp.stampType").value("01"))
+          .andExpect(jsonPath("$.paymentOption[0].transfer[0].stamp.provincialResidence").value("RM"));
+
+      PaymentPositionDTO updateRequest = DebtPositionMock.getMock1();
+      updateRequest.setIupd("IUPD_STAMP_TO_IBAN_01");
+      updateRequest.getPaymentOption().get(0).setIuv("12345000000000001");
+      updateRequest.getPaymentOption().get(0).setAmount(1800L);
+      updateRequest.getPaymentOption().get(0).setDescription("Updated without stamp");
+
+      TransferDTO transferWithoutStampWithIban =
+          new TransferDTO(
+              orgFiscalCode,
+              "1",
+              1800L,
+              "Updated without stamp",
+              "test",
+              "IT58C0200805403000102985524",
+              null,
+              null,
+              TransferStatus.T_UNREPORTED);
+
+      updateRequest.getPaymentOption().get(0).getTransfer().set(0, transferWithoutStampWithIban);
+
+      mvc.perform(
+              put("/organizations/" + orgFiscalCode + "/debtpositions/IUPD_STAMP_TO_IBAN_01")
+                  .content(TestUtil.toJson(updateRequest))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.paymentOption[0].transfer[0].iban")
+              .value("IT58C0200805403000102985524"))
+          .andExpect(jsonPath("$.paymentOption[0].transfer[0].stamp").doesNotExist());
+
+      mvc.perform(
+              get("/organizations/" + orgFiscalCode + "/debtpositions/IUPD_STAMP_TO_IBAN_01")
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.paymentOption[0].transfer[0].iban")
+              .value("IT58C0200805403000102985524"))
+          .andExpect(jsonPath("$.paymentOption[0].transfer[0].stamp").doesNotExist());
+    }
+    
+    @Test
+    void updateDebtPosition_removeStampWithoutIban_400() throws Exception {
+
+      String orgFiscalCode = "UPD_REMOVE_STAMP_NO_IBAN";
+
+      PaymentPositionDTO createRequest = DebtPositionMock.getMock1();
+      createRequest.setIupd("IUPD_REMOVE_STAMP_NO_IBAN");
+      createRequest.getPaymentOption().get(0).setIuv("12345000000000002");
+
+      TransferDTO transferWithStamp =
+          new TransferDTO(
+              orgFiscalCode,
+              "1",
+              createRequest.getPaymentOption().get(0).getAmount(),
+              "Marca da bollo",
+              "test",
+              null,
+              null,
+              new Stamp("hash-doc-2", "01", "RM"),
+              TransferStatus.T_UNREPORTED);
+
+      createRequest.getPaymentOption().get(0).getTransfer().set(0, transferWithStamp);
+
+      mvc.perform(
+              post("/organizations/" + orgFiscalCode + "/debtpositions")
+                  .content(TestUtil.toJson(createRequest))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isCreated());
+
+      PaymentPositionDTO updateRequest = DebtPositionMock.getMock1();
+      updateRequest.setIupd("IUPD_REMOVE_STAMP_NO_IBAN");
+      updateRequest.getPaymentOption().get(0).setIuv("12345000000000002");
+
+      TransferDTO transferWithoutStampAndWithoutIban =
+          new TransferDTO(
+              orgFiscalCode,
+              "1",
+              1900L,
+              "Updated without stamp and without iban",
+              "test",
+              null,
+              null,
+              null,
+              TransferStatus.T_UNREPORTED);
+
+      updateRequest.getPaymentOption().get(0).getTransfer().set(0, transferWithoutStampAndWithoutIban);
+
+      mvc.perform(
+              put("/organizations/" + orgFiscalCode + "/debtpositions/IUPD_REMOVE_STAMP_NO_IBAN")
+                  .content(TestUtil.toJson(updateRequest))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isBadRequest());
+    }
 
 }
