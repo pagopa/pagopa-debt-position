@@ -8,6 +8,9 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.hibernate.annotations.BatchSize;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -194,6 +197,7 @@ public class PaymentOption implements Serializable {
   private PaymentPosition paymentPosition;
 
   @Builder.Default
+  @BatchSize(size = 25)
   @OneToMany(
       targetEntity = Transfer.class,
       fetch = FetchType.LAZY,
@@ -203,6 +207,7 @@ public class PaymentOption implements Serializable {
   private List<Transfer> transfer = new ArrayList<>();
 
   @Builder.Default
+  @BatchSize(size = 25)
   @OneToMany(
       targetEntity = PaymentOptionMetadata.class,
       fetch = FetchType.LAZY,

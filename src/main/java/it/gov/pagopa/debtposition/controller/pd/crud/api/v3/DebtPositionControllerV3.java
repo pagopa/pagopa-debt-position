@@ -20,6 +20,7 @@ import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.Constants;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,10 +88,13 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
       LocalDate dueDateTo,
       LocalDate paymentDateFrom,
       LocalDate paymentDateTo,
+      LocalDateTime paymentDateTimeFrom,
+      LocalDateTime paymentDateTimeTo,
       DebtPositionStatusV3 status,
       Order.PaymentPositionOrder orderBy,
       Sort.Direction ordering,
-      String segregationCodes) {
+      String segregationCodes,
+      ServiceType serviceType) {
     ArrayList<String> segCodesList =
         segregationCodes != null
             ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
@@ -105,11 +109,12 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
                     .dueDateFrom(dueDateFrom != null ? dueDateFrom.atStartOfDay() : null)
                     .dueDateTo(dueDateTo != null ? dueDateTo.atTime(LocalTime.MAX) : null)
                     .paymentDateFrom(
-                        paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : null)
+                        paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : paymentDateTimeFrom)
                     .paymentDateTo(
-                        paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : null)
+                        paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : paymentDateTimeTo)
                     .status(status != null ? DebtPositionStatus.valueOf(status.name()) : null)
                     .segregationCodes(segCodesList)
+                    .serviceType(serviceType)
                     .build())
             .order(Order.builder().orderBy(orderBy).ordering(ordering).build())
             .build();

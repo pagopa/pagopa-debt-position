@@ -150,7 +150,7 @@ public class CommonUtil {
 		  return null;
 	  }
 	  return pp.getPaymentOption().stream()
-			  .map(po -> UtilityMapper.getValidityDate(pp, po))
+			  .map(PaymentOption::getValidityDate)
 			  .filter(Objects::nonNull)
 			  .min(Comparator.naturalOrder())
 			  .orElse(null);

@@ -1,5 +1,8 @@
 package it.gov.pagopa.debtposition.controller.payments.api.impl;
 
+import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
+import static it.gov.pagopa.debtposition.util.Constants.PO_MARKED_AS_PAID_FIELD_PLACEHOLDER;
+
 import it.gov.pagopa.debtposition.controller.payments.api.IPaymentsController;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.Transfer;
@@ -14,23 +17,20 @@ import it.gov.pagopa.debtposition.model.payments.verify.response.VerifyPaymentOp
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentOptionMetadataModelResponse;
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
+import it.gov.pagopa.debtposition.service.payments.OptionsService;
 import it.gov.pagopa.debtposition.service.payments.PaymentsService;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.CustomHttpStatus;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import jakarta.validation.Valid;
+import java.util.ArrayList;
+import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import static it.gov.pagopa.debtposition.util.Constants.NOTIFICATION_FEE_METADATA_KEY;
-import static it.gov.pagopa.debtposition.util.Constants.PO_MARKED_AS_PAID_FIELD_PLACEHOLDER;
 
 @Controller
 @Validated
@@ -42,16 +42,18 @@ public class PaymentsController implements IPaymentsController {
   private static final String LOG_BASE_PARAMS_DETAIL = "organizationFiscalCode= %s; nav= %s";
   private final ModelMapper modelMapper;
   private final PaymentsService paymentsService;
+  private final OptionsService optionsService;
 
-  public PaymentsController(ModelMapper modelMapper, PaymentsService paymentsService) {
+  public PaymentsController(
+      ModelMapper modelMapper, PaymentsService paymentsService, OptionsService optionsService) {
     this.modelMapper = modelMapper;
     this.paymentsService = paymentsService;
+    this.optionsService = optionsService;
   }
 
   @Override
   public ResponseEntity<PaymentOptionWithDebtorInfoModelResponse> getOrganizationPaymentOptionByNAV(
-      String organizationFiscalCode,
-      String nav) {
+      String organizationFiscalCode, String nav) {
     log.debug(
         String.format(
             LOG_BASE_HEADER_INFO,
@@ -64,16 +66,16 @@ public class PaymentsController implements IPaymentsController {
 
     // flip entity to model
     PaymentOptionWithDebtorInfoModelResponse paymentOptionResponse =
-        modelMapper.map(
-            paymentsService.getPaymentOptionByNAV(organizationFiscalCode, nav),
-            PaymentOptionWithDebtorInfoModelResponse.class);
+        paymentsService.getPaymentOptionByNAV(organizationFiscalCode, nav);
 
     // Add NOTIFICATION_FEE_METADATA_KEY to response on the fly
-    paymentOptionResponse.getPaymentOptionMetadata()
-                    .add(PaymentOptionMetadataModelResponse.builder()
-                            .key(NOTIFICATION_FEE_METADATA_KEY)
-                            .value(String.valueOf(paymentOptionResponse.getNotificationFee()))
-                            .build());
+    paymentOptionResponse
+        .getPaymentOptionMetadata()
+        .add(
+            PaymentOptionMetadataModelResponse.builder()
+                .key(NOTIFICATION_FEE_METADATA_KEY)
+                .value(String.valueOf(paymentOptionResponse.getNotificationFee()))
+                .build());
 
     return new ResponseEntity<>(paymentOptionResponse, HttpStatus.OK);
   }
@@ -95,7 +97,8 @@ public class PaymentsController implements IPaymentsController {
         paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
 
     // Convert entity to model
-    PaidPaymentOptionModel paidPaymentOptionModel = modelMapper.map(paidPaymentOption, PaidPaymentOptionModel.class);
+    PaidPaymentOptionModel paidPaymentOptionModel =
+        modelMapper.map(paidPaymentOption, PaidPaymentOptionModel.class);
 
     if (paidPaymentOptionModel == null) {
       throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, nav);
@@ -163,22 +166,25 @@ public class PaymentsController implements IPaymentsController {
 
   @Override
   public ResponseEntity<PaymentOptionModelResponse> setPaymentOptionAsAlreadyPaid(
-          String organizationFiscalCode, String nav, String segregationCodes, AlreadyPaidPaymentOptionModel alreadyPaidPaymentOptionModel) {
+      String organizationFiscalCode,
+      String nav,
+      String segregationCodes,
+      AlreadyPaidPaymentOptionModel alreadyPaidPaymentOptionModel) {
 
     log.debug(
+        String.format(
+            LOG_BASE_HEADER_INFO,
+            "POST",
+            "setPaymentOptionAsAlreadyPaid",
             String.format(
-                    LOG_BASE_HEADER_INFO,
-                    "POST",
-                    "setPaymentOptionAsAlreadyPaid",
-                    String.format(
-                            LOG_BASE_PARAMS_DETAIL,
-                            CommonUtil.sanitize(organizationFiscalCode),
-                            CommonUtil.sanitize(nav))));
+                LOG_BASE_PARAMS_DETAIL,
+                CommonUtil.sanitize(organizationFiscalCode),
+                CommonUtil.sanitize(nav))));
 
     ArrayList<String> segCodes =
-            segregationCodes != null
-                    ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
-                    : null;
+        segregationCodes != null
+            ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
+            : null;
     if (segCodes != null && !CommonUtil.isAuthorizedOnNavBySegregationCode(nav, segCodes)) {
       throw new AppException(AppError.DEBT_POSITION_FORBIDDEN_ON_NAV, organizationFiscalCode, nav);
     }
@@ -189,10 +195,11 @@ public class PaymentsController implements IPaymentsController {
     paymentOptionModel.setPaymentDate(alreadyPaidPaymentOptionModel.getPaymentDate());
 
     PaymentOption paidPaymentOption =
-            paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
+        paymentsService.pay(organizationFiscalCode, nav, paymentOptionModel);
 
     // Convert entity to model
-    PaymentOptionModelResponse paymentOptionModelResponse = modelMapper.map(paidPaymentOption, PaymentOptionModelResponse.class);
+    PaymentOptionModelResponse paymentOptionModelResponse =
+        modelMapper.map(paidPaymentOption, PaymentOptionModelResponse.class);
 
     if (paymentOptionModelResponse == null) {
       throw new AppException(AppError.PAYMENT_OPTION_PAY_FAILED, organizationFiscalCode, nav);
@@ -202,17 +209,19 @@ public class PaymentsController implements IPaymentsController {
   }
 
   @Override
-  public ResponseEntity<VerifyPaymentOptionsResponse> verifyPaymentOptions(String organizationFiscalCode, String nav,
-		  String segregationCodes) {
-	  
-	  ArrayList<String> segCodes = segregationCodes != null
-			  ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
-					  : null;
-	  if (segCodes != null && !CommonUtil.isAuthorizedOnNavBySegregationCode(nav, segCodes)) {
-		  throw new AppException(AppError.DEBT_POSITION_FORBIDDEN_ON_NAV, organizationFiscalCode, nav);
-	  }
-		
-	  VerifyPaymentOptionsResponse resp = paymentsService.verifyPaymentOptions(organizationFiscalCode, nav);
-	  return ResponseEntity.ok(resp);
+  public ResponseEntity<VerifyPaymentOptionsResponse> verifyPaymentOptions(
+      String organizationFiscalCode, String nav, String segregationCodes) {
+
+    ArrayList<String> segCodes =
+        segregationCodes != null
+            ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
+            : null;
+    if (segCodes != null && !CommonUtil.isAuthorizedOnNavBySegregationCode(nav, segCodes)) {
+      throw new AppException(AppError.DEBT_POSITION_FORBIDDEN_ON_NAV, organizationFiscalCode, nav);
+    }
+
+    VerifyPaymentOptionsResponse resp =
+        optionsService.verifyPaymentOptions(organizationFiscalCode, nav);
+    return ResponseEntity.ok(resp);
   }
 }

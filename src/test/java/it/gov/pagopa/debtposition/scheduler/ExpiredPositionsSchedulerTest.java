@@ -12,6 +12,8 @@ import it.gov.pagopa.debtposition.config.SchedulerConfig;
 import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import it.gov.pagopa.debtposition.mock.DebtPositionMock;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
+
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -245,6 +247,15 @@ class ExpiredPositionsSchedulerTest {
   void manualChangeDebtPositionStatusToExpiredAndUpdateAllowed() throws Exception {
 
     PaymentPositionDTO pp7 = DebtPositionMock.getMock7();
+    
+    // All POs must be UNPAID + switchable to expired + have a dueDate that will expire soon
+    LocalDateTime commonDueDate = LocalDateTime.now(ZoneOffset.UTC).plus(6, ChronoUnit.SECONDS);
+
+    pp7.getPaymentOption().forEach(opt -> {
+        opt.setStatus(PaymentOptionStatus.PO_UNPAID);
+        opt.setSwitchToExpired(true);
+        opt.setDueDate(commonDueDate);
+    });
 
     // creo una posizione debitoria (con 'validity date') valorizzando il campo switchToExpired a
     // true -> Lo stato deve passare ad EXPIRED passata la due_date
@@ -293,31 +304,31 @@ class ExpiredPositionsSchedulerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.VALID.toString()));
-
-    // introduco un nuovo ritardo in modo da far scadere la due date
-    LocalDateTime newCurrentDatePlusSeconds =
-        LocalDateTime.now(ZoneOffset.UTC).plus(5, ChronoUnit.SECONDS);
+    
+    // wait until ALL POs have expired due date
     Awaitility.await()
-        .until(() -> LocalDateTime.now(ZoneOffset.UTC).isAfter(newCurrentDatePlusSeconds));
+    .until(() ->
+        LocalDateTime.now(ZoneOffset.UTC)
+            .isAfter(commonDueDate.plusSeconds(2))
+    );
 
     // lancio il batch per consentire il passaggio di stato
     expiredPositionsScheduler.changeDebtPositionStatusToExpired();
-
-    // attendo che il thread asincrono sia attivo
+    
+    // wait UNTIL the position goes EXPIRED
     Awaitility.await()
-        .atMost(3, TimeUnit.SECONDS)
-        .pollInterval(15, TimeUnit.MILLISECONDS)
-        .until(() -> expiredPositionsScheduler.getThreadOfExecution() != null);
-
-    // verifico che lo stato sia passato ad EXPIRED
+    .atMost(5, TimeUnit.SECONDS)
+    .pollInterval(100, TimeUnit.MILLISECONDS)
+    .untilAsserted(() ->
     mvc.perform(
-            get("/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions/12345678901IUPDMOCK3")
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.status")
-                .value(DebtPositionStatus.EXPIRED.toString()));
+    		get("/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions/12345678901IUPDMOCK3")
+    		.contentType(MediaType.APPLICATION_JSON))
+    .andExpect(status().isOk())
+    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+    .andExpect(
+    		MockMvcResultMatchers.jsonPath("$.status")
+    		.value(DebtPositionStatus.EXPIRED.toString()))
+    		);
 
     // aggiorno la posizione debitoria (stato atteso DRAFT)
     pp7.setCompanyName("Comune di Napoli");
@@ -349,18 +360,27 @@ class ExpiredPositionsSchedulerTest {
     // aggiorno la posizione debitoria, sposto nel futuro la validity date e richiedo la
     // pubblicazione (stato atteso PUBLISHED)
     pp7.setCompanyName("Comune di Palermo");
-    pp7.setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plus(5, ChronoUnit.SECONDS));
-    pp7.getPaymentOption()
-        .get(0)
-        .setDueDate(LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.SECONDS));
+
+    LocalDateTime publishNow = LocalDateTime.now(ZoneOffset.UTC);
+    LocalDateTime futureValidity = publishNow.plus(1, ChronoUnit.DAYS);
+    LocalDateTime futureDue = publishNow.plus(2, ChronoUnit.DAYS);
+
+    pp7.setValidityDate(futureValidity);
+    pp7.getPaymentOption().forEach(opt -> {
+    	opt.setStatus(PaymentOptionStatus.PO_UNPAID);
+    	opt.setSwitchToExpired(true);
+    	opt.setDueDate(futureDue);
+    	opt.setValidityDate(futureValidity);
+    });
+
     mvc.perform(
-            put("/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions/12345678901IUPDMOCK3?toPublish=True")
-                .content(TestUtil.toJson(pp7))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk())
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.status")
-                .value(DebtPositionStatus.PUBLISHED.toString()));
+    		put("/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions/12345678901IUPDMOCK3?toPublish=True")
+    		.content(TestUtil.toJson(pp7))
+    		.contentType(MediaType.APPLICATION_JSON))
+    .andExpect(status().isOk())
+    .andExpect(
+    		MockMvcResultMatchers.jsonPath("$.status")
+    		.value(DebtPositionStatus.PUBLISHED.toString()));
 
     // aggiorno la posizione debitoria con un body che non contiene la 'validity date' e ne richiedo
     // la pubblicazione (stato atteso VALID)

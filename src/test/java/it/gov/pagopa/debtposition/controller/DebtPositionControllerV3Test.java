@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hamcrest.Matchers;
 import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -25,7 +26,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -44,12 +44,12 @@ import it.gov.pagopa.debtposition.model.v3.InstallmentMetadataModel;
 import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @SpringBootTest(classes = DebtPositionApplication.class)
 @AutoConfigureMockMvc
 class DebtPositionControllerV3Test {
   @Autowired private MockMvc mvc;
-  @Autowired private Environment env;
 
   @Mock private ModelMapper modelMapperMock;
 
@@ -281,28 +281,25 @@ class DebtPositionControllerV3Test {
           .andExpect(jsonPath("$.paymentOption[0].validityDate").isNotEmpty())
           .andExpect(jsonPath("$.paymentOption[1].validityDate").isNotEmpty());
   }
-  
+
   @Test
   void createDebtPosition_MixedValidity_toPublishFalse() throws Exception {
       String uri = String.format("/v3/organizations/%s/debtpositions?toPublish=false", ORG_FISCAL_CODE);
       PaymentPositionModelV3 paymentPosition = createPaymentPositionV3(2, 1);
-      
+
       // PO_1 with validity valued
       paymentPosition.getPaymentOption().get(0).setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plusDays(1));
       // PO_2 with validity = null
       paymentPosition.getPaymentOption().get(1).setValidityDate(null);
-      
+
       var mvcResult =
-    	        mvc.perform(post(uri)
-    	                .content(TestUtil.toJson(paymentPosition))
-    	                .contentType(MediaType.APPLICATION_JSON))
-    	           .andExpect(status().isCreated())
-    	           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-    	           .andReturn();
-      
-      String flag = env.getProperty("database.migration.fields.read.from", "");
-      boolean readFromPP = "READ_FROM_PAYMENT_POSITION".equals(flag);
-      
+              mvc.perform(post(uri)
+                              .content(TestUtil.toJson(paymentPosition))
+                              .contentType(MediaType.APPLICATION_JSON))
+                      .andExpect(status().isCreated())
+                      .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                      .andReturn();
+
       // parse response
       ObjectMapper om = new ObjectMapper();
       JsonNode root = om.readTree(mvcResult.getResponse().getContentAsByteArray());
@@ -313,22 +310,11 @@ class DebtPositionControllerV3Test {
       assertThat(po1.get("description")).isNull();
       JsonNode vd0 = po0.get("validityDate");
       JsonNode vd1 = po1.get("validityDate");
-      
-      if (!readFromPP) {
-    	  // correct behaviour: PO_1 remains valued, PO_2 remains null
-    	  assertThat(vd0).isNotNull();
-          assertThat(vd0.isNull()).isFalse();
-          assertThat(vd1 == null || vd1.isNull()).isTrue();
-      }
-      else {
-    	  // TODO remove when validityDate is read from payment option
-    	  // fallback behaviour: both valued and equal to each other
-    	  assertThat(vd0).isNotNull();
-    	  assertThat(vd0.isNull()).isFalse();
-    	  assertThat(vd1).isNotNull();
-    	  assertThat(vd1.isNull()).isFalse();
-    	  assertThat(vd0.asText()).isEqualTo(vd1.asText());
-      }
+
+      // correct behaviour: PO_1 remains valued, PO_2 remains null
+      assertThat(vd0).isNotNull();
+      assertThat(vd0.isNull()).isFalse();
+      assertThat(vd1 == null || vd1.isNull()).isTrue();
   }
   
   @Test
@@ -371,6 +357,148 @@ class DebtPositionControllerV3Test {
           .andExpect(jsonPath("$.paymentOption[0].installments[0].description").value("Saldo unico"))
           .andExpect(jsonPath("$.paymentOption[1].installments[0].description").value("Piano A - Rata 1/1"));
   }
+    @Test
+    void shouldNotFindDebtPositionsWithServiceTypeWISP() throws Exception {
+        // Create a debt position with service type WISP
+        String uri = "/v3/organizations/12345678905/debtpositions?serviceType=WISP";
+        PaymentPositionModelV3 paymentPositionV3 =
+                createPaymentPositionV3(1, 1);
+
+        mvc.perform(
+                        post(uri)
+                                .content(TestUtil.toJson(paymentPositionV3))
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+
+        // Retrieve debt positions; expect no results since the uploaded debt position has service type WISP
+        mvc.perform(
+                        get("/v3/organizations/12345678905/debtpositions")
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(
+                        MockMvcResultMatchers.jsonPath("$.page_info.items_found").value(0));
+    }
+
+    @Test
+    void shouldFindDebtPositionsWithServiceTypeWISP() throws Exception {
+        // Create a debt position with service type WISP
+        String uri = "/v3/organizations/12345678906/debtpositions?serviceType=WISP";
+        PaymentPositionModelV3 paymentPositionV3 =
+                createPaymentPositionV3(1, 1);
+
+        mvc.perform(
+                        post(uri)
+                                .content(TestUtil.toJson(paymentPositionV3))
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+
+        // Retrieve debt positions; expect no results since the uploaded debt position has service type WISP
+        mvc.perform(
+                        get("/v3/organizations/12345678906/debtpositions?serviceType=WISP")
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(
+                        MockMvcResultMatchers.jsonPath("$.page_info.items_found").value(Matchers.not(0)));
+    }
+    
+    @Test
+    void updateDebtPosition_removeStampAndAddIban_200() throws Exception {
+      String orgFiscalCode = "7777777778";
+      String uri = String.format("/v3/organizations/%s/debtpositions", orgFiscalCode);
+
+      PaymentPositionModelV3 pp = createPaymentPositionV3(1, 1);
+      pp.setIupd("IUPD-V3-STAMP-01");
+
+      TransferModel createTransfer = pp.getPaymentOption().get(0).getInstallments().get(0).getTransfer().get(0);
+      createTransfer.setIban(null);
+      createTransfer.setPostalIban(null);
+      createTransfer.setStamp(new it.gov.pagopa.debtposition.model.pd.Stamp("hash-v3", "01", "RM"));
+
+      mvc.perform(
+              post(uri)
+                  .content(TestUtil.toJson(pp))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isCreated());
+
+      TransferModel updateTransfer = pp.getPaymentOption().get(0).getInstallments().get(0).getTransfer().get(0);
+      updateTransfer.setStamp(null);
+      updateTransfer.setIban("IT58C0200805403000102985524");
+      updateTransfer.setAmount(pp.getPaymentOption().get(0).getInstallments().get(0).getAmount());
+
+      mvc.perform(
+              put(uri + "/IUPD-V3-STAMP-01")
+                  .content(TestUtil.toJson(pp))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk());
+
+      mvc.perform(
+              get(uri + "/IUPD-V3-STAMP-01").contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.paymentOption[0].installments[0].transfer[0].iban")
+              .value("IT58C0200805403000102985524"))
+          .andExpect(jsonPath("$.paymentOption[0].installments[0].transfer[0].stamp").doesNotExist());
+    }
+    
+    @Test
+    void updateDebtPosition_removeStampWithoutIban_400() throws Exception {
+      String orgFiscalCode = "7777777779";
+      String baseUri = String.format("/v3/organizations/%s/debtpositions", orgFiscalCode);
+      String iupd = "IUPD-V3-REMOVE-STAMP-01";
+
+      PaymentPositionModelV3 createRequest = createPaymentPositionV3(1, 1);
+      createRequest.setIupd(iupd);
+
+      InstallmentModel createInstallment =
+          createRequest.getPaymentOption().get(0).getInstallments().get(0);
+      createInstallment.setIuv("12345000000000003");
+
+      TransferModel createTransfer = createInstallment.getTransfer().get(0);
+      createTransfer.setOrganizationFiscalCode(orgFiscalCode);
+      createTransfer.setIban(null);
+      createTransfer.setPostalIban(null);
+      createTransfer.setStamp(new it.gov.pagopa.debtposition.model.pd.Stamp("hash-v3-b", "01", "RM"));
+
+      mvc.perform(
+              post(baseUri)
+                  .content(TestUtil.toJson(createRequest))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isCreated())
+          .andExpect(
+              jsonPath("$.paymentOption[0].installments[0].transfer[0].stamp.hashDocument")
+                  .value("hash-v3-b"))
+          .andExpect(
+              jsonPath("$.paymentOption[0].installments[0].transfer[0].stamp.stampType")
+                  .value("01"))
+          .andExpect(
+              jsonPath("$.paymentOption[0].installments[0].transfer[0].stamp.provincialResidence")
+                  .value("RM"));
+
+      PaymentPositionModelV3 updateRequest = createPaymentPositionV3(1, 1);
+      updateRequest.setIupd(iupd);
+
+      InstallmentModel updateInstallment =
+          updateRequest.getPaymentOption().get(0).getInstallments().get(0);
+      updateInstallment.setIuv("12345000000000003");
+      updateInstallment.setAmount(1800L);
+      updateInstallment.setDescription("Updated without stamp and without iban");
+
+      TransferModel updateTransfer = updateInstallment.getTransfer().get(0);
+      updateTransfer.setOrganizationFiscalCode(orgFiscalCode);
+      updateTransfer.setAmount(1800L);
+      updateTransfer.setRemittanceInformation("Updated without stamp and without iban");
+      updateTransfer.setStamp(null);
+      updateTransfer.setIban(null);
+      updateTransfer.setPostalIban(null);
+
+      mvc.perform(
+              put(baseUri + "/" + iupd)
+                  .content(TestUtil.toJson(updateRequest))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isBadRequest());
+    }
+
 
   // ################### UTILS #################
 

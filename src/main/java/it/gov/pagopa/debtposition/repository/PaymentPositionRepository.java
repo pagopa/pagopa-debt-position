@@ -47,38 +47,46 @@ public interface PaymentPositionRepository
       @Param("currentDate") LocalDateTime currentDate,
       @Param("status") DebtPositionStatus status);
 
-  // Regola 6 - Una posizione va in expired nel momento in cui si raggiunge la max_due_date, il flag
-  // switch_to_expired è impostato a TRUE e lo stato è a valid
   /**
-   * Native is used to avoid two-step recovery:
-   * - SELECT PaymentPosition in join with PaymentOption
-   * - UPDATE PaymentPosition pp SET ... WHERE pp.id IN :ids
-   * verbose with two round-trips.
+   * Rule 6- For a debt position to EXPIRED, the following conditions must be met:
+   *  1. all POs must be PO_UNPAID
+   *  2. all POs must have switch_to_expired = true
+   *  3. all POs must be expired
    */
-  @Modifying
-  @Query(value = """
-      UPDATE payment_position pp
-      SET status = 'EXPIRED',
-          last_updated_date = :currentDate,
-          version = pp.version + 1
-      WHERE pp.max_due_date < :currentDate
-        AND pp.status = 'VALID'
-        AND pp.payment_date IS NULL
-        AND EXISTS (
-            SELECT 1
-            FROM payment_option po
-            WHERE po.payment_position_id = pp.id
-              AND po.switch_to_expired = true
-              AND po.status = 'PO_UNPAID'
-        )
-        AND NOT EXISTS (
-            SELECT 1
-            FROM payment_option po2
-            WHERE po2.payment_position_id = pp.id
-              AND po2.status <> 'PO_UNPAID'
-        )
-      """, nativeQuery = true)
-  int updatePaymentPositionStatusToExpired(@Param("currentDate") LocalDateTime currentDate);
+	@Modifying
+	@Query(value = """
+			UPDATE apd.payment_position pp
+			SET status = 'EXPIRED',
+			last_updated_date = :currentDate,
+			version = pp.version + 1
+			WHERE pp.status = 'VALID'
+			AND pp.payment_date IS NULL
+			
+			-- all POs must be PO_UNPAID
+			AND NOT EXISTS (
+			SELECT 1
+			FROM apd.payment_option po1
+			WHERE po1.payment_position_id = pp.id
+			AND po1.status <> 'PO_UNPAID'
+			)
+			
+			-- all POs must have switch_to_expired = true
+			AND NOT EXISTS (
+			SELECT 1
+			FROM apd.payment_option po2
+			WHERE po2.payment_position_id = pp.id
+			AND po2.switch_to_expired = false
+			)
+			
+			-- all POs must be expired
+			AND NOT EXISTS (
+			SELECT 1
+			FROM apd.payment_option po3
+			WHERE po3.payment_position_id = pp.id
+			AND po3.due_date >= :currentDate
+			)
+			""", nativeQuery = true)
+	int updatePaymentPositionStatusToExpired(@Param("currentDate") LocalDateTime currentDate);
 
   // Derived Query - using method naming convention - get parent PaymentPosition from child
   // PaymentOption properties

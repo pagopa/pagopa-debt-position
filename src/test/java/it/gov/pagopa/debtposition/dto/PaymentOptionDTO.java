@@ -25,6 +25,7 @@ public class PaymentOptionDTO implements Serializable {
   private LocalDateTime retentionDate;
   private LocalDateTime paymentDate;
   private LocalDateTime reportingDate;
+  private LocalDateTime validityDate;
   private String paymentMethod;
   private long fee;
   private long notificationFee; // needed for testing if ignored in unmarshalling
@@ -32,6 +33,7 @@ public class PaymentOptionDTO implements Serializable {
   private String idReceipt;
   private String idFlowReporting;
   private PaymentOptionStatus status;
+  private Boolean switchToExpired = false;
 
   private List<PaymentOptionMetadataDTO> paymentOptionMetadata = new ArrayList<>();
 

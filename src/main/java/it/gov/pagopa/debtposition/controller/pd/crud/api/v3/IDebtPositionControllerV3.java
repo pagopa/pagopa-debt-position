@@ -17,6 +17,8 @@ import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionsInfoV3;
 import it.gov.pagopa.debtposition.model.v3.response.PaymentPositionModelResponseV3;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import org.springframework.data.domain.Sort;
@@ -105,7 +107,7 @@ public interface IDebtPositionControllerV3 {
           @RequestParam(required = false)
           String segregationCodes,
       @Parameter(
-              hidden = false,
+              hidden = true,
               description =
                   "The field must not be considered as its value is set via the API Management"
                       + " (APIM) policy")
@@ -220,6 +222,22 @@ public interface IDebtPositionControllerV3 {
           @RequestParam(value = "payment_date_to", required = false)
           LocalDate paymentDateTo,
       @Valid
+          @Parameter(
+              description =
+                  "Filter from payment_date_time (if provided use the format yyyy-MM-ddTHH:mm:ss). If not"
+                      + " provided will be set to 30 days before the payment_date_time_from.")
+          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+          @RequestParam(value = "payment_date_time_from", required = false)
+          LocalDateTime paymentDateTimeFrom,
+      @Valid
+          @Parameter(
+              description =
+                  "Filter to payment_date_time (if provided use the format yyyy-MM-ddTHH:mm:ss). If not"
+                      + " will be set to 30 days after the payment_date_time_to.")
+          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+          @RequestParam(value = "payment_date_time_to", required = false)
+          LocalDateTime paymentDateTimeTo,
+      @Valid
           @Parameter(description = "Filter by debt position status")
           @RequestParam(value = "status", required = false)
           DebtPositionStatusV3 status,
@@ -235,7 +253,13 @@ public interface IDebtPositionControllerV3 {
               hidden = true)
           @Pattern(regexp = "\\d{2}(,\\d{2})*")
           @RequestParam(required = false)
-          String segregationCodes);
+          String segregationCodes,
+      @Parameter(
+              description =
+                      "The field must not be considered as its value is set via the API Management"
+                              + " (APIM) policy")
+      @RequestParam(required = false)
+      ServiceType serviceType);
 
   @Operation(
       summary = "Return the details of a specific debt position.",

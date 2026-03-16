@@ -86,18 +86,19 @@ public class DebtPositionController implements IDebtPositionController {
         segregationCodes != null
             ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
             : null;
-    PaymentPosition createdDebtPos =
+    PaymentPosition createdPaymentPositionModel =
         paymentPositionService.create(
             debtPosition, organizationFiscalCode, toPublish, segCodes, CREATE_ACTION);
 
-	if (null != createdDebtPos) {
-		PaymentPositionModel paymentPosition = ObjectMapperUtils.map(createdDebtPos, PaymentPositionModel.class);
-		// set the switchToExpired flag in the response
-		boolean anyMatchSwitchToExpired = UtilityMapper.getSwitchToExpired(createdDebtPos);
-		paymentPosition.setSwitchToExpired(anyMatchSwitchToExpired);
-		// set validityDate as min of the validityDate on the PaymentOption
-		LocalDateTime minValidityDate = CommonUtil.resolveMinValidity(createdDebtPos);
-		paymentPosition.setValidityDate(minValidityDate);
+    if (null != createdPaymentPositionModel) {
+      PaymentPositionModel paymentPosition = ObjectMapperUtils.map(createdPaymentPositionModel, PaymentPositionModel.class);
+      // set the switchToExpired flag in the response
+      boolean allMatchSwitchToExpired = UtilityMapper.hasAllMarkedExpired(createdPaymentPositionModel.getPaymentOption());
+      paymentPosition.setSwitchToExpired(allMatchSwitchToExpired);
+      // set validityDate as min of the validityDate on the PaymentOption
+      LocalDateTime minValidityDate = CommonUtil.resolveMinValidity(createdPaymentPositionModel);
+      paymentPosition.setValidityDate(minValidityDate);
+
       return new ResponseEntity<>(paymentPosition, HttpStatus.CREATED);
     }
 
@@ -107,7 +108,8 @@ public class DebtPositionController implements IDebtPositionController {
   @Override
   @ExclusiveParamGroup(
       firstGroup = {"due_date_to", "due_date_from"},
-      secondGroup = {"payment_date_from", "payment_date_to"})
+      secondGroup = {"payment_date_from", "payment_date_to"},
+      thirdGroup = {"payment_date_time_from", "payment_date_time_to"})
   public ResponseEntity<PaymentPositionsInfo> getOrganizationDebtPositions(
       String organizationFiscalCode,
       Integer limit,
@@ -116,10 +118,13 @@ public class DebtPositionController implements IDebtPositionController {
       LocalDate dueDateTo,
       LocalDate paymentDateFrom,
       LocalDate paymentDateTo,
+      LocalDateTime paymentDateTimeFrom,
+      LocalDateTime paymentDateTimeTo,
       DebtPositionStatus status,
       PaymentPositionOrder orderBy,
       Direction ordering,
-      String segregationCodes) {
+      String segregationCodes,
+      ServiceType serviceType) {
     log.debug(
         String.format(
             LOG_BASE_HEADER_INFO,
@@ -142,11 +147,12 @@ public class DebtPositionController implements IDebtPositionController {
                     .dueDateFrom(dueDateFrom != null ? dueDateFrom.atStartOfDay() : null)
                     .dueDateTo(dueDateTo != null ? dueDateTo.atTime(LocalTime.MAX) : null)
                     .paymentDateFrom(
-                        paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : null)
+                        paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : paymentDateTimeFrom)
                     .paymentDateTo(
-                        paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : null)
+                        paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : paymentDateTimeTo)
                     .status(status)
                     .segregationCodes(segCodesList)
+                    .serviceType(serviceType)
                     .build())
             .order(Order.builder().orderBy(orderBy).ordering(ordering).build())
             .build();
@@ -272,19 +278,18 @@ public class DebtPositionController implements IDebtPositionController {
         segregationCodes != null
             ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
             : null;
-    PaymentPosition updatedDebtPos =
+    PaymentPosition updatedPaymentPositionModel =
         paymentPositionService.update(
             paymentPositionModel, organizationFiscalCode, toPublish, segCodes, UPDATE_ACTION);
 
-    if (null != updatedDebtPos) {
-      PaymentPositionModel paymentPosition =
-          ObjectMapperUtils.map(updatedDebtPos, PaymentPositionModel.class);
+    if (null != updatedPaymentPositionModel) {
+      PaymentPositionModel paymentPosition = ObjectMapperUtils.map(updatedPaymentPositionModel, PaymentPositionModel.class);
       // set the switchToExpired flag in the response
-   	  boolean anyMatchSwitchToExpired = UtilityMapper.getSwitchToExpired(updatedDebtPos);
-   	  paymentPosition.setSwitchToExpired(anyMatchSwitchToExpired);
-   	  // set validityDate as min of the validityDate on the PaymentOption
-   	  LocalDateTime minValidityDate = CommonUtil.resolveMinValidity(updatedDebtPos);
-   	  paymentPosition.setValidityDate(minValidityDate);
+      boolean allMatchSwitchToExpired = UtilityMapper.hasAllMarkedExpired(updatedPaymentPositionModel.getPaymentOption());
+      paymentPosition.setSwitchToExpired(allMatchSwitchToExpired );
+      // set validityDate as min of the validityDate on the PaymentOption
+      LocalDateTime minValidityDate = CommonUtil.resolveMinValidity(updatedPaymentPositionModel);
+      paymentPosition.setValidityDate(minValidityDate);
       return new ResponseEntity<>(paymentPosition, HttpStatus.OK);
     }
 

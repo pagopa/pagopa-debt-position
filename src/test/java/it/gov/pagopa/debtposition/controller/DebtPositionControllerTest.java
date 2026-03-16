@@ -1135,7 +1135,54 @@ class DebtPositionControllerTest {
             + "&payment_date_from="
             + df.format(LocalDateTime.now(ZoneOffset.UTC))
             + "&payment_date_to="
-            + df.format(LocalDateTime.now(ZoneOffset.UTC).plus(9, ChronoUnit.DAYS));
+            + df.format(LocalDateTime.now(ZoneOffset.UTC).plusDays(9));
+    mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.payment_position_list").value(Matchers.hasSize(1)));
+  }
+
+  @Test
+  void getDebtPositionListByPaymentDateTime() throws Exception {
+    // creo la posizione debitoria DRAFT
+    mvc.perform(
+            post("/organizations/DATE_TIME_123456789022/debtpositions")
+                .content(TestUtil.toJson(DebtPositionMock.getMock3()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    // creo la posizione debitoria (senza 'validity date' impostata) che dopo il pagamento sarà PAID
+    mvc.perform(
+            post("/organizations/DATE_TIME_123456789022/debtpositions")
+                .content(TestUtil.toJson(DebtPositionMock.getMock1()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    // porto in pubblicata/validata lo stato della posizione debitoria
+    mvc.perform(
+            post("/organizations/DATE_TIME_123456789022/debtpositions/12345678901IUPDMOCK1/publish")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    // effettuo la notifica di pagamento
+    mvc.perform(
+            post("/organizations/DATE_TIME_123456789022/paymentoptions/"
+                + auxDigit
+                + "1234561/pay")
+                .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+
+    // effettuo la chiamata GET applicando il filtro sulla payment_date_time
+    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+    String url =
+        "/organizations/DATE_TIME_123456789022/debtpositions?page=0"
+            + "&payment_date_time_from="
+            + df.format(LocalDateTime.now(ZoneOffset.UTC))
+            + "&payment_date_time_to="
+            + df.format(LocalDateTime.now(ZoneOffset.UTC).plusDays(9));
     mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -1930,12 +1977,18 @@ class DebtPositionControllerTest {
   @Test
   void updateDebtPosition_CreateValidAndUpdate_200() throws Exception {
     // creo una posizione debitoria (con 'validity date' impostata)
-    LocalDateTime vd =
-        LocalDateTime.now(ZoneOffset.UTC)
-            .plus(5, ChronoUnit.SECONDS)
-            .truncatedTo(ChronoUnit.SECONDS);
     PaymentPositionDTO ppDto1 = DebtPositionMock.getMock1();
-    ppDto1.setValidityDate(vd);
+    
+    LocalDateTime futureValidity = LocalDateTime.now(ZoneOffset.UTC).plus(1, ChronoUnit.DAYS).truncatedTo(ChronoUnit.SECONDS);
+    LocalDateTime futureDue = LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.DAYS);
+
+    ppDto1.setValidityDate(futureValidity);
+    ppDto1.getPaymentOption().forEach(opt -> {
+    	opt.setStatus(PaymentOptionStatus.PO_UNPAID);
+    	opt.setSwitchToExpired(true);
+    	opt.setDueDate(futureDue);
+    	opt.setValidityDate(futureValidity);
+    });
     mvc.perform(
             post("/organizations/CREATE_UPD_12345678901/debtpositions?toPublish=True")
                 .content(TestUtil.toJson(ppDto1))
@@ -1953,11 +2006,17 @@ class DebtPositionControllerTest {
                 .value(DebtPositionStatus.PUBLISHED.toString()))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.validityDate")
-                .value(vd.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))));
+                .value(futureValidity.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))));
 
     // aggiorno la posizione debitoria con un body che contiene la 'validity date'
     PaymentPositionDTO ppDto4 = DebtPositionMock.getMock4();
-    ppDto4.setValidityDate(vd);
+    ppDto4.setValidityDate(futureValidity);
+    ppDto4.getPaymentOption().forEach(opt -> {
+    	opt.setStatus(PaymentOptionStatus.PO_UNPAID);
+    	opt.setSwitchToExpired(true);
+    	opt.setDueDate(futureDue);
+    	opt.setValidityDate(futureValidity);
+    });
     mvc.perform(
             put("/organizations/CREATE_UPD_12345678901/debtpositions/12345678901IUPDMOCK1?toPublish=True")
                 .content(TestUtil.toJson(ppDto4))
@@ -1978,7 +2037,7 @@ class DebtPositionControllerTest {
                 .value(DebtPositionStatus.PUBLISHED.toString()))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.validityDate")
-                .value(vd.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))))
+                .value(futureValidity.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))))
         .andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty());
   }
 
@@ -2294,4 +2353,165 @@ class DebtPositionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
   }
+    @Test
+    void shouldNotFindDebtPositionsWithServiceTypeWISP() throws Exception {
+        // Create a debt position with service type WISP
+        mvc.perform(
+                        post("/organizations/12345678907/debtpositions?serviceType=WISP")
+                                .content(TestUtil.toJson(DebtPositionMock.getMock1()))
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+
+        // Retrieve debt positions; expect no results since the uploaded debt position has service type WISP
+        mvc.perform(
+                        get("/organizations/12345678907/debtpositions")
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(
+                        MockMvcResultMatchers.jsonPath("$.page_info.items_found").value(0));
+    }
+
+    @Test
+    void shouldFindDebtPositionsWithServiceTypeWISP() throws Exception {
+        // Create a debt position with service type WISP
+        mvc.perform(
+                        post("/organizations/12345678906/debtpositions?serviceType=WISP")
+                                .content(TestUtil.toJson(DebtPositionMock.getMock2()))
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+
+        // Retrieve debt positions; expect multiple results since the uploaded debt position has service type WISP
+        mvc.perform(
+                        get("/organizations/12345678906/debtpositions?serviceType=WISP")
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(
+                        MockMvcResultMatchers.jsonPath("$.page_info.items_found").value(Matchers.not(0)));
+    }
+    
+    @Test
+    void updateDebtPosition_removeStampAndAddIban_200() throws Exception {
+      String orgFiscalCode = "UPD_STAMP_TO_IBAN_12345678901";
+
+      PaymentPositionDTO createRequest = DebtPositionMock.getMock1();
+      createRequest.setIupd("IUPD_STAMP_TO_IBAN_01");
+      createRequest.getPaymentOption().get(0).setIuv("12345000000000001");
+
+      TransferDTO transferWithStamp =
+          new TransferDTO(
+              orgFiscalCode,
+              "1",
+              createRequest.getPaymentOption().get(0).getAmount(),
+              "Marca da bollo",
+              "test",
+              null,
+              null,
+              new Stamp("hash-doc-1", "01", "RM"),
+              TransferStatus.T_UNREPORTED);
+
+      createRequest.getPaymentOption().get(0).getTransfer().set(0, transferWithStamp);
+
+      mvc.perform(
+              post("/organizations/" + orgFiscalCode + "/debtpositions")
+                  .content(TestUtil.toJson(createRequest))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isCreated())
+          .andExpect(jsonPath("$.paymentOption[0].transfer[0].stamp.hashDocument").value("hash-doc-1"))
+          .andExpect(jsonPath("$.paymentOption[0].transfer[0].stamp.stampType").value("01"))
+          .andExpect(jsonPath("$.paymentOption[0].transfer[0].stamp.provincialResidence").value("RM"));
+
+      PaymentPositionDTO updateRequest = DebtPositionMock.getMock1();
+      updateRequest.setIupd("IUPD_STAMP_TO_IBAN_01");
+      updateRequest.getPaymentOption().get(0).setIuv("12345000000000001");
+      updateRequest.getPaymentOption().get(0).setAmount(1800L);
+      updateRequest.getPaymentOption().get(0).setDescription("Updated without stamp");
+
+      TransferDTO transferWithoutStampWithIban =
+          new TransferDTO(
+              orgFiscalCode,
+              "1",
+              1800L,
+              "Updated without stamp",
+              "test",
+              "IT58C0200805403000102985524",
+              null,
+              null,
+              TransferStatus.T_UNREPORTED);
+
+      updateRequest.getPaymentOption().get(0).getTransfer().set(0, transferWithoutStampWithIban);
+
+      mvc.perform(
+              put("/organizations/" + orgFiscalCode + "/debtpositions/IUPD_STAMP_TO_IBAN_01")
+                  .content(TestUtil.toJson(updateRequest))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.paymentOption[0].transfer[0].iban")
+              .value("IT58C0200805403000102985524"))
+          .andExpect(jsonPath("$.paymentOption[0].transfer[0].stamp").doesNotExist());
+
+      mvc.perform(
+              get("/organizations/" + orgFiscalCode + "/debtpositions/IUPD_STAMP_TO_IBAN_01")
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.paymentOption[0].transfer[0].iban")
+              .value("IT58C0200805403000102985524"))
+          .andExpect(jsonPath("$.paymentOption[0].transfer[0].stamp").doesNotExist());
+    }
+    
+    @Test
+    void updateDebtPosition_removeStampWithoutIban_400() throws Exception {
+
+      String orgFiscalCode = "UPD_REMOVE_STAMP_NO_IBAN";
+
+      PaymentPositionDTO createRequest = DebtPositionMock.getMock1();
+      createRequest.setIupd("IUPD_REMOVE_STAMP_NO_IBAN");
+      createRequest.getPaymentOption().get(0).setIuv("12345000000000002");
+
+      TransferDTO transferWithStamp =
+          new TransferDTO(
+              orgFiscalCode,
+              "1",
+              createRequest.getPaymentOption().get(0).getAmount(),
+              "Marca da bollo",
+              "test",
+              null,
+              null,
+              new Stamp("hash-doc-2", "01", "RM"),
+              TransferStatus.T_UNREPORTED);
+
+      createRequest.getPaymentOption().get(0).getTransfer().set(0, transferWithStamp);
+
+      mvc.perform(
+              post("/organizations/" + orgFiscalCode + "/debtpositions")
+                  .content(TestUtil.toJson(createRequest))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isCreated());
+
+      PaymentPositionDTO updateRequest = DebtPositionMock.getMock1();
+      updateRequest.setIupd("IUPD_REMOVE_STAMP_NO_IBAN");
+      updateRequest.getPaymentOption().get(0).setIuv("12345000000000002");
+
+      TransferDTO transferWithoutStampAndWithoutIban =
+          new TransferDTO(
+              orgFiscalCode,
+              "1",
+              1900L,
+              "Updated without stamp and without iban",
+              "test",
+              null,
+              null,
+              null,
+              TransferStatus.T_UNREPORTED);
+
+      updateRequest.getPaymentOption().get(0).getTransfer().set(0, transferWithoutStampAndWithoutIban);
+
+      mvc.perform(
+              put("/organizations/" + orgFiscalCode + "/debtpositions/IUPD_REMOVE_STAMP_NO_IBAN")
+                  .content(TestUtil.toJson(updateRequest))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isBadRequest());
+    }
+
 }
