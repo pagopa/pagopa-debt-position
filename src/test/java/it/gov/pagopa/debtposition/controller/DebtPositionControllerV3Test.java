@@ -26,7 +26,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -51,7 +50,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 @AutoConfigureMockMvc
 class DebtPositionControllerV3Test {
   @Autowired private MockMvc mvc;
-  @Autowired private Environment env;
 
   @Mock private ModelMapper modelMapperMock;
 
@@ -403,6 +401,102 @@ class DebtPositionControllerV3Test {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(
                         MockMvcResultMatchers.jsonPath("$.page_info.items_found").value(Matchers.not(0)));
+    }
+    
+    @Test
+    void updateDebtPosition_removeStampAndAddIban_200() throws Exception {
+      String orgFiscalCode = "7777777778";
+      String uri = String.format("/v3/organizations/%s/debtpositions", orgFiscalCode);
+
+      PaymentPositionModelV3 pp = createPaymentPositionV3(1, 1);
+      pp.setIupd("IUPD-V3-STAMP-01");
+
+      TransferModel createTransfer = pp.getPaymentOption().get(0).getInstallments().get(0).getTransfer().get(0);
+      createTransfer.setIban(null);
+      createTransfer.setPostalIban(null);
+      createTransfer.setStamp(new it.gov.pagopa.debtposition.model.pd.Stamp("hash-v3", "01", "RM"));
+
+      mvc.perform(
+              post(uri)
+                  .content(TestUtil.toJson(pp))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isCreated());
+
+      TransferModel updateTransfer = pp.getPaymentOption().get(0).getInstallments().get(0).getTransfer().get(0);
+      updateTransfer.setStamp(null);
+      updateTransfer.setIban("IT58C0200805403000102985524");
+      updateTransfer.setAmount(pp.getPaymentOption().get(0).getInstallments().get(0).getAmount());
+
+      mvc.perform(
+              put(uri + "/IUPD-V3-STAMP-01")
+                  .content(TestUtil.toJson(pp))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk());
+
+      mvc.perform(
+              get(uri + "/IUPD-V3-STAMP-01").contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.paymentOption[0].installments[0].transfer[0].iban")
+              .value("IT58C0200805403000102985524"))
+          .andExpect(jsonPath("$.paymentOption[0].installments[0].transfer[0].stamp").doesNotExist());
+    }
+    
+    @Test
+    void updateDebtPosition_removeStampWithoutIban_400() throws Exception {
+      String orgFiscalCode = "7777777779";
+      String baseUri = String.format("/v3/organizations/%s/debtpositions", orgFiscalCode);
+      String iupd = "IUPD-V3-REMOVE-STAMP-01";
+
+      PaymentPositionModelV3 createRequest = createPaymentPositionV3(1, 1);
+      createRequest.setIupd(iupd);
+
+      InstallmentModel createInstallment =
+          createRequest.getPaymentOption().get(0).getInstallments().get(0);
+      createInstallment.setIuv("12345000000000003");
+
+      TransferModel createTransfer = createInstallment.getTransfer().get(0);
+      createTransfer.setOrganizationFiscalCode(orgFiscalCode);
+      createTransfer.setIban(null);
+      createTransfer.setPostalIban(null);
+      createTransfer.setStamp(new it.gov.pagopa.debtposition.model.pd.Stamp("hash-v3-b", "01", "RM"));
+
+      mvc.perform(
+              post(baseUri)
+                  .content(TestUtil.toJson(createRequest))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isCreated())
+          .andExpect(
+              jsonPath("$.paymentOption[0].installments[0].transfer[0].stamp.hashDocument")
+                  .value("hash-v3-b"))
+          .andExpect(
+              jsonPath("$.paymentOption[0].installments[0].transfer[0].stamp.stampType")
+                  .value("01"))
+          .andExpect(
+              jsonPath("$.paymentOption[0].installments[0].transfer[0].stamp.provincialResidence")
+                  .value("RM"));
+
+      PaymentPositionModelV3 updateRequest = createPaymentPositionV3(1, 1);
+      updateRequest.setIupd(iupd);
+
+      InstallmentModel updateInstallment =
+          updateRequest.getPaymentOption().get(0).getInstallments().get(0);
+      updateInstallment.setIuv("12345000000000003");
+      updateInstallment.setAmount(1800L);
+      updateInstallment.setDescription("Updated without stamp and without iban");
+
+      TransferModel updateTransfer = updateInstallment.getTransfer().get(0);
+      updateTransfer.setOrganizationFiscalCode(orgFiscalCode);
+      updateTransfer.setAmount(1800L);
+      updateTransfer.setRemittanceInformation("Updated without stamp and without iban");
+      updateTransfer.setStamp(null);
+      updateTransfer.setIban(null);
+      updateTransfer.setPostalIban(null);
+
+      mvc.perform(
+              put(baseUri + "/" + iupd)
+                  .content(TestUtil.toJson(updateRequest))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isBadRequest());
     }
 
 

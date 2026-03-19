@@ -168,7 +168,7 @@ public class PaymentPositionCRUDService {
 
     return paymentPositions;
   }
-  
+
   @Transactional(readOnly = true)
   public Page<PaymentPosition> getOrganizationDebtPositions(
 		  @Positive Integer limit, @Positive Integer pageNum, FilterAndOrder filterAndOrder) {

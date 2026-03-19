@@ -20,6 +20,8 @@ import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
@@ -274,6 +276,22 @@ public interface IDebtPositionController {
           @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
           @RequestParam(value = "payment_date_to", required = false)
           LocalDate paymentDateTo,
+      @Valid
+          @Parameter(
+              description =
+                  "Filter from payment_date_time (if provided use the format yyyy-MM-ddTHH:mm:ss). If not"
+                      + " provided will be set to 30 days before the payment_date_time_from.")
+          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+          @RequestParam(value = "payment_date_time_from", required = false)
+          LocalDateTime paymentDateTimeFrom,
+      @Valid
+          @Parameter(
+              description =
+                  "Filter to payment_date_time (if provided use the format yyyy-MM-ddTHH:mm:ss). If not"
+                      + " will be set to 30 days after the payment_date_time_to.")
+          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+          @RequestParam(value = "payment_date_time_to", required = false)
+          LocalDateTime paymentDateTimeTo,
       @Valid
           @Parameter(description = "Filter by debt position status")
           @RequestParam(value = "status", required = false)

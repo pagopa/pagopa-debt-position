@@ -26,4 +26,11 @@ public @interface ExclusiveParamGroup {
    * @return permitted request params, mutual exclusive with firstGroup
    */
   String[] secondGroup();
+
+  /**
+   * Use Request name
+   *
+   * @return permitted request params, mutual exclusive with firstGroup
+   */
+  String[] thirdGroup();
 }
