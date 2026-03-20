@@ -4,12 +4,13 @@ locals {
     repository = "pagopa-debt-position"
   }
 
-  prefix         = "pagopa"
-  domain         = "gps"
-  location_short = "weu"
-  product        = "${var.prefix}-${var.env_short}"
-  odp_schema     = "odp"
-  apd_schema     = "apd"
+  prefix              = "pagopa"
+  domain              = "gps"
+  location_short      = "weu"
+  product             = "${var.prefix}-${var.env_short}"
+  odp_schema          = "odp"
+  apd_schema          = "apd"
+  apd_archive_schemas = "apd,partman"
 
   app_name = "github-${local.github.org}-${local.github.repository}-${var.prefix}-${local.domain}-${var.env}-aks"
 
