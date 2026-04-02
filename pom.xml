@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>it.gov.pagopa.debtposition</groupId>
 	<artifactId>gpd</artifactId>
-	<version>1.1.23-1-PIDM-504-upd-deploy-config</version>
+	<version>1.1.23-2-PIDM-504-upd-deploy-config</version>
 	<name>Gestione Posizioni Debitorie</name>
 	<description>Progetto Gestione Posizioni Debitorie</description>
 	<properties>

@@ -4,7 +4,7 @@
     "title": "PagoPA API Debt Position ${service}",
     "description": "Progetto Gestione Posizioni Debitorie",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.1.23-1-PIDM-504-upd-deploy-config"
+    "version": "1.1.23-2-PIDM-504-upd-deploy-config"
   },
   "servers": [
     {
