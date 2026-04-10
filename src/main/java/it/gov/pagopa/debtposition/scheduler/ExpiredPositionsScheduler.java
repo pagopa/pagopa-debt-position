@@ -1,88 +1,116 @@
 package it.gov.pagopa.debtposition.scheduler;
 
-import static it.gov.pagopa.debtposition.util.SchedulerUtils.*;
+import static it.gov.pagopa.debtposition.util.SchedulerUtils.updateMDCError;
+import static it.gov.pagopa.debtposition.util.SchedulerUtils.updateMDCForEndExecution;
+import static it.gov.pagopa.debtposition.util.SchedulerUtils.updateMDCForStartExecution;
 
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
-import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import jakarta.transaction.Transactional;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
+import java.util.function.BiFunction;
+
 import org.slf4j.MDC;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import it.gov.pagopa.debtposition.service.DebtPositionStatusBatchService;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
 @Component
 @Slf4j
 @Getter
 @ConditionalOnProperty(name = "cron.job.schedule.enabled", matchIfMissing = true)
 public class ExpiredPositionsScheduler {
+   
+   private final DebtPositionStatusBatchService batchService;
 
-  private static final String LOG_BASE_HEADER_INFO =
-      "[OperationType: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
-  private static final String CRON_JOB = "CRON JOB";
-  @Autowired private PaymentPositionRepository paymentPositionRepository;
-  private Thread threadOfExecution;
+   private final int batchSize;
+
+   private Thread threadOfExecution;
+
+   public ExpiredPositionsScheduler(
+	    DebtPositionStatusBatchService batchService,
+	    @Value("${cron.job.schedule.batch.size:500}") int batchSize) {
+	  this.batchService = batchService;
+	  this.batchSize = batchSize;
+   }
 
   @Scheduled(cron = "${cron.job.schedule.expression.valid.status}")
-  @Async
-  @Transactional
+  @SchedulerLock(
+      name = "changeDebtPositionStatusToValid",
+      lockAtMostFor = "${cron.job.schedule.shedlock.lockatmostfor}",
+      lockAtLeastFor = "${cron.job.schedule.shedlock.lockatleastfor}")
   public void changeDebtPositionStatusToValid() {
-    log.debug(
-        String.format(
-            LOG_BASE_HEADER_INFO,
-            CRON_JOB,
-            "changeDebtPositionStatusToValid",
-            "Running at "
-                + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now())));
-    LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-    int numAffectedRows =
-        paymentPositionRepository.updatePaymentPositionStatusToValid(
-            currentDate, DebtPositionStatus.VALID);
-    log.debug(
-        String.format(
-            LOG_BASE_HEADER_INFO,
-            CRON_JOB,
-            "changeDebtPositionStatusToValid",
-            "Number of updated rows " + numAffectedRows));
-    this.threadOfExecution = Thread.currentThread();
-  }
+    updateMDCForStartExecution("changeDebtPositionStatusToValid", "");
 
-  @Scheduled(cron = "${cron.job.schedule.expression.expired.status}")
-  @Async
-  @Transactional
-  public void changeDebtPositionStatusToExpired() {
-    updateMDCForStartExecution("changeDebtPositionStatusToExpired", "");
     try {
-      log.debug(
-          String.format(
-              LOG_BASE_HEADER_INFO,
-              CRON_JOB,
-              "changeDebtPositionStatusToExpired",
-              "Running at "
-                  + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                      .format(LocalDateTime.now())));
-      LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
-      int numAffectedRows =
-          paymentPositionRepository.updatePaymentPositionStatusToExpired(currentDate);
-      log.debug(
-          String.format(
-              LOG_BASE_HEADER_INFO,
-              CRON_JOB,
-              "changeDebtPositionStatusToExpired",
-              "Number of updated rows " + numAffectedRows));
-      this.threadOfExecution = Thread.currentThread();
+      runBatchJob(
+          "changeDebtPositionStatusToValid",
+          batchService::updatePublishedToValidBatch);
+
       updateMDCForEndExecution();
     } catch (Exception e) {
-      updateMDCError(e, "Expired Scheduler Scheduler Error");
+      updateMDCError(e, "Valid Scheduler Error");
       throw e;
     } finally {
       MDC.clear();
     }
+  }
+
+  @Scheduled(cron = "${cron.job.schedule.expression.expired.status}")
+  @SchedulerLock(
+      name = "changeDebtPositionStatusToExpired",
+      lockAtMostFor = "${cron.job.schedule.shedlock.lockatmostfor}",
+      lockAtLeastFor = "${cron.job.schedule.shedlock.lockatleastfor}")
+  public void changeDebtPositionStatusToExpired() {
+    updateMDCForStartExecution("changeDebtPositionStatusToExpired", "");
+
+    try {
+      runBatchJob(
+          "changeDebtPositionStatusToExpired",
+          batchService::updateValidToExpiredBatch);
+
+      updateMDCForEndExecution();
+    } catch (Exception e) {
+      updateMDCError(e, "Expired Scheduler Error");
+      throw e;
+    } finally {
+      MDC.clear();
+    }
+  }
+
+  private void runBatchJob(
+      String operationName,
+      BiFunction<LocalDateTime, Integer, Integer> batchOperation) {
+
+	LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
+
+	int totalAffectedRows = 0;
+	int affectedRows;
+
+    do {
+      affectedRows = batchOperation.apply(currentDate, batchSize);
+      totalAffectedRows += affectedRows;
+
+      if (affectedRows > 0) {
+        log.info(
+            "{} - processed batchSize={}, affectedRows={}, totalAffectedRows={}",
+            operationName,
+            batchSize,
+            affectedRows,
+            totalAffectedRows);
+      }
+
+    } while (affectedRows == batchSize);
+
+    this.threadOfExecution = Thread.currentThread();
+
+    log.info(
+        "{} completed. totalAffectedRows={}",
+        operationName,
+        totalAffectedRows);
   }
 }

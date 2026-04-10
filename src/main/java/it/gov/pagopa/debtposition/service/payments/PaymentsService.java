@@ -1,8 +1,18 @@
 package it.gov.pagopa.debtposition.service.payments;
 
-import static it.gov.pagopa.debtposition.service.common.ExpirationHandler.*;
-import static it.gov.pagopa.debtposition.service.common.PaymentConflictValidator.checkAlreadyPaidInstallments;
-import static it.gov.pagopa.debtposition.service.common.ValidityHandler.*;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import feign.FeignException;
 import it.gov.pagopa.debtposition.client.NodeClient;
@@ -23,19 +33,16 @@ import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebto
 import it.gov.pagopa.debtposition.model.send.response.NotificationPriceResponse;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
+import static it.gov.pagopa.debtposition.service.common.ExpirationHandler.handlePaymentPositionExpirationLogic;
+import static it.gov.pagopa.debtposition.service.common.ExpirationHandler.isInstallmentExpired;
+import static it.gov.pagopa.debtposition.service.common.PaymentConflictValidator.checkAlreadyPaidInstallments;
+import static it.gov.pagopa.debtposition.service.common.ValidityHandler.handlePaymentPositionValidTransition;
+import static it.gov.pagopa.debtposition.service.common.ValidityHandler.isInstallmentValid;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -67,8 +74,8 @@ public class PaymentsService {
 
   // TODO #naviuv: temporary regression management --> the nav variable can also be evaluated with
   // iuv. Remove the comment when only nav managment is enabled
-  @Transactional
-  public PaymentOptionWithDebtorInfoModelResponse getPaymentOptionByNAV(
+  @Transactional(readOnly = true)
+  private PaymentOption getPaymentOptionByNAV_Internal(
       @NotBlank String organizationFiscalCode, @NotBlank String nav) {
 
     Optional<PaymentOption> po =
@@ -87,18 +94,34 @@ public class PaymentsService {
 
     checkAlreadyPaidInstallments(paymentOption, nav, paymentOptionRepository);
 
+    return paymentOption;
+  }
+
+  public PaymentOptionWithDebtorInfoModelResponse getPaymentOptionByNAV(
+      @NotBlank String organizationFiscalCode, @NotBlank String nav) {
+
+    PaymentOption paymentOption = getPaymentOptionByNAV_Internal(organizationFiscalCode, nav);
+
     // Synchronous update of notification fees
     if (Boolean.TRUE.equals(paymentOption.getSendSync())) {
-      if (this.updateNotificationFeeSync(paymentOption)) {
-        log.info(
-                "Notification fee amount of Payment Option with NAV {} has been updated with"
-                        + " notification-fee: {}.",
-                paymentOption.getNav(),
-                paymentOption.getNotificationFee());
-      } else {
+      try {
+        if (this.updateNotificationFeeSync(paymentOption)) {
+          log.info(
+                  "Notification fee amount of Payment Option with NAV {} has been updated with"
+                          + " notification-fee: {}.",
+                  paymentOption.getNav(),
+                  paymentOption.getNotificationFee());
+        } else {
+          log.error(
+                  "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.",
+                  paymentOption.getNav());
+        }
+      } catch (Exception e) {
+        // Log but don't fail: SEND API errors should not block response
         log.error(
-                "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.",
-                paymentOption.getNav());
+                "[GPD-ERR-SEND-02] Failed to update notification fee for NAV {}: {}",
+                paymentOption.getNav(),
+                e.getMessage());
       }
     }
 
