@@ -55,18 +55,21 @@ public class PaymentsService {
   private final ModelMapper modelMapper;
   private final NodeClient nodeClient;
   private final SendClient sendClient;
+  private final NotificationFeeUpdateService notificationFeeUpdateService;
 
   public PaymentsService(
       PaymentPositionRepository paymentPositionRepository,
       PaymentOptionRepository paymentOptionRepository,
       ModelMapper modelMapper,
       NodeClient nodeClient,
-      SendClient sendClient) {
+      SendClient sendClient,
+      NotificationFeeUpdateService notificationFeeUpdateService) {
     this.paymentPositionRepository = paymentPositionRepository;
     this.paymentOptionRepository = paymentOptionRepository;
     this.modelMapper = modelMapper;
     this.nodeClient = nodeClient;
     this.sendClient = sendClient;
+    this.notificationFeeUpdateService = notificationFeeUpdateService;
   }
 
   @Value("${nav.aux.digit}")
@@ -200,6 +203,7 @@ public class PaymentsService {
     return this.updateTransferStatus(ppToReport.get(), iuv, transferId);
   }
 
+  /*
   @Transactional
   public boolean updateNotificationFeeSync(PaymentOption paymentOption) {
     try {
@@ -226,8 +230,49 @@ public class PaymentsService {
           e.getMessage());
       return false;
     }
+  }*/
+  
+  /**
+   * [PIDM-1820] Optimized to prevent holding database connections for too long.
+   * - Invokes SEND outside the transaction.
+   * - Opens a transaction only for saving data
+   */
+  public boolean updateNotificationFeeSync(PaymentOption paymentOption) {
+	  try {
+		  // call SEND API to retrieve notification fee amount
+		  NotificationPriceResponse sendResponse =
+				  sendClient.getNotificationFee(
+						  paymentOption.getOrganizationFiscalCode(),
+						  paymentOption.getNav());
+
+		  long notificationFeeAmount = sendResponse.getTotalPrice();
+          
+		  // call transactional service method to execute the update of the notification fee and related amounts 
+		  PaymentOption updatedPaymentOption =
+				  notificationFeeUpdateService.applyNotificationFeeUpdate(
+						  paymentOption.getId(),
+						  notificationFeeAmount);
+
+		  paymentOption.setNotificationFee(updatedPaymentOption.getNotificationFee());
+		  paymentOption.setAmount(updatedPaymentOption.getAmount());
+		  paymentOption.setLastUpdatedDate(updatedPaymentOption.getLastUpdatedDate());
+		  paymentOption.setLastUpdatedDateNotificationFee(
+				  updatedPaymentOption.getLastUpdatedDateNotificationFee());
+
+		  return true;
+
+	  } catch (Exception e) {
+		  log.error(
+				  "[GPD-ERR-SEND-00] Exception while calling getNotificationFee for NAV {}, class = {}, message = {}.",
+				  paymentOption.getNav(),
+				  e.getClass(),
+				  e.getMessage());
+		  return false;
+	  }
   }
 
+  
+  /*
   @Transactional
   public PaymentOption updateNotificationFee(
       @NotBlank String organizationFiscalCode, @NotBlank String nav, Long notificationFeeAmount) {
@@ -314,6 +359,98 @@ public class PaymentsService {
 
     paymentOptionRepository.saveAndFlush(paymentOption);
     return paymentOption;
+  } */
+  
+  /**
+   * [PIDM-1820] Optimized to prevent holding database connections for too long.
+   * The process is split into three distinct phases:
+   * 1. Database Read: Fetch necessary data.
+   * 2. HTTP Call to nodeClient.getCheckPosition(...): Executed outside the transaction to avoid holding DB connections during potentially long HTTP calls.
+   * 3. Database Update: Persist results back to the DB.
+   */
+  public PaymentOption updateNotificationFee(
+		  @NotBlank String organizationFiscalCode,
+		  @NotBlank String nav,
+		  Long notificationFeeAmount) {
+
+	  PaymentOptionNotificationFeeContext context =
+			  notificationFeeUpdateService.loadContext(
+					  organizationFiscalCode,
+					  nav);
+
+	  Boolean paymentInProgress =
+			    checkPaymentInProgressOnNode(
+			        context.organizationFiscalCode(),
+			        context.nav());
+
+	  return notificationFeeUpdateService.applyNotificationFeeUpdate(
+			  context.paymentOptionId(),
+			  notificationFeeAmount,
+			  paymentInProgress);
+  }
+  
+  public record PaymentOptionNotificationFeeContext(
+		  Long paymentOptionId,
+		  String organizationFiscalCode,
+		  String nav
+		  ) {}
+  
+  private Boolean checkPaymentInProgressOnNode(
+		  String organizationFiscalCode,
+		  String nav) {
+
+	  try {
+		  NodePosition position =
+				  NodePosition.builder()
+				  .fiscalCode(organizationFiscalCode)
+				  .noticeNumber(auxDigit + nav)
+				  .build();
+
+		  NodeCheckPositionResponse response =
+				  nodeClient.getCheckPosition(
+						  NodeCheckPositionModel.builder()
+						  .positionslist(Collections.singletonList(position))
+						  .build());
+
+		  return !"OK".equalsIgnoreCase(response.getOutcome());
+
+	  } catch (FeignException.BadRequest e) {
+		  NodePosition position =
+				  NodePosition.builder()
+				  .fiscalCode(organizationFiscalCode)
+				  .noticeNumber(nav)
+				  .build();
+
+		  try {
+			  NodeCheckPositionResponse response =
+					  nodeClient.getCheckPosition(
+							  NodeCheckPositionModel.builder()
+							  .positionslist(Collections.singletonList(position))
+							  .build());
+
+			  return !"OK".equalsIgnoreCase(response.getOutcome());
+
+		  } catch (Exception ex) {
+			  log.error(
+					  "Error checking the position on the node for PO with fiscalCode {} and noticeNumber ({}){}",
+					  organizationFiscalCode,
+					  auxDigit,
+					  nav,
+					  ex);
+
+			  return Boolean.TRUE;
+		  }
+
+	  } catch (Exception e) {
+		  log.error(
+				  "Error checking the position on the node for PO with fiscalCode {} and noticeNumber ({}){}",
+				  organizationFiscalCode,
+				  auxDigit,
+				  nav,
+				  e);
+
+		  return Boolean.TRUE;
+	  }
   }
 
   public static void updateAmountsWithNotificationFee(
