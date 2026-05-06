@@ -22,7 +22,7 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 @Component
 @Slf4j
 @Getter
-@ConditionalOnProperty(name = "cron.job.schedule.enabled", matchIfMissing = true)
+@ConditionalOnProperty(name = "cron.job.schedule.enabled", havingValue = "true")
 public class ExpiredPositionsScheduler {
    
    private final DebtPositionStatusBatchService batchService;
