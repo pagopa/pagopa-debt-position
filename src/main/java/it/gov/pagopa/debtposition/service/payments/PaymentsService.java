@@ -33,7 +33,6 @@ import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebto
 import it.gov.pagopa.debtposition.model.send.response.NotificationPriceResponse;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
-import static it.gov.pagopa.debtposition.service.common.ExpirationHandler.handlePaymentPositionExpirationLogic;
 import static it.gov.pagopa.debtposition.service.common.ExpirationHandler.isInstallmentExpired;
 import static it.gov.pagopa.debtposition.service.common.PaymentConflictValidator.checkAlreadyPaidInstallments;
 import static it.gov.pagopa.debtposition.service.common.ValidityHandler.handlePaymentPositionValidTransition;
@@ -56,6 +55,7 @@ public class PaymentsService {
   private final NodeClient nodeClient;
   private final SendClient sendClient;
   private final NotificationFeeUpdateService notificationFeeUpdateService;
+  private final PaymentOptionLookupService paymentOptionLookupService;
 
   public PaymentsService(
       PaymentPositionRepository paymentPositionRepository,
@@ -63,18 +63,21 @@ public class PaymentsService {
       ModelMapper modelMapper,
       NodeClient nodeClient,
       SendClient sendClient,
-      NotificationFeeUpdateService notificationFeeUpdateService) {
+      NotificationFeeUpdateService notificationFeeUpdateService,
+      PaymentOptionLookupService paymentOptionLookupService) {
     this.paymentPositionRepository = paymentPositionRepository;
     this.paymentOptionRepository = paymentOptionRepository;
     this.modelMapper = modelMapper;
     this.nodeClient = nodeClient;
     this.sendClient = sendClient;
     this.notificationFeeUpdateService = notificationFeeUpdateService;
+    this.paymentOptionLookupService = paymentOptionLookupService;
   }
 
   @Value("${nav.aux.digit}")
   private String auxDigit;
 
+  /*
   // TODO #naviuv: temporary regression management --> the nav variable can also be evaluated with
   // iuv. Remove the comment when only nav managment is enabled
   @Transactional(readOnly = true)
@@ -98,12 +101,13 @@ public class PaymentsService {
     checkAlreadyPaidInstallments(paymentOption, nav, paymentOptionRepository);
 
     return paymentOption;
-  }
+  } */
 
   public PaymentOptionWithDebtorInfoModelResponse getPaymentOptionByNAV(
       @NotBlank String organizationFiscalCode, @NotBlank String nav) {
 
-    PaymentOption paymentOption = getPaymentOptionByNAV_Internal(organizationFiscalCode, nav);
+	  PaymentOption paymentOption =
+			    paymentOptionLookupService.getPaymentOptionByNAVInternal(organizationFiscalCode, nav);
 
     // Synchronous update of notification fees
     if (Boolean.TRUE.equals(paymentOption.getSendSync())) {
@@ -262,7 +266,7 @@ public class PaymentsService {
 	  Boolean paymentInProgress =
 			    checkPaymentInProgressOnNode(
 			        context.organizationFiscalCode(),
-			        context.nav());
+			        nav);
 
 	  return notificationFeeUpdateService.applyNotificationFeeUpdate(
 			  context.paymentOptionId(),
