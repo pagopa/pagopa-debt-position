@@ -77,9 +77,6 @@ public class PaymentsService {
   @Value("${nav.aux.digit}")
   private String auxDigit;
 
-  
-  // TODO #naviuv: temporary regression management --> the nav variable can also be evaluated with
-  // iuv. Remove the comment when only nav managment is enabled
   public PaymentOptionWithDebtorInfoModelResponse getPaymentOptionByNAV(
       @NotBlank String organizationFiscalCode, @NotBlank String nav) {
 
