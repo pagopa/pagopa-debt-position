@@ -77,32 +77,9 @@ public class PaymentsService {
   @Value("${nav.aux.digit}")
   private String auxDigit;
 
-  /*
+  
   // TODO #naviuv: temporary regression management --> the nav variable can also be evaluated with
   // iuv. Remove the comment when only nav managment is enabled
-  @Transactional(readOnly = true)
-  private PaymentOption getPaymentOptionByNAV_Internal(
-      @NotBlank String organizationFiscalCode, @NotBlank String nav) {
-
-    Optional<PaymentOption> po =
-        paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
-            organizationFiscalCode, nav, organizationFiscalCode, nav);
-
-    if (po.isEmpty()) {
-      throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav);
-    }
-
-    PaymentOption paymentOption = po.get();
-
-    // FSM Logic: Update state (PaymentPosition status) based on current time
-    handlePaymentPositionValidTransition(paymentOption.getPaymentPosition());
-    handlePaymentPositionExpirationLogic(paymentOption.getPaymentPosition());
-
-    checkAlreadyPaidInstallments(paymentOption, nav, paymentOptionRepository);
-
-    return paymentOption;
-  } */
-
   public PaymentOptionWithDebtorInfoModelResponse getPaymentOptionByNAV(
       @NotBlank String organizationFiscalCode, @NotBlank String nav) {
 
@@ -280,9 +257,19 @@ public class PaymentsService {
 		  String nav
 		  ) {}
   
+  private static String sanitizeForLog(String value) {
+	  if (value == null) {
+		  return null;
+	  }
+	  return value.replace('\n', '_').replace('\r', '_');
+  }
+  
   private Boolean checkPaymentInProgressOnNode(
 		  String organizationFiscalCode,
 		  String nav) {
+
+	  String safeOrganizationFiscalCode = sanitizeForLog(organizationFiscalCode);
+	  String safeNav = sanitizeForLog(nav);
 
 	  try {
 		  NodePosition position =
@@ -318,9 +305,9 @@ public class PaymentsService {
 		  } catch (Exception ex) {
 			  log.error(
 					  "Error checking the position on the node for PO with fiscalCode {} and noticeNumber ({}){}",
-					  organizationFiscalCode,
+					  safeOrganizationFiscalCode,
 					  auxDigit,
-					  nav,
+					  safeNav,
 					  ex);
 
 			  return Boolean.TRUE;
@@ -329,9 +316,9 @@ public class PaymentsService {
 	  } catch (Exception e) {
 		  log.error(
 				  "Error checking the position on the node for PO with fiscalCode {} and noticeNumber ({}){}",
-				  organizationFiscalCode,
+				  safeOrganizationFiscalCode,
 				  auxDigit,
-				  nav,
+				  safeNav,
 				  e);
 
 		  return Boolean.TRUE;
