@@ -46,9 +46,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @AutoConfigureMockMvc
 @Testcontainers
 @Execution(ExecutionMode.SAME_THREAD)
-class ExpiredPositionsSchedulerTest {
+class DebtPositionStatusSchedulerTest {
 
-  @Autowired ExpiredPositionsScheduler expiredPositionsScheduler;
+  @Autowired DebtPositionStatusScheduler scheduler;
 
   @Autowired private MockMvc mvc;
 
@@ -131,7 +131,7 @@ class ExpiredPositionsSchedulerTest {
     waitUntilAfter(validityDate.plusSeconds(1));
 
     // lancio il batch per consentire il passaggio di stato
-    expiredPositionsScheduler.changeDebtPositionStatusToValid();
+    scheduler.changeDebtPositionStatusToValid();
 
     // check status until it becomes VALID
     Awaitility.await()
@@ -189,7 +189,7 @@ class ExpiredPositionsSchedulerTest {
     waitUntilAfter(validityDate.plusSeconds(1));
 
     // lancio il batch per consentire il passaggio di stato
-    expiredPositionsScheduler.changeDebtPositionStatusToValid();
+    scheduler.changeDebtPositionStatusToValid();
 
     // check status until it becomes VALID
     Awaitility.await()
@@ -210,7 +210,7 @@ class ExpiredPositionsSchedulerTest {
     waitUntilAfter(dueDate.plusSeconds(1));
 
     // lancio il batch per consentire il passaggio di stato
-    expiredPositionsScheduler.changeDebtPositionStatusToExpired();
+    scheduler.changeDebtPositionStatusToExpired();
 
     // check status until it remains VALID (not pass to EXPIRED because switchToExpired is false)
     Awaitility.await()
@@ -268,7 +268,7 @@ class ExpiredPositionsSchedulerTest {
     waitUntilAfter(validityDate.plusSeconds(1));
 
     // lancio il batch per consentire il passaggio di stato
-    expiredPositionsScheduler.changeDebtPositionStatusToValid();
+    scheduler.changeDebtPositionStatusToValid();
 
     // check status until it becomes VALID
     Awaitility.await()
@@ -289,7 +289,7 @@ class ExpiredPositionsSchedulerTest {
     waitUntilAfter(dueDate.plusSeconds(1));
 
     // lancio il batch per consentire il passaggio di stato
-    expiredPositionsScheduler.changeDebtPositionStatusToExpired();
+    scheduler.changeDebtPositionStatusToExpired();
 
     // check status until it becomes EXPIRED
     Awaitility.await()
@@ -349,7 +349,7 @@ class ExpiredPositionsSchedulerTest {
     waitUntilAfter(validityDate.plusSeconds(1));
 
     // lancio il batch per consentire il passaggio di stato
-    expiredPositionsScheduler.changeDebtPositionStatusToValid();
+    scheduler.changeDebtPositionStatusToValid();
 
     // check status until it becomes VALID
     Awaitility.await()
@@ -370,7 +370,7 @@ class ExpiredPositionsSchedulerTest {
     waitUntilAfter(commonDueDate.plusSeconds(1));
 
     // lancio il batch per consentire il passaggio di stato
-    expiredPositionsScheduler.changeDebtPositionStatusToExpired();
+    scheduler.changeDebtPositionStatusToExpired();
 
     // wait UNTIL the position goes EXPIRED
     Awaitility.await()
@@ -503,7 +503,7 @@ class ExpiredPositionsSchedulerTest {
         .andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty());
 
     // run batch before the validity date then the status should remain PUBLISHED
-    expiredPositionsScheduler.changeDebtPositionStatusToValid();
+    scheduler.changeDebtPositionStatusToValid();
 
     // check that the status is still PUBLISHED
     mvc.perform(
@@ -587,7 +587,7 @@ class ExpiredPositionsSchedulerTest {
     waitUntilAfter(validityDate.plusSeconds(1));
 
     // run the batch to change the status to VALID for both positions in the same run
-    expiredPositionsScheduler.changeDebtPositionStatusToValid();
+    scheduler.changeDebtPositionStatusToValid();
 
     // check that the first position is now VALID
     Awaitility.await()

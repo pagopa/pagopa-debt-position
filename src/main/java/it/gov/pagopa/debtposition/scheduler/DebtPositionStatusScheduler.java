@@ -23,7 +23,7 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 @Slf4j
 @Getter
 @ConditionalOnProperty(name = "cron.job.schedule.enabled", havingValue = "true")
-public class ExpiredPositionsScheduler {
+public class DebtPositionStatusScheduler {
    
    private final DebtPositionStatusBatchService batchService;
 
@@ -31,7 +31,7 @@ public class ExpiredPositionsScheduler {
 
    private Thread threadOfExecution;
 
-   public ExpiredPositionsScheduler(
+   public DebtPositionStatusScheduler(
 	    DebtPositionStatusBatchService batchService,
 	    @Value("${cron.job.schedule.batch.size:500}") int batchSize) {
 	  this.batchService = batchService;
