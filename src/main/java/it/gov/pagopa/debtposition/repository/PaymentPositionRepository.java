@@ -29,25 +29,6 @@ public interface PaymentPositionRepository
     extends JpaRepository<PaymentPosition, Long>,
         JpaSpecificationExecutor<PaymentPosition>,
         PagingAndSortingRepository<PaymentPosition, Long> {
-
-  @Modifying
-  @Query("""
-    update PaymentPosition pp
-       set pp.status = :status,
-           pp.lastUpdatedDate = :currentDate,
-           pp.version = pp.version + 1
-     where pp.status = 'PUBLISHED'
-       and exists (
-             select 1
-               from PaymentOption po
-              where po.paymentPosition = pp
-                and po.validityDate is not null
-                and po.validityDate <= :currentDate
-       )
-  """)
-  int updatePaymentPositionStatusToValid(
-      @Param("currentDate") LocalDateTime currentDate,
-      @Param("status") DebtPositionStatus status);
   
   /**
    * Batch version of updatePaymentPositionStatusToValid for OPTIMIZATION:
@@ -80,49 +61,13 @@ public interface PaymentPositionRepository
 			""", nativeQuery = true)
 	int updatePaymentPositionStatusToValidBatch(@Param("currentDate") LocalDateTime currentDate,
 			@Param("status") String status, @Param("batchSize") int batchSize);
-
+  
   /**
    * Rule 6- For a debt position to EXPIRED, the following conditions must be met:
    *  1. all POs must be PO_UNPAID
    *  2. all POs must have switch_to_expired = true
    *  3. all POs must be expired
-   */
-	@Modifying
-	@Query(value = """
-			UPDATE apd.payment_position pp
-			SET status = 'EXPIRED',
-			last_updated_date = :currentDate,
-			version = pp.version + 1
-			WHERE pp.status = 'VALID'
-			AND pp.payment_date IS NULL
-			
-			-- all POs must be PO_UNPAID
-			AND NOT EXISTS (
-			SELECT 1
-			FROM apd.payment_option po1
-			WHERE po1.payment_position_id = pp.id
-			AND po1.status <> 'PO_UNPAID'
-			)
-			
-			-- all POs must have switch_to_expired = true
-			AND NOT EXISTS (
-			SELECT 1
-			FROM apd.payment_option po2
-			WHERE po2.payment_position_id = pp.id
-			AND po2.switch_to_expired = false
-			)
-			
-			-- all POs must be expired
-			AND NOT EXISTS (
-			SELECT 1
-			FROM apd.payment_option po3
-			WHERE po3.payment_position_id = pp.id
-			AND po3.due_date >= :currentDate
-			)
-			""", nativeQuery = true)
-	int updatePaymentPositionStatusToExpired(@Param("currentDate") LocalDateTime currentDate);
-  
-  /**
+   *  
    * Batch version of updatePaymentPositionStatusToExpired for OPTIMIZATION:
    * Updates maximum batchSize records to prevent connection pool exhaustion.
    * This should be called in a loop until fewer records are affected than batchSize.

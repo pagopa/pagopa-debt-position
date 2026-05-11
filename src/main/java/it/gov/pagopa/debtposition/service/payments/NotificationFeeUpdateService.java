@@ -4,6 +4,7 @@ import static it.gov.pagopa.debtposition.service.payments.PaymentsService.update
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,8 +21,7 @@ public class NotificationFeeUpdateService {
 
   private final PaymentOptionRepository paymentOptionRepository;
 
-  public NotificationFeeUpdateService(
-      PaymentOptionRepository paymentOptionRepository) {
+  public NotificationFeeUpdateService(PaymentOptionRepository paymentOptionRepository) {
     this.paymentOptionRepository = paymentOptionRepository;
   }
 
@@ -38,17 +38,13 @@ public class NotificationFeeUpdateService {
                 organizationFiscalCode,
                 nav)
             .orElseThrow(
-                () -> new AppException(
-                    AppError.PAYMENT_OPTION_NOT_FOUND,
-                    organizationFiscalCode,
-                    nav));
+                () ->
+                    new AppException(
+                        AppError.PAYMENT_OPTION_NOT_FOUND,
+                        organizationFiscalCode,
+                        nav));
 
-    if (!PaymentOptionStatus.PO_UNPAID.equals(paymentOption.getStatus())) {
-      throw new AppException(
-          AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_NOT_UPDATABLE,
-          organizationFiscalCode,
-          nav);
-    }
+    assertPaymentOptionStillUpdatable(paymentOption, organizationFiscalCode, nav);
 
     return new PaymentOptionNotificationFeeContext(
         paymentOption.getId(),
@@ -62,47 +58,65 @@ public class NotificationFeeUpdateService {
       Long notificationFeeAmount,
       Boolean paymentInProgress) {
 
-    PaymentOption paymentOption =
-        paymentOptionRepository.findById(paymentOptionId)
-            .orElseThrow(
-                () -> new AppException(
-                    AppError.PAYMENT_OPTION_NOT_FOUND,
-                    String.valueOf(paymentOptionId),
-                    ""));
-
-    updateAmountsWithNotificationFee(
-        paymentOption,
-        paymentOption.getOrganizationFiscalCode(),
-        notificationFeeAmount);
-
-    paymentOption.setPaymentInProgress(paymentInProgress);
-    paymentOption.setLastUpdatedDate(LocalDateTime.now(ZoneOffset.UTC));
-    paymentOption.setLastUpdatedDateNotificationFee(LocalDateTime.now(ZoneOffset.UTC));
-
-    return paymentOptionRepository.saveAndFlush(paymentOption);
+    return applyNotificationFeeUpdateInternal(
+        paymentOptionId,
+        notificationFeeAmount,
+        Optional.ofNullable(paymentInProgress));
   }
-  
+
   @Transactional
   public PaymentOption applyNotificationFeeUpdate(
       Long paymentOptionId,
       Long notificationFeeAmount) {
 
+    return applyNotificationFeeUpdateInternal(
+        paymentOptionId,
+        notificationFeeAmount,
+        Optional.empty());
+  }
+
+  private PaymentOption applyNotificationFeeUpdateInternal(
+      Long paymentOptionId,
+      Long notificationFeeAmount,
+      Optional<Boolean> paymentInProgress) {
+
     PaymentOption paymentOption =
-        paymentOptionRepository.findById(paymentOptionId)
+        paymentOptionRepository.findByIdForUpdate(paymentOptionId)
             .orElseThrow(
-                () -> new AppException(
-                    AppError.PAYMENT_OPTION_NOT_FOUND,
-                    String.valueOf(paymentOptionId),
-                    ""));
+                () ->
+                    new AppException(
+                        AppError.PAYMENT_OPTION_NOT_FOUND,
+                        String.valueOf(paymentOptionId),
+                        ""));
+
+    assertPaymentOptionStillUpdatable(
+        paymentOption,
+        paymentOption.getOrganizationFiscalCode(),
+        paymentOption.getNav());
 
     updateAmountsWithNotificationFee(
         paymentOption,
         paymentOption.getOrganizationFiscalCode(),
         notificationFeeAmount);
 
+    paymentInProgress.ifPresent(paymentOption::setPaymentInProgress);
+
     paymentOption.setLastUpdatedDate(LocalDateTime.now(ZoneOffset.UTC));
     paymentOption.setLastUpdatedDateNotificationFee(LocalDateTime.now(ZoneOffset.UTC));
 
     return paymentOptionRepository.saveAndFlush(paymentOption);
+  }
+
+  private void assertPaymentOptionStillUpdatable(
+      PaymentOption paymentOption,
+      String organizationFiscalCode,
+      String nav) {
+
+    if (!PaymentOptionStatus.PO_UNPAID.equals(paymentOption.getStatus())) {
+      throw new AppException(
+          AppError.PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_NOT_UPDATABLE,
+          organizationFiscalCode,
+          nav);
+    }
   }
 }

@@ -50,7 +50,8 @@ class NotificationFeeUpdateServiceTest {
         notificationFeeUpdateService.loadContext("77777777777", "12345678901234567");
 
     org.assertj.core.api.Assertions.assertThat(context.paymentOptionId()).isEqualTo(10L);
-    org.assertj.core.api.Assertions.assertThat(context.organizationFiscalCode()).isEqualTo("77777777777");
+    org.assertj.core.api.Assertions.assertThat(context.organizationFiscalCode())
+        .isEqualTo("77777777777");
     org.assertj.core.api.Assertions.assertThat(context.nav()).isEqualTo("312345678901234567");
   }
 
@@ -97,7 +98,7 @@ class NotificationFeeUpdateServiceTest {
     Transfer transfer = paymentOption.getTransfer().get(0);
     transfer.setAmount(1100L);
 
-    when(paymentOptionRepository.findById(10L)).thenReturn(Optional.of(paymentOption));
+    when(paymentOptionRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(paymentOption));
     when(paymentOptionRepository.saveAndFlush(any(PaymentOption.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -106,9 +107,11 @@ class NotificationFeeUpdateServiceTest {
 
     org.assertj.core.api.Assertions.assertThat(result.getNotificationFee()).isEqualTo(150L);
     org.assertj.core.api.Assertions.assertThat(result.getAmount()).isEqualTo(1150L);
-    org.assertj.core.api.Assertions.assertThat(result.getTransfer().get(0).getAmount()).isEqualTo(1150L);
+    org.assertj.core.api.Assertions.assertThat(result.getTransfer().get(0).getAmount())
+        .isEqualTo(1150L);
     org.assertj.core.api.Assertions.assertThat(result.getLastUpdatedDate()).isNotNull();
-    org.assertj.core.api.Assertions.assertThat(result.getLastUpdatedDateNotificationFee()).isNotNull();
+    org.assertj.core.api.Assertions.assertThat(result.getLastUpdatedDateNotificationFee())
+        .isNotNull();
 
     verify(paymentOptionRepository).saveAndFlush(paymentOption);
   }
@@ -122,7 +125,7 @@ class NotificationFeeUpdateServiceTest {
     Transfer transfer = paymentOption.getTransfer().get(0);
     transfer.setAmount(1000L);
 
-    when(paymentOptionRepository.findById(10L)).thenReturn(Optional.of(paymentOption));
+    when(paymentOptionRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(paymentOption));
     when(paymentOptionRepository.saveAndFlush(any(PaymentOption.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -131,16 +134,18 @@ class NotificationFeeUpdateServiceTest {
 
     org.assertj.core.api.Assertions.assertThat(result.getNotificationFee()).isEqualTo(150L);
     org.assertj.core.api.Assertions.assertThat(result.getAmount()).isEqualTo(1150L);
-    org.assertj.core.api.Assertions.assertThat(result.getTransfer().get(0).getAmount()).isEqualTo(1150L);
+    org.assertj.core.api.Assertions.assertThat(result.getTransfer().get(0).getAmount())
+        .isEqualTo(1150L);
     org.assertj.core.api.Assertions.assertThat(result.getLastUpdatedDate()).isNotNull();
-    org.assertj.core.api.Assertions.assertThat(result.getLastUpdatedDateNotificationFee()).isNotNull();
+    org.assertj.core.api.Assertions.assertThat(result.getLastUpdatedDateNotificationFee())
+        .isNotNull();
 
     verify(paymentOptionRepository).saveAndFlush(paymentOption);
   }
 
   @Test
   void applyNotificationFeeUpdate_notFound_shouldThrowAppException() {
-    when(paymentOptionRepository.findById(10L)).thenReturn(Optional.empty());
+    when(paymentOptionRepository.findByIdForUpdate(10L)).thenReturn(Optional.empty());
 
     assertThrows(
         AppException.class,
@@ -154,7 +159,9 @@ class NotificationFeeUpdateServiceTest {
     PaymentOption paymentOption = new PaymentOption();
     paymentOption.setId(10L);
     paymentOption.setIuv("1234561");
+    paymentOption.setNav("31234561");
     paymentOption.setOrganizationFiscalCode("77777777777");
+    paymentOption.setStatus(PaymentOptionStatus.PO_UNPAID);
     paymentOption.setAmount(1000L);
     paymentOption.setNotificationFee(0L);
 
@@ -165,12 +172,68 @@ class NotificationFeeUpdateServiceTest {
 
     paymentOption.addTransfer(transfer);
 
-    when(paymentOptionRepository.findById(10L)).thenReturn(Optional.of(paymentOption));
+    when(paymentOptionRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(paymentOption));
 
     assertThrows(
         AppException.class,
         () -> notificationFeeUpdateService.applyNotificationFeeUpdate(10L, 150L, false));
 
+    verify(paymentOptionRepository, never()).saveAndFlush(any(PaymentOption.class));
+  }
+
+  @Test
+  void applyNotificationFeeUpdate_writePathWithPaidPaymentOption_shouldThrowAppExceptionAndNotSave() {
+    PaymentOption paymentOption = buildPaymentOptionWithTransfer();
+    paymentOption.setStatus(PaymentOptionStatus.PO_PAID);
+    paymentOption.setAmount(1000L);
+    paymentOption.setNotificationFee(0L);
+
+    paymentOption.getTransfer().get(0).setAmount(1000L);
+
+    when(paymentOptionRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(paymentOption));
+
+    assertThrows(
+        AppException.class,
+        () -> notificationFeeUpdateService.applyNotificationFeeUpdate(10L, 150L, false));
+
+    verify(paymentOptionRepository).findByIdForUpdate(10L);
+    verify(paymentOptionRepository, never()).saveAndFlush(any(PaymentOption.class));
+  }
+
+  @Test
+  void applyNotificationFeeUpdate_withoutPaymentInProgress_paidPaymentOption_shouldThrowAppExceptionAndNotSave() {
+    PaymentOption paymentOption = buildPaymentOptionWithTransfer();
+    paymentOption.setStatus(PaymentOptionStatus.PO_PAID);
+    paymentOption.setAmount(1000L);
+    paymentOption.setNotificationFee(0L);
+
+    paymentOption.getTransfer().get(0).setAmount(1000L);
+
+    when(paymentOptionRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(paymentOption));
+
+    assertThrows(
+        AppException.class,
+        () -> notificationFeeUpdateService.applyNotificationFeeUpdate(10L, 150L));
+
+    verify(paymentOptionRepository, never()).saveAndFlush(any(PaymentOption.class));
+  }
+
+  @Test
+  void applyNotificationFeeUpdate_writePathWithReportedPaymentOption_shouldThrowAppExceptionAndNotSave() {
+    PaymentOption paymentOption = buildPaymentOptionWithTransfer();
+    paymentOption.setStatus(PaymentOptionStatus.PO_REPORTED);
+    paymentOption.setAmount(1000L);
+    paymentOption.setNotificationFee(0L);
+
+    paymentOption.getTransfer().get(0).setAmount(1000L);
+
+    when(paymentOptionRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(paymentOption));
+
+    assertThrows(
+        AppException.class,
+        () -> notificationFeeUpdateService.applyNotificationFeeUpdate(10L, 150L, true));
+
+    verify(paymentOptionRepository).findByIdForUpdate(10L);
     verify(paymentOptionRepository, never()).saveAndFlush(any(PaymentOption.class));
   }
 

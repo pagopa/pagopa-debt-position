@@ -116,14 +116,24 @@ public class DebtPositionStatusScheduler {
 
       totalAffectedRows += affectedRows;
 
-      if (affectedRows > 0) {
-        log.info(
-            "{} - processed batchIndex={}, batchSize={}, affectedRows={}, totalAffectedRows={}",
-            operationName,
-            batchIndex,
-            batchSize,
-            affectedRows,
-            totalAffectedRows);
+     /* Logs every batchsize records or if the last batch has less than batchsize records, to provide visibility on progress.
+      * For example, with batchSize=500:
+      * batch 1 -log
+      * batch 500 -> log
+      * batch 1000 -> log
+      * completed -> final log
+      */
+      if (affectedRows > 0
+    		  && (batchIndex == 1
+    		  || batchIndex % batchSize == 0
+    		  || affectedRows < batchSize)) {
+    	  log.info(
+    			  "{} - processed batchIndex={}, batchSize={}, affectedRows={}, totalAffectedRows={}",
+    			  operationName,
+    			  batchIndex,
+    			  batchSize,
+    			  affectedRows,
+    			  totalAffectedRows);
       }
 
     } while (affectedRows == batchSize);

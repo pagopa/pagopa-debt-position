@@ -3,10 +3,13 @@ package it.gov.pagopa.debtposition.repository;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
+import jakarta.persistence.LockModeType;
+
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -51,4 +54,9 @@ public interface PaymentOptionRepository
 			for update
 			""", nativeQuery = true)
   List<PaymentOption> lockAllByPaymentPositionId(@Param("ppId") Long ppId);
+	
+	
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("SELECT po FROM PaymentOption po WHERE po.id = :id")
+	Optional<PaymentOption> findByIdForUpdate(@Param("id") Long id);
 }
