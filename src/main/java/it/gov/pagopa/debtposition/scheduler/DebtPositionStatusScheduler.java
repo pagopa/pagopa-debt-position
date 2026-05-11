@@ -116,13 +116,16 @@ public class DebtPositionStatusScheduler {
 
       totalAffectedRows += affectedRows;
 
-     /* Logs every batchsize records or if the last batch has less than batchsize records, to provide visibility on progress.
-      * For example, with batchSize=500:
-      * batch 1 -log
-      * batch 500 -> log
-      * batch 1000 -> log
-      * completed -> final log
-      */
+     
+      /*
+       * Logging:
+       * - the first processed batch
+       * - every batchSize batches
+       * - the final partial batch
+       *
+       * Note: batchSize is also used as logging interval here.
+       * With batchSize=500, logs are emitted at batchIndex 1, 500, 1000, etc.
+       */
       if (affectedRows > 0
     		  && (batchIndex == 1
     		  || batchIndex % batchSize == 0
