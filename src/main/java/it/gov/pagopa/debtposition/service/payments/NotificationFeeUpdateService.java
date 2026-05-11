@@ -14,7 +14,6 @@ import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
-import it.gov.pagopa.debtposition.service.payments.PaymentsService.PaymentOptionNotificationFeeContext;
 
 @Service
 public class NotificationFeeUpdateService {
@@ -81,7 +80,8 @@ public class NotificationFeeUpdateService {
       Optional<Boolean> paymentInProgress) {
 
     PaymentOption paymentOption =
-        paymentOptionRepository.findByIdForUpdate(paymentOptionId)
+        paymentOptionRepository
+            .findByIdForUpdate(paymentOptionId)
             .orElseThrow(
                 () ->
                     new AppException(
@@ -119,4 +119,9 @@ public class NotificationFeeUpdateService {
           nav);
     }
   }
+
+  public record PaymentOptionNotificationFeeContext(
+      Long paymentOptionId,
+      String organizationFiscalCode,
+      String nav) {}
 }

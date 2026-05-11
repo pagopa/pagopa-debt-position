@@ -37,6 +37,7 @@ import static it.gov.pagopa.debtposition.service.common.ExpirationHandler.isInst
 import static it.gov.pagopa.debtposition.service.common.PaymentConflictValidator.checkAlreadyPaidInstallments;
 import static it.gov.pagopa.debtposition.service.common.ValidityHandler.handlePaymentPositionValidTransition;
 import static it.gov.pagopa.debtposition.service.common.ValidityHandler.isInstallmentValid;
+import it.gov.pagopa.debtposition.service.payments.NotificationFeeUpdateService.PaymentOptionNotificationFeeContext;
 
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
@@ -229,12 +230,6 @@ public class PaymentsService {
 			  notificationFeeAmount,
 			  paymentInProgress);
   }
-  
-  public record PaymentOptionNotificationFeeContext(
-		  Long paymentOptionId,
-		  String organizationFiscalCode,
-		  String nav
-		  ) {}
   
   private void updateNotificationFeeIfSendSync(PaymentOption paymentOption) {
 	  if (!Boolean.TRUE.equals(paymentOption.getSendSync())) {

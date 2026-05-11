@@ -11,7 +11,7 @@ import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
-import it.gov.pagopa.debtposition.service.payments.PaymentsService.PaymentOptionNotificationFeeContext;
+import it.gov.pagopa.debtposition.service.payments.NotificationFeeUpdateService.PaymentOptionNotificationFeeContext;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -130,7 +130,7 @@ class PaymentsServiceNotificationFeeTest {
   void updateNotificationFee_OK_nodeReturnsOK_shouldSetPaymentInProgressFalse() {
     when(notificationFeeUpdateService.loadContext("77777777777", "12345678901234567"))
         .thenReturn(
-            new PaymentsService.PaymentOptionNotificationFeeContext(
+            new NotificationFeeUpdateService.PaymentOptionNotificationFeeContext(
                 10L,
                 "77777777777",
                 "312345678901234567"));
@@ -162,7 +162,7 @@ class PaymentsServiceNotificationFeeTest {
   void updateNotificationFee_OK_nodeReturnsKO_shouldSetPaymentInProgressTrue() {
     when(notificationFeeUpdateService.loadContext("77777777777", "12345678901234567"))
         .thenReturn(
-            new PaymentsService.PaymentOptionNotificationFeeContext(
+            new NotificationFeeUpdateService.PaymentOptionNotificationFeeContext(
                 10L,
                 "77777777777",
                 "312345678901234567"));
@@ -187,7 +187,7 @@ class PaymentsServiceNotificationFeeTest {
   void updateNotificationFee_badRequestOnAuxDigitCall_shouldRetryWithNav() {
     when(notificationFeeUpdateService.loadContext("77777777777", "12345678901234567"))
         .thenReturn(
-            new PaymentsService.PaymentOptionNotificationFeeContext(
+            new NotificationFeeUpdateService.PaymentOptionNotificationFeeContext(
                 10L,
                 "77777777777",
                 "312345678901234567"));
@@ -224,7 +224,7 @@ class PaymentsServiceNotificationFeeTest {
   void updateNotificationFee_nodeException_shouldSetPaymentInProgressTrue() {
     when(notificationFeeUpdateService.loadContext("77777777777", "12345678901234567"))
         .thenReturn(
-            new PaymentsService.PaymentOptionNotificationFeeContext(
+            new NotificationFeeUpdateService.PaymentOptionNotificationFeeContext(
                 10L,
                 "77777777777",
                 "312345678901234567"));
