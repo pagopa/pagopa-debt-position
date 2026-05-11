@@ -37,6 +37,8 @@ import static it.gov.pagopa.debtposition.service.common.ExpirationHandler.isInst
 import static it.gov.pagopa.debtposition.service.common.PaymentConflictValidator.checkAlreadyPaidInstallments;
 import static it.gov.pagopa.debtposition.service.common.ValidityHandler.handlePaymentPositionValidTransition;
 import static it.gov.pagopa.debtposition.service.common.ValidityHandler.isInstallmentValid;
+
+import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -84,27 +86,7 @@ public class PaymentsService {
 			    paymentOptionLookupService.getPaymentOptionByNAVInternal(organizationFiscalCode, nav);
 
     // Synchronous update of notification fees
-    if (Boolean.TRUE.equals(paymentOption.getSendSync())) {
-      try {
-        if (this.updateNotificationFeeSync(paymentOption)) {
-          log.info(
-                  "Notification fee amount of Payment Option with NAV {} has been updated with"
-                          + " notification-fee: {}.",
-                  paymentOption.getNav(),
-                  paymentOption.getNotificationFee());
-        } else {
-          log.error(
-                  "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.",
-                  paymentOption.getNav());
-        }
-      } catch (Exception e) {
-        // Log but don't fail: SEND API errors should not block response
-        log.error(
-                "[GPD-ERR-SEND-02] Failed to update notification fee for NAV {}: {}",
-                paymentOption.getNav(),
-                e.getMessage());
-      }
-    }
+    updateNotificationFeeIfSendSync(paymentOption);
 
     PaymentOptionWithDebtorInfoModelResponse paymentOptionResponse =
             modelMapper.map(paymentOption, PaymentOptionWithDebtorInfoModelResponse.class);
@@ -182,7 +164,7 @@ public class PaymentsService {
   }
   
   /**
-   * [PIDM-1820] Optimized to prevent holding database connections for too long.
+   * Handles the synchronous notification fee update flow.
    * - Invokes SEND outside the transaction.
    * - Opens a transaction only for saving data
    */
@@ -221,7 +203,7 @@ public class PaymentsService {
   }
   
   /**
-   * [PIDM-1820] Optimized to prevent holding database connections for too long.
+   * Handles the notification fee update flow after checking payment status on Nodo.
    * The process is split into three distinct phases:
    * 1. Database Read: Fetch necessary data.
    * 2. HTTP Call to nodeClient.getCheckPosition(...): Executed outside the transaction to avoid holding DB connections during potentially long HTTP calls.
@@ -254,19 +236,38 @@ public class PaymentsService {
 		  String nav
 		  ) {}
   
-  private static String sanitizeForLog(String value) {
-	  if (value == null) {
-		  return null;
+  private void updateNotificationFeeIfSendSync(PaymentOption paymentOption) {
+	  if (!Boolean.TRUE.equals(paymentOption.getSendSync())) {
+		  return;
 	  }
-	  return value.replace('\n', '_').replace('\r', '_');
+
+	  String safeNav = CommonUtil.sanitize(paymentOption.getNav());
+
+	  try {
+		  if (this.updateNotificationFeeSync(paymentOption)) {
+			  log.info(
+					  "Notification fee amount of Payment Option with NAV {} has been updated with notification-fee: {}.",
+					  safeNav,
+					  paymentOption.getNotificationFee());
+		  } else {
+			  log.error(
+					  "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.",
+					  safeNav);
+		  }
+	  } catch (Exception e) {
+		  log.error(
+				  "[GPD-ERR-SEND-02] Failed to update notification fee for NAV {}: {}",
+				  safeNav,
+				  CommonUtil.sanitize(e.getMessage()));
+	  }
   }
   
   private Boolean checkPaymentInProgressOnNode(
 		  String organizationFiscalCode,
 		  String nav) {
 
-	  String safeOrganizationFiscalCode = sanitizeForLog(organizationFiscalCode);
-	  String safeNav = sanitizeForLog(nav);
+	  String safeOrganizationFiscalCode = CommonUtil.sanitize(organizationFiscalCode);
+	  String safeNav = CommonUtil.sanitize(nav);
 
 	  try {
 		  NodePosition position =
