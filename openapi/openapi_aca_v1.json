@@ -4,7 +4,7 @@
     "title": "PagoPA API Debt Position ${service}",
     "description": "Progetto Gestione Posizioni Debitorie",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.1.25-PIDM-1820-hikari-pool-connection-leak"
+    "version": "1.1.26-PIDM-1820-hikari-pool-connection-leak"
   },
   "servers": [
     {

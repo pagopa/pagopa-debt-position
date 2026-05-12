@@ -24,7 +24,7 @@ public class PaymentOptionLookupService {
 
   // TODO #naviuv: temporary regression management --> the nav variable can also be evaluated with
   // iuv. Remove the comment when only nav managment is enabled
-  @Transactional(readOnly = true)
+  @Transactional
   public PaymentOption getPaymentOptionByNAVInternal(
       @NotBlank String organizationFiscalCode, @NotBlank String nav) {
 
