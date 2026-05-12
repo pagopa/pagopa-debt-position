@@ -34,7 +34,7 @@ import it.gov.pagopa.debtposition.model.send.response.NotificationPriceResponse;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import static it.gov.pagopa.debtposition.service.common.ExpirationHandler.isInstallmentExpired;
-import static it.gov.pagopa.debtposition.service.common.PaymentConflictValidator.checkAlreadyPaidInstallments;
+import static it.gov.pagopa.debtposition.service.common.PaymentConflictValidator.checkAlreadyPaidInstallmentsWithLock;
 import static it.gov.pagopa.debtposition.service.common.ValidityHandler.handlePaymentPositionValidTransition;
 import static it.gov.pagopa.debtposition.service.common.ValidityHandler.isInstallmentValid;
 import it.gov.pagopa.debtposition.service.payments.NotificationFeeUpdateService.PaymentOptionNotificationFeeContext;
@@ -135,7 +135,7 @@ public class PaymentsService {
                     new AppException(
                         AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav));
 
-    checkAlreadyPaidInstallments(poToPay, nav, paymentOptionRepository);
+    checkAlreadyPaidInstallmentsWithLock(poToPay, nav, paymentOptionRepository);
 
     return this.executePaymentFlow(paymentPositionToPay, nav, paymentOptionModel);
   }
@@ -196,9 +196,9 @@ public class PaymentsService {
 	  } catch (Exception e) {
 		  log.error(
 				  "[GPD-ERR-SEND-00] Exception while calling getNotificationFee for NAV {}, class = {}, message = {}.",
-				  paymentOption.getNav(),
+				  CommonUtil.sanitize(paymentOption.getNav()),
 				  e.getClass(),
-				  e.getMessage());
+				  CommonUtil.sanitize(e.getMessage()));
 		  return false;
 	  }
   }

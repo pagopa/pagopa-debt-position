@@ -1,8 +1,8 @@
 package it.gov.pagopa.debtposition.service.payments;
 
 import static it.gov.pagopa.debtposition.service.common.ExpirationHandler.handlePaymentPositionExpirationLogic;
-import static it.gov.pagopa.debtposition.service.common.PaymentConflictValidator.checkAlreadyPaidInstallments;
 import static it.gov.pagopa.debtposition.service.common.ValidityHandler.handlePaymentPositionValidTransition;
+import static it.gov.pagopa.debtposition.service.common.PaymentConflictValidator.checkAlreadyPaidInstallmentsReadOnly;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.exception.AppError;
@@ -24,7 +24,7 @@ public class PaymentOptionLookupService {
 
   // TODO #naviuv: temporary regression management --> the nav variable can also be evaluated with
   // iuv. Remove the comment when only nav managment is enabled
-  @Transactional
+  @Transactional(readOnly = true)
   public PaymentOption getPaymentOptionByNAVInternal(
       @NotBlank String organizationFiscalCode, @NotBlank String nav) {
 
@@ -38,11 +38,16 @@ public class PaymentOptionLookupService {
 
     PaymentOption paymentOption = po.get();
 
-    // FSM Logic: Update state (PaymentPosition status) based on current time
+   /* 
+    * Read-only FSM evaluation logic: Update state (PaymentPosition status) based on current time.
+    * These handlers may adjust the in-memory entity state used to build the response,
+    * but this lookup must not persist changes or acquire write locks (for this reason the transaction is read-only).
+    */
     handlePaymentPositionValidTransition(paymentOption.getPaymentPosition());
     handlePaymentPositionExpirationLogic(paymentOption.getPaymentPosition());
-
-    checkAlreadyPaidInstallments(paymentOption, nav, paymentOptionRepository);
+    
+    // Apply the cross-payment visibility rules without acquiring database locks.
+    checkAlreadyPaidInstallmentsReadOnly(paymentOption, nav);
 
     return paymentOption;
   }
