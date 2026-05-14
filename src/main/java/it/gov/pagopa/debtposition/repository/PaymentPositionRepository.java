@@ -35,22 +35,24 @@ public interface PaymentPositionRepository
    * Updates maximum batchSize records to prevent connection pool exhaustion.
    * This should be called in a loop until fewer records are affected than batchSize.
    */
-	@Modifying(clearAutomatically = true, flushAutomatically = true)
-	@Query(value = """
-			WITH candidate AS (
+   @Modifying(clearAutomatically = true, flushAutomatically = true)
+   @Query(value = """
+			WITH candidate_ids AS (
+			  SELECT DISTINCT pp.id
+			  FROM apd.payment_option po
+			  JOIN apd.payment_position pp
+			    ON pp.id = po.payment_position_id
+			  WHERE po.validity_date IS NOT NULL
+			    AND po.validity_date <= :currentDate
+			    AND pp.status = 'PUBLISHED'
+			  LIMIT :batchSize
+			),
+			candidate AS (
 			  SELECT pp.id
 			  FROM apd.payment_position pp
-			  WHERE pp.status = 'PUBLISHED'
-			    AND EXISTS (
-			      SELECT 1
-			      FROM apd.payment_option po
-			      WHERE po.payment_position_id = pp.id
-			        AND po.validity_date IS NOT NULL
-			        AND po.validity_date <= :currentDate
-			    )
-			  ORDER BY pp.id
-			  LIMIT :batchSize
-			  FOR UPDATE SKIP LOCKED
+			  JOIN candidate_ids c
+			    ON c.id = pp.id
+			  FOR UPDATE OF pp SKIP LOCKED
 			)
 			UPDATE apd.payment_position pp
 			SET status = :status,
@@ -59,8 +61,10 @@ public interface PaymentPositionRepository
 			FROM candidate c
 			WHERE pp.id = c.id
 			""", nativeQuery = true)
-	int updatePaymentPositionStatusToValidBatch(@Param("currentDate") LocalDateTime currentDate,
-			@Param("status") String status, @Param("batchSize") int batchSize);
+  int updatePaymentPositionStatusToValidBatch(
+			@Param("currentDate") LocalDateTime currentDate,
+			@Param("status") String status,
+			@Param("batchSize") int batchSize);
   
   /**
    * Rule 6- For a debt position to EXPIRED, the following conditions must be met:
@@ -72,12 +76,17 @@ public interface PaymentPositionRepository
    * Updates maximum batchSize records to prevent connection pool exhaustion.
    * This should be called in a loop until fewer records are affected than batchSize.
    */
-	@Modifying(clearAutomatically = true, flushAutomatically = true)
-	@Query(value = """
-			WITH candidate AS (
-			  SELECT pp.id
-			  FROM apd.payment_position pp
-			  WHERE pp.status = 'VALID'
+   @Modifying(clearAutomatically = true, flushAutomatically = true)
+   @Query(value = """
+			WITH candidate_ids AS (
+			  SELECT DISTINCT pp.id
+			  FROM apd.payment_option po
+			  JOIN apd.payment_position pp
+			    ON pp.id = po.payment_position_id
+			  WHERE po.status = 'PO_UNPAID'
+			    AND po.switch_to_expired IS TRUE
+			    AND po.due_date < :currentDate
+			    AND pp.status = 'VALID'
 			    AND pp.payment_date IS NULL
 
 			    AND NOT EXISTS (
@@ -91,7 +100,7 @@ public interface PaymentPositionRepository
 			      SELECT 1
 			      FROM apd.payment_option po2
 			      WHERE po2.payment_position_id = pp.id
-			        AND po2.switch_to_expired = false
+			        AND po2.switch_to_expired IS DISTINCT FROM TRUE
 			    )
 
 			    AND NOT EXISTS (
@@ -101,9 +110,14 @@ public interface PaymentPositionRepository
 			        AND po3.due_date >= :currentDate
 			    )
 
-			  ORDER BY pp.id
 			  LIMIT :batchSize
-			  FOR UPDATE SKIP LOCKED
+			),
+			candidate AS (
+			  SELECT pp.id
+			  FROM apd.payment_position pp
+			  JOIN candidate_ids c
+			    ON c.id = pp.id
+			  FOR UPDATE OF pp SKIP LOCKED
 			)
 			UPDATE apd.payment_position pp
 			SET status = 'EXPIRED',
@@ -112,7 +126,7 @@ public interface PaymentPositionRepository
 			FROM candidate c
 			WHERE pp.id = c.id
 			""", nativeQuery = true)
-	int updatePaymentPositionStatusToExpiredBatch(
+  int updatePaymentPositionStatusToExpiredBatch(
 			@Param("currentDate") LocalDateTime currentDate,
 			@Param("batchSize") int batchSize);
 	
