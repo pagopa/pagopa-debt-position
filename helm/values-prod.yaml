@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "1.1.31-PIDM-1820-hikari-pool-connection-leak"
+    tag: "1.1.32"
     pullPolicy: Always
   livenessProbe:
     httpGet:
