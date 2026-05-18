@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>it.gov.pagopa.debtposition</groupId>
 	<artifactId>gpd</artifactId>
-	<version>1.1.24</version>
+	<version>1.1.31-PIDM-1820-hikari-pool-connection-leak</version>
 	<name>Gestione Posizioni Debitorie</name>
 	<description>Progetto Gestione Posizioni Debitorie</description>
 	<properties>
@@ -116,6 +116,16 @@
 			<artifactId>awaitility</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+           <groupId>org.testcontainers</groupId>
+           <artifactId>junit-jupiter</artifactId>
+           <scope>test</scope>
+        </dependency>
 		<!-- overriding the managed version of mockito for mocking final classes -->
 		<!--
 		<dependency>
