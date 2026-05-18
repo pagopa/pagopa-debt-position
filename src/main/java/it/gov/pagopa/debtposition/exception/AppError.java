@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum AppError {
-	DEBT_POSITION_REQUEST_DATA_ERROR(
+	      DEBT_POSITION_REQUEST_DATA_ERROR(
 		      HttpStatus.BAD_REQUEST, "Error in the debt position request data", "%s"),
 		  DEBT_POSITION_CREATION_FAILED(
 		      HttpStatus.INTERNAL_SERVER_ERROR,
@@ -28,6 +28,14 @@ public enum AppError {
 		      "The debt position violated constraints of uniqueness",
 		      "Already exists a debt position for the Organization Fiscal Code %s or one of its payment"
 		          + " options is not unique"),
+		  DEBT_POSITION_PO_METADATA_UNIQUE_VIOLATION(
+				    HttpStatus.CONFLICT,
+				    "The payment option metadata violated constraints of uniqueness",
+				    "Duplicate payment option metadata key for the Organization Fiscal Code %s. Metadata keys must be unique within the same payment option"),
+		  DEBT_POSITION_TRANSFER_METADATA_UNIQUE_VIOLATION(
+				    HttpStatus.CONFLICT,
+				    "The transfer metadata violated constraints of uniqueness",
+				    "Duplicate transfer metadata key for the Organization Fiscal Code %s. Metadata keys must be unique within the same transfer"),
 		  DEBT_POSITION_UPDATE_FAILED_NO_TRANSFER_FOR_NOTIFICATION_FEE(
 		      HttpStatus.UNPROCESSABLE_ENTITY,
 		      "The debt position update is failed",
