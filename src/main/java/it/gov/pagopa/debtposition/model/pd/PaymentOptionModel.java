@@ -1,7 +1,11 @@
 package it.gov.pagopa.debtposition.model.pd;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import it.gov.pagopa.debtposition.controller.pd.validator.UniqueMetadataKeys;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -52,7 +56,14 @@ public class PaymentOptionModel implements Serializable {
 
   @Valid
   @Size(min = 0, max = 10)
-  @Schema(description = "it can added a maximum of 10 key-value pairs for metadata")
+  // Metadata keys must be unique within a single payment option to match the database constraint.
+  @UniqueMetadataKeys(message = "paymentOptionMetadata keys must be unique")
+  @ArraySchema(
+      uniqueItems = true,
+      arraySchema =
+          @Schema(
+              description =
+                  "It can be added a maximum of 10 key-value pairs for metadata. Metadata keys must be unique within the same payment option."))
   private List<PaymentOptionMetadataModel> paymentOptionMetadata = new ArrayList<>();
 
   public void addTransfers(TransferModel trans) {
