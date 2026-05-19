@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "1.1.32-2-fix-shedulers-query"
+    tag: "1.1.33"
     pullPolicy: Always
   livenessProbe:
     httpGet:
