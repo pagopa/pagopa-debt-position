@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "1.1.32-1-fix-unpinned-tag"
+    tag: "1.1.32-2-fix-shedulers-query"
     pullPolicy: Always
   livenessProbe:
     httpGet:
