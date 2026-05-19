@@ -300,7 +300,7 @@ public class PaymentPositionCRUDService {
       // update amounts adding notification fee
       updateAmounts(organizationFiscalCode, ppToUpdate);
       // If the input is null and the actual (database) validity_date is before now preserve it
-      preserveValidityDateIfValidStatus(ppToUpdate, actualValidityDatesMap, toPublish);
+      preserveValidityDateIfValidStatus(ppToUpdate, actualValidityDatesMap, toPublish); 
 
       // check the data
       DebtPositionValidation.checkPaymentPositionInputDataAccuracy(ppToUpdate, action);
@@ -330,7 +330,7 @@ public class PaymentPositionCRUDService {
 
   /**
    * This method preserves the validity date if the validity date in input is null and
-   * if the validity date on the database are valid and already in use, i.e. later than now.
+   * if the validity dates on the database are valid and already in use, i.e. before now.
    *
    * @param ppToUpdate the Payment Position Entity mixed with new inputs entered.
    *                   values such as fee, notificationFee, PSP etc are not modified, while
@@ -342,12 +342,16 @@ public class PaymentPositionCRUDService {
     LocalDateTime now = LocalDateTime.now();
     for(PaymentOption po : ppToUpdate.getPaymentOption()) {
       LocalDateTime actualValidityDate = actualValidityDatesMap.get(po.getId());
-      // If the input is null and the actual (database) validity_date is before now preserve it.
+      // If the input is null and the actual (on database) validity_date is before now preserve it.
       if (po.getValidityDate() == null && actualValidityDate != null && actualValidityDate.isBefore(now)
               && ppToUpdate.getStatus().equals(DebtPositionStatus.VALID) && toPublish) {
         po.setValidityDate(actualValidityDate);
       }
     }
+  }
+
+  private static void alignPaymentPositionValidityDate(PaymentPosition paymentPosition) {
+    paymentPosition.setValidityDate(CommonUtil.resolveMinValidity(paymentPosition));
   }
 
   /**
@@ -628,6 +632,8 @@ public class PaymentPositionCRUDService {
     // If immediate publication is required, proceed as follows
     if (toPublish) {
       PublishPaymentUtil.publishProcess(pp, currentDate);
+    } else {
+      alignPaymentPositionValidityDate(pp);
     }
 
     return pp;
