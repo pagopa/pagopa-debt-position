@@ -43,7 +43,7 @@ public interface PaymentPositionRepository
           WHERE pp.status = 'PUBLISHED'
           AND pp.payment_date IS NULL
           AND validity_date IS NOT NULL
-          AND pp.validity_date < :currentDate
+          AND pp.validity_date <= :currentDate
           FOR UPDATE SKIP LOCKED
           LIMIT :batchSize
       )

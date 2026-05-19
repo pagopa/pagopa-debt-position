@@ -10,36 +10,53 @@ import org.junit.jupiter.api.Test;
 
 class PublishPaymentUtilTest {
 
+  private static final LocalDateTime PUBLISH_DATETIME = LocalDateTime.of(2026, 5, 19, 10, 0);
+
   @Test
   void publishProcess_toValid_keepsParentAtMinimumChildValidity() {
-    LocalDateTime publishDatetime = LocalDateTime.of(2026, 5, 19, 10, 0);
-    LocalDateTime validChild = publishDatetime.minusDays(1);
-    LocalDateTime futureChild = publishDatetime.plusDays(2);
+    LocalDateTime validChild = PUBLISH_DATETIME.minusDays(1);
+    LocalDateTime futureChild = PUBLISH_DATETIME.plusDays(2);
     PaymentPosition paymentPosition = buildPaymentPosition(validChild, futureChild);
 
-    PublishPaymentUtil.publishProcess(paymentPosition, publishDatetime);
+    PublishPaymentUtil.publishProcess(paymentPosition, PUBLISH_DATETIME);
 
     assertThat(paymentPosition.getStatus()).isEqualTo(DebtPositionStatus.VALID);
     assertThat(paymentPosition.getValidityDate()).isEqualTo(validChild);
-    assertThat(paymentPosition.getPublishDate()).isEqualTo(publishDatetime);
-    assertThat(paymentPosition.getLastUpdatedDate()).isEqualTo(publishDatetime);
+    assertThat(paymentPosition.getPublishDate()).isEqualTo(PUBLISH_DATETIME);
+    assertThat(paymentPosition.getLastUpdatedDate()).isEqualTo(PUBLISH_DATETIME);
   }
 
   @Test
   void publishProcess_withNullChild_setsParentAtMinimumNormalizedValidity() {
-    LocalDateTime publishDatetime = LocalDateTime.of(2026, 5, 19, 10, 0);
-    LocalDateTime futureChild = publishDatetime.plusDays(2);
+    LocalDateTime futureChild = PUBLISH_DATETIME.plusDays(2);
     PaymentPosition paymentPosition = buildPaymentPosition(null, futureChild);
 
-    PublishPaymentUtil.publishProcess(paymentPosition, publishDatetime);
+    PublishPaymentUtil.publishProcess(paymentPosition, PUBLISH_DATETIME);
 
     assertThat(paymentPosition.getStatus()).isEqualTo(DebtPositionStatus.VALID);
     assertThat(paymentPosition.getPaymentOption())
         .extracting(PaymentOption::getValidityDate)
-        .containsExactly(publishDatetime, futureChild);
-    assertThat(paymentPosition.getValidityDate()).isEqualTo(publishDatetime);
-    assertThat(paymentPosition.getPublishDate()).isEqualTo(publishDatetime);
-    assertThat(paymentPosition.getLastUpdatedDate()).isEqualTo(publishDatetime);
+        .containsExactly(PUBLISH_DATETIME, futureChild);
+    assertThat(paymentPosition.getValidityDate()).isEqualTo(PUBLISH_DATETIME);
+    assertThat(paymentPosition.getPublishDate()).isEqualTo(PUBLISH_DATETIME);
+    assertThat(paymentPosition.getLastUpdatedDate()).isEqualTo(PUBLISH_DATETIME);
+  }
+
+  @Test
+  void publishProcess_toPublished_setsParentToEarliestFutureChildValidity() {
+    LocalDateTime latestFutureChild = PUBLISH_DATETIME.plusDays(2);
+    LocalDateTime earliestFutureChild = PUBLISH_DATETIME.plusDays(1);
+    PaymentPosition paymentPosition = buildPaymentPosition(latestFutureChild, earliestFutureChild);
+
+    PublishPaymentUtil.publishProcess(paymentPosition, PUBLISH_DATETIME);
+
+    assertThat(paymentPosition.getStatus()).isEqualTo(DebtPositionStatus.PUBLISHED);
+    assertThat(paymentPosition.getPaymentOption())
+        .extracting(PaymentOption::getValidityDate)
+        .containsExactly(latestFutureChild, earliestFutureChild);
+    assertThat(paymentPosition.getValidityDate()).isEqualTo(earliestFutureChild);
+    assertThat(paymentPosition.getPublishDate()).isEqualTo(PUBLISH_DATETIME);
+    assertThat(paymentPosition.getLastUpdatedDate()).isEqualTo(PUBLISH_DATETIME);
   }
 
   private static PaymentPosition buildPaymentPosition(LocalDateTime... validityDates) {
