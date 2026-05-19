@@ -44,6 +44,7 @@ public interface PaymentPositionRepository
 				AND pp.payment_date IS NULL
 				AND validity_date IS NOT NULL
 				AND pp.validity_date < :currentDate
+                FOR UPDATE SKIP LOCKED
 				LIMIT :batchSize
 			)
 			UPDATE apd.payment_position pp
@@ -83,6 +84,7 @@ public interface PaymentPositionRepository
 					WHERE po.payment_position_id = pp.id
 					AND po.status <> 'PO_UNPAID'
 				)
+                FOR UPDATE SKIP LOCKED
 				LIMIT :batchSize
 			)
 			UPDATE apd.payment_position pp
