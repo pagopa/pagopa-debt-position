@@ -66,6 +66,7 @@ public class TransferModel implements Serializable {
   @Size(max = 140)
   private String companyName;
 
+  @NotNull(message = "transferMetadata cannot be null")
   @Valid
   @Size(min = 0, max = 10)
   // Metadata keys must be unique within a single transfer to match the database constraint.

@@ -55,6 +55,7 @@ public class InstallmentModel implements Serializable {
   @Size(min = 1)
   private List<TransferModel> transfer = new ArrayList<>();
 
+  @NotNull(message = "installmentMetadata cannot be null")
   @Valid
   @Size(min = 0, max = 10)
   // Metadata keys must be unique within a single installment to match the database constraint.

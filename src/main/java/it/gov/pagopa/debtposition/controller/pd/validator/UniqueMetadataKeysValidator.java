@@ -11,7 +11,11 @@ public class UniqueMetadataKeysValidator implements ConstraintValidator<UniqueMe
 
   @Override
   public boolean isValid(List<?> metadata, ConstraintValidatorContext context) {
-    if (metadata == null || metadata.isEmpty()) {
+    if (metadata == null) {
+      return false;
+    }
+
+    if (metadata.isEmpty()) {
       return true;
     }
 
@@ -19,7 +23,7 @@ public class UniqueMetadataKeysValidator implements ConstraintValidator<UniqueMe
 
     for (Object item : metadata) {
       if (item == null) {
-        continue;
+        return false;
       }
 
       String key = extractKey(item);

@@ -14,13 +14,8 @@ class UniqueMetadataKeysValidatorTest {
   private final UniqueMetadataKeysValidator validator = new UniqueMetadataKeysValidator();
 
   @Test
-  void isValid_withNullList_returnsTrue() {
-    assertTrue(validator.isValid(null, null));
-  }
-
-  @Test
-  void isValid_withEmptyList_returnsTrue() {
-    assertTrue(validator.isValid(Collections.emptyList(), null));
+  void isValid_withNullList_returnsFalse() {
+    assertFalse(validator.isValid(null, null));
   }
 
   @Test
@@ -64,13 +59,18 @@ class UniqueMetadataKeysValidatorTest {
   }
 
   @Test
-  void isValid_withNullItem_ignoresItemAndReturnsTrue() {
+  void isValid_withNullItem_returnsFalse() {
     List<PaymentOptionMetadataModel> metadata =
         new java.util.ArrayList<>(List.of(paymentOptionMetadata("key-1", "value-1")));
 
     metadata.add(null);
 
-    assertTrue(validator.isValid(metadata, null));
+    assertFalse(validator.isValid(metadata, null));
+  }
+  
+  @Test
+  void isValid_withEmptyList_returnsTrue() {
+    assertTrue(validator.isValid(Collections.emptyList(), null));
   }
 
   @Test

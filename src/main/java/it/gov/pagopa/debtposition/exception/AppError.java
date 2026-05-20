@@ -30,8 +30,8 @@ public enum AppError {
 		          + " options is not unique"),
 		  DEBT_POSITION_PO_METADATA_UNIQUE_VIOLATION(
 				    HttpStatus.CONFLICT,
-				    "The payment option metadata violated constraints of uniqueness",
-				    "Duplicate payment option metadata key for the Organization Fiscal Code %s. Metadata keys must be unique within the same payment option"),
+				    "The metadata violated constraints of uniqueness",
+				    "Duplicate metadata key for the Organization Fiscal Code %s. Metadata keys must be unique within the same payment option or installment"),
 		  DEBT_POSITION_TRANSFER_METADATA_UNIQUE_VIOLATION(
 				    HttpStatus.CONFLICT,
 				    "The transfer metadata violated constraints of uniqueness",

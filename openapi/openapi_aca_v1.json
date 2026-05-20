@@ -1399,7 +1399,7 @@
             "uniqueItems" : true
           }
         },
-        "required" : [ "amount", "description", "dueDate", "isPartialPayment", "iuv" ]
+        "required" : [ "amount", "description", "dueDate", "isPartialPayment", "iuv", "paymentOptionMetadata" ]
       },
       "PaymentPositionModel" : {
         "type" : "object",
@@ -1593,7 +1593,7 @@
             "uniqueItems" : true
           }
         },
-        "required" : [ "amount", "category", "idTransfer", "remittanceInformation" ]
+        "required" : [ "amount", "category", "idTransfer", "remittanceInformation", "transferMetadata" ]
       },
       "ProblemJson" : {
         "type" : "object",

@@ -1058,7 +1058,7 @@
             "uniqueItems" : true
           }
         },
-        "required" : [ "amount", "description", "dueDate", "iuv" ]
+        "required" : [ "amount", "description", "dueDate", "installmentMetadata", "iuv" ]
       },
       "PaymentOptionModelV3" : {
         "type" : "object",
@@ -1241,7 +1241,7 @@
             "uniqueItems" : true
           }
         },
-        "required" : [ "amount", "category", "idTransfer", "remittanceInformation" ]
+        "required" : [ "amount", "category", "idTransfer", "remittanceInformation", "transferMetadata" ]
       },
       "ProblemJson" : {
         "type" : "object",
