@@ -57,13 +57,11 @@ public class InstallmentModel implements Serializable {
 
   @Valid
   @Size(min = 0, max = 10)
-  // Metadata keys must be unique within a single payment option to match the database constraint.
+  // Metadata keys must be unique within a single installment to match the database constraint.
   @UniqueMetadataKeys(message = "installmentMetadata keys must be unique")
-  @ArraySchema(
-      uniqueItems = true,
-      arraySchema =
-          @Schema(
-              description =
-                  "It can be added a maximum of 10 key-value pairs for metadata. Metadata keys must be unique within the same installment."))
+  @Schema(
+      description =
+          "It can be added a maximum of 10 key-value pairs for metadata. Metadata keys must be unique within the same installment.")
+  @ArraySchema(uniqueItems = true)
   private List<InstallmentMetadataModel> installmentMetadata = new ArrayList<>();
 }

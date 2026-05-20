@@ -68,14 +68,12 @@ public class TransferModel implements Serializable {
 
   @Valid
   @Size(min = 0, max = 10)
-  //Metadata keys must be unique within a single transfer to match the database constraint.
+  // Metadata keys must be unique within a single transfer to match the database constraint.
   @UniqueMetadataKeys(message = "transferMetadata keys must be unique")
-  @ArraySchema(
-   uniqueItems = true,
-   arraySchema =
-       @Schema(
-           description =
-               "It can be added a maximum of 10 key-value pairs for metadata. Metadata keys must be unique within the same transfer."))
+  @Schema(
+      description =
+          "It can be added a maximum of 10 key-value pairs for metadata. Metadata keys must be unique within the same transfer.")
+  @ArraySchema(uniqueItems = true)
   private List<TransferMetadataModel> transferMetadata = new ArrayList<>();
 
   public void addTransferMetadata(TransferMetadataModel trans) {

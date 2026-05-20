@@ -58,12 +58,10 @@ public class PaymentOptionModel implements Serializable {
   @Size(min = 0, max = 10)
   // Metadata keys must be unique within a single payment option to match the database constraint.
   @UniqueMetadataKeys(message = "paymentOptionMetadata keys must be unique")
-  @ArraySchema(
-      uniqueItems = true,
-      arraySchema =
-          @Schema(
-              description =
-                  "It can be added a maximum of 10 key-value pairs for metadata. Metadata keys must be unique within the same payment option."))
+  @Schema(
+      description =
+          "It can be added a maximum of 10 key-value pairs for metadata. Metadata keys must be unique within the same payment option.")
+  @ArraySchema(uniqueItems = true)
   private List<PaymentOptionMetadataModel> paymentOptionMetadata = new ArrayList<>();
 
   public void addTransfers(TransferModel trans) {
