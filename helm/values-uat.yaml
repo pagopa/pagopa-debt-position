@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "1.1.33"
+    tag: "1.1.33-1-increase-transaction-timeout"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -103,6 +103,7 @@ microservice-chart:
     CRON_JOB_SCHEDULE_SHEDLOCK_LOCKATMOSTFOR: "45m"
     CRON_JOB_SCHEDULE_SHEDLOCK_LOCKATLEASTFOR: "1m"
     CRON_JOB_SCHEDULE_BATCH_SIZE: "100"
+    CRON_JOB_SCHEDULE_BATCH_TIMEOUT_SECONDS: "60"
     CRON_JOB_SCHEDULE_HISTORY_ENABLED: "false"
     CRON_JOB_SCHEDULE_HISTORY_TRIGGER: "0 0 1 * * *"
     CRON_JOB_SCHEDULE_HISTORY_QUERY: "SELECT pp FROM PaymentPosition pp WHERE pp.status IN ('PAID', 'REPORTED', 'INVALID', 'EXPIRED') AND pp.lastUpdatedDate < ?1"

@@ -21,7 +21,7 @@ public class DebtPositionStatusBatchService {
 
   @Transactional(
       propagation = Propagation.REQUIRES_NEW,
-      timeout = 30)
+      timeoutString = "${cron.job.schedule.batch.timeout.seconds}")
   public int updatePublishedToValidBatch(
       LocalDateTime currentDate,
       int batchSize) {
@@ -34,7 +34,7 @@ public class DebtPositionStatusBatchService {
 
   @Transactional(
       propagation = Propagation.REQUIRES_NEW,
-      timeout = 30)
+      timeoutString = "${cron.job.schedule.batch.timeout.seconds}")
   public int updateValidToExpiredBatch(
       LocalDateTime currentDate,
       int batchSize) {
