@@ -102,11 +102,49 @@ class PaymentPositionCRUDServiceTest {
 
     assertEquals(AppError.DEBT_POSITION_UNIQUE_VIOLATION.title, exception.getTitle());
   }
+  
+  @Test
+  void handleUniqueViolation_nonUniqueSqlState_doesNotThrowAppException() {
+    ConstraintViolationException constraintViolationException =
+        constraintViolation("23503", "someforeignkeyconstraint");
+
+    assertDoesNotThrow(
+        () ->
+            ReflectionTestUtils.invokeMethod(
+                paymentsService,
+                "handleUniqueViolationAppException",
+                constraintViolationException,
+                "02406911202"));
+  }
+  
+  @Test
+  void handleUniqueViolation_nullConstraintName_throwsGenericDebtPositionUniqueViolation() {
+    ConstraintViolationException constraintViolationException = uniqueViolation(null);
+
+    AppException exception =
+        assertThrows(
+            AppException.class,
+            () ->
+                ReflectionTestUtils.invokeMethod(
+                    paymentsService,
+                    "handleUniqueViolationAppException",
+                    constraintViolationException,
+                    "02406911202"));
+
+    assertEquals(AppError.DEBT_POSITION_UNIQUE_VIOLATION.title, exception.getTitle());
+  }
 
   private ConstraintViolationException uniqueViolation(String constraintName) {
     return new ConstraintViolationException(
         "duplicate key value violates unique constraint",
         new SQLException("duplicate key value violates unique constraint", "23505"),
         constraintName);
+  }
+  
+  private ConstraintViolationException constraintViolation(String sqlState, String constraintName) {
+	  return new ConstraintViolationException(
+			  "database constraint violation",
+			  new SQLException("database constraint violation", sqlState),
+			  constraintName);
   }
 }
