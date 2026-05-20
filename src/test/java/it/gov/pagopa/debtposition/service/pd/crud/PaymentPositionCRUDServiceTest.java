@@ -264,8 +264,8 @@ class PaymentPositionCRUDServiceTest {
         .thenReturn(new PageImpl<>(managedPositions));
 
     doThrow(dataIntegrityViolation("uniquepaymentoptmetadata"))
-        .when(modelMapper)
-        .map(eq(inputModel), eq(managedPosition));
+    .when(modelMapper)
+    .map(inputModel, managedPosition);
 
     AppException exception =
         assertThrows(
@@ -298,8 +298,8 @@ class PaymentPositionCRUDServiceTest {
         .thenReturn(Optional.of(ppToUpdate));
 
     doThrow(dataIntegrityViolation("uniquepaymentoptmetadata"))
-        .when(modelMapper)
-        .map(eq(ppModel), eq(ppToUpdate));
+    .when(modelMapper)
+    .map(ppModel, ppToUpdate);
 
     AppException exception =
         assertThrows(
