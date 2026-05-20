@@ -215,6 +215,48 @@ class DebtPositionControllerV3Test {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.detail").value(containsString("installments")));
   }
+  
+  @Test
+  void createDebtPosition_400_duplicateInstallmentMetadataKey() throws Exception {
+    String uri = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
+    PaymentPositionModelV3 pp = createPaymentPositionV3(1, 1);
+
+    InstallmentModel installment = pp.getPaymentOption().get(0).getInstallments().get(0);
+    installment.setInstallmentMetadata(
+        List.of(
+            new InstallmentMetadataModel("INSTALLMENT-DUP-KEY", "value-1"),
+            new InstallmentMetadataModel("INSTALLMENT-DUP-KEY", "value-2")));
+
+    mvc.perform(
+            post(uri)
+                .content(TestUtil.toJson(pp))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.detail").value(containsString("installmentMetadata keys must be unique")));
+  }
+  
+  @Test
+  void createDebtPosition_400_duplicateTransferMetadataKey() throws Exception {
+    String uri = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
+    PaymentPositionModelV3 pp = createPaymentPositionV3(1, 1);
+
+    TransferModel transfer =
+        pp.getPaymentOption().get(0).getInstallments().get(0).getTransfer().get(0);
+
+    transfer.setTransferMetadata(
+        List.of(
+            new TransferMetadataModel("TRANSFER-DUP-KEY", "value-1"),
+            new TransferMetadataModel("TRANSFER-DUP-KEY", "value-2")));
+
+    mvc.perform(
+            post(uri)
+                .content(TestUtil.toJson(pp))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.detail").value(containsString("transferMetadata keys must be unique")));
+  }
 
   @Test
   void updateDebtPosition_200_1() throws Exception {
