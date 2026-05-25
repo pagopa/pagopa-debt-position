@@ -53,7 +53,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class PaymentPositionCRUDService {
 
+  // PostgreSQL SQLState for unique constraint violations.
   private static final String UNIQUE_KEY_VIOLATION = "23505";
+
+  // Database constraint enforcing unique metadata keys within the same payment option.
+  private static final String PAYMENT_OPTION_METADATA_UNIQUE_CONSTRAINT = "uniquepaymentoptmetadata";
+
+  // Database constraint enforcing unique metadata keys within the same transfer.
+  private static final String TRANSFER_METADATA_UNIQUE_CONSTRAINT = "uniquetransfermetadata";
 
   @Value("${max.days.interval}")
   private String maxDaysInterval;
@@ -83,14 +90,11 @@ public class PaymentPositionCRUDService {
 
       return paymentPositionRepository.saveAndFlush(toSave);
     } catch (DataIntegrityViolationException e) {
-      log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
-      if (e.getCause() instanceof ConstraintViolationException constraintviolationexception) {
-        String sqlState = constraintviolationexception.getSQLState();
-        if (sqlState.equals(UNIQUE_KEY_VIOLATION)) {
-          throw new AppException(AppError.DEBT_POSITION_UNIQUE_VIOLATION, organizationFiscalCode);
-        }
-      }
-      throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
+       log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
+       if (e.getCause() instanceof ConstraintViolationException constraintViolationException) {
+          handleUniqueViolationAppException(constraintViolationException, organizationFiscalCode);
+       }
+       throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
     } catch (ValidationException e) {
       throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
     } catch (AppException appException) {
@@ -322,6 +326,13 @@ public class PaymentPositionCRUDService {
             ppToUpdate.getIupd());
       }
       throw e;
+    } catch (DataIntegrityViolationException e) {
+      // Handle database constraint violations explicitly.
+      log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
+      if (e.getCause() instanceof ConstraintViolationException constraintViolationException) {
+    	    handleUniqueViolationAppException(constraintViolationException, organizationFiscalCode);
+      }
+      throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
     } catch (Exception e) {
       log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
       throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
@@ -405,13 +416,10 @@ public class PaymentPositionCRUDService {
 
     } catch (DataIntegrityViolationException e) {
       log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
-      if (e.getCause() instanceof ConstraintViolationException constraintviolationexception) {
-        String sqlState = constraintviolationexception.getSQLState();
-        if (sqlState.equals(UNIQUE_KEY_VIOLATION)) {
-          throw new AppException(AppError.DEBT_POSITION_UNIQUE_VIOLATION, organizationFiscalCode);
-        }
-      }
-      throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
+      if (e.getCause() instanceof ConstraintViolationException constraintViolationException) {
+         handleUniqueViolationAppException(constraintViolationException, organizationFiscalCode);
+       }
+       throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
     } catch (ValidationException e) {
       throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
     } catch (AppException appException) {
@@ -482,6 +490,13 @@ public class PaymentPositionCRUDService {
             e.getMessage());
       }
       throw e;
+    } catch (DataIntegrityViolationException e) {
+      // Handle database constraint violations explicitly.
+      log.error("Error during debt position update process", e);
+      if (e.getCause() instanceof ConstraintViolationException constraintViolationException) {
+         handleUniqueViolationAppException(constraintViolationException, organizationFiscalCode);
+      }
+      throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
     } catch (Exception e) {
       // Log the entire exception for debugging purposes.
       log.error("Error during debt position update process", e);
@@ -664,5 +679,22 @@ public class PaymentPositionCRUDService {
     // have the same segregation code.
     String paymentPositionSegregationCode = iuv.substring(0, 2);
     return segregationCodes.contains(paymentPositionSegregationCode);
+  }
+  
+  private void handleUniqueViolationAppException(
+		  ConstraintViolationException constraintViolationException, String organizationFiscalCode) {
+	  String sqlState = constraintViolationException.getSQLState();
+
+	  if (UNIQUE_KEY_VIOLATION.equals(sqlState)) {
+		  String constraintName = constraintViolationException.getConstraintName();
+		  if (PAYMENT_OPTION_METADATA_UNIQUE_CONSTRAINT.equalsIgnoreCase(constraintName)) {
+			  throw new AppException(
+					  AppError.DEBT_POSITION_PO_METADATA_UNIQUE_VIOLATION, organizationFiscalCode);
+		  }
+		  if (TRANSFER_METADATA_UNIQUE_CONSTRAINT.equalsIgnoreCase(constraintName)) {
+			  throw new AppException(AppError.DEBT_POSITION_TRANSFER_METADATA_UNIQUE_VIOLATION, organizationFiscalCode);
+		  }
+		  throw new AppException(AppError.DEBT_POSITION_UNIQUE_VIOLATION, organizationFiscalCode);
+	  }
   }
 }

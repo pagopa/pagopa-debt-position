@@ -1,7 +1,10 @@
 package it.gov.pagopa.debtposition.model.v3;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import it.gov.pagopa.debtposition.controller.pd.validator.UniqueMetadataKeys;
 import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import java.io.Serializable;
@@ -17,6 +20,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class InstallmentModel implements Serializable {
+
+  private static final long serialVersionUID = 3511124075334907970L;
 
   private String nav;
 
@@ -50,8 +55,14 @@ public class InstallmentModel implements Serializable {
   @Size(min = 1)
   private List<TransferModel> transfer = new ArrayList<>();
 
+  @NotNull(message = "installmentMetadata cannot be null")
   @Valid
   @Size(min = 0, max = 10)
-  @Schema(description = "it can added a maximum of 10 key-value pairs for metadata")
+  // Metadata keys must be unique within a single installment to match the database constraint.
+  @UniqueMetadataKeys(message = "installmentMetadata keys must be unique")
+  @Schema(
+      description =
+          "It can be added a maximum of 10 key-value pairs for metadata. Metadata keys must be unique within the same installment.")
+  @ArraySchema(uniqueItems = true)
   private List<InstallmentMetadataModel> installmentMetadata = new ArrayList<>();
 }
