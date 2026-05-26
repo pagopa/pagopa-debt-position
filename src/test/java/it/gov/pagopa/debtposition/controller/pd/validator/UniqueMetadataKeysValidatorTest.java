@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import it.gov.pagopa.debtposition.model.pd.PaymentOptionMetadataModel;
 import it.gov.pagopa.debtposition.model.pd.TransferMetadataModel;
+import it.gov.pagopa.debtposition.model.v3.InstallmentMetadataModel;
+
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -93,6 +95,26 @@ class UniqueMetadataKeysValidatorTest {
         List.of(new MetadataWithNonStringKey(), new MetadataWithNonStringKey());
 
     assertTrue(validator.isValid(metadata, null));
+  }
+  
+  @Test
+  void isValid_withUniqueInstallmentMetadataKeys_returnsTrue() {
+    List<InstallmentMetadataModel> metadata =
+        List.of(
+            new InstallmentMetadataModel("installment-key-1", "value-1"),
+            new InstallmentMetadataModel("installment-key-2", "value-2"));
+
+    assertTrue(validator.isValid(metadata, null));
+  }
+
+  @Test
+  void isValid_withDuplicatedInstallmentMetadataKeys_returnsFalse() {
+    List<InstallmentMetadataModel> metadata =
+        List.of(
+            new InstallmentMetadataModel("same-installment-key", "value-1"),
+            new InstallmentMetadataModel("same-installment-key", "value-2"));
+
+    assertFalse(validator.isValid(metadata, null));
   }
 
   private PaymentOptionMetadataModel paymentOptionMetadata(String key, String value) {
