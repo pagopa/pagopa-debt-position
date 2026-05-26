@@ -540,6 +540,52 @@ class DebtPositionControllerV3Test {
                   .contentType(MediaType.APPLICATION_JSON))
           .andExpect(status().isBadRequest());
     }
+    
+   @Test
+   void createDebtPosition_201_withExplicitNullInstallmentMetadata() throws Exception {
+    	String uri = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
+    	PaymentPositionModelV3 pp = createPaymentPositionV3(1, 1);
+
+    	ObjectMapper objectMapper = new ObjectMapper();
+    	JsonNode root = objectMapper.readTree(TestUtil.toJson(pp));
+
+    	ObjectNode installmentNode =
+    			(ObjectNode) root.path("paymentOption").get(0).path("installments").get(0);
+    	installmentNode.putNull("installmentMetadata");
+
+    	mvc.perform(
+    			post(uri)
+    			.content(objectMapper.writeValueAsString(root))
+    			.contentType(MediaType.APPLICATION_JSON))
+    	.andExpect(status().isCreated())
+    	.andExpect(content().contentType(MediaType.APPLICATION_JSON));
+   }
+   
+   @Test
+   void createDebtPosition_201_withExplicitNullTransferMetadata() throws Exception {
+     String uri = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
+     PaymentPositionModelV3 pp = createPaymentPositionV3(1, 1);
+
+     ObjectMapper objectMapper = new ObjectMapper();
+     JsonNode root = objectMapper.readTree(TestUtil.toJson(pp));
+
+     ObjectNode transferNode =
+         (ObjectNode)
+             root.path("paymentOption")
+                 .get(0)
+                 .path("installments")
+                 .get(0)
+                 .path("transfer")
+                 .get(0);
+     transferNode.putNull("transferMetadata");
+
+     mvc.perform(
+             post(uri)
+                 .content(objectMapper.writeValueAsString(root))
+                 .contentType(MediaType.APPLICATION_JSON))
+         .andExpect(status().isCreated())
+         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+   }
 
 
   // ################### UTILS #################
