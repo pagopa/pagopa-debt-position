@@ -4,7 +4,7 @@
     "title": "PagoPA API Debt Position ${service}",
     "description": "Progetto Gestione Posizioni Debitorie",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.1.24"
+    "version": "1.1.35"
   },
   "servers": [
     {
@@ -1142,18 +1142,20 @@
           },
           "installmentMetadata": {
             "type": "array",
-            "description": "it can added a maximum of 10 key-value pairs for metadata",
+            "description": "It can be added a maximum of 10 key-value pairs for metadata. Metadata keys must be unique within the same installment.",
             "items": {
               "$ref": "#/components/schemas/InstallmentMetadataModel"
             },
             "maxItems": 10,
-            "minItems": 0
+            "minItems": 0,
+            "uniqueItems": true
           }
         },
         "required": [
           "amount",
           "description",
           "dueDate",
+          "installmentMetadata",
           "iuv"
         ]
       },
@@ -1357,19 +1359,21 @@
           },
           "transferMetadata": {
             "type": "array",
-            "description": "it can added a maximum of 10 key-value pairs for metadata",
+            "description": "It can be added a maximum of 10 key-value pairs for metadata. Metadata keys must be unique within the same transfer.",
             "items": {
               "$ref": "#/components/schemas/TransferMetadataModel"
             },
             "maxItems": 10,
-            "minItems": 0
+            "minItems": 0,
+            "uniqueItems": true
           }
         },
         "required": [
           "amount",
           "category",
           "idTransfer",
-          "remittanceInformation"
+          "remittanceInformation",
+          "transferMetadata"
         ]
       },
       "ProblemJson": {

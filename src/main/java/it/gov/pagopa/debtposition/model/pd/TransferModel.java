@@ -1,6 +1,9 @@
 package it.gov.pagopa.debtposition.model.pd;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import it.gov.pagopa.debtposition.controller.pd.validator.UniqueMetadataKeys;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,9 +66,15 @@ public class TransferModel implements Serializable {
   @Size(max = 140)
   private String companyName;
 
+  @NotNull(message = "transferMetadata cannot be null")
   @Valid
   @Size(min = 0, max = 10)
-  @Schema(description = "it can added a maximum of 10 key-value pairs for metadata")
+  // Metadata keys must be unique within a single transfer to match the database constraint.
+  @UniqueMetadataKeys(message = "transferMetadata keys must be unique")
+  @Schema(
+      description =
+          "It can be added a maximum of 10 key-value pairs for metadata. Metadata keys must be unique within the same transfer.")
+  @ArraySchema(uniqueItems = true)
   private List<TransferMetadataModel> transferMetadata = new ArrayList<>();
 
   public void addTransferMetadata(TransferMetadataModel trans) {
