@@ -4,7 +4,7 @@
     "title": "PagoPA API Debt Position ${service}",
     "description": "Progetto Gestione Posizioni Debitorie",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.1.35"
+    "version": "1.1.35-1-PIDM-1999-null-metadata"
   },
   "servers": [
     {
@@ -2928,8 +2928,7 @@
           "description",
           "dueDate",
           "isPartialPayment",
-          "iuv",
-          "paymentOptionMetadata"
+          "iuv"
         ]
       },
       "PaymentPositionModel": {
@@ -3132,8 +3131,7 @@
           "amount",
           "category",
           "idTransfer",
-          "remittanceInformation",
-          "transferMetadata"
+          "remittanceInformation"
         ]
       },
       "InstallmentSummary": {

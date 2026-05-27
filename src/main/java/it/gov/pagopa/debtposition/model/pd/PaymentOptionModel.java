@@ -54,7 +54,6 @@ public class PaymentOptionModel implements Serializable {
 
   @Valid private List<TransferModel> transfer = new ArrayList<>();
 
-  @NotNull(message = "paymentOptionMetadata cannot be null")
   @Valid
   @Size(min = 0, max = 10)
   // Metadata keys must be unique within a single payment option to match the database constraint.
@@ -64,6 +63,11 @@ public class PaymentOptionModel implements Serializable {
           "It can be added a maximum of 10 key-value pairs for metadata. Metadata keys must be unique within the same payment option.")
   @ArraySchema(uniqueItems = true)
   private List<PaymentOptionMetadataModel> paymentOptionMetadata = new ArrayList<>();
+  
+  public void setPaymentOptionMetadata(List<PaymentOptionMetadataModel> paymentOptionMetadata) {
+	  this.paymentOptionMetadata =
+			  paymentOptionMetadata == null ? new ArrayList<>() : paymentOptionMetadata;
+  }
 
   public void addTransfers(TransferModel trans) {
     transfer.add(trans);
