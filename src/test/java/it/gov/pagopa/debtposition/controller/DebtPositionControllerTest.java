@@ -50,6 +50,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 @SpringBootTest(classes = DebtPositionApplication.class)
 @AutoConfigureMockMvc
 class DebtPositionControllerTest {
@@ -2550,6 +2554,43 @@ class DebtPositionControllerTest {
                   .content(TestUtil.toJson(updateRequest))
                   .contentType(MediaType.APPLICATION_JSON))
           .andExpect(status().isBadRequest());
+    }
+    
+    @Test
+    void createDebtPositionWithExplicitNullPaymentOptionMetadata_201() throws Exception {
+      PaymentPositionDTO pp = DebtPositionMock.getMetadataMock8();
+
+      ObjectMapper objectMapper = new ObjectMapper();
+      JsonNode root = objectMapper.readTree(TestUtil.toJson(pp));
+
+      ObjectNode paymentOptionNode = (ObjectNode) root.path("paymentOption").get(0);
+      paymentOptionNode.putNull("paymentOptionMetadata");
+
+      mvc.perform(
+              post("/organizations/NULL_PO_METADATA_12345678901/debtpositions")
+                  .content(objectMapper.writeValueAsString(root))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isCreated())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+    
+    @Test
+    void createDebtPositionWithExplicitNullTransferMetadata_201() throws Exception {
+      PaymentPositionDTO pp = DebtPositionMock.getMetadataMock8();
+
+      ObjectMapper objectMapper = new ObjectMapper();
+      JsonNode root = objectMapper.readTree(TestUtil.toJson(pp));
+
+      ObjectNode transferNode =
+          (ObjectNode) root.path("paymentOption").get(0).path("transfer").get(0);
+      transferNode.putNull("transferMetadata");
+
+      mvc.perform(
+              post("/organizations/NULL_TRANSFER_METADATA_12345678901/debtpositions")
+                  .content(objectMapper.writeValueAsString(root))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isCreated())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
 }

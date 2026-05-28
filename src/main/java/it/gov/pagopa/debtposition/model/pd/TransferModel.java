@@ -66,7 +66,6 @@ public class TransferModel implements Serializable {
   @Size(max = 140)
   private String companyName;
 
-  @NotNull(message = "transferMetadata cannot be null")
   @Valid
   @Size(min = 0, max = 10)
   // Metadata keys must be unique within a single transfer to match the database constraint.
@@ -76,6 +75,11 @@ public class TransferModel implements Serializable {
           "It can be added a maximum of 10 key-value pairs for metadata. Metadata keys must be unique within the same transfer.")
   @ArraySchema(uniqueItems = true)
   private List<TransferMetadataModel> transferMetadata = new ArrayList<>();
+  
+  public void setTransferMetadata(List<TransferMetadataModel> transferMetadata) {
+	  this.transferMetadata =
+			  transferMetadata == null ? new ArrayList<>() : transferMetadata;
+  }
 
   public void addTransferMetadata(TransferMetadataModel trans) {
     transferMetadata.add(trans);
