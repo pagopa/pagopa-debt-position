@@ -33,25 +33,30 @@ BEGIN
         USING apd.transfer t, apd.payment_option po, unnest(v_pos_ids) AS p(id)
         WHERE tm.transfer_id = t.id
           AND t.payment_option_id = po.id
-          AND po.payment_position_id = p.id;
+          AND po.payment_position_id = p.id
+          AND t.archived = true;
 
         DELETE FROM apd.transfer t
         USING apd.payment_option po, unnest(v_pos_ids) AS p(id)
         WHERE t.payment_option_id = po.id
-          AND po.payment_position_id = p.id;
+          AND po.payment_position_id = p.id
+          AND t.archived = true;
 
         DELETE FROM apd.payment_option_metadata pom
         USING apd.payment_option po, unnest(v_pos_ids) AS p(id)
         WHERE pom.payment_option_id = po.id
-          AND po.payment_position_id = p.id;
+          AND po.payment_position_id = p.id
+          AND po.archived = true;
 
         DELETE FROM apd.payment_option po
         USING unnest(v_pos_ids) AS p(id)
-        WHERE po.payment_position_id = p.id;
+        WHERE po.payment_position_id = p.id
+          AND po.archived = true;
 
         DELETE FROM apd.payment_position pp
         USING unnest(v_pos_ids) AS p(id)
-        WHERE pp.id = p.id;
+        WHERE pp.id = p.id
+          AND pp.archived = true;
 
         -- Commit micro-chunk
         COMMIT;

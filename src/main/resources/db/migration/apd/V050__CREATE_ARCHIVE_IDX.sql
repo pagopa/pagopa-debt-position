@@ -2,4 +2,4 @@
 -- This index allows the MV to be created and updated without scanning All the rows.
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_pp_archiving_eligibility
 ON apd.payment_position (service_type, last_updated_date)
-WHERE status IN ('PAID', 'REPORTED', 'INVALID', 'EXPIRED');
+WHERE status IN ('PAID', 'REPORTED', 'INVALID');

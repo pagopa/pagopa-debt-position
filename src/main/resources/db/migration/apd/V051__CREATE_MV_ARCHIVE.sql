@@ -11,7 +11,7 @@ FROM
 WHERE
     (
         service_type IN ('GPD', 'ACA')
-        AND status IN ('PAID', 'REPORTED', 'INVALID') -- 'EXPIRED' is not immutable state in this case.
+        AND status IN ('PAID', 'REPORTED', 'INVALID') -- EXPIRED is excluded because it is not an immutable state.
         AND last_updated_date < (CURRENT_DATE - INTERVAL '2 years')
     ) OR (
         service_type = 'WISP'
