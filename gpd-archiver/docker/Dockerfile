@@ -1,5 +1,5 @@
 # Dockerfile
-FROM postgres:16-bookworm
+FROM postgres:16-bookworm@sha256:da514b7d293c5e9126503f85ecd835f4fb0942a77e012fe74f016c114c3e25b8
 
 # Installing extensions from the official Debian repository
 RUN apt-get update && apt-get install -y \
