@@ -122,8 +122,8 @@ jobs:
       schema: ${{ inputs.schema || 'all' }}
     secrets:
         FLYWAY_DATASOURCE_URL: ${{ secrets.FLYWAY_DATASOURCE_URL }}
-        SPRING_DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
-        SPRING_DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
+        DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
+        DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
 
 
   image:
