@@ -24,7 +24,7 @@ public final class PaymentConflictValidator {
    * when ANY sibling is already paid (installment or single). - If paying an installment: allow
    * ONLY if every already paid sibling belongs to the SAME plan.
    */
-  public static void checkAlreadyPaidInstallments(
+  public static void checkAlreadyPaidInstallmentsWithLock(
       PaymentOption poToPay, String nav, PaymentOptionRepository poRepo) {
 
     // Skip when current PO is not UNPAID (e.g. reporting flow or repeated updates)
@@ -87,5 +87,70 @@ public final class PaymentConflictValidator {
       throw new AppException(
           AppError.PAYMENT_OPTION_NOT_FOUND, poToPay.getOrganizationFiscalCode(), nav);
     }
+  }
+  
+  /**
+   * Read-only cross-payment validation.
+   *
+   * Mirrors the payment-flow rules without DB locks and hides options that are no longer compatible
+   * with already paid/reported siblings.
+   */
+  public static void checkAlreadyPaidInstallmentsReadOnly(PaymentOption poToCheck, String nav) {
+
+		// Paid/reported options are because their status is already final
+		if (poToCheck.getStatus() != PaymentOptionStatus.PO_UNPAID) {
+			return;
+		}
+
+		PaymentPosition pp = poToCheck.getPaymentPosition();
+
+		// If the parent position or its payment options are not available, there is no
+		// sibling context to evaluate
+		if (pp == null || pp.getPaymentOption() == null) {
+			return;
+		}
+
+		// If the whole payment position is already paid or reported, no unpaid payment
+		// option should be exposed as payable/activable
+		if (pp.getStatus() == DebtPositionStatus.PAID || pp.getStatus() == DebtPositionStatus.REPORTED) {
+			throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, poToCheck.getOrganizationFiscalCode(), nav);
+		}
+
+		boolean isFullPayment = !Boolean.TRUE.equals(poToCheck.getIsPartialPayment());
+		String planId = poToCheck.getPaymentPlanId();
+
+		// In this validation, every status different from PO_UNPAID is considered already progressed
+		java.util.function.Predicate<PaymentOption> isAlreadyPaid = po -> po
+				.getStatus() != PaymentOptionStatus.PO_UNPAID;
+
+		if (isFullPayment) {
+			// A full payment option must no longer be visible if any sibling installment or
+			// alternative option has already progressed (e.g. paid, reported, in progress...)
+			boolean anyPaid = pp.getPaymentOption().stream().filter(po -> !po.getId().equals(poToCheck.getId()))
+					.anyMatch(isAlreadyPaid);
+
+			if (anyPaid) {
+				throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, poToCheck.getOrganizationFiscalCode(), nav);
+			}
+
+			return;
+		}
+
+		// For installment payments, the option remains visible only if already
+		// progressed siblings belong to the same payment plan
+		boolean conflict = pp.getPaymentOption().stream().filter(po -> !po.getId().equals(poToCheck.getId()))
+				.filter(isAlreadyPaid).anyMatch(paid -> {
+					boolean paidIsInstallment = Boolean.TRUE.equals(paid.getIsPartialPayment());
+
+					if (!paidIsInstallment) {
+						return true;
+					}
+
+					return !Objects.equals(planId, paid.getPaymentPlanId());
+				});
+
+		if (conflict) {
+			throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, poToCheck.getOrganizationFiscalCode(), nav);
+		}
   }
 }

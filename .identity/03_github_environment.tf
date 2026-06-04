@@ -29,6 +29,9 @@ locals {
     "DATASOURCE_PASSWORD": data.azurerm_key_vault_secret.key_vault_datasource_password.value,
     "DATASOURCE_URL": data.azurerm_key_vault_secret.key_vault_datasource_url.value,
     "FLYWAY_DATASOURCE_URL": data.azurerm_key_vault_secret.key_vault_flyway_datasource_url.value,
+    "FLYWAY_ARCHIVE_DATASOURCE_URL": data.azurerm_key_vault_secret.key_vault_flyway_datasource_storico_url.value,
+    "ARCHIVE_DATASOURCE_USERNAME": data.azurerm_key_vault_secret.key_vault_datasource_storico_username.value,
+    "ARCHIVE_DATASOURCE_PASSWORD": data.azurerm_key_vault_secret.key_vault_datasource_storico_password.value
   }
   env_variables = {
     "CONTAINER_APP_ENVIRONMENT_NAME" : local.container_app_environment.name,
@@ -38,7 +41,8 @@ locals {
     "NAMESPACE" : local.domain,
     "WORKLOAD_IDENTITY_ID": data.azurerm_user_assigned_identity.workload_identity_clientid.client_id,
     "ODP_SCHEMA_NAME": local.odp_schema,
-    "APD_SCHEMA_NAME": local.apd_schema
+    "APD_SCHEMA_NAME": local.apd_schema,
+    "APD_ARCHIVE_SCHEMAS": local.apd_archive_schemas
   }
   repo_secrets = {
     "SONAR_TOKEN" : data.azurerm_key_vault_secret.key_vault_sonar.value,
@@ -68,7 +72,7 @@ resource "github_actions_environment_secret" "github_environment_runner_secrets"
 
 resource "github_actions_environment_variable" "github_environment_runner_variables" {
   for_each      = local.env_variables
-  repository    = local.github.repository
+  repository    = "pagopa-debt-position"
   environment   = var.env
   variable_name = each.key
   value         = each.value

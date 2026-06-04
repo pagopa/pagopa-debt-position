@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Random;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.IsNull;
@@ -48,6 +49,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @SpringBootTest(classes = DebtPositionApplication.class)
 @AutoConfigureMockMvc
@@ -522,6 +527,43 @@ class DebtPositionControllerTest {
         .andExpect(content().string(containsString("size must be between 0 and 10")));
   }
   
+  @Test
+  void createDebtPositionWithDuplicatePaymentOptionMetadataKey_400() throws Exception {
+    PaymentPositionDTO pp = DebtPositionMock.getMetadataMock8();
+    PaymentOptionDTO po = pp.getPaymentOption().get(0);
+
+    po.setPaymentOptionMetadata(
+        List.of(
+            PaymentOptionMetadataDTO.builder().key("E48200-000").value("83.81").build(),
+            PaymentOptionMetadataDTO.builder().key("E48200-000").value("33.47").build()));
+
+    mvc.perform(
+            post("/organizations/400_DUP_PO_METADATA/debtpositions")
+                .content(TestUtil.toJson(pp))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(content().string(containsString("paymentOptionMetadata keys must be unique")));
+  }
+  
+  @Test
+  void createDebtPositionWithDuplicateTransferMetadataKey_400() throws Exception {
+    PaymentPositionDTO pp = DebtPositionMock.getMetadataMock8();
+    TransferDTO transfer = pp.getPaymentOption().get(0).getTransfer().get(0);
+
+    transfer.setTransferMetadata(
+        List.of(
+            TransferMetadataDTO.builder().key("TRANSFER-DUP-KEY").value("value-1").build(),
+            TransferMetadataDTO.builder().key("TRANSFER-DUP-KEY").value("value-2").build()));
+
+    mvc.perform(
+            post("/organizations/400_DUP_TRANSFER_METADATA/debtpositions")
+                .content(TestUtil.toJson(pp))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(content().string(containsString("transferMetadata keys must be unique")));
+  }
   
   @Test
   void createDebtPositionWithCheckOnIBAN_400() throws Exception {
@@ -2512,6 +2554,43 @@ class DebtPositionControllerTest {
                   .content(TestUtil.toJson(updateRequest))
                   .contentType(MediaType.APPLICATION_JSON))
           .andExpect(status().isBadRequest());
+    }
+    
+    @Test
+    void createDebtPositionWithExplicitNullPaymentOptionMetadata_201() throws Exception {
+      PaymentPositionDTO pp = DebtPositionMock.getMetadataMock8();
+
+      ObjectMapper objectMapper = new ObjectMapper();
+      JsonNode root = objectMapper.readTree(TestUtil.toJson(pp));
+
+      ObjectNode paymentOptionNode = (ObjectNode) root.path("paymentOption").get(0);
+      paymentOptionNode.putNull("paymentOptionMetadata");
+
+      mvc.perform(
+              post("/organizations/NULL_PO_METADATA_12345678901/debtpositions")
+                  .content(objectMapper.writeValueAsString(root))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isCreated())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+    
+    @Test
+    void createDebtPositionWithExplicitNullTransferMetadata_201() throws Exception {
+      PaymentPositionDTO pp = DebtPositionMock.getMetadataMock8();
+
+      ObjectMapper objectMapper = new ObjectMapper();
+      JsonNode root = objectMapper.readTree(TestUtil.toJson(pp));
+
+      ObjectNode transferNode =
+          (ObjectNode) root.path("paymentOption").get(0).path("transfer").get(0);
+      transferNode.putNull("transferMetadata");
+
+      mvc.perform(
+              post("/organizations/NULL_TRANSFER_METADATA_12345678901/debtpositions")
+                  .content(objectMapper.writeValueAsString(root))
+                  .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(status().isCreated())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
 }

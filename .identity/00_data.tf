@@ -47,8 +47,18 @@ data "azurerm_key_vault_secret" "key_vault_datasource_username" {
   key_vault_id = data.azurerm_key_vault.domain_key_vault.id
 }
 
+data "azurerm_key_vault_secret" "key_vault_datasource_storico_username" {
+  name         = "pgres-apd-storico-user-login"
+  key_vault_id = data.azurerm_key_vault.domain_key_vault.id
+}
+
 data "azurerm_key_vault_secret" "key_vault_datasource_password" {
   name         = "db-apd-user-password"
+  key_vault_id = data.azurerm_key_vault.domain_key_vault.id
+}
+
+data "azurerm_key_vault_secret" "key_vault_datasource_storico_password" {
+  name         = "pgres-apd-storico-user-pwd"
   key_vault_id = data.azurerm_key_vault.domain_key_vault.id
 }
 
@@ -59,6 +69,11 @@ data "azurerm_key_vault_secret" "key_vault_datasource_url" {
 
 data "azurerm_key_vault_secret" "key_vault_flyway_datasource_url" {
   name         = "flyway-db-url"
+  key_vault_id = data.azurerm_key_vault.domain_key_vault.id
+}
+
+data "azurerm_key_vault_secret" "key_vault_flyway_datasource_storico_url" {
+  name         = "flyway-db-storico-url"
   key_vault_id = data.azurerm_key_vault.domain_key_vault.id
 }
 

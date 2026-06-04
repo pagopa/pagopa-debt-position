@@ -10,6 +10,9 @@ import it.gov.pagopa.debtposition.TestUtil;
 import it.gov.pagopa.debtposition.client.NodeClient;
 import it.gov.pagopa.debtposition.dto.MultipleIUPDDTO;
 import it.gov.pagopa.debtposition.dto.MultiplePaymentPositionDTO;
+import it.gov.pagopa.debtposition.dto.PaymentOptionDTO;
+import it.gov.pagopa.debtposition.dto.PaymentOptionMetadataDTO;
+import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import it.gov.pagopa.debtposition.mock.DebtPositionMock;
 import java.util.ArrayList;
 import java.util.List;
@@ -207,5 +210,26 @@ class DebtPositionControllerBulkTest {
                         MultipleIUPDDTO.builder().paymentPositionIUPDs(iupdList).build()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
+  }
+  
+  @Test
+  void createMultipleDebtPositions_duplicatePaymentOptionMetadataKey_400() throws Exception {
+    MultiplePaymentPositionDTO multiplePaymentPositionDTO =
+        DebtPositionMock.getMultipleDebtPositions_Mock1();
+
+    PaymentPositionDTO pp = multiplePaymentPositionDTO.getPaymentPositions().get(0);
+    PaymentOptionDTO po = pp.getPaymentOption().get(0);
+
+    po.setPaymentOptionMetadata(
+        List.of(
+            PaymentOptionMetadataDTO.builder().key("BULK-DUP-KEY").value("value-1").build(),
+            PaymentOptionMetadataDTO.builder().key("BULK-DUP-KEY").value("value-2").build()));
+
+    mvc.perform(
+            post("/organizations/400_BULK_DUP_METADATA/debtpositions/bulk")
+                .content(TestUtil.toJson(multiplePaymentPositionDTO))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
 }

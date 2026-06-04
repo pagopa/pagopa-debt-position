@@ -23,7 +23,7 @@ public final class ValidityHandler {
    * <ul>
    * <li>The current status is {@code PUBLISHED}.
    * <li>A minimum validity date is defined across installments.
-   * <li>The current UTC time is after the calculated minimum validity date.
+  * <li>The current UTC time is on or after the calculated minimum validity date.
    * </ul>
    *
    * <p><b>Persistence Note (Dirty Checking):</b><br>
@@ -43,7 +43,7 @@ public final class ValidityHandler {
     // Validity check on the fly
     if (pp.getStatus() == DebtPositionStatus.PUBLISHED
         && minValidity != null
-        && currentDate.isAfter(minValidity)) {
+        && !minValidity.isAfter(currentDate)) {
       pp.setStatus(DebtPositionStatus.VALID);
     }
   }
