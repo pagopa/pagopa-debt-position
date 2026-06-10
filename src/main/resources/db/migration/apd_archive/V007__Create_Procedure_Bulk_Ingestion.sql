@@ -31,7 +31,12 @@ BEGIN
     -- ==========================================
     INSERT INTO apd.payment_option
     SELECT opt.* FROM apd.archiving_staging stg
-    CROSS JOIN LATERAL jsonb_array_elements(stg.p_json_data->'options') AS opt_elem
+    CROSS JOIN LATERAL jsonb_array_elements(
+        CASE
+            WHEN jsonb_typeof(stg.p_json_data->'options') = 'array' THEN stg.p_json_data->'options'
+            ELSE '[]'::jsonb
+        END
+    ) AS opt_elem
     CROSS JOIN LATERAL jsonb_populate_record(
         NULL::apd.payment_option,
         (opt_elem - 'transfers' - 'metadata') || jsonb_build_object(
@@ -46,8 +51,18 @@ BEGIN
     -- ==========================================
     INSERT INTO apd.payment_option_metadata
     SELECT meta.* FROM apd.archiving_staging stg
-    CROSS JOIN LATERAL jsonb_array_elements(stg.p_json_data->'options') AS opt_elem
-    CROSS JOIN LATERAL jsonb_array_elements(opt_elem->'metadata') AS meta_elem
+    CROSS JOIN LATERAL jsonb_array_elements(
+        CASE
+            WHEN jsonb_typeof(stg.p_json_data->'options') = 'array' THEN stg.p_json_data->'options'
+            ELSE '[]'::jsonb
+        END
+    ) AS opt_elem
+    CROSS JOIN LATERAL jsonb_array_elements(
+        CASE
+            WHEN jsonb_typeof(opt_elem->'metadata') = 'array' THEN opt_elem->'metadata'
+            ELSE '[]'::jsonb
+        END
+    ) AS meta_elem
     CROSS JOIN LATERAL jsonb_populate_record(
         NULL::apd.payment_option_metadata,
         meta_elem || jsonb_build_object(
@@ -63,8 +78,18 @@ BEGIN
     -- ==========================================
     INSERT INTO apd.transfer
     SELECT tr.* FROM apd.archiving_staging stg
-    CROSS JOIN LATERAL jsonb_array_elements(stg.p_json_data->'options') AS opt_elem
-    CROSS JOIN LATERAL jsonb_array_elements(opt_elem->'transfers') AS tr_elem
+    CROSS JOIN LATERAL jsonb_array_elements(
+        CASE
+            WHEN jsonb_typeof(stg.p_json_data->'options') = 'array' THEN stg.p_json_data->'options'
+            ELSE '[]'::jsonb
+        END
+    ) AS opt_elem
+    CROSS JOIN LATERAL jsonb_array_elements(
+        CASE
+            WHEN jsonb_typeof(opt_elem->'transfers') = 'array' THEN opt_elem->'transfers'
+            ELSE '[]'::jsonb
+        END
+    ) AS tr_elem
     CROSS JOIN LATERAL jsonb_populate_record(
         NULL::apd.transfer,
         (tr_elem - 'metadata') || jsonb_build_object(
@@ -80,9 +105,24 @@ BEGIN
     -- ==========================================
     INSERT INTO apd.transfer_metadata
     SELECT tm.* FROM apd.archiving_staging stg
-    CROSS JOIN LATERAL jsonb_array_elements(stg.p_json_data->'options') AS opt_elem
-    CROSS JOIN LATERAL jsonb_array_elements(opt_elem->'transfers') AS tr_elem
-    CROSS JOIN LATERAL jsonb_array_elements(tr_elem->'metadata') AS tm_elem
+    CROSS JOIN LATERAL jsonb_array_elements(
+        CASE
+            WHEN jsonb_typeof(stg.p_json_data->'options') = 'array' THEN stg.p_json_data->'options'
+            ELSE '[]'::jsonb
+        END
+    ) AS opt_elem
+    CROSS JOIN LATERAL jsonb_array_elements(
+        CASE
+            WHEN jsonb_typeof(opt_elem->'transfers') = 'array' THEN opt_elem->'transfers'
+            ELSE '[]'::jsonb
+        END
+    ) AS tr_elem
+    CROSS JOIN LATERAL jsonb_array_elements(
+        CASE
+            WHEN jsonb_typeof(tr_elem->'metadata') = 'array' THEN tr_elem->'metadata'
+            ELSE '[]'::jsonb
+        END
+    ) AS tm_elem
     CROSS JOIN LATERAL jsonb_populate_record(
         NULL::apd.transfer_metadata,
         tm_elem || jsonb_build_object(
