@@ -2,7 +2,6 @@ package it.gov.pagopa.debtposition.util;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 import it.gov.pagopa.debtposition.model.PageInfo;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
@@ -81,9 +80,8 @@ public class CommonUtil {
    * @return return the input string incremented to the next character
    */
   public static String getSegregationCodeEnd(String segregationCode) {
-    int length = segregationCode.length() - 1;
-    int nextChar = segregationCode.toCharArray()[length] + 1;
-    return segregationCode.substring(0, length) + (char) nextChar;
+	  int nextCode = Integer.parseInt(segregationCode) + 1;
+	  return String.format("%0" + segregationCode.length() + "d", nextCode);
   }
 
   /**

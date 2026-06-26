@@ -74,10 +74,10 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
        seg =
            cb.or(
                seg,
-               cb.between(
-                   po.get(IUV_FIELD),
-                   segregationCode,
-                   CommonUtil.getSegregationCodeEnd(segregationCode)));
+               cb.and(
+            		    cb.greaterThanOrEqualTo(po.get(IUV_FIELD), segregationCode),
+            		    cb.lessThan(po.get(IUV_FIELD), CommonUtil.getSegregationCodeEnd(segregationCode))
+            		));
      }
      predicates.add(seg);
    }
