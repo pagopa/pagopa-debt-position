@@ -67,7 +67,12 @@ public class PaymentOptionByAttribute implements Specification<PaymentOption> {
 		if (segregationCodes != null && !segregationCodes.isEmpty()) {
 			List<Predicate> ors = new java.util.ArrayList<>(segregationCodes.size());
 			for (String code : segregationCodes) {
-				ors.add(cb.between(root.get(IUV_FIELD), code, CommonUtil.getSegregationCodeEnd(code)));
+				ors.add(
+						cb.and(
+								cb.greaterThanOrEqualTo(root.get(IUV_FIELD), code),
+								cb.lessThan(root.get(IUV_FIELD), CommonUtil.getSegregationCodeEnd(code))
+								)
+						);
 			}
 			predicates.add(cb.or(ors.toArray(new Predicate[0])));
 		}
