@@ -42,6 +42,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -99,6 +100,8 @@ public class PaymentPositionCRUDService {
       throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
     } catch (AppException appException) {
       throw appException;
+    } catch (OptimisticLockingFailureException e) {
+      throw new AppException(AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE, organizationFiscalCode);
     } catch (Exception e) {
       log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
       throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
@@ -222,7 +225,7 @@ public class PaymentPositionCRUDService {
 	  page = paymentPositionRepository.findAll(specPP, pageable);
 
 	  positions = page.getContent();
-	  ppCount = (positions == null) ? 0 : positions.size();
+	  ppCount = positions.size();
 
 	  // empty page
 	  if (ppCount == 0) {
@@ -333,7 +336,9 @@ public class PaymentPositionCRUDService {
     	    handleUniqueViolationAppException(constraintViolationException, organizationFiscalCode);
       }
       throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
-    } catch (Exception e) {
+    } catch (OptimisticLockingFailureException e) {
+      throw new AppException(AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE, organizationFiscalCode);
+    }  catch (Exception e) {
       log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
       throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
     }
@@ -424,6 +429,8 @@ public class PaymentPositionCRUDService {
       throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
     } catch (AppException appException) {
       throw appException;
+    } catch (OptimisticLockingFailureException e) {
+      throw new AppException(AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE, organizationFiscalCode);
     } catch (Exception e) {
       log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
       throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
@@ -488,6 +495,12 @@ public class PaymentPositionCRUDService {
             AppError.DEBT_POSITION_UPDATE_FAILED_NO_TRANSFER_FOR_NOTIFICATION_FEE,
             organizationFiscalCode,
             e.getMessage());
+      }
+      if(AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE.equals(e.getAppError())) {
+        throw new AppException(
+                AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE,
+                organizationFiscalCode,
+                e.getMessage());
       }
       throw e;
     } catch (DataIntegrityViolationException e) {

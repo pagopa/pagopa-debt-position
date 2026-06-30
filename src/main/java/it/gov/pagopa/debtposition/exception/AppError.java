@@ -15,10 +15,18 @@ public enum AppError {
 		      HttpStatus.INTERNAL_SERVER_ERROR,
 		      "The debt position creation is failed",
 		      "Creation failed for the debt position with Organization Fiscal Code %s"),
+	      DEBT_POSITION_CONCURRENT_CREATION_FAILURE(
+			HttpStatus.CONFLICT,
+			"The debt position creation is failed - concurrent creation",
+			"Creation failed for the debt position with Organization Fiscal Code %s ->  concurrent modification detected"),
 		  DEBT_POSITION_UPDATE_FAILED(
 		      HttpStatus.INTERNAL_SERVER_ERROR,
 		      "The debt position update is failed",
 		      "Update failed for the debt position with Organization Fiscal Code %s"),
+	      DEBT_POSITION_CONCURRENT_UPDATE_FAILURE(
+			HttpStatus.CONFLICT,
+			"The debt position update is failed - concurrent modification",
+			"Update failed for the debt position with Organization Fiscal Code %s ->  concurrent modification detected"),
 		  DEBT_POSITION_DELETE_FAILED(
 		      HttpStatus.INTERNAL_SERVER_ERROR,
 		      "The debt position delete is failed",
