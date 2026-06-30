@@ -225,7 +225,7 @@ public class PaymentPositionCRUDService {
 	  page = paymentPositionRepository.findAll(specPP, pageable);
 
 	  positions = page.getContent();
-	  ppCount = (positions == null) ? 0 : positions.size();
+	  ppCount = positions.size();
 
 	  // empty page
 	  if (ppCount == 0) {
