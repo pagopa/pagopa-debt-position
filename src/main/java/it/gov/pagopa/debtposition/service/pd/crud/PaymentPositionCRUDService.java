@@ -336,7 +336,9 @@ public class PaymentPositionCRUDService {
     	    handleUniqueViolationAppException(constraintViolationException, organizationFiscalCode);
       }
       throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
-    } catch (Exception e) {
+    } catch (OptimisticLockingFailureException e) {
+      throw new AppException(AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE, organizationFiscalCode);
+    }  catch (Exception e) {
       log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
       throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
     }
@@ -502,6 +504,8 @@ public class PaymentPositionCRUDService {
          handleUniqueViolationAppException(constraintViolationException, organizationFiscalCode);
       }
       throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
+    } catch (OptimisticLockingFailureException e) {
+      throw new AppException(AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE, organizationFiscalCode);
     } catch (Exception e) {
       // Log the entire exception for debugging purposes.
       log.error("Error during debt position update process", e);
