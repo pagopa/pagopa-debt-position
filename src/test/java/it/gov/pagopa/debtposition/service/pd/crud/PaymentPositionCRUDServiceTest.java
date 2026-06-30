@@ -26,6 +26,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -314,6 +315,114 @@ class PaymentPositionCRUDServiceTest {
     assertEquals(AppError.DEBT_POSITION_PO_METADATA_UNIQUE_VIOLATION.title, exception.getTitle());
   }
 
+  @Test
+  void createDebtPosition_OptimisticLockingFailureException_throwsSpecificAppException() {
+    String organizationFiscalCode = "02406911202";
+
+    when(paymentPositionRepository.saveAndFlush(any()))
+            .thenThrow(optimisticLockingFailureException());
+
+    PaymentPosition paymentPosition = new PaymentPosition();
+
+    AppException exception =
+            assertThrows(
+                    AppException.class,
+                    () ->
+                            paymentsService.create(
+                                    paymentPosition,
+                                    organizationFiscalCode,
+                                    false,
+                                    null));
+
+    assertEquals(
+            AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE,
+            exception.getAppError());
+  }
+
+  @Test
+  void createMultiDebtPosition_OptimisticLockingFailureException_throwsSpecificAppException() {
+    String organizationFiscalCode = "02406911202";
+
+    when(paymentPositionRepository.saveAllAndFlush(anyList()))
+            .thenThrow(optimisticLockingFailureException());
+
+    List<PaymentPosition> paymentPositions = List.of(new PaymentPosition());
+
+    AppException exception =
+            assertThrows(
+                    AppException.class,
+                    () ->
+                            paymentsService.createMultipleDebtPositions(
+                                    paymentPositions,
+                                    organizationFiscalCode,
+                                    false,
+                                    null));
+
+    assertEquals(
+            AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE,
+            exception.getAppError());
+  }
+
+  @Test
+  void updateDebtPosition_OptimisticLockingFailureException_throwsSpecificAppException() {
+    String organizationFiscalCode = "02406911202";
+
+    PaymentPositionModel paymentPositionModel = new PaymentPositionModel();
+    PaymentPosition ppToUpdate = new PaymentPosition();
+    ppToUpdate.setIupd("IUPD-1");
+    ppToUpdate.setStatus(DebtPositionStatus.DRAFT);
+    ppToUpdate.setPaymentOption(List.of());
+
+    when(paymentPositionRepository.findOne(any(Specification.class)))
+            .thenReturn(Optional.of(ppToUpdate));
+
+    when(paymentPositionRepository.saveAndFlush(any()))
+            .thenThrow(optimisticLockingFailureException());
+    AppException exception =
+            assertThrows(
+                    AppException.class,
+                    () ->
+                            paymentsService.update(
+                                    paymentPositionModel,
+                                    organizationFiscalCode,
+                                    false,
+                                    null));
+
+    assertEquals(
+            AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE,
+            exception.getAppError());
+  }
+
+  @Test
+  void updateMultiDebtPosition_OptimisticLockingFailureException_throwsSpecificAppException() {
+    String organizationFiscalCode = "02406911202";
+
+    List<PaymentPositionModel> paymentPositionModelList = List.of(new PaymentPositionModel());
+    PaymentPosition pp = new PaymentPosition();
+    pp.setIupd("IUPD-1");
+    pp.setStatus(DebtPositionStatus.DRAFT);
+    pp.setPaymentOption(List.of());
+    List< PaymentPosition> managedPositions = List.of(pp);
+    when(paymentPositionRepository.findAll(any(Specification.class), any(Pageable.class)))
+            .thenReturn(new PageImpl<>(managedPositions));
+
+    when(paymentPositionRepository.saveAllAndFlush(anyList()))
+            .thenThrow(optimisticLockingFailureException());
+    AppException exception =
+            assertThrows(
+                    AppException.class,
+                    () ->
+                            paymentsService.updateMultipleDebtPositions(
+                                    paymentPositionModelList,
+                                    organizationFiscalCode,
+                                    false,
+                                    null));
+
+    assertEquals(
+            AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE,
+            exception.getAppError());
+  }
+
   private ConstraintViolationException uniqueViolation(String constraintName) {
     return new ConstraintViolationException(
         "duplicate key value violates unique constraint",
@@ -332,5 +441,9 @@ class PaymentPositionCRUDServiceTest {
 	  return new DataIntegrityViolationException(
 			  "duplicate key value violates unique constraint",
 			  uniqueViolation(constraintName));
+  }
+
+  private OptimisticLockingFailureException optimisticLockingFailureException() {
+    return new OptimisticLockingFailureException("OptimisticLockingFailureException");
   }
 }

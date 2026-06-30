@@ -496,6 +496,12 @@ public class PaymentPositionCRUDService {
             organizationFiscalCode,
             e.getMessage());
       }
+      if(AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE.equals(e.getAppError())) {
+        throw new AppException(
+                AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE,
+                organizationFiscalCode,
+                e.getMessage());
+      }
       throw e;
     } catch (DataIntegrityViolationException e) {
       // Handle database constraint violations explicitly.
@@ -504,8 +510,6 @@ public class PaymentPositionCRUDService {
          handleUniqueViolationAppException(constraintViolationException, organizationFiscalCode);
       }
       throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
-    } catch (OptimisticLockingFailureException e) {
-      throw new AppException(AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE, organizationFiscalCode);
     } catch (Exception e) {
       // Log the entire exception for debugging purposes.
       log.error("Error during debt position update process", e);
