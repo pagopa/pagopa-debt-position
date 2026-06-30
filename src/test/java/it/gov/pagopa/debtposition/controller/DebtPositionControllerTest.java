@@ -1475,6 +1475,89 @@ class DebtPositionControllerTest {
             MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[1].nav")
                 .value("3" + iuv2));
   }
+  
+  @Test
+  void getDebtPositionListBySegregationCode_19_shouldReturnDebtPosition() throws Exception {
+    String orgFiscalCode = "LIST_SC_19_12345678901";
+
+    PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock1();
+    paymentPositionDTO.setIupd("IUPD_SC_19");
+    paymentPositionDTO.getPaymentOption().get(0).setIuv("19000000000001231");
+
+    mvc.perform(
+            post("/organizations/" + orgFiscalCode + "/debtpositions")
+                .content(TestUtil.toJson(paymentPositionDTO))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    mvc.perform(
+            get("/organizations/" + orgFiscalCode + "/debtpositions")
+                .param("page", "0")
+                .param("segregationCodes", "19")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.payment_position_list", Matchers.hasSize(1)))
+        .andExpect(jsonPath("$.payment_position_list[0].iupd").value("IUPD_SC_19"))
+        .andExpect(
+            jsonPath("$.payment_position_list[0].paymentOption[0].iuv")
+                .value("19000000000001231"));
+  }
+  
+  @Test
+  void getDebtPositionListBySegregationCode_18_shouldNotReturnIuvStartingWith19() throws Exception {
+    String orgFiscalCode = "LIST_SC_18_NEG_12345678901";
+
+    PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock1();
+    paymentPositionDTO.setIupd("IUPD_SC_19_NEG");
+    paymentPositionDTO.getPaymentOption().get(0).setIuv("19000000000001231");
+
+    mvc.perform(
+            post("/organizations/" + orgFiscalCode + "/debtpositions")
+                .content(TestUtil.toJson(paymentPositionDTO))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    mvc.perform(
+            get("/organizations/" + orgFiscalCode + "/debtpositions")
+                .param("page", "0")
+                .param("segregationCodes", "18")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.payment_position_list", Matchers.hasSize(0)))
+        .andExpect(jsonPath("$.page_info.items_found").value(0));
+  }
+  
+  @Test
+  void getDebtPositionListBySegregationCode_19_shouldReturnOnlyMatchingPaymentOptions() throws Exception {
+    String orgFiscalCode = "LIST_SC_19_MIXED_12345678901";
+
+    PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock2();
+    paymentPositionDTO.setIupd("IUPD_SC_19_MIXED");
+    paymentPositionDTO.getPaymentOption().get(0).setIuv("19000000000001231");
+    paymentPositionDTO.getPaymentOption().get(1).setIuv("18000000000000001");
+
+    mvc.perform(
+            post("/organizations/" + orgFiscalCode + "/debtpositions")
+                .content(TestUtil.toJson(paymentPositionDTO))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    mvc.perform(
+            get("/organizations/" + orgFiscalCode + "/debtpositions")
+                .param("page", "0")
+                .param("segregationCodes", "19")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.payment_position_list", Matchers.hasSize(1)))
+        .andExpect(jsonPath("$.payment_position_list[0].iupd").value("IUPD_SC_19_MIXED"))
+        .andExpect(jsonPath("$.payment_position_list[0].paymentOption", Matchers.hasSize(1)))
+        .andExpect(
+            jsonPath("$.payment_position_list[0].paymentOption[0].iuv")
+                .value("19000000000001231"));
+  }
 
   @Test
   void getDebtPositionListBySegregationCode_403() throws Exception {
