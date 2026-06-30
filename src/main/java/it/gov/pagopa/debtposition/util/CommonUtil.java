@@ -2,7 +2,6 @@ package it.gov.pagopa.debtposition.util;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 import it.gov.pagopa.debtposition.model.PageInfo;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
@@ -13,6 +12,8 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 import lombok.experimental.UtilityClass;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
@@ -81,9 +82,8 @@ public class CommonUtil {
    * @return return the input string incremented to the next character
    */
   public static String getSegregationCodeEnd(String segregationCode) {
-    int length = segregationCode.length() - 1;
-    int nextChar = segregationCode.toCharArray()[length] + 1;
-    return segregationCode.substring(0, length) + (char) nextChar;
+    int nextCode = Integer.parseInt(segregationCode) + 1;
+    return StringUtils.leftPad(String.valueOf(nextCode), segregationCode.length(), '0');
   }
 
   /**
