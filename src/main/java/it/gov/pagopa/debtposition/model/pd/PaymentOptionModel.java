@@ -10,6 +10,8 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import it.gov.pagopa.debtposition.controller.pd.validator.ValidTransferList;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
@@ -52,7 +54,9 @@ public class PaymentOptionModel implements Serializable {
   @Schema(accessMode = Schema.AccessMode.READ_ONLY)
   private long notificationFee;
 
-  @Valid private List<TransferModel> transfer = new ArrayList<>();
+  @Valid
+  @ValidTransferList
+  private List<TransferModel> transfer = new ArrayList<>();
 
   @Valid
   @Size(min = 0, max = 10)

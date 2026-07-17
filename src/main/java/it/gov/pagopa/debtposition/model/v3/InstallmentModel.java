@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import it.gov.pagopa.debtposition.controller.pd.validator.UniqueMetadataKeys;
+import it.gov.pagopa.debtposition.controller.pd.validator.ValidTransferList;
 import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import java.io.Serializable;
@@ -52,7 +53,7 @@ public class InstallmentModel implements Serializable {
   private InstallmentStatus status;
 
   @Valid
-  @Size(min = 1)
+  @ValidTransferList
   private List<TransferModel> transfer = new ArrayList<>();
 
   @Valid

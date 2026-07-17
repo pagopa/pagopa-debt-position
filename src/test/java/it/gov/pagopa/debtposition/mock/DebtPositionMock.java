@@ -679,12 +679,12 @@ public class DebtPositionMock {
   }
 
   public static PaymentOptionDTO createPaymentOption(
-      int amount,
-      String iuv,
-      boolean isPartialPayment,
-      TransferDTO transferDTO,
-      LocalDateTime dueDate,
-      LocalDateTime retentionDate) {
+          int amount,
+          String iuv,
+          boolean isPartialPayment,
+          List<TransferDTO> transferList,
+          LocalDateTime dueDate,
+          LocalDateTime retentionDate) {
     PaymentOptionDTO poMock = new PaymentOptionDTO();
     poMock.setAmount(amount);
     poMock.setIuv(iuv);
@@ -693,9 +693,19 @@ public class DebtPositionMock {
     poMock.setIsPartialPayment(isPartialPayment);
     poMock.setStatus(PaymentOptionStatus.PO_UNPAID);
     poMock.setDescription("payment option description");
-    poMock.addTransfers(transferDTO);
-
+    transferList.forEach(poMock::addTransfers);
     return poMock;
+  }
+
+  public static PaymentOptionDTO createPaymentOption(
+      int amount,
+      String iuv,
+      boolean isPartialPayment,
+      TransferDTO transferDTO,
+      LocalDateTime dueDate,
+      LocalDateTime retentionDate) {
+    return createPaymentOption(
+        amount, iuv, isPartialPayment, List.of(transferDTO), dueDate, retentionDate);
   }
 
   public static PaymentOptionDTO createPaymentOptionsMock1() {
@@ -1165,4 +1175,44 @@ public class DebtPositionMock {
     pPMockList.add(createPaymentPosition400Mock2());
     return MultiplePaymentPositionDTO.builder().paymentPositions(pPMockList).build();
   }
+  public static TransferDTO createTransferMockWithId(String transferId) {
+    TransferDTO tMock = new TransferDTO();
+    tMock.setIdTransfer(transferId);
+    tMock.setIban("IT75I0306902887100000300005");
+    tMock.setAmount(1000);
+    tMock.setRemittanceInformation("causale mock multiple 1");
+    tMock.setCategory("10/22252/20");
+
+    return tMock;
+  }
+  public static final PaymentPositionDTO getPaymentOptionWithTransferList(List<String> transferList) {
+    PaymentPositionDTO pPMock = new PaymentPositionDTO();
+    // debtor properties
+    pPMock.setFiscalCode("MRDPLL54H17D542L");
+    pPMock.setType(Type.F);
+    pPMock.setFullName("Mario Rossi");
+    pPMock.setPhone("3330987654");
+    pPMock.setStreetName("Via di novoli");
+    pPMock.setCivicNumber("50/2");
+    pPMock.setProvince("FI");
+    pPMock.setCountry("IT");
+    pPMock.setEmail("mario@firenze.it");
+    pPMock.setPostalCode("50100");
+    // payment position properties
+    pPMock.setIupd("12345678901IUPDMOCK1");
+    pPMock.setCompanyName("Comune di Firenze");
+    pPMock.setOfficeName("Ufficio tributario");
+    List<TransferDTO> transferDTOList = transferList.stream()
+            .map(DebtPositionMock::createTransferMockWithId)
+            .toList();
+    pPMock.addPaymentOptions(createPaymentOption(
+            1000,
+            "1234561",
+            false,
+            transferDTOList,
+            LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.SECONDS),
+            LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS)));
+    return pPMock;
+  }
 }
+
