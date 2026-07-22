@@ -40,7 +40,7 @@ class ConcurrentPaidPaymentsControllerTest {
 
   @BeforeAll
   void initDebtPosition_for_partially_paid() throws Exception {
-    log.trace("initDebtPosition_for_partially_paid start => " + Thread.currentThread().getName());
+    log.info("initDebtPosition_for_partially_paid start => " + Thread.currentThread().getName());
     // creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato) con più
     // opzioni di pagamento
     mvc.perform(
@@ -48,7 +48,7 @@ class ConcurrentPaidPaymentsControllerTest {
                 .content(TestUtil.toJson(DebtPositionMock.getMock3()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
-    log.trace("initDebtPosition_for_partially_paid end => " + Thread.currentThread().getName());
+    log.info("initDebtPosition_for_partially_paid end => " + Thread.currentThread().getName());
   }
 
   // Concurrency testing: error "Batch update returned unexpected row count from update [0]; actual
@@ -56,7 +56,7 @@ class ConcurrentPaidPaymentsControllerTest {
   @ParameterizedTest
   @ValueSource(ints = {1, 2, 3})
   void concurrent_paid_4_thread(int number) throws Exception {
-    log.trace(
+    log.info(
         "concurrent_paid_4_thread - thread("
             + number
             + ") start => "
@@ -70,7 +70,7 @@ class ConcurrentPaidPaymentsControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is(oneOf(200, 409)))
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    log.trace(
+    log.info(
         "concurrent_paid_4_thread - thread("
             + number
             + ") end => "
@@ -80,7 +80,7 @@ class ConcurrentPaidPaymentsControllerTest {
   @ParameterizedTest
   @ValueSource(ints = {1, 2, 3})
   void concurrent_paid_5_thread(int number) throws Exception {
-    log.trace(
+    log.info(
         "concurrent_paid_5_thread - thread("
             + number
             + ") start => "
@@ -94,7 +94,7 @@ class ConcurrentPaidPaymentsControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is(oneOf(200, 409)))
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    log.trace(
+    log.info(
         "concurrent_paid_5_thread - thread("
             + number
             + ") end => "
@@ -103,7 +103,7 @@ class ConcurrentPaidPaymentsControllerTest {
 
   @AfterAll
   void checkDebtPosition_after_partially_paid() throws Exception {
-    log.trace(
+    log.info(
         "checkDebtPosition_after_partially_paid start => " + Thread.currentThread().getName());
     // recupero la PO e verifico lo stato in PO_PAID
     String url =
@@ -124,6 +124,6 @@ class ConcurrentPaidPaymentsControllerTest {
         .andExpect(status().isOk())
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.PAID.toString()));
-    log.trace("checkDebtPosition_after_partially_paid end => " + Thread.currentThread().getName());
+    log.info("checkDebtPosition_after_partially_paid end => " + Thread.currentThread().getName());
   }
 }

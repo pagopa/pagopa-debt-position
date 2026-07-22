@@ -23,39 +23,39 @@ public class DebtPositionMock {
   }
 
   public static final PaymentPositionDTO getMock2() {
-    return createPaymentPositionMultipleMock1();
+    return setTransferIdsProgressively(createPaymentPositionMultipleMock1());
   }
 
   public static final PaymentPositionDTO getMock3() {
-    return createPaymentPositionMultipleMock2();
+    return setTransferIdsProgressively(createPaymentPositionMultipleMock2());
   }
 
   public static final PaymentPositionDTO getMock4() {
-    return createPaymentPositionUpdateMock1();
+    return setTransferIdsProgressively(createPaymentPositionUpdateMock1());
   }
 
   public static final PaymentPositionDTO getMock5() {
-    return createPaymentPositionMock3();
+    return setTransferIdsProgressively(createPaymentPositionMock3());
   }
 
   public static final PaymentPositionDTO getMock6() {
-    return createPaymentPositionMock5();
+    return setTransferIdsProgressively(createPaymentPositionMock5());
   }
 
   public static final PaymentPositionDTO getMock7() {
-    return createPaymentPositionMock6();
+    return setTransferIdsProgressively(createPaymentPositionMock6());
   }
 
   public static final PaymentPositionDTO getMock8() {
-    return createPaymentPositionMultipleMock8();
+    return setTransferIdsProgressively(createPaymentPositionMultipleMock8());
   }
 
   public static final PaymentPositionDTO getMock10() {
-    return createPaymentPositionMock10();
+    return setTransferIdsProgressively(createPaymentPositionMock10());
   }
 
   public static final PaymentPositionDTO getMetadataMock8() {
-    return createPaymentPositionMetadataMock7();
+    return setTransferIdsProgressively(createPaymentPositionMetadataMock7());
   }
 
   public static final PaymentOptionDTO getPayPOMock1() {
@@ -529,8 +529,19 @@ public class DebtPositionMock {
     pPMock.setOfficeName("Ufficio tributario");
     pPMock.addPaymentOptions(createPaymentOptions_Min_Due_Date_Mock1());
     pPMock.addPaymentOptions(createPaymentOptions_Min_Due_Date_Mock2());
+    return setTransferIdsProgressively(pPMock);
+  }
 
-    return pPMock;
+  private static PaymentPositionDTO setTransferIdsProgressively(PaymentPositionDTO paymentPositionDTO){
+    paymentPositionDTO.getPaymentOption().forEach(
+            paymentOptionDTO -> {
+              int transferIdx = 1;
+              for(TransferDTO transferDTO: paymentOptionDTO.getTransfer()) {
+                transferDTO.setIdTransfer(String.valueOf(transferIdx++));
+              }
+            }
+    );
+    return paymentPositionDTO;
   }
 
   public static PaymentPositionDTO createPaymentPosition409_Valid_Date_Mock1() {
@@ -626,7 +637,7 @@ public class DebtPositionMock {
     pPMock.addPaymentOptions(createPaymentOptionsMultipleMock4());
     pPMock.addPaymentOptions(createPaymentOptionsMultipleMock5());
 
-    return pPMock;
+    return setTransferIdsProgressively(pPMock);
   }
 
   public static PaymentPositionDTO createPaymentPosition400Mock1() {
