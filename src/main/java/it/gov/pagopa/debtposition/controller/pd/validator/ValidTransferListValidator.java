@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import jakarta.validation.ConstraintValidator;
@@ -17,7 +18,23 @@ import org.springframework.beans.factory.annotation.Value;
 public class ValidTransferListValidator
     implements ConstraintValidator<ValidTransferList, List<TransferModel>> {
 
-  private static final Set<String> VALID_TRANSFER_ID_SET = Set.of("1", "2", "3", "4", "5");
+  private static final Set<String> VALID_TRANSFER_ID_SET = IntStream
+          .range(1, ValidTransferList.DEFAULT_MAX_SIZE + 1)
+          .boxed()
+          .map(String::valueOf)
+          .collect(Collectors.toSet());
+
+
+  private int minSize = ValidTransferList.DEFAULT_MIN_SIZE;
+
+  private int maxSize = ValidTransferList.DEFAULT_MAX_SIZE;
+
+  @Override
+  public void  initialize(ValidTransferList constraintAnnotation) {
+    this.minSize = constraintAnnotation.min();
+    this.maxSize = constraintAnnotation.max();
+
+  }
 
   @Override
   public boolean isValid(List<TransferModel> transferList, ConstraintValidatorContext context) {
@@ -27,8 +44,9 @@ public class ValidTransferListValidator
      * - each transfer should have transferId between 1 and 5 and be unique
      * - transfer ids should be progressively populated, so that there is no jump (f.e. 1, 3, 4, 5 is not allowed)
      */
-    if(transferList.isEmpty() || transferList.size()> 5){
-      formatMessage(context, "Transfer list must contain between 1 and 5 transfers, current size: " + transferList.size());
+    int size = transferList.size();
+    if(transferList.size() < minSize || transferList.size() > maxSize){
+      formatMessage(context, "Transfer list must contain between %s and %s transfers, current size: ".formatted(minSize, maxSize) + transferList.size());
       return false;
     }
     List<String> transferIds = transferList.stream().map(TransferModel::getIdTransfer).toList();

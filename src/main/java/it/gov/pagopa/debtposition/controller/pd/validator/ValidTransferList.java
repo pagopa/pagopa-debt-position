@@ -28,26 +28,17 @@ public @interface ValidTransferList {
 
   Class<? extends Payload>[] payload() default {};
 
+  public static int DEFAULT_MIN_SIZE = 1;
+  public static int DEFAULT_MAX_SIZE = 5;
+
   /**
    * @return size the element must be higher or equal to
    */
-  int min() default 0;
+  int min() default DEFAULT_MIN_SIZE;
 
   /**
    * @return size the element must be lower or equal to
    */
-  int max() default Integer.MAX_VALUE;
+  int max() default DEFAULT_MAX_SIZE;
 
-  /**
-   * Defines several {@link Size} annotations on the same element.
-   *
-   * @see Size
-   */
-  @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE})
-  @Retention(RUNTIME)
-  @Documented
-  @interface List {
-
-    ValidTransferList[] value();
-  }
 }
