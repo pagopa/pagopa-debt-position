@@ -22,23 +22,12 @@ import jakarta.validation.constraints.Size;
 @Constraint(validatedBy = ValidTransferListValidator.class)
 public @interface ValidTransferList {
 
-  String message() default "{javax.validation.constraints.Size.message}";
+    int MAX_TRANSFER_LIST_SIZE = 5;
 
-  Class<?>[] groups() default {};
+    String message() default "Invalid transfer list";
 
-  Class<? extends Payload>[] payload() default {};
+    Class<?>[] groups() default {};
 
-  public static int DEFAULT_MIN_SIZE = 1;
-  public static int DEFAULT_MAX_SIZE = 5;
-
-  /**
-   * @return size the element must be higher or equal to
-   */
-  int min() default DEFAULT_MIN_SIZE;
-
-  /**
-   * @return size the element must be lower or equal to
-   */
-  int max() default DEFAULT_MAX_SIZE;
+    Class<? extends Payload>[] payload() default {};
 
 }

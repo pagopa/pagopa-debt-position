@@ -53,6 +53,7 @@ public class InstallmentModel implements Serializable {
   private InstallmentStatus status;
 
   @Valid
+  @Size(min = 1, max = ValidTransferList.MAX_TRANSFER_LIST_SIZE)
   @ValidTransferList
   private List<TransferModel> transfer = new ArrayList<>();
 

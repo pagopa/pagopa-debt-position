@@ -3,6 +3,7 @@ package it.gov.pagopa.debtposition.controller.pd.validator;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import jakarta.validation.ConstraintValidatorContext;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -19,12 +20,12 @@ class ValidTransferListValidatorTest {
 
     private final ValidTransferListValidator validTransferListValidator = new ValidTransferListValidator();
 
-    private static final ConstraintValidatorContext context = Mockito.mock(ConstraintValidatorContext.class);
+    private final ConstraintValidatorContext context = Mockito.mock(ConstraintValidatorContext.class);
 
-    private static final ConstraintValidatorContext.ConstraintViolationBuilder builder = Mockito.mock(ConstraintValidatorContext.ConstraintViolationBuilder.class);
+    private final ConstraintValidatorContext.ConstraintViolationBuilder builder = Mockito.mock(ConstraintValidatorContext.ConstraintViolationBuilder.class);
 
-    @BeforeAll
-    public static void init(){
+    @BeforeEach
+    public void init(){
         Mockito.when(context.buildConstraintViolationWithTemplate(Mockito.anyString())).thenReturn(builder);
     }
 
@@ -44,7 +45,7 @@ class ValidTransferListValidatorTest {
             return model;
         }).toList();
         assertFalse(validTransferListValidator.isValid(transferModelList, context));
-        Mockito.verify(context).buildConstraintViolationWithTemplate("Transfer list must contain between 1 and 5 transfers, current size: " + transferModelList.size());
+        Mockito.verify(context).buildConstraintViolationWithTemplate("Transfer list must contain between 1 and 5 transfers");
 
     }
 

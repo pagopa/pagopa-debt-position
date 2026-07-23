@@ -55,6 +55,7 @@ public class PaymentOptionModel implements Serializable {
   private long notificationFee;
 
   @Valid
+  @Size(min = 1, max = ValidTransferList.MAX_TRANSFER_LIST_SIZE)
   @ValidTransferList
   private List<TransferModel> transfer = new ArrayList<>();
 

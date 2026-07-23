@@ -358,7 +358,7 @@ class DebtPositionControllerTest {
                             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.detail", containsString("paymentOption[0].transfer: Transfer list must contain between 1 and 5 transfers, current size: " + transferModelList.size())));
+            .andExpect(jsonPath("$.detail", containsString("paymentOption[0].transfer: Transfer list must contain between 1 and 5 transfers")));
   }
 
   @ParameterizedTest
