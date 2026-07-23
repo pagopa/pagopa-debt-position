@@ -1453,7 +1453,7 @@ class PaymentsControllerTest {
     // provo a rendicontare una transazione che non esiste (si continua ad utilizzare lo IUV e non
     // il NAV)
     mvc.perform(
-            post("/organizations/123456789011111/paymentoptions/123456IUVMULTIPLEMOCK3/transfers/1/report")
+            post("/organizations/123456789011111/paymentoptions/123456IUVMULTIPLEMOCK3/transfers/x/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
   }
