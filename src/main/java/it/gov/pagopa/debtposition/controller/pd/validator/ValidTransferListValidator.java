@@ -44,8 +44,7 @@ public class ValidTransferListValidator
      * - each transfer should have transferId between 1 and 5 and be unique
      * - transfer ids should be progressively populated, so that there is no jump (f.e. 1, 3, 4, 5 is not allowed)
      */
-    int size = transferList.size();
-    if(transferList.size() < minSize || transferList.size() > maxSize){
+    if(transferList == null || transferList.size() < minSize || transferList.size() > maxSize){
       formatMessage(context, "Transfer list must contain between %s and %s transfers, current size: ".formatted(minSize, maxSize) + transferList.size());
       return false;
     }
