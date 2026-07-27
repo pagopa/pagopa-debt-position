@@ -1,6 +1,5 @@
 package it.gov.pagopa.debtposition.controller;
 
-import static it.gov.pagopa.debtposition.mock.DebtPositionMock.getPaymentOptionWithTransferList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
@@ -19,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.IsNull;

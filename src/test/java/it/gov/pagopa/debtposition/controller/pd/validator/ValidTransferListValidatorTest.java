@@ -2,7 +2,6 @@ package it.gov.pagopa.debtposition.controller.pd.validator;
 
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import jakarta.validation.ConstraintValidatorContext;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,17 +15,19 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 class ValidTransferListValidatorTest {
 
     private final ValidTransferListValidator validTransferListValidator = new ValidTransferListValidator();
 
-    private final ConstraintValidatorContext context = Mockito.mock(ConstraintValidatorContext.class);
+    private final ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
 
-    private final ConstraintValidatorContext.ConstraintViolationBuilder builder = Mockito.mock(ConstraintValidatorContext.ConstraintViolationBuilder.class);
+    private final ConstraintValidatorContext.ConstraintViolationBuilder builder = mock(ConstraintValidatorContext.ConstraintViolationBuilder.class);
 
     @BeforeEach
-    public void init(){
-        Mockito.when(context.buildConstraintViolationWithTemplate(Mockito.anyString())).thenReturn(builder);
+    void init(){
+        when(context.buildConstraintViolationWithTemplate(Mockito.anyString())).thenReturn(builder);
     }
 
     public static Stream<Arguments> invalidTransferModelIdsListSizeTestMethodSource(){
@@ -45,7 +46,7 @@ class ValidTransferListValidatorTest {
             return model;
         }).toList();
         assertFalse(validTransferListValidator.isValid(transferModelList, context));
-        Mockito.verify(context).buildConstraintViolationWithTemplate("Transfer list must contain between 1 and 5 transfers");
+        verify(context).buildConstraintViolationWithTemplate("Transfer list must contain between 1 and 5 transfers");
 
     }
 
@@ -62,7 +63,7 @@ class ValidTransferListValidatorTest {
         TransferModel transferModel = new TransferModel();
         transferModel.setIdTransfer(invalidId);
         assertFalse(validTransferListValidator.isValid(List.of(transferModel), context));
-        Mockito.verify(context).buildConstraintViolationWithTemplate("Transfer list contains invalid transfer ids: [%s]".formatted(invalidId));
+        verify(context).buildConstraintViolationWithTemplate("Transfer list contains invalid transfer ids: [%s]".formatted(invalidId));
     }
 
     @Test
@@ -73,7 +74,7 @@ class ValidTransferListValidatorTest {
         transferModelList.add(transferModel);
         transferModelList.add(transferModel);
         assertFalse(validTransferListValidator.isValid(transferModelList, context));
-        Mockito.verify(context).buildConstraintViolationWithTemplate("Transfer list invalid value: [1], expected: [2]");
+        verify(context).buildConstraintViolationWithTemplate("Transfer list invalid value: [1], expected: [2]");
     }
 
     public static Stream<Arguments> invalidTransferListMissingIdsMethodSource(){
@@ -92,7 +93,7 @@ class ValidTransferListValidatorTest {
             return transferModel;
         }).toList();
         assertFalse(validTransferListValidator.isValid(transferModelList, context));
-        Mockito.verify(context).buildConstraintViolationWithTemplate(expectedErrorMessage);
+        verify(context).buildConstraintViolationWithTemplate(expectedErrorMessage);
     }
 
     public static Stream<Arguments> validTransferModelTestMethodSource() {
