@@ -124,4 +124,9 @@ public interface PaymentPositionRepository
   // organization_fiscal_code and in the specified statuses
   List<PaymentPosition> findByOrganizationFiscalCodeAndStatusIn(
       String organizationFiscalCode, List<DebtPositionStatus> statusList);
+
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	Optional<PaymentPosition>
+	findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionIdReceiptAndPaymentOptionTransferIdTransfer(
+			String organizationFiscalCode, String iuv, String idReceipt, String idTransfer);
 }

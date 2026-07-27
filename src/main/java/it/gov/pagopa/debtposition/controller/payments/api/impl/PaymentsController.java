@@ -10,6 +10,7 @@ import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.payments.AlreadyPaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
+import it.gov.pagopa.debtposition.model.payments.ReportTransferRequest;
 import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
@@ -109,7 +110,12 @@ public class PaymentsController implements IPaymentsController {
 
   @Override
   public ResponseEntity<TransferModelResponse> reportTransfer(
-      String organizationFiscalCode, String iuv, String transferId) {
+      String organizationFiscalCode, String iuv, String transferId,
+      ReportTransferRequest reportTransferRequest) {
+
+    String iur =
+        (reportTransferRequest != null) ? reportTransferRequest.getIur() : null;
+
     log.debug(
         String.format(
             LOG_BASE_HEADER_INFO,
@@ -119,9 +125,9 @@ public class PaymentsController implements IPaymentsController {
                     LOG_BASE_PARAMS_DETAIL,
                     CommonUtil.sanitize(organizationFiscalCode),
                     CommonUtil.sanitize(iuv))
-                + "; transferId="
-                + transferId));
-    Transfer reportedTransfer = paymentsService.report(organizationFiscalCode, iuv, transferId);
+                + "; transferId=" + transferId
+                + "; iur=" + CommonUtil.sanitize(iur)));
+    Transfer reportedTransfer = paymentsService.report(organizationFiscalCode, iuv, transferId, iur);
     if (null != reportedTransfer) {
       return new ResponseEntity<>(
           ObjectMapperUtils.map(reportedTransfer, TransferModelResponse.class), HttpStatus.OK);

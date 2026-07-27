@@ -12,6 +12,7 @@ import it.gov.pagopa.debtposition.model.OdPErrorResponse;
 import it.gov.pagopa.debtposition.model.ProblemJson;
 import it.gov.pagopa.debtposition.model.payments.AlreadyPaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.PaymentOptionModel;
+import it.gov.pagopa.debtposition.model.payments.ReportTransferRequest;
 import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionModelResponse;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
@@ -195,7 +196,8 @@ public interface IPaymentsController {
   @PostMapping(
       value =
           "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}/transfers/{transferid}/report",
-      produces = {"application/json"})
+      produces = {"application/json"},
+      consumes = {"application/json"})
   ResponseEntity<TransferModelResponse> reportTransfer(
       @Parameter(
               description = "Organization fiscal code, the fiscal code of the Organization.",
@@ -215,7 +217,9 @@ public interface IPaymentsController {
                       + " transaction",
               required = true)
           @PathVariable("transferid")
-          String transferId);
+          String transferId,
+      @Valid @RequestBody(required = false)                          // <-- opzionale: retrocompatibile
+          ReportTransferRequest reportTransferRequest);
 
   @Operation(
       summary = "The organization updates the notification fee of a payment option.",

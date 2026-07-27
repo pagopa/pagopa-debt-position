@@ -155,12 +155,22 @@ public class PaymentsService {
 
   @Transactional
   public Transfer report(
-      @NotBlank String organizationFiscalCode, @NotBlank String iuv, @NotBlank String transferId) {
+      @NotBlank String organizationFiscalCode, @NotBlank String iuv, @NotBlank String transferId, String iur) {
 
-    Optional<PaymentPosition> ppToReport =
-        paymentPositionRepository
-            .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
-                organizationFiscalCode, iuv, transferId);
+    Optional<PaymentPosition> ppToReport;
+    if (iur != null && !iur.isBlank()) {
+
+      ppToReport =
+          paymentPositionRepository
+          .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionIdReceiptAndPaymentOptionTransferIdTransfer(
+              organizationFiscalCode, iuv, iur, transferId);
+
+    } else {
+      ppToReport =
+          paymentPositionRepository
+              .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
+                  organizationFiscalCode, iuv, transferId);
+    }
 
     if (ppToReport.isEmpty()) {
       throw new AppException(AppError.TRANSFER_NOT_FOUND, organizationFiscalCode, iuv, transferId);
