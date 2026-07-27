@@ -31,14 +31,16 @@ public class ExclusiveParamAspect {
 
     String[] paramsDueDate = annotation.firstGroup();
     String[] paramsPaymentDate = annotation.secondGroup();
+    String[] paramsPaymentDateTime = annotation.thirdGroup();
 
     Set<String> set = request.getParameterMap().keySet();
 
-    boolean bothPresent =
-        Arrays.stream(paramsPaymentDate).anyMatch(set::contains)
-            && Arrays.stream(paramsDueDate).anyMatch(set::contains);
+    // If two of the three couple of parameters are present, we return bad request
+    boolean multiplePresent = Arrays.stream(paramsPaymentDate).anyMatch(set::contains) ?
+            Arrays.stream(paramsDueDate).anyMatch(set::contains) || Arrays.stream(paramsPaymentDateTime).anyMatch(set::contains) :
+            Arrays.stream(paramsDueDate).anyMatch(set::contains) && Arrays.stream(paramsPaymentDateTime).anyMatch(set::contains);
 
-    if (bothPresent) {
+    if (multiplePresent) {
       throw new AppException(
           HttpStatus.BAD_REQUEST,
           "Exclusive Parameters",
@@ -46,6 +48,8 @@ public class ExclusiveParamAspect {
               + String.join(", ", paramsDueDate)
               + " and "
               + String.join(", ", paramsPaymentDate)
+              + "and"
+              + String.join(", ", paramsPaymentDateTime)
               + " are mutual exclusive");
     }
 

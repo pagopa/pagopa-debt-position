@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  db:
+    build: .
+    container_name: apd-archive-db
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=io-apd
+      # Specific configuration for pg_cron
+      - POSTGRES_INITDB_ARGS=--data-checksums
+    ports:
+      - "5432:5432"
+    command: 
+      - "postgres"
+      - "-c"
+      - "cron.database_name=io-apd"
+      - "-c"
+      - "shared_preload_libraries=pg_partman_bgw,pg_cron"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

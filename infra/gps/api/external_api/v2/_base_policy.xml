@@ -6,8 +6,11 @@
     <set-variable name="subkey" value="@(context.Subscription.Key)" />
     <base />
     <!-- rate limit by subscription key -->
-    <rate-limit calls="300" renewal-period="10"
-      remaining-calls-variable-name="remainingCallsPerSubscription" />
+    <choose>
+      <when condition="@(!((string)context.Request.Headers.GetValueOrDefault("X-Orginal-Host-For","")).Equals("api.prf.platform.pagopa.it") && !((string)context.Request.OriginalUrl.ToUri().Host).Equals("api.prf.platform.pagopa.it"))">
+        <rate-limit-by-key calls="100" renewal-period="10" counter-key="@(context.Subscription.Key)" increment-condition="@(context.Response.StatusCode != 429)" remaining-calls-header-name="x-remaining-calls-per-min" />
+      </when>
+    </choose>
     <!-- Calling Authorizer's fragment -->
     <set-variable name="application_domain" value="gpd" />
     <set-variable name="metadata" value="no-metadata" />

@@ -14,10 +14,12 @@ public class PublishPaymentUtil {
   /**
    * This method sets the status of PaymentPosition to PUBLISHED or VALID.
    * The status depends on the validity date:
-   * - if all validity dates have a value -> the status will be PUBLISHED;
+   * - if all validity dates have a value and not exists valid option -> the status will be PUBLISHED;
+   * - if all validity dates have a value and exists at least one valid option -> the status will be VALID;
    * - if one of the validity dates is null -> the status will be VALID;
    * - if all validity dates are null -> the status will be VALID.
-   * Validity dates are checked and set to publishDatetime if null.
+    * Validity dates are checked and set to publishDatetime if null.
+    * The parent validity date is always derived from the minimum validity date among the options.
    *
    * @param ppToPublish PaymentPosition that the user wants to publish
    * @param publishDatetime LocalDateTime when the publish API or workflow is called
@@ -38,15 +40,14 @@ public class PublishPaymentUtil {
 
     // If forwardToValid is true, the position directly transitions to the VALID state
     if (defaultValidityDateApplied || existsValidOption) {
-      // setValidityDate to ppToPublish
-      ppToPublish.setValidityDate(publishDatetime);
       ppToPublish.setStatus(DebtPositionStatus.VALID);
     } else {
       // Actual publish process
       ppToPublish.setStatus(DebtPositionStatus.PUBLISHED);
-      // Update payment position validity date, status is PUBLISHED
-      ppToPublish.setValidityDate(CommonUtil.resolveMinValidity(ppToPublish));
     }
+
+    // Persist the parent field as the earliest validity date across child payment options.
+    ppToPublish.setValidityDate(CommonUtil.resolveMinValidity(ppToPublish));
   }
 
   // In the hybrid state during deploy there will be po.validityDate=NULL,

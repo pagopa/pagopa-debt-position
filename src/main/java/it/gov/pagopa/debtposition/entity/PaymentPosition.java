@@ -132,11 +132,11 @@ public class PaymentPosition implements Serializable {
   @Column(columnDefinition = "integer DEFAULT 0")
   private Integer version = 0;
 
-  // must be kept to populate the datalake (WRITE_ONLY)
+  // must be kept for validity cron job (WRITE_ONLY)
   @Column(name = "validity_date")
   private LocalDateTime validityDate;
 
-  // must be kept to populate the datalake (WRITE_ONLY)
+  // must be kept for expiration cron job (WRITE_ONLY)
   @Builder.Default
   @Column(name = "switch_to_expired", columnDefinition = "boolean DEFAULT false")
   private Boolean switchToExpired = false;

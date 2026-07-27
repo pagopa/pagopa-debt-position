@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "1.1.21"
+    tag: "1.1.39"
     pullPolicy: Always
   livenessProbe:
     httpGet:
@@ -67,11 +67,6 @@ microservice-chart:
           # Required
           type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
           value: "50"
-      - type: metrics-api
-        metadata:
-          targetValue: "50" # milliseconds
-          url: "https://weuuat.gps.internal.uat.platform.pagopa.it/pagopa-gpd-core/actuator/metrics/http.server.requests.percentile?tag=phi:0.99"
-          valueLocation: "measurements.0.value"
     advanced:
       horizontalPodAutoscalerConfig:
         behavior:
@@ -99,6 +94,11 @@ microservice-chart:
     CRON_JOB_SCHEDULE_ENABLED: "true"
     CRON_JOB_SCHEDULE_EXPRESSION_TO_VALID: "0 */10 * * * *"
     CRON_JOB_SCHEDULE_EXPRESSION_TO_EXPIRED: "0 */20 * * * *"
+    CRON_JOB_SCHEDULE_SHEDLOCK_DEFAULTLOCKATMOSTFOR: "30m"
+    CRON_JOB_SCHEDULE_SHEDLOCK_LOCKATMOSTFOR: "45m"
+    CRON_JOB_SCHEDULE_SHEDLOCK_LOCKATLEASTFOR: "1m"
+    CRON_JOB_SCHEDULE_BATCH_SIZE: "25"
+    CRON_JOB_SCHEDULE_BATCH_TIMEOUT_SECONDS: "60"
     CRON_JOB_SCHEDULE_HISTORY_ENABLED: "false"
     CRON_JOB_SCHEDULE_HISTORY_TRIGGER: "0 0 13 * * *"
     CRON_JOB_SCHEDULE_HISTORY_QUERY: "SELECT pp FROM PaymentPosition pp WHERE pp.status IN ('PAID', 'REPORTED', 'INVALID', 'EXPIRED') AND pp.lastUpdatedDate < ?1"
@@ -123,13 +123,19 @@ microservice-chart:
     SQL_LOG_LEVEL: "ERROR"
     SQL_BINDER_LOG_LEVEL: "ERROR"
     MAX_DEBT_POSITIONS: "100"
+    HIKARI_MAXIMUM_POOL_SIZE: "30"
+    HIKARI_MAX_LIFETIME: "900000"
+    HIKARI_CONNECTION_TIMEOUT: "60000"
+    HIKARI_IDLE_TIMEOUT: "600000"
+    HIKARI_LEAK_DETECTION_THRESHOLD: "60000"
     SERVICE_NAME: "pagopa-gpd-core"
     OTEL_SERVICE_NAME: "pagopa-gpd-core"
     OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=dev"
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
-    OTEL_TRACES_SAMPLER: "always_on"
+    OTEL_TRACES_SAMPLER: "traceidratio"
+    OTEL_TRACES_SAMPLER_ARG: "1"
     OTEL_TRACES_EXPORTER: otlp
-    OTEL_METRICS_EXPORTER: otlp
+    OTEL_METRICS_EXPORTER: none
     OTEL_LOGS_EXPORTER: none
   envSecret:
     # required

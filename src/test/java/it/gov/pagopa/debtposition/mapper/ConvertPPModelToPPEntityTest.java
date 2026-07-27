@@ -263,6 +263,64 @@ class ConvertPPModelToPPEntityTest {
     assertEquals(pidA1, pidA2);
     assertDoesNotThrow(() -> UUID.fromString(pidA1));
   }
+  
+  @Test
+  void shouldClearExistingStampFieldsWhenSourceStampIsNull() {
+    PaymentPosition destination = new PaymentPosition();
+    destination.setPaymentOption(new java.util.ArrayList<>());
+
+    PaymentOption destinationPo = new PaymentOption();
+    destinationPo.setIuv("IUV1");
+    destinationPo.setPaymentPosition(destination);
+    destinationPo.setTransfer(new java.util.ArrayList<>());
+    destination.getPaymentOption().add(destinationPo);
+
+    it.gov.pagopa.debtposition.entity.Transfer destinationTransfer =
+        it.gov.pagopa.debtposition.entity.Transfer.builder()
+            .idTransfer("1")
+            .iban(null)
+            .hashDocument("old-hash")
+            .stampType("01")
+            .provincialResidence("RM")
+            .paymentOption(destinationPo)
+            .build();
+
+    destinationPo.getTransfer().add(destinationTransfer);
+
+    PaymentPositionModel source = new PaymentPositionModel();
+    source.setIupd("IUPD1");
+    source.setPaymentOption(new java.util.ArrayList<>());
+
+    PaymentOptionModel sourcePo = new PaymentOptionModel();
+    sourcePo.setIuv("IUV1");
+    sourcePo.setAmount(100L);
+    sourcePo.setTransfer(new java.util.ArrayList<>());
+
+    TransferModel sourceTransfer = new TransferModel();
+    sourceTransfer.setIdTransfer("1");
+    sourceTransfer.setAmount(100L);
+    sourceTransfer.setIban("IT58C0200805403000102985524");
+    sourceTransfer.setStamp(null);
+
+    sourcePo.getTransfer().add(sourceTransfer);
+    source.getPaymentOption().add(sourcePo);
+
+    ConvertPPModelToPPEntity mapper = new ConvertPPModelToPPEntity();
+
+    MappingContext<PaymentPositionModel, PaymentPosition> context = Mockito.mock(MappingContext.class);
+    Mockito.when(context.getSource()).thenReturn(source);
+    Mockito.when(context.getDestination()).thenReturn(destination);
+
+    PaymentPosition result = mapper.convert(context);
+
+    it.gov.pagopa.debtposition.entity.Transfer updatedTransfer =
+        result.getPaymentOption().get(0).getTransfer().get(0);
+
+    assertEquals("IT58C0200805403000102985524", updatedTransfer.getIban());
+    assertNull(updatedTransfer.getHashDocument());
+    assertNull(updatedTransfer.getStampType());
+    assertNull(updatedTransfer.getProvincialResidence());
+  }
 
   // ======== Helpers ========
 

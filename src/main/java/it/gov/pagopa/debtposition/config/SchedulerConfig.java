@@ -14,7 +14,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @EnableAsync
 @EnableSchedulerLock(
-    defaultLockAtMostFor = "${cron.job.schedule.history.shedlock.defaultlockatmostfor}")
+    defaultLockAtMostFor = "${cron.job.schedule.shedlock.defaultlockatmostfor}")
 public class SchedulerConfig {
   @Value("${spring.jpa.properties.hibernate.default_schema:apd}")
   private String defaultSchema;
