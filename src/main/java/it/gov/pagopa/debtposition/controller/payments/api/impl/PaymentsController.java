@@ -125,7 +125,7 @@ public class PaymentsController implements IPaymentsController {
                     LOG_BASE_PARAMS_DETAIL,
                     CommonUtil.sanitize(organizationFiscalCode),
                     CommonUtil.sanitize(iuv))
-                + "; transferId=" + transferId
+                + "; transferId=" + CommonUtil.sanitize(transferId)
                 + "; iur=" + CommonUtil.sanitize(iur)));
     Transfer reportedTransfer = paymentsService.report(organizationFiscalCode, iuv, transferId, iur);
     if (null != reportedTransfer) {
