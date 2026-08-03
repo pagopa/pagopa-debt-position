@@ -32,6 +32,7 @@ import it.gov.pagopa.debtposition.model.config.Notice;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
+import it.gov.pagopa.debtposition.model.payments.ReportTransferRequest;
 import it.gov.pagopa.debtposition.model.pd.NotificationFeeUpdateModel;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import it.gov.pagopa.debtposition.model.send.response.NotificationPriceResponse;
@@ -2561,6 +2562,133 @@ class PaymentsControllerTest {
       fail("Not the expected exception: " + e.getMessage());
     }
   }
+
+  @Test
+  void reportTransfer_200_withIurBody() throws Exception {
+    mvc.perform(
+            post("/organizations/20012345678901444/debtpositions")
+                .content(TestUtil.toJson(DebtPositionMock.getMockIUR(), objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    mvc.perform(
+            post("/organizations/20012345678901444/debtpositions/123456789012IURMOCK/publish")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    mvc.perform(
+            post("/organizations/20012345678901444/paymentoptions/" + auxDigit + "1234566/pay")
+                .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1(), objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.nav").value(auxDigit + "1234566"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("1234566"))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.status")
+                .value(PaymentOptionStatus.PO_PAID.toString()));
+
+    mvc.perform(
+            get("/organizations/20012345678901444/debtpositions/123456789012IURMOCK")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.PAID.toString()));
+
+    ReportTransferRequest request = new ReportTransferRequest();
+    request.setIur("TRN987654321");
+
+    mvc.perform(
+            post("/organizations/20012345678901444/paymentoptions/1234566/transfers/1/report")
+                .content(TestUtil.toJson(request, objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.status").value(TransferStatus.T_REPORTED.toString()));
+
+    String url = "/organizations/20012345678901444/paymentoptions/" + auxDigit + "1234566";
+    mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.status")
+                .value(PaymentOptionStatus.PO_REPORTED.toString()));
+
+    mvc.perform(
+            get("/organizations/20012345678901444/debtpositions/123456789012IURMOCK")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.status")
+                .value(DebtPositionStatus.REPORTED.toString()));
+  }
+
+  @Test
+  void reportTransfer_Multiple_200_withIurBody() throws Exception {
+    mvc.perform(
+            post("/organizations/12345678901555/debtpositions")
+                .content(TestUtil.toJson(DebtPositionMock.getMockIURMulti(), objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+
+    mvc.perform(
+            post("/organizations/12345678901555/debtpositions/123456789013IURMOCK/publish")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    mvc.perform(
+            post("/organizations/12345678901555/paymentoptions/" + auxDigit + "1234567/pay")
+                .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1(), objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.nav").value(auxDigit + "1234567"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.iuv").value("1234567"))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.status")
+                .value(PaymentOptionStatus.PO_PAID.toString()));
+
+    mvc.perform(
+            get("/organizations/12345678901555/debtpositions/123456789013IURMOCK")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.PAID.toString()));
+
+    ReportTransferRequest request = new ReportTransferRequest();
+    request.setIur("TRN987654321");
+
+    mvc.perform(
+            post("/organizations/12345678901555/paymentoptions/1234567/transfers/3/report")
+                .content(TestUtil.toJson(request, objectMapper))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.status").value(TransferStatus.T_REPORTED.toString()));
+
+    String url = "/organizations/12345678901555/paymentoptions/" + auxDigit + "1234567";
+    mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.status")
+                .value(PaymentOptionStatus.PO_REPORTED.toString()));
+
+    mvc.perform(
+            get("/organizations/12345678901555/debtpositions/123456789013IURMOCK")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.status")
+                .value(DebtPositionStatus.REPORTED.toString()));
+  }
+
 
   // ==== HELPERS PER VERIFY (V3) ====
 
