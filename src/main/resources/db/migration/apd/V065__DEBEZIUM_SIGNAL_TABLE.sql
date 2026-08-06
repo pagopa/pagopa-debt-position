@@ -21,6 +21,7 @@ BEGIN
 		  AND n.nspname = 'apd'
 		  AND c.relname = 'debezium_signal'
 	) THEN
+		PERFORM set_config('lock_timeout', '10s', true);
 		ALTER PUBLICATION dbz_publication ADD TABLE apd.debezium_signal;
 	END IF;
 END
