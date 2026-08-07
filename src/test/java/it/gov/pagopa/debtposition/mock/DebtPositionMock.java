@@ -23,39 +23,39 @@ public class DebtPositionMock {
   }
 
   public static final PaymentPositionDTO getMock2() {
-    return createPaymentPositionMultipleMock1();
+    return setTransferIdsProgressively(createPaymentPositionMultipleMock1());
   }
 
   public static final PaymentPositionDTO getMock3() {
-    return createPaymentPositionMultipleMock2();
+    return setTransferIdsProgressively(createPaymentPositionMultipleMock2());
   }
 
   public static final PaymentPositionDTO getMock4() {
-    return createPaymentPositionUpdateMock1();
+    return setTransferIdsProgressively(createPaymentPositionUpdateMock1());
   }
 
   public static final PaymentPositionDTO getMock5() {
-    return createPaymentPositionMock3();
+    return setTransferIdsProgressively(createPaymentPositionMock3());
   }
 
   public static final PaymentPositionDTO getMock6() {
-    return createPaymentPositionMock5();
+    return setTransferIdsProgressively(createPaymentPositionMock5());
   }
 
   public static final PaymentPositionDTO getMock7() {
-    return createPaymentPositionMock6();
+    return setTransferIdsProgressively(createPaymentPositionMock6());
   }
 
   public static final PaymentPositionDTO getMock8() {
-    return createPaymentPositionMultipleMock8();
+    return setTransferIdsProgressively(createPaymentPositionMultipleMock8());
   }
 
   public static final PaymentPositionDTO getMock10() {
-    return createPaymentPositionMock10();
+    return setTransferIdsProgressively(createPaymentPositionMock10());
   }
 
   public static final PaymentPositionDTO getMetadataMock8() {
-    return createPaymentPositionMetadataMock7();
+    return setTransferIdsProgressively(createPaymentPositionMetadataMock7());
   }
 
   public static final PaymentOptionDTO getPayPOMock1() {
@@ -529,8 +529,19 @@ public class DebtPositionMock {
     pPMock.setOfficeName("Ufficio tributario");
     pPMock.addPaymentOptions(createPaymentOptions_Min_Due_Date_Mock1());
     pPMock.addPaymentOptions(createPaymentOptions_Min_Due_Date_Mock2());
+    return setTransferIdsProgressively(pPMock);
+  }
 
-    return pPMock;
+  private static PaymentPositionDTO setTransferIdsProgressively(PaymentPositionDTO paymentPositionDTO){
+    paymentPositionDTO.getPaymentOption().forEach(
+            paymentOptionDTO -> {
+              int transferIdx = 1;
+              for(TransferDTO transferDTO: paymentOptionDTO.getTransfer()) {
+                transferDTO.setIdTransfer(String.valueOf(transferIdx++));
+              }
+            }
+    );
+    return paymentPositionDTO;
   }
 
   public static PaymentPositionDTO createPaymentPosition409_Valid_Date_Mock1() {
@@ -626,7 +637,7 @@ public class DebtPositionMock {
     pPMock.addPaymentOptions(createPaymentOptionsMultipleMock4());
     pPMock.addPaymentOptions(createPaymentOptionsMultipleMock5());
 
-    return pPMock;
+    return setTransferIdsProgressively(pPMock);
   }
 
   public static PaymentPositionDTO createPaymentPosition400Mock1() {
@@ -679,12 +690,12 @@ public class DebtPositionMock {
   }
 
   public static PaymentOptionDTO createPaymentOption(
-      int amount,
-      String iuv,
-      boolean isPartialPayment,
-      TransferDTO transferDTO,
-      LocalDateTime dueDate,
-      LocalDateTime retentionDate) {
+          int amount,
+          String iuv,
+          boolean isPartialPayment,
+          List<TransferDTO> transferList,
+          LocalDateTime dueDate,
+          LocalDateTime retentionDate) {
     PaymentOptionDTO poMock = new PaymentOptionDTO();
     poMock.setAmount(amount);
     poMock.setIuv(iuv);
@@ -693,9 +704,19 @@ public class DebtPositionMock {
     poMock.setIsPartialPayment(isPartialPayment);
     poMock.setStatus(PaymentOptionStatus.PO_UNPAID);
     poMock.setDescription("payment option description");
-    poMock.addTransfers(transferDTO);
-
+    transferList.forEach(poMock::addTransfers);
     return poMock;
+  }
+
+  public static PaymentOptionDTO createPaymentOption(
+      int amount,
+      String iuv,
+      boolean isPartialPayment,
+      TransferDTO transferDTO,
+      LocalDateTime dueDate,
+      LocalDateTime retentionDate) {
+    return createPaymentOption(
+        amount, iuv, isPartialPayment, List.of(transferDTO), dueDate, retentionDate);
   }
 
   public static PaymentOptionDTO createPaymentOptionsMock1() {
@@ -1165,4 +1186,44 @@ public class DebtPositionMock {
     pPMockList.add(createPaymentPosition400Mock2());
     return MultiplePaymentPositionDTO.builder().paymentPositions(pPMockList).build();
   }
+  public static TransferDTO createTransferMockWithId(String transferId) {
+    TransferDTO tMock = new TransferDTO();
+    tMock.setIdTransfer(transferId);
+    tMock.setIban("IT75I0306902887100000300005");
+    tMock.setAmount(1000);
+    tMock.setRemittanceInformation("causale mock multiple 1");
+    tMock.setCategory("10/22252/20");
+
+    return tMock;
+  }
+  public static final PaymentPositionDTO getPaymentOptionWithTransferList(List<String> transferList) {
+    PaymentPositionDTO pPMock = new PaymentPositionDTO();
+    // debtor properties
+    pPMock.setFiscalCode("MRDPLL54H17D542L");
+    pPMock.setType(Type.F);
+    pPMock.setFullName("Mario Rossi");
+    pPMock.setPhone("3330987654");
+    pPMock.setStreetName("Via di novoli");
+    pPMock.setCivicNumber("50/2");
+    pPMock.setProvince("FI");
+    pPMock.setCountry("IT");
+    pPMock.setEmail("mario@firenze.it");
+    pPMock.setPostalCode("50100");
+    // payment position properties
+    pPMock.setIupd("12345678901IUPDMOCK1");
+    pPMock.setCompanyName("Comune di Firenze");
+    pPMock.setOfficeName("Ufficio tributario");
+    List<TransferDTO> transferDTOList = transferList.stream()
+            .map(DebtPositionMock::createTransferMockWithId)
+            .toList();
+    pPMock.addPaymentOptions(createPaymentOption(
+            1000,
+            "1234561",
+            false,
+            transferDTOList,
+            LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.SECONDS),
+            LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS)));
+    return pPMock;
+  }
 }
+
