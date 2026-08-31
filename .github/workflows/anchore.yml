@@ -48,18 +48,6 @@ jobs:
           fail-build: false
           severity-cutoff: "high"
 
-      - name: Debug Anchore SARIF
-        if: always()
-        run: |
-          echo "=== SARIF PATH ==="
-          echo "${{ steps.scan.outputs.sarif }}"
-          
-          echo "=== SARIF FILE ==="
-          ls -lah "${{ steps.scan.outputs.sarif }}" || true
-          
-          echo "=== SARIF SIZE ==="
-          wc -c "${{ steps.scan.outputs.sarif }}" || true
-
       - name: Upload Anchore Scan Report
         uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4
         if: always()
