@@ -41,6 +41,7 @@ jobs:
         run: docker build . --file ${{ env.DOCKERFILE }} --tag localbuild/testimage:latest
 
       - name: Run the Anchore scan action itself with GitHub Advanced Security code scanning integration enabled
+        id: scan
         uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7.4.0
         with:
           image: "localbuild/testimage:latest"
@@ -50,19 +51,18 @@ jobs:
       - name: Debug Anchore SARIF
         if: always()
         run: |
-          echo "=== RESULTS.SARIF ==="
-          ls -lah results.sarif || true
-          wc -c results.sarif || true
-
-          echo "=== DIRECTORY ==="
-          find . -maxdepth 2 -type f -name "*.sarif" -o -name "*grype*" | sort
-
-          echo "=== DOCKER IMAGES ==="
-          docker images
+          echo "=== SARIF PATH ==="
+          echo "${{ steps.scan.outputs.sarif }}"
+          
+          echo "=== SARIF FILE ==="
+          ls -lah "${{ steps.scan.outputs.sarif }}" || true
+          
+          echo "=== SARIF SIZE ==="
+          wc -c "${{ steps.scan.outputs.sarif }}" || true
 
       - name: Upload Anchore Scan Report
         uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4
         if: always()
         with:
-          sarif_file: ${{ steps.grype.outputs.sarif }}
+          sarif_file: ${{ steps.scan.outputs.sarif }}
           category: grype
