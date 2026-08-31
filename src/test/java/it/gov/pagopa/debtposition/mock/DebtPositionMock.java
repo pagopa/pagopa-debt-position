@@ -18,6 +18,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DebtPositionMock {
+  public static final PaymentPositionDTO getMockIUR() {
+    return createPaymentPositionMockIUR();
+  }
+
+  public static final PaymentPositionDTO getMockIURMulti() {
+    return createPaymentPositionMockIURMulti();
+  }
+
   public static final PaymentPositionDTO getMock1() {
     return createPaymentPositionMock1();
   }
@@ -124,6 +132,52 @@ public class DebtPositionMock {
 
   public static final MultiplePaymentPositionDTO getMultipleDebtPositions_400_Mock2() {
     return createMultipleDebtPositionsMock_400_2();
+  }
+
+  public static PaymentPositionDTO createPaymentPositionMockIUR() {
+
+    PaymentPositionDTO pPMock = new PaymentPositionDTO();
+    // debtor properties
+    pPMock.setFiscalCode("MRDPLL54H17D542T");
+    pPMock.setType(Type.F);
+    pPMock.setFullName("Mario Rossi");
+    pPMock.setPhone("3330987654");
+    pPMock.setStreetName("Via di novoli");
+    pPMock.setCivicNumber("50/2");
+    pPMock.setProvince("FI");
+    pPMock.setCountry("IT");
+    pPMock.setEmail("mario@firenze.it");
+    pPMock.setPostalCode("50100");
+    // payment position properties
+    pPMock.setIupd("123456789012IURMOCK");
+    pPMock.setCompanyName("Comune di Firenze");
+    pPMock.setOfficeName("Ufficio tributario");
+    pPMock.addPaymentOptions(createPaymentOptionsMockIUR());
+
+    return pPMock;
+  }
+
+  public static PaymentPositionDTO createPaymentPositionMockIURMulti() {
+
+    PaymentPositionDTO pPMock = new PaymentPositionDTO();
+    // debtor properties
+    pPMock.setFiscalCode("MRDPLL54H17D542P");
+    pPMock.setType(Type.F);
+    pPMock.setFullName("Mario Rossi");
+    pPMock.setPhone("3330987654");
+    pPMock.setStreetName("Via di novoli");
+    pPMock.setCivicNumber("50/2");
+    pPMock.setProvince("FI");
+    pPMock.setCountry("IT");
+    pPMock.setEmail("mario@firenze.it");
+    pPMock.setPostalCode("50100");
+    // payment position properties
+    pPMock.setIupd("123456789013IURMOCK");
+    pPMock.setCompanyName("Comune di Firenze");
+    pPMock.setOfficeName("Ufficio tributario");
+    pPMock.addPaymentOptions(createPaymentOptionsMockIURMulti());
+
+    return pPMock;
   }
 
   public static PaymentPositionDTO createPaymentPositionMock1() {
@@ -697,6 +751,32 @@ public class DebtPositionMock {
 
     return poMock;
   }
+
+  public static PaymentOptionDTO createPaymentOptionsMockIUR() {
+    PaymentOptionDTO poMock =
+        createPaymentOption(
+            1000,
+            "1234566",
+            false,
+            createTransfersMock1(),
+            LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.SECONDS),
+            LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
+
+    return poMock;
+  }
+  public static PaymentOptionDTO createPaymentOptionsMockIURMulti() {
+    PaymentOptionDTO poMock =
+        createPaymentOption(
+            1000,
+            "1234567",
+            false,
+            createTransfersMetadataMock3(),
+            LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.SECONDS),
+            LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
+
+    return poMock;
+  }
+
 
   public static PaymentOptionDTO createPaymentOptionsMock1() {
     PaymentOptionDTO poMock =
