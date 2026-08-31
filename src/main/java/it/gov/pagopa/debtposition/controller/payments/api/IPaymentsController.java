@@ -31,9 +31,7 @@ public interface IPaymentsController {
 
   @Operation(
       summary = "Return the details of a specific payment option.",
-      security = {
-        @SecurityRequirement(name = "ApiKey")
-      },
+      security = {@SecurityRequirement(name = "ApiKey")},
       operationId = "getOrganizationPaymentOptionByNAV")
   @ApiResponses(
       value = {
@@ -78,16 +76,13 @@ public interface IPaymentsController {
                   "NAV (notice number) is the unique reference assigned to the payment by a"
                       + " creditor institution.",
               required = true)
-      @Pattern(regexp = "^\\d{1,30}$")
+          @Pattern(regexp = "^\\d{1,30}$")
           @PathVariable("nav")
           String nav);
 
   @Operation(
       summary = "The Organization paid a payment option.",
-      security = {
-        @SecurityRequirement(name = "ApiKey")
-
-      },
+      security = {@SecurityRequirement(name = "ApiKey")},
       operationId = "payPaymentOption")
   @ApiResponses(
       value = {
@@ -96,8 +91,8 @@ public interface IPaymentsController {
             description = "Request paid.",
             content =
                 @Content(
-                        mediaType = MediaType.APPLICATION_JSON_VALUE,
-                        schema = @Schema(implementation = PaidPaymentOptionModel.class))),
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = PaidPaymentOptionModel.class))),
         @ApiResponse(
             responseCode = "400",
             description = "Malformed request.",
@@ -156,9 +151,7 @@ public interface IPaymentsController {
 
   @Operation(
       summary = "The organization reports a transaction.",
-      security = {
-        @SecurityRequirement(name = "ApiKey")
-      },
+      security = {@SecurityRequirement(name = "ApiKey")},
       operationId = "reportTransfer")
   @ApiResponses(
       value = {
@@ -218,14 +211,12 @@ public interface IPaymentsController {
               required = true)
           @PathVariable("transferid")
           String transferId,
-      @Valid @RequestBody(required = false)                          // <-- opzionale: retrocompatibile
+      @Valid @RequestBody(required = false) // <-- opzionale: retrocompatibile
           ReportTransferRequest reportTransferRequest);
 
   @Operation(
       summary = "The organization updates the notification fee of a payment option.",
-      security = {
-        @SecurityRequirement(name = "ApiKey")
-      },
+      security = {@SecurityRequirement(name = "ApiKey")},
       operationId = "updateNotificationFee")
   @ApiResponses(
       value = {
@@ -278,163 +269,157 @@ public interface IPaymentsController {
           String nav,
       @Valid @RequestBody NotificationFeeUpdateModel notificationFeeUpdateModel);
 
-    @Operation(
-            summary = "The Organization mark a payment option as already paid.",
-            security = {
-                    @SecurityRequirement(name = "ApiKey")
+  @Operation(
+      summary = "The Organization mark a payment option as already paid.",
+      security = {@SecurityRequirement(name = "ApiKey")},
+      operationId = "setPaymentOptionAsAlreadyPaid")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Request set as paid.",
+            content =
+                @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = PaidPaymentOptionModel.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Malformed request.",
+            content =
+                @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ProblemJson.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Wrong or missing function key.",
+            content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No payment option found.",
+            content = @Content(schema = @Schema(implementation = ProblemJson.class))),
+        @ApiResponse(
+            responseCode = "409",
+            description = "Conflict: existing related payment found.",
+            content =
+                @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ProblemJson.class))),
+        @ApiResponse(
+            responseCode = "422",
+            description = "Unprocessable: not in payable state.",
+            content =
+                @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ProblemJson.class))),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Service unavailable.",
+            content =
+                @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ProblemJson.class)))
+      })
+  @PostMapping(
+      value = "/organizations/{organizationfiscalcode}/paymentoptions/paids/{nav}",
+      produces = {"application/json"},
+      consumes = {"application/json"})
+  ResponseEntity<PaymentOptionModelResponse> setPaymentOptionAsAlreadyPaid(
+      @Parameter(
+              description = "Organization fiscal code, the fiscal code of the Organization.",
+              required = true)
+          @PathVariable("organizationfiscalcode")
+          String organizationFiscalCode,
+      @Parameter(
+              description =
+                  "NAV (notice number) is the unique reference assigned to the payment by a"
+                      + " creditor institution.",
+              required = true)
+          @PathVariable("nav")
+          String nav,
+      @Valid
+          @Parameter(
+              description = "Segregation codes for which broker is authorized",
+              hidden = true)
+          @Pattern(regexp = "\\d{2}(,\\d{2})*")
+          @RequestParam(required = false)
+          String segregationCodes,
+      @Valid @RequestBody AlreadyPaidPaymentOptionModel paidPaymentOptionModel);
 
-            },
-            operationId = "setPaymentOptionAsAlreadyPaid")
-    @ApiResponses(
-            value = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Request set as paid.",
-                            content =
-                            @Content(
-                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = PaidPaymentOptionModel.class))),
-                    @ApiResponse(
-                            responseCode = "400",
-                            description = "Malformed request.",
-                            content =
-                            @Content(
-                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = ProblemJson.class))),
-                    @ApiResponse(
-                            responseCode = "401",
-                            description = "Wrong or missing function key.",
-                            content = @Content(schema = @Schema())),
-                    @ApiResponse(
-                            responseCode = "404",
-                            description = "No payment option found.",
-                            content = @Content(schema = @Schema(implementation = ProblemJson.class))),
-                    @ApiResponse(
-                            responseCode = "409",
-                            description = "Conflict: existing related payment found.",
-                            content =
-                            @Content(
-                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = ProblemJson.class))),
-                    @ApiResponse(
-                            responseCode = "422",
-                            description = "Unprocessable: not in payable state.",
-                            content =
-                            @Content(
-                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = ProblemJson.class))),
-                    @ApiResponse(
-                            responseCode = "500",
-                            description = "Service unavailable.",
-                            content =
-                            @Content(
-                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = ProblemJson.class)))
-            })
-    @PostMapping(
-            value = "/organizations/{organizationfiscalcode}/paymentoptions/paids/{nav}",
-            produces = {"application/json"},
-            consumes = {"application/json"})
-    ResponseEntity<PaymentOptionModelResponse> setPaymentOptionAsAlreadyPaid(
-            @Parameter(
-                    description = "Organization fiscal code, the fiscal code of the Organization.",
-                    required = true)
-            @PathVariable("organizationfiscalcode")
-            String organizationFiscalCode,
-            @Parameter(
-                    description =
-                            "NAV (notice number) is the unique reference assigned to the payment by a"
-                                    + " creditor institution.",
-                    required = true)
-            @PathVariable("nav")
-            String nav,
-            @Valid
-            @Parameter(
-                    description = "Segregation codes for which broker is authorized",
-                    hidden = true)
-            @Pattern(regexp = "\\d{2}(,\\d{2})*")
-            @RequestParam(required = false)
-            String segregationCodes,
-            @Valid @RequestBody AlreadyPaidPaymentOptionModel paidPaymentOptionModel);
-    
-    
-    
-    @Operation(
-    		summary = "Verify payment options for a given notice number.",
-    		security = {
-    				@SecurityRequirement(name = "ApiKey")
-    		},
-    		operationId = "verifyPaymentOptions")
-    @ApiResponses(
-    		value = {
-    				@ApiResponse(
-    						responseCode = "200",
-    						description = "Payment options successfully retrieved.",
-    						content = @Content(
-    								mediaType = MediaType.APPLICATION_JSON_VALUE,
-    								schema = @Schema(implementation = VerifyPaymentOptionsResponse.class))),
-    				@ApiResponse(
-    						responseCode = "400",
-    						description = "Malformed request.",
-    						content = @Content(
-    								mediaType = MediaType.APPLICATION_JSON_VALUE,
-    								schema = @Schema(implementation = OdPErrorResponse.class)
-    								)
-    						),
-    				@ApiResponse(
-    						responseCode = "401",
-    						description = "Wrong or missing function key.",
-    						content = @Content(schema = @Schema())),
-    				@ApiResponse(
-    						responseCode = "404",
-    						description = "No payment option found.",
-    						content = @Content(
-    								mediaType = MediaType.APPLICATION_JSON_VALUE,
-    								schema = @Schema(implementation = OdPErrorResponse.class)
-    								)
-    						),
-    				@ApiResponse(
-    						responseCode = "409",
-    						description = "Conflict.",
-    						content = @Content(
-    								mediaType = MediaType.APPLICATION_JSON_VALUE,
-    								schema = @Schema(implementation = OdPErrorResponse.class)
-    								)
-    						),
-    				@ApiResponse(
-    						responseCode = "422",
-    						description = "Unprocessable Entity.",
-    						content = @Content(
-    								mediaType = MediaType.APPLICATION_JSON_VALUE,
-    								schema = @Schema(implementation = OdPErrorResponse.class)
-    								)
-    						),
-    				@ApiResponse(
-    						responseCode = "500",
-    						description = "Service unavailable.",
-    						content = @Content(
-    								mediaType = MediaType.APPLICATION_JSON_VALUE,
-    								schema = @Schema(implementation = OdPErrorResponse.class)))
-    		})
-    @PostMapping(
-    		value = "/payment-options/organizations/{organization-fiscal-code}/notices/{notice-number}",
-    		produces = { MediaType.APPLICATION_JSON_VALUE })
-    ResponseEntity<VerifyPaymentOptionsResponse> verifyPaymentOptions(
-    		@Parameter(
-    				description = "Organization fiscal code, the fiscal code of the Organization.",
-    				required = true)
-    		@Pattern(regexp = "\\d{1,30}")
-    		@PathVariable ("organization-fiscal-code") String organizationFiscalCode,
-    		@Parameter(
-    				description = "Notice number (NAV): [auxDigit][segregationCode][IUVBase][IUVCheckDigit].",
-    				required = true)
-    		@Pattern(regexp = "^\\d{1,30}$")
-    		@PathVariable("notice-number") String nav,
-    		@Valid
-    		@Parameter(
-    				description = "Segregation codes for which broker is authorized",
-    				hidden = true)
-    		@Pattern(regexp = "\\d{2}(,\\d{2})*")
-    		@RequestParam(required = false)
-    		String segregationCodes);
+  @Operation(
+      summary = "Verify payment options for a given notice number.",
+      security = {@SecurityRequirement(name = "ApiKey")},
+      operationId = "verifyPaymentOptions")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Payment options successfully retrieved.",
+            content =
+                @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = VerifyPaymentOptionsResponse.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Malformed request.",
+            content =
+                @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = OdPErrorResponse.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Wrong or missing function key.",
+            content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No payment option found.",
+            content =
+                @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = OdPErrorResponse.class))),
+        @ApiResponse(
+            responseCode = "409",
+            description = "Conflict.",
+            content =
+                @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = OdPErrorResponse.class))),
+        @ApiResponse(
+            responseCode = "422",
+            description = "Unprocessable Entity.",
+            content =
+                @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = OdPErrorResponse.class))),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Service unavailable.",
+            content =
+                @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = OdPErrorResponse.class)))
+      })
+  @PostMapping(
+      value = "/payment-options/organizations/{organization-fiscal-code}/notices/{notice-number}",
+      produces = {MediaType.APPLICATION_JSON_VALUE})
+  ResponseEntity<VerifyPaymentOptionsResponse> verifyPaymentOptions(
+      @Parameter(
+              description = "Organization fiscal code, the fiscal code of the Organization.",
+              required = true)
+          @Pattern(regexp = "\\d{1,30}")
+          @PathVariable("organization-fiscal-code")
+          String organizationFiscalCode,
+      @Parameter(
+              description =
+                  "Notice number (NAV): [auxDigit][segregationCode][IUVBase][IUVCheckDigit].",
+              required = true)
+          @Pattern(regexp = "^\\d{1,30}$")
+          @PathVariable("notice-number")
+          String nav,
+      @Valid
+          @Parameter(
+              description = "Segregation codes for which broker is authorized",
+              hidden = true)
+          @Pattern(regexp = "\\d{2}(,\\d{2})*")
+          @RequestParam(required = false)
+          String segregationCodes);
 }

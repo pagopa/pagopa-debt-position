@@ -2689,7 +2689,6 @@ class PaymentsControllerTest {
                 .value(DebtPositionStatus.REPORTED.toString()));
   }
 
-
   // ==== HELPERS PER VERIFY (V3) ====
 
   private static String randomNum(int len) {

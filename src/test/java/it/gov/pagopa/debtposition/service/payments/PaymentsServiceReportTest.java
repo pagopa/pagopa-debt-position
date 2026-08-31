@@ -19,10 +19,10 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.modelmapper.ModelMapper;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,15 +59,19 @@ class PaymentsServiceReportTest {
     PaymentPosition pp = createPaymentPosition(organizationFiscalCode, iuv, transferId, iur);
 
     when(paymentPositionRepository
-        .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionIdReceiptAndPaymentOptionTransferIdTransfer(
-            organizationFiscalCode, iuv, iur, transferId))
+            .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionIdReceiptAndPaymentOptionTransferIdTransfer(
+                organizationFiscalCode, iuv, iur, transferId))
         .thenReturn(Optional.of(pp));
 
     // Mock the static validation method to avoid state check failures
     // For void methods with MockedStatic, use thenAnswer with a lambda that returns null
-    try (MockedStatic<DebtPositionValidation> mockedValidation = mockStatic(DebtPositionValidation.class)) {
-      mockedValidation.when(() -> DebtPositionValidation.checkPaymentPositionAccountability(
-              any(PaymentPosition.class), any(String.class), any(String.class)))
+    try (MockedStatic<DebtPositionValidation> mockedValidation =
+        mockStatic(DebtPositionValidation.class)) {
+      mockedValidation
+          .when(
+              () ->
+                  DebtPositionValidation.checkPaymentPositionAccountability(
+                      any(PaymentPosition.class), any(String.class), any(String.class)))
           .thenAnswer(invocation -> null);
 
       Transfer result = paymentsService.report(organizationFiscalCode, iuv, transferId, iur);
@@ -90,8 +94,8 @@ class PaymentsServiceReportTest {
     String iur = "2024001";
 
     when(paymentPositionRepository
-        .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionIdReceiptAndPaymentOptionTransferIdTransfer(
-            organizationFiscalCode, iuv, iur, transferId))
+            .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionIdReceiptAndPaymentOptionTransferIdTransfer(
+                organizationFiscalCode, iuv, iur, transferId))
         .thenReturn(Optional.empty());
 
     org.junit.jupiter.api.Assertions.assertThrows(
@@ -104,7 +108,6 @@ class PaymentsServiceReportTest {
             organizationFiscalCode, iuv, iur, transferId);
   }
 
-
   @Test
   void report_withNullIur_shouldCallRepositoryWithoutIurAndReturnTransfer() {
     String organizationFiscalCode = "02406911202";
@@ -114,14 +117,18 @@ class PaymentsServiceReportTest {
     PaymentPosition pp = createPaymentPosition(organizationFiscalCode, iuv, transferId, null);
 
     when(paymentPositionRepository
-        .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
-            organizationFiscalCode, iuv, transferId))
+            .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
+                organizationFiscalCode, iuv, transferId))
         .thenReturn(Optional.of(pp));
 
     // Mock the static validation method to avoid state check failures
-    try (MockedStatic<DebtPositionValidation> mockedValidation = mockStatic(DebtPositionValidation.class)) {
-      mockedValidation.when(() -> DebtPositionValidation.checkPaymentPositionAccountability(
-              any(PaymentPosition.class), any(String.class), any(String.class)))
+    try (MockedStatic<DebtPositionValidation> mockedValidation =
+        mockStatic(DebtPositionValidation.class)) {
+      mockedValidation
+          .when(
+              () ->
+                  DebtPositionValidation.checkPaymentPositionAccountability(
+                      any(PaymentPosition.class), any(String.class), any(String.class)))
           .thenAnswer(invocation -> null);
 
       Transfer result = paymentsService.report(organizationFiscalCode, iuv, transferId, null);
@@ -141,7 +148,6 @@ class PaymentsServiceReportTest {
     }
   }
 
-
   @Test
   void report_withNullIur_paymentPositionNotFound_shouldThrowAppException() {
     String organizationFiscalCode = "02406911202";
@@ -149,8 +155,8 @@ class PaymentsServiceReportTest {
     String transferId = "1";
 
     when(paymentPositionRepository
-        .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
-            organizationFiscalCode, iuv, transferId))
+            .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
+                organizationFiscalCode, iuv, transferId))
         .thenReturn(Optional.empty());
 
     org.junit.jupiter.api.Assertions.assertThrows(
@@ -163,7 +169,6 @@ class PaymentsServiceReportTest {
             organizationFiscalCode, iuv, transferId);
   }
 
-
   @Test
   void report_withBlankIur_shouldCallRepositoryWithoutIurAndReturnTransfer() {
     String organizationFiscalCode = "02406911202";
@@ -174,14 +179,18 @@ class PaymentsServiceReportTest {
     PaymentPosition pp = createPaymentPosition(organizationFiscalCode, iuv, transferId, null);
 
     when(paymentPositionRepository
-        .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
-            organizationFiscalCode, iuv, transferId))
+            .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
+                organizationFiscalCode, iuv, transferId))
         .thenReturn(Optional.of(pp));
 
     // Mock the static validation method to avoid state check failures
-    try (MockedStatic<DebtPositionValidation> mockedValidation = mockStatic(DebtPositionValidation.class)) {
-      mockedValidation.when(() -> DebtPositionValidation.checkPaymentPositionAccountability(
-              any(PaymentPosition.class), any(String.class), any(String.class)))
+    try (MockedStatic<DebtPositionValidation> mockedValidation =
+        mockStatic(DebtPositionValidation.class)) {
+      mockedValidation
+          .when(
+              () ->
+                  DebtPositionValidation.checkPaymentPositionAccountability(
+                      any(PaymentPosition.class), any(String.class), any(String.class)))
           .thenAnswer(invocation -> null);
 
       Transfer result = paymentsService.report(organizationFiscalCode, iuv, transferId, blankIur);
@@ -195,7 +204,6 @@ class PaymentsServiceReportTest {
     }
   }
 
-
   @Test
   void report_withEmptyStringIur_shouldCallRepositoryWithoutIurAndReturnTransfer() {
     String organizationFiscalCode = "02406911202";
@@ -206,13 +214,17 @@ class PaymentsServiceReportTest {
     PaymentPosition pp = createPaymentPosition(organizationFiscalCode, iuv, transferId, null);
 
     when(paymentPositionRepository
-        .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
-            organizationFiscalCode, iuv, transferId))
+            .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
+                organizationFiscalCode, iuv, transferId))
         .thenReturn(Optional.of(pp));
 
-    try (MockedStatic<DebtPositionValidation> mockedValidation = mockStatic(DebtPositionValidation.class)) {
-      mockedValidation.when(() -> DebtPositionValidation.checkPaymentPositionAccountability(
-              any(PaymentPosition.class), any(String.class), any(String.class)))
+    try (MockedStatic<DebtPositionValidation> mockedValidation =
+        mockStatic(DebtPositionValidation.class)) {
+      mockedValidation
+          .when(
+              () ->
+                  DebtPositionValidation.checkPaymentPositionAccountability(
+                      any(PaymentPosition.class), any(String.class), any(String.class)))
           .thenAnswer(invocation -> null);
 
       Transfer result = paymentsService.report(organizationFiscalCode, iuv, transferId, emptyIur);
@@ -224,7 +236,6 @@ class PaymentsServiceReportTest {
       org.assertj.core.api.Assertions.assertThat(result).isNotNull();
     }
   }
-
 
   private PaymentPosition createPaymentPosition(
       String organizationFiscalCode, String iuv, String transferId, String iur) {

@@ -764,6 +764,7 @@ public class DebtPositionMock {
 
     return poMock;
   }
+
   public static PaymentOptionDTO createPaymentOptionsMockIURMulti() {
     PaymentOptionDTO poMock =
         createPaymentOption(
@@ -776,7 +777,6 @@ public class DebtPositionMock {
 
     return poMock;
   }
-
 
   public static PaymentOptionDTO createPaymentOptionsMock1() {
     PaymentOptionDTO poMock =

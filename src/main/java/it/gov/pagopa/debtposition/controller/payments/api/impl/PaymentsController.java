@@ -110,11 +110,12 @@ public class PaymentsController implements IPaymentsController {
 
   @Override
   public ResponseEntity<TransferModelResponse> reportTransfer(
-      String organizationFiscalCode, String iuv, String transferId,
+      String organizationFiscalCode,
+      String iuv,
+      String transferId,
       ReportTransferRequest reportTransferRequest) {
 
-    String iur =
-        (reportTransferRequest != null) ? reportTransferRequest.getIur() : null;
+    String iur = (reportTransferRequest != null) ? reportTransferRequest.getIur() : null;
 
     log.debug(
         String.format(
@@ -125,9 +126,12 @@ public class PaymentsController implements IPaymentsController {
                     LOG_BASE_PARAMS_DETAIL,
                     CommonUtil.sanitize(organizationFiscalCode),
                     CommonUtil.sanitize(iuv))
-                + "; transferId=" + CommonUtil.sanitize(transferId)
-                + "; iur=" + CommonUtil.sanitize(iur)));
-    Transfer reportedTransfer = paymentsService.report(organizationFiscalCode, iuv, transferId, iur);
+                + "; transferId="
+                + CommonUtil.sanitize(transferId)
+                + "; iur="
+                + CommonUtil.sanitize(iur)));
+    Transfer reportedTransfer =
+        paymentsService.report(organizationFiscalCode, iuv, transferId, iur);
     if (null != reportedTransfer) {
       return new ResponseEntity<>(
           ObjectMapperUtils.map(reportedTransfer, TransferModelResponse.class), HttpStatus.OK);
