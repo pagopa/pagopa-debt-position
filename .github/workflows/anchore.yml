@@ -47,6 +47,20 @@ jobs:
           acs-report-enable: true
           fail-build: false
           severity-cutoff: "high"
+
+      - name: Validate Anchore SARIF
+        if: always()
+        run: |
+          echo "SARIF size:"
+          wc -c results.sarif
+          echo "SARIF first 500 chars:"
+          head -c 500 results.sarif
+          echo
+          echo "SARIF last 500 chars:"
+          tail -c 500 results.sarif
+          echo
+          jq empty results.sarif && echo "SARIF JSON VALID" || echo "SARIF JSON INVALID"
+
       - name: Upload Anchore Scan Report
         uses: github/codeql-action/upload-sarif@6ac9fc7e8e290bda8fac86290b68e176def71959 # v2
         if: always()
