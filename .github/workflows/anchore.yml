@@ -41,25 +41,25 @@ jobs:
         run: docker build . --file ${{ env.DOCKERFILE }} --tag localbuild/testimage:latest
 
       - name: Run the Anchore scan action itself with GitHub Advanced Security code scanning integration enabled
-        uses: anchore/scan-action@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+        uses: anchore/scan-action@3343887d815d7b07465f6fdcd395bd66508d486a # v3
         with:
           image: "localbuild/testimage:latest"
           acs-report-enable: true
           fail-build: false
           severity-cutoff: "high"
 
-      - name: Validate Anchore SARIF
+      - name: Debug Anchore SARIF
         if: always()
         run: |
-          echo "SARIF size:"
-          wc -c results.sarif
-          echo "SARIF first 500 chars:"
-          head -c 500 results.sarif
-          echo
-          echo "SARIF last 500 chars:"
-          tail -c 500 results.sarif
-          echo
-          jq empty results.sarif && echo "SARIF JSON VALID" || echo "SARIF JSON INVALID"
+          echo "=== RESULTS.SARIF ==="
+          ls -lah results.sarif || true
+          wc -c results.sarif || true
+
+          echo "=== DIRECTORY ==="
+          find . -maxdepth 2 -type f -name "*.sarif" -o -name "*grype*" | sort
+
+          echo "=== DOCKER IMAGES ==="
+          docker images
 
       - name: Upload Anchore Scan Report
         uses: github/codeql-action/upload-sarif@6ac9fc7e8e290bda8fac86290b68e176def71959 # v2
