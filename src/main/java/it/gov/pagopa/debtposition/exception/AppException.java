@@ -89,16 +89,13 @@ public class AppException extends RuntimeException {
     // if appError.details is null, fallback to a single-string pattern
     String template = appError.details != null ? appError.details : "%s";
     if (args == null || args.length == 0) {
-      return template.replaceAll("%s", "");
+      return template.replace("%s", "");
     }
-
     String result = template;
     for (Object arg : args) {
       result = result.replaceFirst("%s", arg != null ? arg.toString() : "null");
     }
-
-    result = result.replaceAll("%s", "");
-
+    result = result.replace("%s", "");
     return result;
   }
 
