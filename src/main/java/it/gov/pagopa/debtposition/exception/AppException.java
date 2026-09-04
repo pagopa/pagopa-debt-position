@@ -86,10 +86,10 @@ public class AppException extends RuntimeException {
   }
 
   private static String formatDetails(AppError appError, Object[] args) {
-	  // if appError.details is null, fallback to a single-string pattern
-	  String template = appError.details != null ? appError.details : "%s";
+    // if appError.details is null, fallback to a single-string pattern
+    String template = appError.details != null ? appError.details : "%s";
     if (args == null || args.length == 0) {
-      return template.replaceAll("%s", "");  // ← Rimuovi i placeholder irrisolti
+      return template.replaceAll("%s", "");
     }
 
     String result = template;

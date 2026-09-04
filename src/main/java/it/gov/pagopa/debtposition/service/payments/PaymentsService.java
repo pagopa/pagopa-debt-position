@@ -153,7 +153,8 @@ public class PaymentsService {
               .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionIdReceiptAndPaymentOptionTransferIdTransfer(
                   organizationFiscalCode, iuv, iur, transferId);
       if (ppToReport.isEmpty()) {
-        throw new AppException(AppError.TRANSFER_NOT_FOUND, organizationFiscalCode, iuv, transferId, iur);
+        throw new AppException(
+            AppError.TRANSFER_NOT_FOUND, organizationFiscalCode, iuv, transferId, iur);
       }
     } else {
       ppToReport =
@@ -161,7 +162,8 @@ public class PaymentsService {
               .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
                   organizationFiscalCode, iuv, transferId);
       if (ppToReport.isEmpty()) {
-        throw new AppException(AppError.TRANSFER_NOT_FOUND, organizationFiscalCode, iuv, transferId);
+        throw new AppException(
+            AppError.TRANSFER_NOT_FOUND, organizationFiscalCode, iuv, transferId);
       }
     }
 
