@@ -147,7 +147,6 @@ public class PaymentsService {
 
     Optional<PaymentPosition> ppToReport;
     if (iur != null && !iur.isBlank()) {
-
       ppToReport =
           paymentPositionRepository
               .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionIdReceiptAndPaymentOptionTransferIdTransfer(
@@ -167,17 +166,17 @@ public class PaymentsService {
       }
     }
 
+    PaymentPosition paymentPosition = ppToReport.get();
 
+    DebtPositionValidation.checkPaymentPositionAccountability(paymentPosition, iuv, transferId);
 
-    DebtPositionValidation.checkPaymentPositionAccountability(ppToReport.get(), iuv, transferId);
-
-    ppToReport.get().getPaymentOption().stream()
+    paymentPosition.getPaymentOption().stream()
         .filter(po -> iuv.equals(po.getIuv()))
         .findFirst()
         .orElseThrow(
             () -> new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, iuv));
 
-    return this.updateTransferStatus(ppToReport.get(), iuv, transferId);
+    return this.updateTransferStatus(paymentPosition, iuv, transferId);
   }
 
   /**
