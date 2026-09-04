@@ -21,6 +21,8 @@ public class AppException extends RuntimeException {
   /** generated serialVersionUID */
   private static final long serialVersionUID = -2887745935671875027L;
 
+  private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%s", Pattern.LITERAL);
+
   /** title returned to the response when this exception occurred */
   String title;
 
@@ -93,9 +95,8 @@ public class AppException extends RuntimeException {
       return template.replace("%s", "");
     }
     String result = template;
-    Pattern pattern = Pattern.compile("%s", Pattern.LITERAL);
     for (Object arg : args) {
-      result = pattern.matcher(result).replaceFirst(arg != null ? arg.toString() : "null");
+      result = PLACEHOLDER_PATTERN.matcher(result).replaceFirst(arg != null ? arg.toString() : "null");
     }
     result = result.replace("%s", "");
     return result;
