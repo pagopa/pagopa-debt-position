@@ -1,7 +1,7 @@
 package it.gov.pagopa.debtposition.model.v3;
 
-import java.io.Serializable;
 import jakarta.validation.constraints.NotBlank;
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

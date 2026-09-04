@@ -6,12 +6,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import it.gov.pagopa.debtposition.model.IPaymentPositionModel;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -20,7 +24,9 @@ import lombok.ToString;
 @NoArgsConstructor
 public class PaymentPositionModel implements Serializable, IPaymentPositionModel {
 
-  /** generated serialVersionUID */
+  /**
+   * generated serialVersionUID
+   */
   private static final long serialVersionUID = 1509046053787358148L;
 
   @NotBlank(message = "iupd is required")
@@ -60,7 +66,8 @@ public class PaymentPositionModel implements Serializable, IPaymentPositionModel
   @ToString.Exclude
   private String email;
 
-  @ToString.Exclude private String phone;
+  @ToString.Exclude
+  private String phone;
 
   @Schema(
       description = "feature flag to enable the debt position to expire after the due date",
@@ -85,7 +92,8 @@ public class PaymentPositionModel implements Serializable, IPaymentPositionModel
   @JsonProperty(access = Access.READ_ONLY)
   private DebtPositionStatus status;
 
-  @Valid private List<@Valid PaymentOptionModel> paymentOption = new ArrayList<>();
+  @Valid
+  private List<@Valid PaymentOptionModel> paymentOption = new ArrayList<>();
 
   public void addPaymentOptions(PaymentOptionModel paymentOpt) {
     paymentOption.add(paymentOpt);

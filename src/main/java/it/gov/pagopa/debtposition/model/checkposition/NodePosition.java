@@ -11,7 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class NodePosition implements Serializable {
-  /** generated serialVersionUID */
+
+  /**
+   * generated serialVersionUID
+   */
   private static final long serialVersionUID = 6608225665140949897L;
 
   private String fiscalCode;

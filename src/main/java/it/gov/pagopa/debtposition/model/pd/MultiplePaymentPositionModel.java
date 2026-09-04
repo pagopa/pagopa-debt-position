@@ -1,10 +1,10 @@
 package it.gov.pagopa.debtposition.model.pd;
 
 import it.gov.pagopa.debtposition.controller.pd.validator.ValidDebtPositionsSize;
-import java.io.Serializable;
-import java.util.List;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import java.io.Serializable;
+import java.util.List;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,7 +12,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MultiplePaymentPositionModel implements Serializable {
 
-  /** generated serialVersionUID */
+  /**
+   * generated serialVersionUID
+   */
   private static final long serialVersionUID = -928726282710084991L;
 
   @Valid

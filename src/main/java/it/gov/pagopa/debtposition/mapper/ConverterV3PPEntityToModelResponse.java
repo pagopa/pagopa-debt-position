@@ -1,6 +1,10 @@
 package it.gov.pagopa.debtposition.mapper;
 
-import it.gov.pagopa.debtposition.entity.*;
+import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.groupByPlanId;
+
+import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatusV3;
 import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
@@ -18,11 +22,10 @@ import java.util.stream.Collectors;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
-import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.groupByPlanId;
-
 public class ConverterV3PPEntityToModelResponse
     implements Converter<PaymentPosition, PaymentPositionModelResponseV3> {
- // TODO this class should refactored with ConverterV3PPEntityToModel
+
+  // TODO this class should refactored with ConverterV3PPEntityToModel
   @Override
   public PaymentPositionModelResponseV3 convert(
       MappingContext<PaymentPosition, PaymentPositionModelResponseV3> context) {
@@ -53,31 +56,32 @@ public class ConverterV3PPEntityToModelResponse
     List<PaymentOption> uniquePO = partitionedPO.get(false);
 
     List<PaymentOptionModelResponseV3> paymentOptionsToAdd = new ArrayList<>();
-    
-    if (partialPO != null && !partialPO.isEmpty()) {
-    	// group partial payment-options by planId
-        Map<String, List<PaymentOption>> byPlan = groupByPlanId(partialPO);
 
-    	for (Map.Entry<String, List<PaymentOption>> entry : byPlan.entrySet()) {
-    		List<PaymentOption> planInstallments = entry.getValue();
-    		PaymentOptionModelResponseV3 pov3 = this.convertPartialPO(planInstallments);
-    		paymentOptionsToAdd.add(pov3);
-    	}
+    if (partialPO != null && !partialPO.isEmpty()) {
+      // group partial payment-options by planId
+      Map<String, List<PaymentOption>> byPlan = groupByPlanId(partialPO);
+
+      for (Map.Entry<String, List<PaymentOption>> entry : byPlan.entrySet()) {
+        List<PaymentOption> planInstallments = entry.getValue();
+        PaymentOptionModelResponseV3 pov3 = this.convertPartialPO(planInstallments);
+        paymentOptionsToAdd.add(pov3);
+      }
     }
-    
+
     if (null != uniquePO && !uniquePO.isEmpty()) {
-    	List<PaymentOptionModelResponseV3> pov3List = uniquePO.stream()
-    			.map(this::convertUniquePO)
-    			.toList();
-    	paymentOptionsToAdd.addAll(pov3List);
+      List<PaymentOptionModelResponseV3> pov3List = uniquePO.stream()
+          .map(this::convertUniquePO)
+          .toList();
+      paymentOptionsToAdd.addAll(pov3List);
     }
-    
+
     // order by earliest dueDate among installments
-	paymentOptionsToAdd
-			.sort(Comparator.comparing(
-					p -> p.getInstallments().stream().map(InstallmentModelResponse::getDueDate).filter(Objects::nonNull)
-							.min(LocalDateTime::compareTo).orElse(null),
-					Comparator.nullsLast(Comparator.naturalOrder())));
+    paymentOptionsToAdd
+        .sort(Comparator.comparing(
+            p -> p.getInstallments().stream().map(InstallmentModelResponse::getDueDate)
+                .filter(Objects::nonNull)
+                .min(LocalDateTime::compareTo).orElse(null),
+            Comparator.nullsLast(Comparator.naturalOrder())));
 
     destination.setPaymentOption(paymentOptionsToAdd);
 
@@ -98,11 +102,11 @@ public class ConverterV3PPEntityToModelResponse
     PaymentOptionModelResponseV3 pov3 = convert(partialPOs.get(0));
     // Set installments
     List<InstallmentModelResponse> installments =
-    		partialPOs.stream()
-    	    .sorted(Comparator.comparing(PaymentOption::getDueDate,
-    	        Comparator.nullsLast(Comparator.naturalOrder())))
-    	    .map(this::convertInstallment)
-    	    .toList();
+        partialPOs.stream()
+            .sorted(Comparator.comparing(PaymentOption::getDueDate,
+                Comparator.nullsLast(Comparator.naturalOrder())))
+            .map(this::convertInstallment)
+            .toList();
     pov3.setInstallments(installments);
     return pov3;
   }

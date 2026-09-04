@@ -1,9 +1,9 @@
 package it.gov.pagopa.debtposition.config;
 
 import it.gov.pagopa.debtposition.exception.AppException;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Set;
-import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -15,7 +15,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class ExclusiveParamAspect {
 
-  @Autowired private HttpServletRequest request;
+  @Autowired
+  private HttpServletRequest request;
 
   /**
    * This method is triggered when the @ExclusiveParam annotation is used. If the two sets of
@@ -37,8 +38,10 @@ public class ExclusiveParamAspect {
 
     // If two of the three couple of parameters are present, we return bad request
     boolean multiplePresent = Arrays.stream(paramsPaymentDate).anyMatch(set::contains) ?
-            Arrays.stream(paramsDueDate).anyMatch(set::contains) || Arrays.stream(paramsPaymentDateTime).anyMatch(set::contains) :
-            Arrays.stream(paramsDueDate).anyMatch(set::contains) && Arrays.stream(paramsPaymentDateTime).anyMatch(set::contains);
+        Arrays.stream(paramsDueDate).anyMatch(set::contains) || Arrays.stream(paramsPaymentDateTime)
+            .anyMatch(set::contains) :
+        Arrays.stream(paramsDueDate).anyMatch(set::contains) && Arrays.stream(paramsPaymentDateTime)
+            .anyMatch(set::contains);
 
     if (multiplePresent) {
       throw new AppException(

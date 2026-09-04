@@ -11,11 +11,13 @@ public class SamplingFilter extends Filter<ILoggingEvent> {
 
   // Setter for the sampling rate (configurable from XML)
   // The rate of sampling. '100' means 1 out of 100 INFO logs will be kept after the burst.
-  @Setter private int rate = 100;
+  @Setter
+  private int rate = 100;
 
   // Setter for the burst size (configurable from XML)
   // The number of initial INFO logs to allow before sampling begins.
-  @Setter private int maxBurst = 0; // Defaults to 0 for no burst.
+  @Setter
+  private int maxBurst = 0; // Defaults to 0 for no burst.
 
   // A thread-safe counter for INFO logs
   private final AtomicLong counter = new AtomicLong(0);

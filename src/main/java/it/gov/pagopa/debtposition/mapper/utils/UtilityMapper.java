@@ -1,6 +1,9 @@
 package it.gov.pagopa.debtposition.mapper.utils;
 
-import it.gov.pagopa.debtposition.entity.*;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
+import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.entity.TransferMetadata;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
@@ -12,10 +15,12 @@ import it.gov.pagopa.debtposition.model.pd.response.TransferMetadataModelRespons
 import it.gov.pagopa.debtposition.model.pd.response.TransferModelResponse;
 import it.gov.pagopa.debtposition.model.v3.InstallmentMetadataModel;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.springframework.util.CollectionUtils;
 
 public class UtilityMapper {
@@ -117,7 +122,9 @@ public class UtilityMapper {
   private static TransferModel convert(Transfer t) {
     TransferModel destination = new TransferModel();
 
-    if (null == t) return destination;
+    if (null == t) {
+      return destination;
+    }
 
     destination.setOrganizationFiscalCode(t.getOrganizationFiscalCode());
     destination.setCompanyName(t.getCompanyName());
@@ -216,9 +223,9 @@ public class UtilityMapper {
     // check if at least one installment is flagged expired (switchToExpired == TRUE),
     // same as hasAnyMarkedExpired
     return paymentOptions != null
-            && !paymentOptions.isEmpty()
-            && paymentOptions.stream()
-            .allMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
+        && !paymentOptions.isEmpty()
+        && paymentOptions.stream()
+        .allMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
   }
 
   /**
@@ -239,78 +246,78 @@ public class UtilityMapper {
     // default grouping by payment_plan_id
     return partialPO.stream().collect(Collectors.groupingBy(PaymentOption::getPaymentPlanId));
   }
-  
-  public static void mapAndUpdateSingleTransfer(TransferModel source, Transfer destination) {
-	  destination.setAmount(source.getAmount());
-	  destination.setCategory(source.getCategory());
-	  destination.setCompanyName(source.getCompanyName());
-	  destination.setIban(source.getIban());
-	  destination.setIdTransfer(source.getIdTransfer());
-	  destination.setLastUpdatedDate(java.time.LocalDateTime.now());
-	  destination.setOrganizationFiscalCode(source.getOrganizationFiscalCode());
-	  destination.setPostalIban(source.getPostalIban());
-	  destination.setRemittanceInformation(source.getRemittanceInformation());
 
-	  applyStamp(source.getStamp(), destination);
-	  mapAndUpdateTransferMetadata(source, destination);
+  public static void mapAndUpdateSingleTransfer(TransferModel source, Transfer destination) {
+    destination.setAmount(source.getAmount());
+    destination.setCategory(source.getCategory());
+    destination.setCompanyName(source.getCompanyName());
+    destination.setIban(source.getIban());
+    destination.setIdTransfer(source.getIdTransfer());
+    destination.setLastUpdatedDate(java.time.LocalDateTime.now());
+    destination.setOrganizationFiscalCode(source.getOrganizationFiscalCode());
+    destination.setPostalIban(source.getPostalIban());
+    destination.setRemittanceInformation(source.getRemittanceInformation());
+
+    applyStamp(source.getStamp(), destination);
+    mapAndUpdateTransferMetadata(source, destination);
   }
 
   public static void applyStamp(Stamp stamp, Transfer destination) {
-	  /** 
-	   * [PIDM-1637] During update, if the incoming payload does not contain the stamp object,
-	   * the existing stamp fields must be explicitly cleared. Otherwise the previous
-	   * stamp values remain in the entity, causing an inconsistent state where both
-	   * stamp data and IBAN may coexist and triggering validation errors. 
-	   */
-	  if (stamp != null) {
-		  destination.setHashDocument(stamp.getHashDocument());
-		  destination.setProvincialResidence(stamp.getProvincialResidence());
-		  destination.setStampType(stamp.getStampType());
-	  } else {
-		  destination.setHashDocument(null);
-		  destination.setProvincialResidence(null);
-		  destination.setStampType(null);
-	  }
+    /**
+     * [PIDM-1637] During update, if the incoming payload does not contain the stamp object,
+     * the existing stamp fields must be explicitly cleared. Otherwise the previous
+     * stamp values remain in the entity, causing an inconsistent state where both
+     * stamp data and IBAN may coexist and triggering validation errors.
+     */
+    if (stamp != null) {
+      destination.setHashDocument(stamp.getHashDocument());
+      destination.setProvincialResidence(stamp.getProvincialResidence());
+      destination.setStampType(stamp.getStampType());
+    } else {
+      destination.setHashDocument(null);
+      destination.setProvincialResidence(null);
+      destination.setStampType(null);
+    }
   }
 
   public static void mapAndUpdateTransferMetadata(TransferModel source, Transfer destination) {
-	  Map<String, TransferMetadata> managedTransferMetadataByKey =
-			  destination.getTransferMetadata().stream()
-			  .collect(Collectors.toMap(TransferMetadata::getKey, po -> po));
+    Map<String, TransferMetadata> managedTransferMetadataByKey =
+        destination.getTransferMetadata().stream()
+            .collect(Collectors.toMap(TransferMetadata::getKey, po -> po));
 
-	  List<TransferMetadataModel> sourceTransferMetadata = source.getTransferMetadata();
-	  List<TransferMetadata> metadataToRemove = new ArrayList<>(destination.getTransferMetadata());
+    List<TransferMetadataModel> sourceTransferMetadata = source.getTransferMetadata();
+    List<TransferMetadata> metadataToRemove = new ArrayList<>(destination.getTransferMetadata());
 
-	  if (sourceTransferMetadata != null) {
-		  for (TransferMetadataModel sourceMetadata : sourceTransferMetadata) {
-			  TransferMetadata managedMetadata =
-					  managedTransferMetadataByKey.get(sourceMetadata.getKey());
+    if (sourceTransferMetadata != null) {
+      for (TransferMetadataModel sourceMetadata : sourceTransferMetadata) {
+        TransferMetadata managedMetadata =
+            managedTransferMetadataByKey.get(sourceMetadata.getKey());
 
-			  if (managedMetadata != null) {
-				  managedMetadata.setValue(sourceMetadata.getValue());
-				  metadataToRemove.remove(managedMetadata);
-			  } else {
-				  TransferMetadata md =
-						  TransferMetadata.builder()
-						  .key(sourceMetadata.getKey())
-						  .value(sourceMetadata.getValue())
-						  .transfer(destination)
-						  .build();
-				  destination.getTransferMetadata().add(md);
-			  }
-		  }
-	  }
+        if (managedMetadata != null) {
+          managedMetadata.setValue(sourceMetadata.getValue());
+          metadataToRemove.remove(managedMetadata);
+        } else {
+          TransferMetadata md =
+              TransferMetadata.builder()
+                  .key(sourceMetadata.getKey())
+                  .value(sourceMetadata.getValue())
+                  .transfer(destination)
+                  .build();
+          destination.getTransferMetadata().add(md);
+        }
+      }
+    }
 
-	  destination.getTransferMetadata().removeAll(metadataToRemove);
+    destination.getTransferMetadata().removeAll(metadataToRemove);
   }
 
   public static boolean isUuid(String s) {
-	  try {
-		  java.util.UUID.fromString(s);
-		  return true;
-	  } catch (IllegalArgumentException e) {
-		  return false;
-	  }
+    try {
+      java.util.UUID.fromString(s);
+      return true;
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
   }
 
   private static void validateAllHavePlanId(List<PaymentOption> partialPO) {

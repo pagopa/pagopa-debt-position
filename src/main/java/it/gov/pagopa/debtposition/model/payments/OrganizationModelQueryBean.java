@@ -10,7 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OrganizationModelQueryBean implements Serializable {
 
-  /** generated serialVersionUID */
+  /**
+   * generated serialVersionUID
+   */
   private static final long serialVersionUID = -2167998567826059075L;
 
   private String organizationFiscalCode;

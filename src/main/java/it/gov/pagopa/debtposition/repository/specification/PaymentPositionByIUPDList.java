@@ -1,11 +1,11 @@
 package it.gov.pagopa.debtposition.repository.specification;
 
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import java.util.List;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
 
 public class PaymentPositionByIUPDList implements Specification<PaymentPosition> {

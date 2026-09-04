@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface DebtPositionRepository
-    extends JpaRepository<PaymentPosition, Long>, JpaSpecificationExecutor<PaymentPosition> {}
+    extends JpaRepository<PaymentPosition, Long>, JpaSpecificationExecutor<PaymentPosition> {
+
+}

@@ -1,9 +1,9 @@
 package it.gov.pagopa.debtposition.dto;
 
-import java.io.Serializable;
-import java.util.List;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import java.io.Serializable;
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,8 +11,12 @@ import lombok.Data;
 @Data
 public class MultiplePaymentPositionDTO implements Serializable {
 
-  /** generated serialVersionUID */
+  /**
+   * generated serialVersionUID
+   */
   private static final long serialVersionUID = 3144050302407930549L;
 
-  @Valid @NotEmpty private List<PaymentPositionDTO> paymentPositions;
+  @Valid
+  @NotEmpty
+  private List<PaymentPositionDTO> paymentPositions;
 }

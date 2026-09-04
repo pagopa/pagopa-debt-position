@@ -16,7 +16,9 @@ import lombok.NoArgsConstructor;
 @Schema(name = "PaymentsModelResponse")
 public class PaymentOptionModelResponse implements Serializable {
 
-  /** generated serialVersionUID */
+  /**
+   * generated serialVersionUID
+   */
   private static final long serialVersionUID = 4163071583836786527L;
 
   private String nav;

@@ -5,16 +5,26 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.TestUtil;
 import it.gov.pagopa.debtposition.client.NodeClient;
-import it.gov.pagopa.debtposition.dto.*;
+import it.gov.pagopa.debtposition.dto.PaymentOptionDTO;
+import it.gov.pagopa.debtposition.dto.PaymentOptionMetadataDTO;
+import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
+import it.gov.pagopa.debtposition.dto.TransferDTO;
+import it.gov.pagopa.debtposition.dto.TransferMetadataDTO;
 import it.gov.pagopa.debtposition.mock.DebtPositionMock;
 import it.gov.pagopa.debtposition.model.checkposition.NodeCheckPositionModel;
 import it.gov.pagopa.debtposition.model.checkposition.response.NodeCheckPositionResponse;
@@ -26,7 +36,6 @@ import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import it.gov.pagopa.debtposition.service.pd.crud.PaymentPositionCRUDService;
 import it.gov.pagopa.debtposition.util.CommonUtil;
-
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -43,37 +52,41 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 @SpringBootTest(classes = DebtPositionApplication.class)
 @AutoConfigureMockMvc
 class DebtPositionControllerTest {
+
   private static final String ORG_FISCAL_CODE = "7777777777";
 
-  @Autowired private MockMvc mvc;
+  @Autowired
+  private MockMvc mvc;
 
-  @MockitoSpyBean private PaymentPositionCRUDService paymentPositionService;
+  @MockitoSpyBean
+  private PaymentPositionCRUDService paymentPositionService;
 
-  @Mock private ModelMapper modelMapperMock;
+  @Mock
+  private ModelMapper modelMapperMock;
 
-  @MockitoBean private NodeClient nodeClient;
+  @MockitoBean
+  private NodeClient nodeClient;
 
   @Value("${nav.aux.digit}")
   private String auxDigit;
 
   @BeforeEach
-  void setUp() {}
+  void setUp() {
+  }
 
-  /** CREATE DEBT POSITION */
+  /**
+   * CREATE DEBT POSITION
+   */
   @Test
   void createDebtPosition_201() throws Exception {
     // a debtor position is created with null validationDate and without forcing toPublish
@@ -345,37 +358,37 @@ class DebtPositionControllerTest {
 
   @Test
   void multiInstallmentsDebtPositionNotReadableV1() throws Exception {
-      String uri = String.format("/organizations/%s/debtpositions", ORG_FISCAL_CODE);
-      PaymentPositionModelV3 paymentPositionV3 = createPaymentPositionV3(2, 2);
-      mvc.perform(
-              post("/v3" + uri)
-                      .content(TestUtil.toJson(paymentPositionV3))
-                      .contentType(MediaType.APPLICATION_JSON))
-              .andExpect(status().isCreated());
+    String uri = String.format("/organizations/%s/debtpositions", ORG_FISCAL_CODE);
+    PaymentPositionModelV3 paymentPositionV3 = createPaymentPositionV3(2, 2);
+    mvc.perform(
+            post("/v3" + uri)
+                .content(TestUtil.toJson(paymentPositionV3))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
 
-      mvc.perform(
-              get(uri + "/" + paymentPositionV3.getIupd()))
-              .andExpect(status().isUnprocessableEntity());
+    mvc.perform(
+            get(uri + "/" + paymentPositionV3.getIupd()))
+        .andExpect(status().isUnprocessableEntity());
   }
 
   @Test
   void multiInstallmentDebtPositionsFilteredOut() throws Exception {
-      String uri = String.format("/organizations/%s/debtpositions", ORG_FISCAL_CODE);
-      PaymentPositionModelV3 paymentPositionV3 = createPaymentPositionV3(2, 2);
-      mvc.perform(
-              post("/v3" + uri)
-                      .content(TestUtil.toJson(paymentPositionV3))
-                      .contentType(MediaType.APPLICATION_JSON))
-              .andExpect(status().isCreated());
+    String uri = String.format("/organizations/%s/debtpositions", ORG_FISCAL_CODE);
+    PaymentPositionModelV3 paymentPositionV3 = createPaymentPositionV3(2, 2);
+    mvc.perform(
+            post("/v3" + uri)
+                .content(TestUtil.toJson(paymentPositionV3))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
 
-      mvc.perform(get(uri)
-                      .param("limit", "1")
-                      .param("page", "0"))
-              .andExpect(status().isOk())
-              .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-              .andExpect(jsonPath(
-                      "$.payment_position_list[?(@.iupd == '%s')]", paymentPositionV3.getIupd()
-              ).doesNotExist());
+    mvc.perform(get(uri)
+            .param("limit", "1")
+            .param("page", "0"))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath(
+            "$.payment_position_list[?(@.iupd == '%s')]", paymentPositionV3.getIupd()
+        ).doesNotExist());
   }
 
   @Test
@@ -463,9 +476,9 @@ class DebtPositionControllerTest {
     String anotherSegregationCode = "99";
     mvc.perform(
             post("/organizations/SC_12345678901/debtpositions?segregationCodes="
-                    + validSegregationCode
-                    + ","
-                    + anotherSegregationCode)
+                + validSegregationCode
+                + ","
+                + anotherSegregationCode)
                 .content(TestUtil.toJson(paymentPositionDTO))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated())
@@ -479,7 +492,7 @@ class DebtPositionControllerTest {
     String notSufficientSegregationCode = "99";
     mvc.perform(
             post("/organizations/12345678901/debtpositions?segregationCodes="
-                    + notSufficientSegregationCode)
+                + notSufficientSegregationCode)
                 .content(TestUtil.toJson(DebtPositionMock.getMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isForbidden());
@@ -526,7 +539,7 @@ class DebtPositionControllerTest {
         .andExpect(status().isBadRequest())
         .andExpect(content().string(containsString("size must be between 0 and 10")));
   }
-  
+
   @Test
   void createDebtPositionWithDuplicatePaymentOptionMetadataKey_400() throws Exception {
     PaymentPositionDTO pp = DebtPositionMock.getMetadataMock8();
@@ -545,7 +558,7 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(content().string(containsString("paymentOptionMetadata keys must be unique")));
   }
-  
+
   @Test
   void createDebtPositionWithDuplicateTransferMetadataKey_400() throws Exception {
     PaymentPositionDTO pp = DebtPositionMock.getMetadataMock8();
@@ -564,84 +577,91 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(content().string(containsString("transferMetadata keys must be unique")));
   }
-  
+
   @Test
   void createDebtPositionWithCheckOnIBAN_400() throws Exception {
 
-	  // Blank postalIban
-	  PaymentPositionDTO pp = DebtPositionMock.getMock1();
-	  pp.getPaymentOption().get(0).getTransfer().get(0).setPostalIban("");
-	  mvc.perform(
-			  post("/organizations/CHKIBAN_12345678901/debtpositions")
-			  .content(TestUtil.toJson(pp))
-			  .contentType(MediaType.APPLICATION_JSON))
-	  .andExpect(status().isBadRequest())
-	  .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-	  .andExpect(jsonPath("$.detail").value(containsString(
-			  "postalIban: Postal IBAN is optional, but if provided, it must not be blank and must not exceed 35 characters"
-			  )));
+    // Blank postalIban
+    PaymentPositionDTO pp = DebtPositionMock.getMock1();
+    pp.getPaymentOption().get(0).getTransfer().get(0).setPostalIban("");
+    mvc.perform(
+            post("/organizations/CHKIBAN_12345678901/debtpositions")
+                .content(TestUtil.toJson(pp))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.detail").value(containsString(
+            "postalIban: Postal IBAN is optional, but if provided, it must not be blank and must not exceed 35 characters"
+        )));
 
-	  // postalIban with single space
-	  pp.getPaymentOption().get(0).getTransfer().get(0).setPostalIban(" ");
-	  mvc.perform(
-			  post("/organizations/CHKIBAN_12345678901/debtpositions")
-			  .content(TestUtil.toJson(pp))
-			  .contentType(MediaType.APPLICATION_JSON))
-	  .andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
-	  .andExpect(jsonPath("$.detail").value(containsString(
-			  "postalIban: Postal IBAN must not contain spaces or special characters"
-			  )));
+    // postalIban with single space
+    pp.getPaymentOption().get(0).getTransfer().get(0).setPostalIban(" ");
+    mvc.perform(
+            post("/organizations/CHKIBAN_12345678901/debtpositions")
+                .content(TestUtil.toJson(pp))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.detail").value(containsString(
+            "postalIban: Postal IBAN must not contain spaces or special characters"
+        )));
 
-	  // postalIban with special characters
-	  pp = DebtPositionMock.getMock1();
-	  pp.getPaymentOption().get(0).getTransfer().get(0).setPostalIban("IT60X054281110!@#0000123456");
-	  mvc.perform(post("/organizations/CHKIBAN_12345678901/debtpositions")
-			  .content(TestUtil.toJson(pp))
-			  .contentType(MediaType.APPLICATION_JSON))
-	  .andExpect(status().isBadRequest()).andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
-	  .andExpect(jsonPath("$.detail").value(containsString(
-			  "postalIban: Postal IBAN must not contain spaces or special characters"
-			  )));
+    // postalIban with special characters
+    pp = DebtPositionMock.getMock1();
+    pp.getPaymentOption().get(0).getTransfer().get(0).setPostalIban("IT60X054281110!@#0000123456");
+    mvc.perform(post("/organizations/CHKIBAN_12345678901/debtpositions")
+            .content(TestUtil.toJson(pp))
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest()).andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.detail").value(containsString(
+            "postalIban: Postal IBAN must not contain spaces or special characters"
+        )));
 
-	  // postalIban too long
-	  pp = DebtPositionMock.getMock1();
-	  pp.getPaymentOption().get(0).getTransfer().get(0).setPostalIban("IT60X054281110100000012345678901234567"); // 36 chars
-	  mvc.perform(post("/organizations/CHKIBAN_12345678901/debtpositions")
-			  .content(TestUtil.toJson(pp))
-			  .contentType(MediaType.APPLICATION_JSON))
-	  .andExpect(status().isBadRequest())
-	  .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-	  .andExpect(jsonPath("$.detail").value(containsString(
-			  "postalIban: Postal IBAN is optional, but if provided, it must not be blank and must not exceed 35 characters"
-			  )));
+    // postalIban too long
+    pp = DebtPositionMock.getMock1();
+    pp.getPaymentOption().get(0).getTransfer().get(0)
+        .setPostalIban("IT60X054281110100000012345678901234567"); // 36 chars
+    mvc.perform(post("/organizations/CHKIBAN_12345678901/debtpositions")
+            .content(TestUtil.toJson(pp))
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.detail").value(containsString(
+            "postalIban: Postal IBAN is optional, but if provided, it must not be blank and must not exceed 35 characters"
+        )));
 
-	  // iban with spaces
-	  pp = DebtPositionMock.getMock1();
-	  pp.getPaymentOption().get(0).getTransfer().get(0).setIban("IT60 X0542811101000000123456");
-	  mvc.perform(post("/organizations/CHKIBAN_12345678901/debtpositions")
-			  .content(TestUtil.toJson(pp))
-			  .contentType(MediaType.APPLICATION_JSON))
-	  .andExpect(status().isBadRequest())
-	  .andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
-	  .andExpect(jsonPath("$.detail").value(containsString(
-			  "iban: IBAN must not contain spaces or special characters"
-			  )));
+    // iban with spaces
+    pp = DebtPositionMock.getMock1();
+    pp.getPaymentOption().get(0).getTransfer().get(0).setIban("IT60 X0542811101000000123456");
+    mvc.perform(post("/organizations/CHKIBAN_12345678901/debtpositions")
+            .content(TestUtil.toJson(pp))
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.detail").value(containsString(
+            "iban: IBAN must not contain spaces or special characters"
+        )));
 
-	  // iban too long (36 characters)
-	  pp = DebtPositionMock.getMock1();
-	  pp.getPaymentOption().get(0).getTransfer().get(0).setIban("IT60X054281110100000012345678901234567");
-	  mvc.perform(post("/organizations/CHKIBAN_12345678901/debtpositions")
-			  .content(TestUtil.toJson(pp))
-			  .contentType(MediaType.APPLICATION_JSON))
-	  .andExpect(status().isBadRequest())
-	  .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-	  .andExpect(jsonPath("$.detail").value(containsString(
-			  "iban: The IBAN must not be blank and must not exceed 35 characters"
-			  )));
+    // iban too long (36 characters)
+    pp = DebtPositionMock.getMock1();
+    pp.getPaymentOption().get(0).getTransfer().get(0)
+        .setIban("IT60X054281110100000012345678901234567");
+    mvc.perform(post("/organizations/CHKIBAN_12345678901/debtpositions")
+            .content(TestUtil.toJson(pp))
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.detail").value(containsString(
+            "iban: The IBAN must not be blank and must not exceed 35 characters"
+        )));
   }
-  
 
-  /** GET DEBT POSITION BY IUV */
+
+  /**
+   * GET DEBT POSITION BY IUV
+   */
   @Test
   void getDebtPositionByIUV_200() throws Exception {
     PaymentPositionDTO pp = DebtPositionMock.getMock1();
@@ -817,7 +837,9 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
 
-  /** GET DEBT POSITION BY IUPD */
+  /**
+   * GET DEBT POSITION BY IUPD
+   */
   @Test
   void getDebtPositionByIUPD_200() throws Exception {
     // creo una posizione debitoria e la recupero
@@ -990,7 +1012,9 @@ class DebtPositionControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
 
-  /** GET LIST DEBT POSITIONS */
+  /**
+   * GET LIST DEBT POSITIONS
+   */
   @Test
   void getDebtPositionList() throws Exception {
     // creo due posizioni debitorie e recupero tutte le payment_option di entrambe
@@ -1163,8 +1187,8 @@ class DebtPositionControllerTest {
     // effettuo la notifica di pagamento
     mvc.perform(
             post("/organizations/123456789022/paymentoptions/"
-                    + auxDigit
-                    + "1234561/pay")
+                + auxDigit
+                + "1234561/pay")
                 .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
@@ -1257,8 +1281,8 @@ class DebtPositionControllerTest {
     // effettuo la notifica di pagamento
     mvc.perform(
             post("/organizations/123456789030/paymentoptions/"
-                    + auxDigit
-                    + "1234561/pay")
+                + auxDigit
+                + "1234561/pay")
                 .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
@@ -1475,7 +1499,7 @@ class DebtPositionControllerTest {
             MockMvcResultMatchers.jsonPath("$.payment_position_list[0].paymentOption[1].nav")
                 .value("3" + iuv2));
   }
-  
+
   @Test
   void getDebtPositionListBySegregationCode_19_shouldReturnDebtPosition() throws Exception {
     String orgFiscalCode = "LIST_SC_19_12345678901";
@@ -1503,7 +1527,7 @@ class DebtPositionControllerTest {
             jsonPath("$.payment_position_list[0].paymentOption[0].iuv")
                 .value("19000000000001231"));
   }
-  
+
   @Test
   void getDebtPositionListBySegregationCode_18_shouldNotReturnIuvStartingWith19() throws Exception {
     String orgFiscalCode = "LIST_SC_18_NEG_12345678901";
@@ -1528,9 +1552,10 @@ class DebtPositionControllerTest {
         .andExpect(jsonPath("$.payment_position_list", Matchers.hasSize(0)))
         .andExpect(jsonPath("$.page_info.items_found").value(0));
   }
-  
+
   @Test
-  void getDebtPositionListBySegregationCode_19_shouldReturnOnlyMatchingPaymentOptions() throws Exception {
+  void getDebtPositionListBySegregationCode_19_shouldReturnOnlyMatchingPaymentOptions()
+      throws Exception {
     String orgFiscalCode = "LIST_SC_19_MIXED_12345678901";
 
     PaymentPositionDTO paymentPositionDTO = DebtPositionMock.getMock2();
@@ -1588,7 +1613,9 @@ class DebtPositionControllerTest {
                 .value(Matchers.hasSize(0)));
   }
 
-  /** DELETE DEBT POSITION */
+  /**
+   * DELETE DEBT POSITION
+   */
   @Test
   void deleteDebtPosition_200() throws Exception {
     // creo una posizione debitoria e la cancello
@@ -1631,8 +1658,8 @@ class DebtPositionControllerTest {
     // effettuo la notifica di pagamento e verifico lo stato in paid
     mvc.perform(
             post("/organizations/DEL_409_12345678901/paymentoptions/"
-                    + auxDigit
-                    + "1234561/pay")
+                + auxDigit
+                + "1234561/pay")
                 .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
@@ -1670,8 +1697,8 @@ class DebtPositionControllerTest {
 
     mvc.perform(
             delete(
-                    "/organizations/DEL_12345678901/debtpositions/12345678901IUPDMOCK1?segregationCodes="
-                        + segregationCode)
+                "/organizations/DEL_12345678901/debtpositions/12345678901IUPDMOCK1?segregationCodes="
+                    + segregationCode)
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
   }
@@ -1688,13 +1715,15 @@ class DebtPositionControllerTest {
 
     mvc.perform(
             delete(
-                    "/organizations/DEL_12345678901/debtpositions/12345678901IUPDMOCK1?segregationCodes="
-                        + segregationCode)
+                "/organizations/DEL_12345678901/debtpositions/12345678901IUPDMOCK1?segregationCodes="
+                    + segregationCode)
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isForbidden());
   }
 
-  /** UPDATE DEBT POSITION */
+  /**
+   * UPDATE DEBT POSITION
+   */
   @Test
   void updateDebtPosition_200() throws Exception {
     // creo una posizione debitoria con validatyDate a null e senza forzare il toPublish
@@ -1808,13 +1837,15 @@ class DebtPositionControllerTest {
         .getPaymentOption()
         .get(0)
         .addPaymentOptionMetadata(
-            PaymentOptionMetadataDTO.builder().key("keypometadataupd").value("valuepometadataupd").build());
+            PaymentOptionMetadataDTO.builder().key("keypometadataupd").value("valuepometadataupd")
+                .build());
     ppToUpdate
         .getPaymentOption()
         .get(0)
         .getTransfer()
         .get(0)
-        .addTransferMetadata(TransferMetadataDTO.builder().key("keytransfermetadataupd").value("valuetransfermetadataupd").build());
+        .addTransferMetadata(TransferMetadataDTO.builder().key("keytransfermetadataupd")
+            .value("valuetransfermetadataupd").build());
     mvc.perform(
             put("/organizations/200_UPD_metadata_12345678901/debtpositions/12345678901IUPDMETADATAMOCK7")
                 .content(TestUtil.toJson(ppToUpdate))
@@ -1880,9 +1911,9 @@ class DebtPositionControllerTest {
     // aggiorno la posizione debitoria
     mvc.perform(
             put("/organizations/UPD_SC_12345678901/debtpositions/"
-                    + iupd
-                    + "?segregationCodes="
-                    + segregationCode)
+                + iupd
+                + "?segregationCodes="
+                + segregationCode)
                 .content(TestUtil.toJson(DebtPositionMock.getMock4()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
@@ -2103,16 +2134,17 @@ class DebtPositionControllerTest {
   void updateDebtPosition_CreateValidAndUpdate_200() throws Exception {
     // creo una posizione debitoria (con 'validity date' impostata)
     PaymentPositionDTO ppDto1 = DebtPositionMock.getMock1();
-    
-    LocalDateTime futureValidity = LocalDateTime.now(ZoneOffset.UTC).plus(1, ChronoUnit.DAYS).truncatedTo(ChronoUnit.SECONDS);
+
+    LocalDateTime futureValidity = LocalDateTime.now(ZoneOffset.UTC).plus(1, ChronoUnit.DAYS)
+        .truncatedTo(ChronoUnit.SECONDS);
     LocalDateTime futureDue = LocalDateTime.now(ZoneOffset.UTC).plus(2, ChronoUnit.DAYS);
 
     ppDto1.setValidityDate(futureValidity);
     ppDto1.getPaymentOption().forEach(opt -> {
-    	opt.setStatus(PaymentOptionStatus.PO_UNPAID);
-    	opt.setSwitchToExpired(true);
-    	opt.setDueDate(futureDue);
-    	opt.setValidityDate(futureValidity);
+      opt.setStatus(PaymentOptionStatus.PO_UNPAID);
+      opt.setSwitchToExpired(true);
+      opt.setDueDate(futureDue);
+      opt.setValidityDate(futureValidity);
     });
     mvc.perform(
             post("/organizations/CREATE_UPD_12345678901/debtpositions?toPublish=True")
@@ -2131,16 +2163,17 @@ class DebtPositionControllerTest {
                 .value(DebtPositionStatus.PUBLISHED.toString()))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.validityDate")
-                .value(futureValidity.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))));
+                .value(
+                    futureValidity.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))));
 
     // aggiorno la posizione debitoria con un body che contiene la 'validity date'
     PaymentPositionDTO ppDto4 = DebtPositionMock.getMock4();
     ppDto4.setValidityDate(futureValidity);
     ppDto4.getPaymentOption().forEach(opt -> {
-    	opt.setStatus(PaymentOptionStatus.PO_UNPAID);
-    	opt.setSwitchToExpired(true);
-    	opt.setDueDate(futureDue);
-    	opt.setValidityDate(futureValidity);
+      opt.setStatus(PaymentOptionStatus.PO_UNPAID);
+      opt.setSwitchToExpired(true);
+      opt.setDueDate(futureDue);
+      opt.setValidityDate(futureValidity);
     });
     mvc.perform(
             put("/organizations/CREATE_UPD_12345678901/debtpositions/12345678901IUPDMOCK1?toPublish=True")
@@ -2228,9 +2261,9 @@ class DebtPositionControllerTest {
 
     mvc.perform(
             put("/organizations/UPD_403_SC_12345678901/debtpositions/"
-                    + iupd
-                    + "?segregationCodes="
-                    + notSufficientSegregationCode)
+                + iupd
+                + "?segregationCodes="
+                + notSufficientSegregationCode)
                 .content(TestUtil.toJson(DebtPositionMock.getMock4()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isForbidden());
@@ -2354,8 +2387,8 @@ class DebtPositionControllerTest {
     // effettuo la notifica di pagamento e verifico lo stato in paid
     mvc.perform(
             post("/organizations/UPD409_PAID_12345678901/paymentoptions/"
-                    + auxDigit
-                    + "1234561/pay")
+                + auxDigit
+                + "1234561/pay")
                 .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
@@ -2424,7 +2457,9 @@ class DebtPositionControllerTest {
         .andExpect(status().isUnprocessableEntity());
   }
 
-  /** UPDATE IBAN ON TRANSFERS */
+  /**
+   * UPDATE IBAN ON TRANSFERS
+   */
   @Test
   void updateTransferIbanMassive_200() throws Exception {
     UpdateTransferIbanMassiveModel request =
@@ -2478,202 +2513,206 @@ class DebtPositionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
   }
-    @Test
-    void shouldNotFindDebtPositionsWithServiceTypeWISP() throws Exception {
-        // Create a debt position with service type WISP
-        mvc.perform(
-                        post("/organizations/12345678907/debtpositions?serviceType=WISP")
-                                .content(TestUtil.toJson(DebtPositionMock.getMock1()))
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated());
 
-        // Retrieve debt positions; expect no results since the uploaded debt position has service type WISP
-        mvc.perform(
-                        get("/organizations/12345678907/debtpositions")
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(
-                        MockMvcResultMatchers.jsonPath("$.page_info.items_found").value(0));
-    }
+  @Test
+  void shouldNotFindDebtPositionsWithServiceTypeWISP() throws Exception {
+    // Create a debt position with service type WISP
+    mvc.perform(
+            post("/organizations/12345678907/debtpositions?serviceType=WISP")
+                .content(TestUtil.toJson(DebtPositionMock.getMock1()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
 
-    @Test
-    void shouldFindDebtPositionsWithServiceTypeWISP() throws Exception {
-        // Create a debt position with service type WISP
-        mvc.perform(
-                        post("/organizations/12345678906/debtpositions?serviceType=WISP")
-                                .content(TestUtil.toJson(DebtPositionMock.getMock2()))
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated());
+    // Retrieve debt positions; expect no results since the uploaded debt position has service type WISP
+    mvc.perform(
+            get("/organizations/12345678907/debtpositions")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.page_info.items_found").value(0));
+  }
 
-        // Retrieve debt positions; expect multiple results since the uploaded debt position has service type WISP
-        mvc.perform(
-                        get("/organizations/12345678906/debtpositions?serviceType=WISP")
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(
-                        MockMvcResultMatchers.jsonPath("$.page_info.items_found").value(Matchers.not(0)));
-    }
-    
-    @Test
-    void updateDebtPosition_removeStampAndAddIban_200() throws Exception {
-      String orgFiscalCode = "UPD_STAMP_TO_IBAN_12345678901";
+  @Test
+  void shouldFindDebtPositionsWithServiceTypeWISP() throws Exception {
+    // Create a debt position with service type WISP
+    mvc.perform(
+            post("/organizations/12345678906/debtpositions?serviceType=WISP")
+                .content(TestUtil.toJson(DebtPositionMock.getMock2()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
 
-      PaymentPositionDTO createRequest = DebtPositionMock.getMock1();
-      createRequest.setIupd("IUPD_STAMP_TO_IBAN_01");
-      createRequest.getPaymentOption().get(0).setIuv("12345000000000001");
+    // Retrieve debt positions; expect multiple results since the uploaded debt position has service type WISP
+    mvc.perform(
+            get("/organizations/12345678906/debtpositions?serviceType=WISP")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.page_info.items_found").value(Matchers.not(0)));
+  }
 
-      TransferDTO transferWithStamp =
-          new TransferDTO(
-              orgFiscalCode,
-              "1",
-              createRequest.getPaymentOption().get(0).getAmount(),
-              "Marca da bollo",
-              "test",
-              null,
-              null,
-              new Stamp("hash-doc-1", "01", "RM"),
-              TransferStatus.T_UNREPORTED);
+  @Test
+  void updateDebtPosition_removeStampAndAddIban_200() throws Exception {
+    String orgFiscalCode = "UPD_STAMP_TO_IBAN_12345678901";
 
-      createRequest.getPaymentOption().get(0).getTransfer().set(0, transferWithStamp);
+    PaymentPositionDTO createRequest = DebtPositionMock.getMock1();
+    createRequest.setIupd("IUPD_STAMP_TO_IBAN_01");
+    createRequest.getPaymentOption().get(0).setIuv("12345000000000001");
 
-      mvc.perform(
-              post("/organizations/" + orgFiscalCode + "/debtpositions")
-                  .content(TestUtil.toJson(createRequest))
-                  .contentType(MediaType.APPLICATION_JSON))
-          .andExpect(status().isCreated())
-          .andExpect(jsonPath("$.paymentOption[0].transfer[0].stamp.hashDocument").value("hash-doc-1"))
-          .andExpect(jsonPath("$.paymentOption[0].transfer[0].stamp.stampType").value("01"))
-          .andExpect(jsonPath("$.paymentOption[0].transfer[0].stamp.provincialResidence").value("RM"));
+    TransferDTO transferWithStamp =
+        new TransferDTO(
+            orgFiscalCode,
+            "1",
+            createRequest.getPaymentOption().get(0).getAmount(),
+            "Marca da bollo",
+            "test",
+            null,
+            null,
+            new Stamp("hash-doc-1", "01", "RM"),
+            TransferStatus.T_UNREPORTED);
 
-      PaymentPositionDTO updateRequest = DebtPositionMock.getMock1();
-      updateRequest.setIupd("IUPD_STAMP_TO_IBAN_01");
-      updateRequest.getPaymentOption().get(0).setIuv("12345000000000001");
-      updateRequest.getPaymentOption().get(0).setAmount(1800L);
-      updateRequest.getPaymentOption().get(0).setDescription("Updated without stamp");
+    createRequest.getPaymentOption().get(0).getTransfer().set(0, transferWithStamp);
 
-      TransferDTO transferWithoutStampWithIban =
-          new TransferDTO(
-              orgFiscalCode,
-              "1",
-              1800L,
-              "Updated without stamp",
-              "test",
-              "IT58C0200805403000102985524",
-              null,
-              null,
-              TransferStatus.T_UNREPORTED);
+    mvc.perform(
+            post("/organizations/" + orgFiscalCode + "/debtpositions")
+                .content(TestUtil.toJson(createRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated())
+        .andExpect(
+            jsonPath("$.paymentOption[0].transfer[0].stamp.hashDocument").value("hash-doc-1"))
+        .andExpect(jsonPath("$.paymentOption[0].transfer[0].stamp.stampType").value("01"))
+        .andExpect(
+            jsonPath("$.paymentOption[0].transfer[0].stamp.provincialResidence").value("RM"));
 
-      updateRequest.getPaymentOption().get(0).getTransfer().set(0, transferWithoutStampWithIban);
+    PaymentPositionDTO updateRequest = DebtPositionMock.getMock1();
+    updateRequest.setIupd("IUPD_STAMP_TO_IBAN_01");
+    updateRequest.getPaymentOption().get(0).setIuv("12345000000000001");
+    updateRequest.getPaymentOption().get(0).setAmount(1800L);
+    updateRequest.getPaymentOption().get(0).setDescription("Updated without stamp");
 
-      mvc.perform(
-              put("/organizations/" + orgFiscalCode + "/debtpositions/IUPD_STAMP_TO_IBAN_01")
-                  .content(TestUtil.toJson(updateRequest))
-                  .contentType(MediaType.APPLICATION_JSON))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.paymentOption[0].transfer[0].iban")
-              .value("IT58C0200805403000102985524"))
-          .andExpect(jsonPath("$.paymentOption[0].transfer[0].stamp").doesNotExist());
+    TransferDTO transferWithoutStampWithIban =
+        new TransferDTO(
+            orgFiscalCode,
+            "1",
+            1800L,
+            "Updated without stamp",
+            "test",
+            "IT58C0200805403000102985524",
+            null,
+            null,
+            TransferStatus.T_UNREPORTED);
 
-      mvc.perform(
-              get("/organizations/" + orgFiscalCode + "/debtpositions/IUPD_STAMP_TO_IBAN_01")
-                  .contentType(MediaType.APPLICATION_JSON))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.paymentOption[0].transfer[0].iban")
-              .value("IT58C0200805403000102985524"))
-          .andExpect(jsonPath("$.paymentOption[0].transfer[0].stamp").doesNotExist());
-    }
-    
-    @Test
-    void updateDebtPosition_removeStampWithoutIban_400() throws Exception {
+    updateRequest.getPaymentOption().get(0).getTransfer().set(0, transferWithoutStampWithIban);
 
-      String orgFiscalCode = "UPD_REMOVE_STAMP_NO_IBAN";
+    mvc.perform(
+            put("/organizations/" + orgFiscalCode + "/debtpositions/IUPD_STAMP_TO_IBAN_01")
+                .content(TestUtil.toJson(updateRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.paymentOption[0].transfer[0].iban")
+            .value("IT58C0200805403000102985524"))
+        .andExpect(jsonPath("$.paymentOption[0].transfer[0].stamp").doesNotExist());
 
-      PaymentPositionDTO createRequest = DebtPositionMock.getMock1();
-      createRequest.setIupd("IUPD_REMOVE_STAMP_NO_IBAN");
-      createRequest.getPaymentOption().get(0).setIuv("12345000000000002");
+    mvc.perform(
+            get("/organizations/" + orgFiscalCode + "/debtpositions/IUPD_STAMP_TO_IBAN_01")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.paymentOption[0].transfer[0].iban")
+            .value("IT58C0200805403000102985524"))
+        .andExpect(jsonPath("$.paymentOption[0].transfer[0].stamp").doesNotExist());
+  }
 
-      TransferDTO transferWithStamp =
-          new TransferDTO(
-              orgFiscalCode,
-              "1",
-              createRequest.getPaymentOption().get(0).getAmount(),
-              "Marca da bollo",
-              "test",
-              null,
-              null,
-              new Stamp("hash-doc-2", "01", "RM"),
-              TransferStatus.T_UNREPORTED);
+  @Test
+  void updateDebtPosition_removeStampWithoutIban_400() throws Exception {
 
-      createRequest.getPaymentOption().get(0).getTransfer().set(0, transferWithStamp);
+    String orgFiscalCode = "UPD_REMOVE_STAMP_NO_IBAN";
 
-      mvc.perform(
-              post("/organizations/" + orgFiscalCode + "/debtpositions")
-                  .content(TestUtil.toJson(createRequest))
-                  .contentType(MediaType.APPLICATION_JSON))
-          .andExpect(status().isCreated());
+    PaymentPositionDTO createRequest = DebtPositionMock.getMock1();
+    createRequest.setIupd("IUPD_REMOVE_STAMP_NO_IBAN");
+    createRequest.getPaymentOption().get(0).setIuv("12345000000000002");
 
-      PaymentPositionDTO updateRequest = DebtPositionMock.getMock1();
-      updateRequest.setIupd("IUPD_REMOVE_STAMP_NO_IBAN");
-      updateRequest.getPaymentOption().get(0).setIuv("12345000000000002");
+    TransferDTO transferWithStamp =
+        new TransferDTO(
+            orgFiscalCode,
+            "1",
+            createRequest.getPaymentOption().get(0).getAmount(),
+            "Marca da bollo",
+            "test",
+            null,
+            null,
+            new Stamp("hash-doc-2", "01", "RM"),
+            TransferStatus.T_UNREPORTED);
 
-      TransferDTO transferWithoutStampAndWithoutIban =
-          new TransferDTO(
-              orgFiscalCode,
-              "1",
-              1900L,
-              "Updated without stamp and without iban",
-              "test",
-              null,
-              null,
-              null,
-              TransferStatus.T_UNREPORTED);
+    createRequest.getPaymentOption().get(0).getTransfer().set(0, transferWithStamp);
 
-      updateRequest.getPaymentOption().get(0).getTransfer().set(0, transferWithoutStampAndWithoutIban);
+    mvc.perform(
+            post("/organizations/" + orgFiscalCode + "/debtpositions")
+                .content(TestUtil.toJson(createRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
 
-      mvc.perform(
-              put("/organizations/" + orgFiscalCode + "/debtpositions/IUPD_REMOVE_STAMP_NO_IBAN")
-                  .content(TestUtil.toJson(updateRequest))
-                  .contentType(MediaType.APPLICATION_JSON))
-          .andExpect(status().isBadRequest());
-    }
-    
-    @Test
-    void createDebtPositionWithExplicitNullPaymentOptionMetadata_201() throws Exception {
-      PaymentPositionDTO pp = DebtPositionMock.getMetadataMock8();
+    PaymentPositionDTO updateRequest = DebtPositionMock.getMock1();
+    updateRequest.setIupd("IUPD_REMOVE_STAMP_NO_IBAN");
+    updateRequest.getPaymentOption().get(0).setIuv("12345000000000002");
 
-      ObjectMapper objectMapper = new ObjectMapper();
-      JsonNode root = objectMapper.readTree(TestUtil.toJson(pp));
+    TransferDTO transferWithoutStampAndWithoutIban =
+        new TransferDTO(
+            orgFiscalCode,
+            "1",
+            1900L,
+            "Updated without stamp and without iban",
+            "test",
+            null,
+            null,
+            null,
+            TransferStatus.T_UNREPORTED);
 
-      ObjectNode paymentOptionNode = (ObjectNode) root.path("paymentOption").get(0);
-      paymentOptionNode.putNull("paymentOptionMetadata");
+    updateRequest.getPaymentOption().get(0).getTransfer()
+        .set(0, transferWithoutStampAndWithoutIban);
 
-      mvc.perform(
-              post("/organizations/NULL_PO_METADATA_12345678901/debtpositions")
-                  .content(objectMapper.writeValueAsString(root))
-                  .contentType(MediaType.APPLICATION_JSON))
-          .andExpect(status().isCreated())
-          .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
-    
-    @Test
-    void createDebtPositionWithExplicitNullTransferMetadata_201() throws Exception {
-      PaymentPositionDTO pp = DebtPositionMock.getMetadataMock8();
+    mvc.perform(
+            put("/organizations/" + orgFiscalCode + "/debtpositions/IUPD_REMOVE_STAMP_NO_IBAN")
+                .content(TestUtil.toJson(updateRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest());
+  }
 
-      ObjectMapper objectMapper = new ObjectMapper();
-      JsonNode root = objectMapper.readTree(TestUtil.toJson(pp));
+  @Test
+  void createDebtPositionWithExplicitNullPaymentOptionMetadata_201() throws Exception {
+    PaymentPositionDTO pp = DebtPositionMock.getMetadataMock8();
 
-      ObjectNode transferNode =
-          (ObjectNode) root.path("paymentOption").get(0).path("transfer").get(0);
-      transferNode.putNull("transferMetadata");
+    ObjectMapper objectMapper = new ObjectMapper();
+    JsonNode root = objectMapper.readTree(TestUtil.toJson(pp));
 
-      mvc.perform(
-              post("/organizations/NULL_TRANSFER_METADATA_12345678901/debtpositions")
-                  .content(objectMapper.writeValueAsString(root))
-                  .contentType(MediaType.APPLICATION_JSON))
-          .andExpect(status().isCreated())
-          .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-    }
+    ObjectNode paymentOptionNode = (ObjectNode) root.path("paymentOption").get(0);
+    paymentOptionNode.putNull("paymentOptionMetadata");
+
+    mvc.perform(
+            post("/organizations/NULL_PO_METADATA_12345678901/debtpositions")
+                .content(objectMapper.writeValueAsString(root))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+  }
+
+  @Test
+  void createDebtPositionWithExplicitNullTransferMetadata_201() throws Exception {
+    PaymentPositionDTO pp = DebtPositionMock.getMetadataMock8();
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    JsonNode root = objectMapper.readTree(TestUtil.toJson(pp));
+
+    ObjectNode transferNode =
+        (ObjectNode) root.path("paymentOption").get(0).path("transfer").get(0);
+    transferNode.putNull("transferMetadata");
+
+    mvc.perform(
+            post("/organizations/NULL_TRANSFER_METADATA_12345678901/debtpositions")
+                .content(objectMapper.writeValueAsString(root))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+  }
 
 }

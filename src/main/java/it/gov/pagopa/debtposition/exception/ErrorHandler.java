@@ -1,9 +1,11 @@
 package it.gov.pagopa.debtposition.exception;
 
+import it.gov.pagopa.debtposition.model.OdPErrorResponse;
+import it.gov.pagopa.debtposition.model.ProblemJson;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -22,11 +24,9 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import it.gov.pagopa.debtposition.model.OdPErrorResponse;
-import it.gov.pagopa.debtposition.model.ProblemJson;
-import lombok.extern.slf4j.Slf4j;
-
-/** All Exceptions are handled by this class */
+/**
+ * All Exceptions are handled by this class
+ */
 @ControllerAdvice
 @Slf4j
 public class ErrorHandler extends ResponseEntityExceptionHandler {
@@ -40,9 +40,9 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
   /**
    * Handle if the input request is not a valid JSON
    *
-   * @param ex {@link HttpMessageNotReadableException} exception raised
+   * @param ex      {@link HttpMessageNotReadableException} exception raised
    * @param headers of the response
-   * @param status of the response
+   * @param status  of the response
    * @param request from frontend
    * @return a {@link ProblemJson} as response with the cause and with a 400 as HTTP status
    */
@@ -72,9 +72,9 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
   /**
    * Handle if missing some request parameters in the request
    *
-   * @param ex {@link MissingServletRequestParameterException} exception raised
+   * @param ex      {@link MissingServletRequestParameterException} exception raised
    * @param headers of the response
-   * @param status of the response
+   * @param status  of the response
    * @param request from frontend
    * @return a {@link ProblemJson} as response with the cause and with a 400 as HTTP status
    */
@@ -104,9 +104,9 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
   /**
    * Customize the response for TypeMismatchException.
    *
-   * @param ex the exception
+   * @param ex      the exception
    * @param headers the headers to be written to the response
-   * @param status the selected response status
+   * @param status  the selected response status
    * @param request the current request
    * @return a {@code ResponseEntity} instance
    */
@@ -145,9 +145,9 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
   /**
    * Handle if validation constraints are unsatisfied
    *
-   * @param ex {@link MethodArgumentNotValidException} exception raised
+   * @param ex      {@link MethodArgumentNotValidException} exception raised
    * @param headers of the response
-   * @param status of the response
+   * @param status  of the response
    * @param request from frontend
    * @return a {@link ProblemJson} as response with the cause and with a 400 as HTTP status
    */
@@ -201,8 +201,8 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
   }
 
   /**
-   * @param ex {@link DataIntegrityViolationException} exception raised when the SQL statement
-   *     cannot be executed
+   * @param ex      {@link DataIntegrityViolationException} exception raised when the SQL statement
+   *                cannot be executed
    * @param request from frontend
    * @return a {@link ProblemJson} as response with the cause and with an appropriated HTTP status
    */
@@ -240,8 +240,8 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
 
     // ODP branch
     if (isOdpEndpoint(request)) {
-    	OdPErrorResponse body = buildOdpBody(OdpProfile.SYSTEM, ex.getMessage()); // 500 / ODP-103
-    	return new ResponseEntity<>(body, OdpProfile.SYSTEM.http);
+      OdPErrorResponse body = buildOdpBody(OdpProfile.SYSTEM, ex.getMessage()); // 500 / ODP-103
+      return new ResponseEntity<>(body, OdpProfile.SYSTEM.http);
     }
 
     return new ResponseEntity<>(errorResponse, HttpStatus.valueOf(errorResponse.getStatus()));
@@ -250,60 +250,60 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
   /**
    * Handle if a {@link AppException} is raised
    *
-   * @param ex {@link AppException} exception raised
+   * @param ex      {@link AppException} exception raised
    * @param request from frontend
    * @return a {@link ProblemJson} as response with the cause and with an appropriated HTTP status
    */
   @ExceptionHandler({AppException.class})
   public ResponseEntity<Object> handleAppException(
-		  final AppException ex, final WebRequest request) {
-	  String appExMsg =
-			  (ex.getCause() != null)
-			  ? String.format(
-					  "App Exception raised: %s%nCause of the App Exception: %s",
-					  ex.getMessage(), ex.getCause())
-					  : String.format("App Exception raised: %s", ex.getMessage());
+      final AppException ex, final WebRequest request) {
+    String appExMsg =
+        (ex.getCause() != null)
+            ? String.format(
+            "App Exception raised: %s%nCause of the App Exception: %s",
+            ex.getMessage(), ex.getCause())
+            : String.format("App Exception raised: %s", ex.getMessage());
 
-	  if (infoExLogLevel.contains(ex.getHttpStatus())) {
-		  log.info(appExMsg);
-	  } else {
-		  log.warn(appExMsg);
-	  }
+    if (infoExLogLevel.contains(ex.getHttpStatus())) {
+      log.info(appExMsg);
+    } else {
+      log.warn(appExMsg);
+    }
 
-	  // ODP branch
-	  if (isOdpEndpoint(request)) {
-		  AppError err = ex.getAppError();
-		  AppError.OdpSpec spec = (err != null) ? err.odpSpec() : null;
+    // ODP branch
+    if (isOdpEndpoint(request)) {
+      AppError err = ex.getAppError();
+      AppError.OdpSpec spec = (err != null) ? err.odpSpec() : null;
 
-		  if (spec != null) {
-			  HttpStatus st;
-			  if (spec.httpStatusOverride != null) {
-				  st = spec.httpStatusOverride;
-			  } else if (err.getHttpStatus() != null) {
-				  st = err.getHttpStatus();
-			  } else {
-				  st = OdpProfile.SYSTEM.http;
-			  }
-			  OdPErrorResponse body = buildOdpBody(spec, st, ex.getMessage());
-			  return new ResponseEntity<>(body, st);
-		  }
+      if (spec != null) {
+        HttpStatus st;
+        if (spec.httpStatusOverride != null) {
+          st = spec.httpStatusOverride;
+        } else if (err.getHttpStatus() != null) {
+          st = err.getHttpStatus();
+        } else {
+          st = OdpProfile.SYSTEM.http;
+        }
+        OdPErrorResponse body = buildOdpBody(spec, st, ex.getMessage());
+        return new ResponseEntity<>(body, st);
+      }
 
-		  OdPErrorResponse body = buildOdpBody(OdpProfile.SYSTEM, ex.getMessage());
-		  return new ResponseEntity<>(body, OdpProfile.SYSTEM.http);
-	  }
+      OdPErrorResponse body = buildOdpBody(OdpProfile.SYSTEM, ex.getMessage());
+      return new ResponseEntity<>(body, OdpProfile.SYSTEM.http);
+    }
 
-	  ProblemJson errorResponse = ProblemJson.builder()
-			  .status(ex.getHttpStatus().value())
-			  .title(ex.getTitle())
-			  .detail(ex.getMessage())
-			  .build();
-	  return new ResponseEntity<>(errorResponse, ex.getHttpStatus());
+    ProblemJson errorResponse = ProblemJson.builder()
+        .status(ex.getHttpStatus().value())
+        .title(ex.getTitle())
+        .detail(ex.getMessage())
+        .build();
+    return new ResponseEntity<>(errorResponse, ex.getHttpStatus());
   }
 
   /**
    * Handle if a {@link Exception} is raised
    *
-   * @param ex {@link Exception} exception raised
+   * @param ex      {@link Exception} exception raised
    * @param request from frontend
    * @return a {@link ProblemJson} as response with the cause and with 500 as HTTP status
    */
@@ -341,19 +341,26 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
   // helper methods
   // ======================================================================
 
-  /** Detects whether current request must return ODP-shaped errors. */
+  /**
+   * Detects whether current request must return ODP-shaped errors.
+   */
   private boolean isOdpEndpoint(WebRequest request) {
-	final Pattern odpEndpointPath = Pattern.compile(".*/payment-options/organizations/[^/]+/notices/[^/]+/?$");
-	if (request instanceof ServletWebRequest swr) {
-		String uri = swr.getRequest().getRequestURI();
-		return uri != null && odpEndpointPath.matcher(uri).matches();
-	}
-	return false;
+    final Pattern odpEndpointPath = Pattern.compile(
+        ".*/payment-options/organizations/[^/]+/notices/[^/]+/?$");
+    if (request instanceof ServletWebRequest swr) {
+      String uri = swr.getRequest().getRequestURI();
+      return uri != null && odpEndpointPath.matcher(uri).matches();
+    }
+    return false;
   }
 
-  /** Converts AppError.OdpSpec to an OdpProfile */
+  /**
+   * Converts AppError.OdpSpec to an OdpProfile
+   */
   private OdpProfile toProfile(AppError.OdpSpec spec) {
-    if (spec == null) return OdpProfile.SYSTEM;
+    if (spec == null) {
+      return OdpProfile.SYSTEM;
+    }
 
     // First try by code
     for (OdpProfile p : OdpProfile.values()) {
@@ -371,7 +378,9 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
     return OdpProfile.SYSTEM;
   }
 
-  /** Builds an ODP ErrorResponse from a given profile and free text message. */
+  /**
+   * Builds an ODP ErrorResponse from a given profile and free text message.
+   */
   private OdPErrorResponse buildOdpBody(OdpProfile profile, String freeText) {
     long epochSec = java.time.Instant.now().getEpochSecond();
     String dateTime =
@@ -389,26 +398,29 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
         .errorMessage(errorMessage)
         .build();
   }
-  
-  /** Builds an ODP ErrorResponse from AppError.OdpSpec + the actual HttpStatus. */
-  private OdPErrorResponse buildOdpBody(AppError.OdpSpec spec, HttpStatus http, String detailOrMsg) {
-	  OdpProfile profile = toProfile(spec);
 
-	  long epochSec = java.time.Instant.now().getEpochSecond();
-	  String dateTime = java.time.LocalDateTime
-			  .ofEpochSecond(epochSec, 0, java.time.ZoneOffset.UTC)
-			  .toString();
+  /**
+   * Builds an ODP ErrorResponse from AppError.OdpSpec + the actual HttpStatus.
+   */
+  private OdPErrorResponse buildOdpBody(AppError.OdpSpec spec, HttpStatus http,
+      String detailOrMsg) {
+    OdpProfile profile = toProfile(spec);
 
-	  String errorMessage = profile.paa
-			  + ((detailOrMsg != null && !detailOrMsg.isBlank()) ? " " + detailOrMsg : "");
-	  
-	  return OdPErrorResponse.builder()
-			  .httpStatusCode(http.value())
-			  .httpStatusDescription(http.getReasonPhrase())
-			  .appErrorCode(profile.code) 
-			  .timestamp(epochSec)
-			  .dateTime(dateTime)
-			  .errorMessage(errorMessage)
-			  .build();
+    long epochSec = java.time.Instant.now().getEpochSecond();
+    String dateTime = java.time.LocalDateTime
+        .ofEpochSecond(epochSec, 0, java.time.ZoneOffset.UTC)
+        .toString();
+
+    String errorMessage = profile.paa
+        + ((detailOrMsg != null && !detailOrMsg.isBlank()) ? " " + detailOrMsg : "");
+
+    return OdPErrorResponse.builder()
+        .httpStatusCode(http.value())
+        .httpStatusDescription(http.getReasonPhrase())
+        .appErrorCode(profile.code)
+        .timestamp(epochSec)
+        .dateTime(dateTime)
+        .errorMessage(errorMessage)
+        .build();
   }
 }

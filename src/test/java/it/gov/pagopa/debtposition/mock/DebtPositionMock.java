@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DebtPositionMock {
+
   public static final PaymentPositionDTO getMockIUR() {
     return createPaymentPositionMockIUR();
   }

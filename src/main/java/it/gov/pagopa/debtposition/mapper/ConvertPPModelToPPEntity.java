@@ -1,16 +1,21 @@
 package it.gov.pagopa.debtposition.mapper;
 
+import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.Transfer;
 import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
-
-import it.gov.pagopa.debtposition.entity.*;
-import it.gov.pagopa.debtposition.model.pd.*;
+import it.gov.pagopa.debtposition.model.pd.PaymentOptionMetadataModel;
+import it.gov.pagopa.debtposition.model.pd.PaymentOptionModel;
+import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
+import it.gov.pagopa.debtposition.model.pd.TransferModel;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import jakarta.validation.constraints.NotNull;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
@@ -49,57 +54,58 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     destination.setOfficeName(source.getOfficeName());
     destination.setValidityDate(source.getValidityDate());
     destination.setSwitchToExpired(source.getSwitchToExpired());
-    
+
     mapAndUpdatePaymentOptions(source, destination);
   }
- 
+
   private void mapAndUpdatePaymentOptions(
-		  PaymentPositionModel source, PaymentPosition destination) {
+      PaymentPositionModel source, PaymentPosition destination) {
 
-	  Map<String, PaymentOption> managedOptionsByIuv =
-			  destination.getPaymentOption().stream()
-			  .collect(Collectors.toMap(PaymentOption::getIuv, po -> po));
+    Map<String, PaymentOption> managedOptionsByIuv =
+        destination.getPaymentOption().stream()
+            .collect(Collectors.toMap(PaymentOption::getIuv, po -> po));
 
-	  List<PaymentOptionModel> sourceOptions = source.getPaymentOption();
-	  List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
+    List<PaymentOptionModel> sourceOptions = source.getPaymentOption();
+    List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
 
-	  // V1: all installment of the same debt position plan share one UUID
-	  String sharedPlanId = null;
-	  boolean hasAnyPlan =
-			  sourceOptions != null && sourceOptions.stream().anyMatch(o -> Boolean.TRUE.equals(o.getIsPartialPayment()));
-	  if (hasAnyPlan) {
-		  sharedPlanId = findExistingSharedPlanUuid(managedOptionsByIuv.values())
-				  .orElseGet(() -> java.util.UUID.randomUUID().toString());
-	  }
+    // V1: all installment of the same debt position plan share one UUID
+    String sharedPlanId = null;
+    boolean hasAnyPlan =
+        sourceOptions != null && sourceOptions.stream()
+            .anyMatch(o -> Boolean.TRUE.equals(o.getIsPartialPayment()));
+    if (hasAnyPlan) {
+      sharedPlanId = findExistingSharedPlanUuid(managedOptionsByIuv.values())
+          .orElseGet(() -> java.util.UUID.randomUUID().toString());
+    }
 
-	  if (sourceOptions != null) {
-		  for (PaymentOptionModel sourceOpt : sourceOptions) {
-			  PaymentOption managedOpt = managedOptionsByIuv.get(sourceOpt.getIuv());
+    if (sourceOptions != null) {
+      for (PaymentOptionModel sourceOpt : sourceOptions) {
+        PaymentOption managedOpt = managedOptionsByIuv.get(sourceOpt.getIuv());
 
-			  if (managedOpt != null) {
-				  // UPDATE
-				  mapAndUpdateSinglePaymentOption(source, sourceOpt, managedOpt, sharedPlanId);
-				  optionsToRemove.remove(managedOpt);
-			  } else {
-				  // CREATE
-				  PaymentOption po = PaymentOption.builder().build();
-				  po.setSendSync(false);
-				  mapAndUpdateSinglePaymentOption(source, sourceOpt, po, sharedPlanId);
-				  destination.getPaymentOption().add(po);
-			  }
-		  }
-	  }
+        if (managedOpt != null) {
+          // UPDATE
+          mapAndUpdateSinglePaymentOption(source, sourceOpt, managedOpt, sharedPlanId);
+          optionsToRemove.remove(managedOpt);
+        } else {
+          // CREATE
+          PaymentOption po = PaymentOption.builder().build();
+          po.setSendSync(false);
+          mapAndUpdateSinglePaymentOption(source, sourceOpt, po, sharedPlanId);
+          destination.getPaymentOption().add(po);
+        }
+      }
+    }
 
-	  // DELETE orphans
-	  destination.getPaymentOption().removeAll(optionsToRemove);
+    // DELETE orphans
+    destination.getPaymentOption().removeAll(optionsToRemove);
   }
 
 
   private void mapAndUpdateSinglePaymentOption(
-		    PaymentPositionModel paymentPosition,
-		    PaymentOptionModel source,
-		    PaymentOption destination,
-		    String sharedPlanId) {
+      PaymentPositionModel paymentPosition,
+      PaymentOptionModel source,
+      PaymentOption destination,
+      String sharedPlanId) {
 
     destination.setAmount(source.getAmount());
     destination.setCity(paymentPosition.getCity());
@@ -122,17 +128,17 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     destination.setValidityDate(paymentPosition.getValidityDate());
     destination.setRetentionDate(source.getRetentionDate());
     destination.setStreetName(paymentPosition.getStreetName());
-    
+
     // Propagate the parent flag on the installment that will persist on DB
     destination.setSwitchToExpired(Boolean.TRUE.equals(paymentPosition.getSwitchToExpired()));
-    
+
     // Assign payment_plan_id (V1: shared among all isPartialPayment=true)
     if (Boolean.TRUE.equals(source.getIsPartialPayment())) {
-    	if (!java.util.Objects.equals(destination.getPaymentPlanId(), sharedPlanId)) {
-    		destination.setPaymentPlanId(sharedPlanId);
-    	}
+      if (!java.util.Objects.equals(destination.getPaymentPlanId(), sharedPlanId)) {
+        destination.setPaymentPlanId(sharedPlanId);
+      }
     } else {
-        destination.setPaymentPlanId(PaymentOption.SINGLE_OPTION);
+      destination.setPaymentPlanId(PaymentOption.SINGLE_OPTION);
     }
 
     mapAndUpdateTransfers(source, destination);
@@ -200,17 +206,17 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     // DELETE
     destination.getPaymentOptionMetadata().removeAll(metadataToRemove);
   }
-  
+
   private Optional<String> findExistingSharedPlanUuid(
-		  java.util.Collection<PaymentOption> managedOptions) {
-	  for (PaymentOption existing : managedOptions) {
-		  if (Boolean.TRUE.equals(existing.getIsPartialPayment())) {
-			  String pid = existing.getPaymentPlanId();
-			  if (pid != null && UtilityMapper.isUuid(pid)) {
-				  return Optional.of(pid);
-			  }
-		  }
-	  }
-	  return Optional.empty();
+      java.util.Collection<PaymentOption> managedOptions) {
+    for (PaymentOption existing : managedOptions) {
+      if (Boolean.TRUE.equals(existing.getIsPartialPayment())) {
+        String pid = existing.getPaymentPlanId();
+        if (pid != null && UtilityMapper.isUuid(pid)) {
+          return Optional.of(pid);
+        }
+      }
+    }
+    return Optional.empty();
   }
 }

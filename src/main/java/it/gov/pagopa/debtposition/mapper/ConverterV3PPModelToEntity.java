@@ -1,9 +1,12 @@
 package it.gov.pagopa.debtposition.mapper;
 
 import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.UNDEFINED_DEBTOR;
-import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 
-import it.gov.pagopa.debtposition.entity.*;
+import it.gov.pagopa.debtposition.entity.PaymentOption;
+import it.gov.pagopa.debtposition.entity.PaymentOptionMetadata;
+import it.gov.pagopa.debtposition.entity.PaymentPosition;
+import it.gov.pagopa.debtposition.entity.Transfer;
+import it.gov.pagopa.debtposition.mapper.utils.UtilityMapper;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
 import it.gov.pagopa.debtposition.model.pd.DebtorModel;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
@@ -12,7 +15,12 @@ import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
@@ -45,69 +53,70 @@ public class ConverterV3PPModelToEntity
 
     mapAndUpdateInstallments(source, destination);
   }
-  
+
   private void mapAndUpdateInstallments(
-		  PaymentPositionModelV3 source, PaymentPosition destination) {
-	  
-	  if (destination.getPaymentOption() == null) {
-		  destination.setPaymentOption(new ArrayList<>());
-	  }
+      PaymentPositionModelV3 source, PaymentPosition destination) {
 
-	  Map<String, PaymentOption> managedOptionsByIuv =
-			  destination.getPaymentOption().stream()
-			  .collect(Collectors.toMap(PaymentOption::getIuv, po -> po));
+    if (destination.getPaymentOption() == null) {
+      destination.setPaymentOption(new ArrayList<>());
+    }
 
-	  List<PaymentOptionModelV3> sourceOptions = source.getPaymentOption();
-	  List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
+    Map<String, PaymentOption> managedOptionsByIuv =
+        destination.getPaymentOption().stream()
+            .collect(Collectors.toMap(PaymentOption::getIuv, po -> po));
 
-	  if (sourceOptions != null) {
-		  for (PaymentOptionModelV3 sourceOption : sourceOptions) {
-			  boolean isPartial = sourceOption.getInstallments().size() > 1;
+    List<PaymentOptionModelV3> sourceOptions = source.getPaymentOption();
+    List<PaymentOption> optionsToRemove = new ArrayList<>(destination.getPaymentOption());
 
-			  // 1) Determine the planId for THIS paymentOption (plan):
-			  // - for single → null
-			  // - for plan → reuse an existing UUID among existing iuvs, otherwise generate a new one
-			  String planIdForThisOption = null;
-			  if (isPartial) {
-				  planIdForThisOption =
-						  findExistingPlanUUIDAmongManaged(sourceOption.getInstallments(), managedOptionsByIuv)
-						  .orElseGet(() -> java.util.UUID.randomUUID().toString());
-			  }
+    if (sourceOptions != null) {
+      for (PaymentOptionModelV3 sourceOption : sourceOptions) {
+        boolean isPartial = sourceOption.getInstallments().size() > 1;
 
-			  // 2) Cycle installments and map/create/update
-			  for (InstallmentModel installment : sourceOption.getInstallments()) {
-				  PaymentOption managedOpt = managedOptionsByIuv.get(installment.getIuv());
-				  if (managedOpt != null) {
-					  // UPDATE
-					  mapAndUpdateSinglePaymentOption(sourceOption, installment, managedOpt, planIdForThisOption);
-					  optionsToRemove.remove(managedOpt);
-				  } else {
-					  // CREATE
-					  PaymentOption po = PaymentOption.builder().build();
-					  po.setSendSync(false);
-					  mapAndUpdateSinglePaymentOption(sourceOption, installment, po, planIdForThisOption);
-					  destination.getPaymentOption().add(po);
-					  managedOptionsByIuv.put(po.getIuv(), po);
-				  }
-			  }
-		  }
-	  }
+        // 1) Determine the planId for THIS paymentOption (plan):
+        // - for single → null
+        // - for plan → reuse an existing UUID among existing iuvs, otherwise generate a new one
+        String planIdForThisOption = null;
+        if (isPartial) {
+          planIdForThisOption =
+              findExistingPlanUUIDAmongManaged(sourceOption.getInstallments(), managedOptionsByIuv)
+                  .orElseGet(() -> java.util.UUID.randomUUID().toString());
+        }
 
-	  // DELETE: remove the orphans
-	  destination.getPaymentOption().removeAll(optionsToRemove);
+        // 2) Cycle installments and map/create/update
+        for (InstallmentModel installment : sourceOption.getInstallments()) {
+          PaymentOption managedOpt = managedOptionsByIuv.get(installment.getIuv());
+          if (managedOpt != null) {
+            // UPDATE
+            mapAndUpdateSinglePaymentOption(sourceOption, installment, managedOpt,
+                planIdForThisOption);
+            optionsToRemove.remove(managedOpt);
+          } else {
+            // CREATE
+            PaymentOption po = PaymentOption.builder().build();
+            po.setSendSync(false);
+            mapAndUpdateSinglePaymentOption(sourceOption, installment, po, planIdForThisOption);
+            destination.getPaymentOption().add(po);
+            managedOptionsByIuv.put(po.getIuv(), po);
+          }
+        }
+      }
+    }
+
+    // DELETE: remove the orphans
+    destination.getPaymentOption().removeAll(optionsToRemove);
   }
 
 
   /**
-   * @param source the input model
+   * @param source            the input model
    * @param sourceInstallment the input installment
-   * @param destination the output entity
+   * @param destination       the output entity
    */
   private void mapAndUpdateSinglePaymentOption(
-		    PaymentOptionModelV3 source,
-		    InstallmentModel sourceInstallment,
-		    PaymentOption destination,
-		    String planIdForThisOption) {
+      PaymentOptionModelV3 source,
+      InstallmentModel sourceInstallment,
+      PaymentOption destination,
+      String planIdForThisOption) {
 
     DebtorModel debtor = source.getDebtor();
 
@@ -137,17 +146,17 @@ public class ConverterV3PPModelToEntity
     destination.setValidityDate(source.getValidityDate());
     destination.setRetentionDate(source.getRetentionDate());
     destination.setPaymentOptionDescription(source.getDescription());
-    
+
     destination.setSwitchToExpired(Boolean.TRUE.equals(source.getSwitchToExpired()));
-    
+
     // Assign paymentPlanId
     if (source.getInstallments().size() > 1) {
-    	// installment plan
-    	if (!Objects.equals(destination.getPaymentPlanId(), planIdForThisOption)) {
-    		destination.setPaymentPlanId(planIdForThisOption);
-    	}
+      // installment plan
+      if (!Objects.equals(destination.getPaymentPlanId(), planIdForThisOption)) {
+        destination.setPaymentPlanId(planIdForThisOption);
+      }
     } else {
-    	// single option
+      // single option
       destination.setPaymentPlanId(PaymentOption.SINGLE_OPTION);
     }
 
@@ -168,7 +177,7 @@ public class ConverterV3PPModelToEntity
       Transfer managedTx = managedTransfersById.get(sourceTx.getIdTransfer());
       if (managedTx != null) {
         // UPDATE
-    	  UtilityMapper.mapAndUpdateSingleTransfer(sourceTx, managedTx);
+        UtilityMapper.mapAndUpdateSingleTransfer(sourceTx, managedTx);
         transfersToRemove.remove(managedTx);
       } else {
         // CREATE
@@ -214,48 +223,50 @@ public class ConverterV3PPModelToEntity
     // DELETE the orphans metadata are removed
     destination.getPaymentOptionMetadata().removeAll(metadataToRemove);
   }
-  
-  private Optional<String> findExistingPlanUUIDAmongManaged(
-		  List<InstallmentModel> installments,
-		  Map<String, PaymentOption> managedByIuv) {
 
-	  for (InstallmentModel inst : installments) {
-		  PaymentOption existing = managedByIuv.get(inst.getIuv());
-		  if (existing != null) {
-			  String pid = existing.getPaymentPlanId();
-			  if (pid != null && UtilityMapper.isUuid(pid)) {
-				  return Optional.of(pid);
-			  }
-		  }
-	  }
-	  return Optional.empty();
+  private Optional<String> findExistingPlanUUIDAmongManaged(
+      List<InstallmentModel> installments,
+      Map<String, PaymentOption> managedByIuv) {
+
+    for (InstallmentModel inst : installments) {
+      PaymentOption existing = managedByIuv.get(inst.getIuv());
+      if (existing != null) {
+        String pid = existing.getPaymentPlanId();
+        if (pid != null && UtilityMapper.isUuid(pid)) {
+          return Optional.of(pid);
+        }
+      }
+    }
+    return Optional.empty();
   }
 
   private LocalDateTime getValidityDate(List<PaymentOptionModelV3> paymentOptions) {
-      if (paymentOptions == null) {
-          return null;
-      }
+    if (paymentOptions == null) {
+      return null;
+    }
 
-      LocalDateTime validityDate = null;
-      // Find the minimum validityDate
-      Optional<LocalDateTime> minValidityDate =
-              paymentOptions.stream()
-                      .map(PaymentOptionModelV3::getValidityDate)
-                      .filter(Objects::nonNull) // Ensure we only deal with non-null values
-                      .min(Comparator.naturalOrder());
+    LocalDateTime validityDate = null;
+    // Find the minimum validityDate
+    Optional<LocalDateTime> minValidityDate =
+        paymentOptions.stream()
+            .map(PaymentOptionModelV3::getValidityDate)
+            .filter(Objects::nonNull) // Ensure we only deal with non-null values
+            .min(Comparator.naturalOrder());
 
-      if (minValidityDate.isPresent()) validityDate = minValidityDate.get();
+    if (minValidityDate.isPresent()) {
+      validityDate = minValidityDate.get();
+    }
 
-      return validityDate;
+    return validityDate;
   }
 
   private boolean getSwitchToExpired(List<PaymentOptionModelV3> paymentOptions) {
-      if (paymentOptions == null) {
-          return false;
-      }
-      // Check if all PaymentOptionModelV3 has switchToExpired as true
-      return paymentOptions.stream()
-              .filter(Objects::nonNull)
-              .allMatch(PaymentOptionModelV3::getSwitchToExpired);
+    if (paymentOptions == null) {
+      return false;
+    }
+    // Check if all PaymentOptionModelV3 has switchToExpired as true
+    return paymentOptions.stream()
+        .filter(Objects::nonNull)
+        .allMatch(PaymentOptionModelV3::getSwitchToExpired);
   }
 }

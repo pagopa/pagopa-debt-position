@@ -1,7 +1,8 @@
 package it.gov.pagopa.debtposition.service.payments;
 
-import static it.gov.pagopa.debtposition.service.common.ExpirationHandler.*;
-import static it.gov.pagopa.debtposition.service.common.ValidityHandler.*;
+import static it.gov.pagopa.debtposition.service.common.ExpirationHandler.handlePaymentPositionExpirationLogic;
+import static it.gov.pagopa.debtposition.service.common.ExpirationHandler.isPastDueDate;
+import static it.gov.pagopa.debtposition.service.common.ValidityHandler.handlePaymentPositionValidTransition;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
@@ -15,7 +16,12 @@ import it.gov.pagopa.debtposition.model.payments.verify.response.VerifyPaymentOp
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -152,6 +158,7 @@ public class OptionsService {
   }
 
   private static class GroupStatus {
+
     final String status;
     final String reason;
 
@@ -178,7 +185,9 @@ public class OptionsService {
     }
 
     boolean allPaid = list.stream().allMatch(po -> po.getStatus() == PaymentOptionStatus.PO_PAID);
-    if (allPaid) return new GroupStatus("PO_PAID", "All installments have been paid");
+    if (allPaid) {
+      return new GroupStatus("PO_PAID", "All installments have been paid");
+    }
 
     boolean anyPaid = list.stream().anyMatch(po -> po.getStatus() == PaymentOptionStatus.PO_PAID);
     boolean anyUnpaid =
@@ -207,9 +216,13 @@ public class OptionsService {
 
   private String toInstallmentStatus(PaymentOption po, boolean ppInvalid, boolean forceInvalid) {
 
-    if (ppInvalid || forceInvalid) return "POI_INVALID";
+    if (ppInvalid || forceInvalid) {
+      return "POI_INVALID";
+    }
 
-    if (po.getStatus() == PaymentOptionStatus.PO_PAID) return "POI_PAID";
+    if (po.getStatus() == PaymentOptionStatus.PO_PAID) {
+      return "POI_PAID";
+    }
 
     LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
     boolean expired = isPastDueDate(po, now);
@@ -223,9 +236,15 @@ public class OptionsService {
   }
 
   private String toInstallmentReason(PaymentOption po, boolean ppInvalid, boolean forceInvalid) {
-    if (ppInvalid) return "Debt position is INVALID or EXPIRED";
-    if (forceInvalid) return "Not payable: another payment option has already been used";
-    if (po.getStatus() == PaymentOptionStatus.PO_PAID) return null;
+    if (ppInvalid) {
+      return "Debt position is INVALID or EXPIRED";
+    }
+    if (forceInvalid) {
+      return "Not payable: another payment option has already been used";
+    }
+    if (po.getStatus() == PaymentOptionStatus.PO_PAID) {
+      return null;
+    }
 
     LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
     boolean expired = isPastDueDate(po, now);
@@ -237,7 +256,9 @@ public class OptionsService {
     return null;
   }
 
-  /** flag to identify a payment in progress */
+  /**
+   * flag to identify a payment in progress
+   */
   private static boolean hasProgress(PaymentOption po) {
     return po.getStatus() == PaymentOptionStatus.PO_PAID
         || po.getStatus() == PaymentOptionStatus.PO_PARTIALLY_REPORTED
@@ -266,7 +287,9 @@ public class OptionsService {
         .orElse(null);
   }
 
-  /** Converts the group's POs to InstallmentSummaries sorted by dueDate. */
+  /**
+   * Converts the group's POs to InstallmentSummaries sorted by dueDate.
+   */
   private List<InstallmentSummary> toInstallmentSummaries(
       List<PaymentOption> list, boolean ppInvalidOrExpired, boolean forceInvalid) {
     return list.stream()

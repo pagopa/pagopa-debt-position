@@ -44,21 +44,21 @@ public class TestUtil {
   // Uses the passed mapper for serialization.
   public String toJson(Object object, ObjectMapper objectMapper) throws JsonProcessingException {
     return (objectMapper != null ? objectMapper : new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false))
+        .registerModule(new JavaTimeModule())
+        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false))
         .writeValueAsString(object);
   }
 
   // Uses the passed mapper for deserialization.
   public <T> T readObjectFromFile(String relativePath, Class<T> clazz, ObjectMapper objectMapper)
-		  throws IOException {
-	  ObjectMapper defaultOM =
-			  new ObjectMapper()
-			  .registerModule(new JavaTimeModule())
-			  .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-	  ClassLoader classLoader = TestUtil.class.getClassLoader();
-	  File file = new File(Objects.requireNonNull(classLoader.getResource(relativePath)).getPath());
-	  ObjectMapper om = (objectMapper != null ? objectMapper : defaultOM);
-	  return om.readValue(file, clazz);
+      throws IOException {
+    ObjectMapper defaultOM =
+        new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+    ClassLoader classLoader = TestUtil.class.getClassLoader();
+    File file = new File(Objects.requireNonNull(classLoader.getResource(relativePath)).getPath());
+    ObjectMapper om = (objectMapper != null ? objectMapper : defaultOM);
+    return om.readValue(file, clazz);
   }
 }

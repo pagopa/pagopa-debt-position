@@ -1,6 +1,10 @@
 package it.gov.pagopa.debtposition.service.payments;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -30,9 +34,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class OptionsServiceTest {
 
-  @Mock private PaymentOptionRepository paymentOptionRepository;
+  @Mock
+  private PaymentOptionRepository paymentOptionRepository;
 
-  @InjectMocks private OptionsService optionsService;
+  @InjectMocks
+  private OptionsService optionsService;
 
   private PaymentPosition mockPosition;
   private PaymentOption mockOptionSingle;
@@ -46,7 +52,8 @@ class OptionsServiceTest {
     mockPosition.setId(100L);
     mockPosition.setOrganizationFiscalCode(fiscalCode);
     mockPosition.setCompanyName("Company SpA");
-    mockPosition.setStatus(DebtPositionStatus.PUBLISHED); // Let's start with Published to test the transitions.
+    mockPosition.setStatus(
+        DebtPositionStatus.PUBLISHED); // Let's start with Published to test the transitions.
 
     mockOptionSingle = new PaymentOption();
     mockOptionSingle.setId(1L);
@@ -64,11 +71,12 @@ class OptionsServiceTest {
   void verifyPaymentOptions_HappyPath_SingleOption() {
     // Arrange
     when(paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
-            anyString(), anyString(), anyString(), anyString()))
-            .thenReturn(Optional.of(mockOptionSingle));
+        anyString(), anyString(), anyString(), anyString()))
+        .thenReturn(Optional.of(mockOptionSingle));
 
     // Act
-    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode, noticeNumber);
+    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode,
+        noticeNumber);
 
     // Assert
     assertNotNull(response);
@@ -85,13 +93,14 @@ class OptionsServiceTest {
   void verifyPaymentOptions_ShouldThrow_WhenNotFound() {
     // Arrange
     when(paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
-            anyString(), anyString(), anyString(), anyString()))
-            .thenReturn(Optional.empty());
+        anyString(), anyString(), anyString(), anyString()))
+        .thenReturn(Optional.empty());
 
     // Act & Assert
     AppException exception =
-            assertThrows(
-                    AppException.class, () -> optionsService.verifyPaymentOptions(fiscalCode, noticeNumber));
+        assertThrows(
+            AppException.class,
+            () -> optionsService.verifyPaymentOptions(fiscalCode, noticeNumber));
     assertEquals("Not found the payment option", exception.getTitle());
   }
 
@@ -100,11 +109,12 @@ class OptionsServiceTest {
     // Arrange
     mockPosition.setStatus(DebtPositionStatus.INVALID); // Canceled Position
     when(paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
-            anyString(), anyString(), anyString(), anyString()))
-            .thenReturn(Optional.of(mockOptionSingle));
+        anyString(), anyString(), anyString(), anyString()))
+        .thenReturn(Optional.of(mockOptionSingle));
 
     // Act
-    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode, noticeNumber);
+    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode,
+        noticeNumber);
 
     // Assert
     PaymentOptionGroup group = response.getPaymentOptions().get(0);
@@ -123,11 +133,12 @@ class OptionsServiceTest {
     mockOptionSingle.setSwitchToExpired(true);
 
     when(paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
-            anyString(), anyString(), anyString(), anyString()))
-            .thenReturn(Optional.of(mockOptionSingle));
+        anyString(), anyString(), anyString(), anyString()))
+        .thenReturn(Optional.of(mockOptionSingle));
 
     // Act
-    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode, noticeNumber);
+    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode,
+        noticeNumber);
 
     // Assert
     PaymentOptionGroup group = response.getPaymentOptions().get(0);
@@ -147,11 +158,12 @@ class OptionsServiceTest {
     mockOptionSingle.setSwitchToExpired(false); // Expires but can be paid
 
     when(paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
-            anyString(), anyString(), anyString(), anyString()))
-            .thenReturn(Optional.of(mockOptionSingle));
+        anyString(), anyString(), anyString(), anyString()))
+        .thenReturn(Optional.of(mockOptionSingle));
 
     // Act
-    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode, noticeNumber);
+    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode,
+        noticeNumber);
 
     // Assert
     PaymentOptionGroup group = response.getPaymentOptions().get(0);
@@ -162,8 +174,10 @@ class OptionsServiceTest {
   void verifyPaymentOptions_ActivePlanLogic_ShouldInvalidateSingle_WhenInstallmentPaid() {
     // Arrange: Let's create a scenario with 1 Single Option and 2 Installments
     PaymentOption optionFull = createOption(2L, "FULL", false, PaymentOptionStatus.PO_UNPAID, null);
-    PaymentOption install1 = createOption(3L, "PLAN_A", true, PaymentOptionStatus.PO_PAID, "PLAN_1"); // PAGATA
-    PaymentOption install2 = createOption(4L, "PLAN_A", true, PaymentOptionStatus.PO_UNPAID, "PLAN_1");
+    PaymentOption install1 = createOption(3L, "PLAN_A", true, PaymentOptionStatus.PO_PAID,
+        "PLAN_1"); // PAGATA
+    PaymentOption install2 = createOption(4L, "PLAN_A", true, PaymentOptionStatus.PO_UNPAID,
+        "PLAN_1");
 
     // Add all to position
     mockPosition.setPaymentOption(Arrays.asList(optionFull, install1, install2));
@@ -171,11 +185,12 @@ class OptionsServiceTest {
 
     // The user searches for the unpaid installment (installment 2)
     when(paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
-            anyString(), anyString(), anyString(), anyString()))
-            .thenReturn(Optional.of(install2));
+        anyString(), anyString(), anyString(), anyString()))
+        .thenReturn(Optional.of(install2));
 
     // Act
-    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode, noticeNumber);
+    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode,
+        noticeNumber);
 
     // Assert
     // We expect two groups: one for FULL (Single) and one for PLAN_
@@ -184,28 +199,31 @@ class OptionsServiceTest {
 
     // 1. Check Group “FULL” (Single) -> Must be PO_INVALID because there is an active plan
     PaymentOptionGroup fullGroup = groups.stream()
-            .filter(g -> g.getNumberOfInstallments() == 1)
-            .findFirst().orElseThrow();
+        .filter(g -> g.getNumberOfInstallments() == 1)
+        .findFirst().orElseThrow();
     assertEquals("PO_INVALID", fullGroup.getStatus());
-    assertTrue(fullGroup.getStatusReason().contains("another payment option has already been used"));
+    assertTrue(
+        fullGroup.getStatusReason().contains("another payment option has already been used"));
 
     // 2. Check “PLAN” Group -> Must be PO_PARTIALLY_PAID (one installment paid, one unpaid)
     PaymentOptionGroup planGroup = groups.stream()
-            .filter(g -> g.getNumberOfInstallments() == 2)
-            .findFirst().orElseThrow();
+        .filter(g -> g.getNumberOfInstallments() == 2)
+        .findFirst().orElseThrow();
     assertEquals("PO_PARTIALLY_PAID", planGroup.getStatus());
   }
 
   @Test
   void verifyPaymentOptions_AllCCPCheck() {
     // Arrange
-    mockOptionSingle.setTransfer(Collections.singletonList(createTransfer("IT0000000000000000000000001")));
+    mockOptionSingle.setTransfer(
+        Collections.singletonList(createTransfer("IT0000000000000000000000001")));
     when(paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
-            anyString(), anyString(), anyString(), anyString()))
-            .thenReturn(Optional.of(mockOptionSingle));
+        anyString(), anyString(), anyString(), anyString()))
+        .thenReturn(Optional.of(mockOptionSingle));
 
     // Act
-    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode, noticeNumber);
+    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode,
+        noticeNumber);
 
     // Assert
     assertTrue(response.getPaymentOptions().get(0).getAllCCP());
@@ -216,11 +234,12 @@ class OptionsServiceTest {
     // Arrange
     mockOptionSingle.setTransfer(Collections.singletonList(createTransfer(null))); // IBAN Mancante
     when(paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
-            anyString(), anyString(), anyString(), anyString()))
-            .thenReturn(Optional.of(mockOptionSingle));
+        anyString(), anyString(), anyString(), anyString()))
+        .thenReturn(Optional.of(mockOptionSingle));
 
     // Act
-    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode, noticeNumber);
+    VerifyPaymentOptionsResponse response = optionsService.verifyPaymentOptions(fiscalCode,
+        noticeNumber);
 
     // Assert
     assertFalse(response.getPaymentOptions().get(0).getAllCCP());
@@ -228,7 +247,8 @@ class OptionsServiceTest {
 
   // --- Helper Methods ---
 
-  private PaymentOption createOption(Long id, String nav, boolean isPartial, PaymentOptionStatus status, String planId) {
+  private PaymentOption createOption(Long id, String nav, boolean isPartial,
+      PaymentOptionStatus status, String planId) {
     PaymentOption po = new PaymentOption();
     po.setId(id);
     po.setNav(nav);

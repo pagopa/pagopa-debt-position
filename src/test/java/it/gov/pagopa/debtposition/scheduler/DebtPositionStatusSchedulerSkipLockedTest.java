@@ -154,40 +154,40 @@ class DebtPositionStatusSchedulerSkipLockedTest {
     Long paymentPositionId =
         jdbcTemplate.queryForObject(
             """
-            INSERT INTO apd.payment_position (
-              id,
-              iupd,
-              organization_fiscal_code,
-              type,
-              fiscal_code,
-              full_name,
-              company_name,
-              inserted_date,
-              last_updated_date,
-              min_due_date,
-              max_due_date,
-              publish_date,
-              validity_date,
-              status
-            )
-            VALUES (
-              nextval('apd.payment_pos_seq'),
-              ?,
-              ?,
-              'G',
-              'FISCALCODE',
-              'Full Name',
-              'Company Name',
-              ?,
-              ?,
-              ?,
-              ?,
-              ?,
-              ?,
-              'PUBLISHED'
-            )
-            RETURNING id
-            """,
+                INSERT INTO apd.payment_position (
+                  id,
+                  iupd,
+                  organization_fiscal_code,
+                  type,
+                  fiscal_code,
+                  full_name,
+                  company_name,
+                  inserted_date,
+                  last_updated_date,
+                  min_due_date,
+                  max_due_date,
+                  publish_date,
+                  validity_date,
+                  status
+                )
+                VALUES (
+                  nextval('apd.payment_pos_seq'),
+                  ?,
+                  ?,
+                  'G',
+                  'FISCALCODE',
+                  'Full Name',
+                  'Company Name',
+                  ?,
+                  ?,
+                  ?,
+                  ?,
+                  ?,
+                  ?,
+                  'PUBLISHED'
+                )
+                RETURNING id
+                """,
             Long.class,
             iupd,
             organizationFiscalCode,
@@ -200,49 +200,49 @@ class DebtPositionStatusSchedulerSkipLockedTest {
 
     jdbcTemplate.update(
         """
-        INSERT INTO apd.payment_option (
-          id,
-          payment_position_id,
-          iuv,
-          nav,
-          organization_fiscal_code,
-          amount,
-          description,
-          is_partial_payment,
-          due_date,
-          retention_date,
-          inserted_date,
-          last_updated_date,
-          fee,
-          notification_fee,
-          fiscal_code,
-          full_name,
-          status,
-          type,
-          validity_date
-        )
-        VALUES (
-          nextval('apd.payment_opt_seq'),
-          ?,
-          ?,
-          ?,
-          ?,
-          1000,
-          'payment option description',
-          false,
-          ?,
-          ?,
-          ?,
-          ?,
-          0,
-          0,
-          'FISCALCODE',
-          'Full Name',
-          'PO_UNPAID',
-          'G',
-          ?
-        )
-        """,
+            INSERT INTO apd.payment_option (
+              id,
+              payment_position_id,
+              iuv,
+              nav,
+              organization_fiscal_code,
+              amount,
+              description,
+              is_partial_payment,
+              due_date,
+              retention_date,
+              inserted_date,
+              last_updated_date,
+              fee,
+              notification_fee,
+              fiscal_code,
+              full_name,
+              status,
+              type,
+              validity_date
+            )
+            VALUES (
+              nextval('apd.payment_opt_seq'),
+              ?,
+              ?,
+              ?,
+              ?,
+              1000,
+              'payment option description',
+              false,
+              ?,
+              ?,
+              ?,
+              ?,
+              0,
+              0,
+              'FISCALCODE',
+              'Full Name',
+              'PO_UNPAID',
+              'G',
+              ?
+            )
+            """,
         paymentPositionId,
         iuv,
         nav,
@@ -262,11 +262,11 @@ class DebtPositionStatusSchedulerSkipLockedTest {
     try (PreparedStatement statement =
         connection.prepareStatement(
             """
-            SELECT id
-            FROM apd.payment_position
-            WHERE id = ?
-            FOR UPDATE
-            """)) {
+                SELECT id
+                FROM apd.payment_position
+                WHERE id = ?
+                FOR UPDATE
+                """)) {
 
       statement.setLong(1, paymentPositionId);
 
@@ -280,10 +280,10 @@ class DebtPositionStatusSchedulerSkipLockedTest {
   private String getStatus(Long paymentPositionId) {
     return jdbcTemplate.queryForObject(
         """
-        SELECT status
-        FROM apd.payment_position
-        WHERE id = ?
-        """,
+            SELECT status
+            FROM apd.payment_position
+            WHERE id = ?
+            """,
         String.class,
         paymentPositionId);
   }

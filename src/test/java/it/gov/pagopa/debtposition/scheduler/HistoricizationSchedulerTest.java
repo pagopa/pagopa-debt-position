@@ -20,11 +20,11 @@ import it.gov.pagopa.debtposition.config.SchedulerConfig;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,7 +36,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 @SpringJUnitConfig(SchedulerConfig.class)
 class HistoricizationSchedulerTest {
 
-  @MockitoBean PaymentPositionRepository paymentPositionRepository;
+  @MockitoBean
+  PaymentPositionRepository paymentPositionRepository;
 
   // azure storage params
   @Value("${azure.archive.storage.connection}")

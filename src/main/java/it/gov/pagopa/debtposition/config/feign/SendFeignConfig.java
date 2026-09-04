@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class SendFeignConfig {
+
   static final String HEADER_REQUEST_ID = "X-Request-Id";
   static final String HEADER_SUBSCRIBTION_KEY = "x-api-key";
   private static final String SEND_SUBKEY_PLACEHOLDER = "${send.subscription-key}";
@@ -22,8 +23,8 @@ public class SendFeignConfig {
   @Bean
   public RequestInterceptor requestInterceptor() {
     return requestTemplate ->
-            requestTemplate
-                    .header(HEADER_REQUEST_ID, MDC.get("requestId"))
-                    .header(HEADER_SUBSCRIBTION_KEY, subscriptionKey);
+        requestTemplate
+            .header(HEADER_REQUEST_ID, MDC.get("requestId"))
+            .header(HEADER_SUBSCRIBTION_KEY, subscriptionKey);
   }
 }

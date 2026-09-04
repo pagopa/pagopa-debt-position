@@ -1,16 +1,6 @@
 package it.gov.pagopa.debtposition.mapper;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import org.modelmapper.Converter;
-import org.modelmapper.spi.MappingContext;
+import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.groupByPlanId;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
@@ -21,8 +11,16 @@ import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
 import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
-
-import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.groupByPlanId;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import org.modelmapper.Converter;
+import org.modelmapper.spi.MappingContext;
 
 public class ConverterV3PPEntityToModel
     implements Converter<PaymentPosition, PaymentPositionModelV3> {
@@ -47,7 +45,8 @@ public class ConverterV3PPEntityToModel
     // Partitioning the payment options into partial and unique POs
     Map<Boolean, List<PaymentOption>> partitionedPO =
         paymentOptions.stream()
-            .collect(Collectors.partitioningBy(po -> Boolean.TRUE.equals(po.getIsPartialPayment())));
+            .collect(
+                Collectors.partitioningBy(po -> Boolean.TRUE.equals(po.getIsPartialPayment())));
     // Extracting the partial and unique POs
     List<PaymentOption> partialPO = partitionedPO.get(true);
     List<PaymentOption> uniquePO = partitionedPO.get(false);
@@ -65,9 +64,9 @@ public class ConverterV3PPEntityToModel
     }
 
     if (uniquePO != null && !uniquePO.isEmpty()) {
-    	paymentOptionsModelV3.addAll(uniquePO.stream()
-    			.map(this::convertUniquePO)
-    			.toList());
+      paymentOptionsModelV3.addAll(uniquePO.stream()
+          .map(this::convertUniquePO)
+          .toList());
     }
 
     // Sort options by minimum dueDate between the installments
@@ -84,10 +83,10 @@ public class ConverterV3PPEntityToModel
 
   // 1 unique PO -> 1 PaymentOption composed by 1 installment
   private PaymentOptionModelV3 convertUniquePO(PaymentOption po) {
-	  PaymentOptionModelV3 pov3 = convert(po);
-	  List<InstallmentModel> installments = Collections.singletonList(convertInstallment(po));
-	  pov3.setInstallments(installments);
-	  return pov3;
+    PaymentOptionModelV3 pov3 = convert(po);
+    List<InstallmentModel> installments = Collections.singletonList(convertInstallment(po));
+    pov3.setInstallments(installments);
+    return pov3;
   }
 
   // N partial PO -> 1 PaymentOption composed by N installment
@@ -96,11 +95,11 @@ public class ConverterV3PPEntityToModel
     PaymentOptionModelV3 pov3 = convert(partialPOs.get(0));
     // Set installments
     List<InstallmentModel> installments =
-    		partialPOs.stream()
-    	    .sorted(Comparator.comparing(PaymentOption::getDueDate,
-    	        Comparator.nullsLast(Comparator.naturalOrder())))
-    	    .map(this::convertInstallment)
-    	    .toList();
+        partialPOs.stream()
+            .sorted(Comparator.comparing(PaymentOption::getDueDate,
+                Comparator.nullsLast(Comparator.naturalOrder())))
+            .map(this::convertInstallment)
+            .toList();
     pov3.setInstallments(installments);
     return pov3;
   }
@@ -146,12 +145,14 @@ public class ConverterV3PPEntityToModel
   }
 
   private LocalDateTime minDueDateOrNull(PaymentOptionModelV3 p) {
-	  var inst = p.getInstallments();
-	  if (inst == null || inst.isEmpty()) return null;
-	  return inst.stream()
-			  .map(InstallmentModel::getDueDate)
-			  .filter(Objects::nonNull)
-			  .min(LocalDateTime::compareTo)
-			  .orElse(null);
+    var inst = p.getInstallments();
+    if (inst == null || inst.isEmpty()) {
+      return null;
+    }
+    return inst.stream()
+        .map(InstallmentModel::getDueDate)
+        .filter(Objects::nonNull)
+        .min(LocalDateTime::compareTo)
+        .orElse(null);
   }
 }

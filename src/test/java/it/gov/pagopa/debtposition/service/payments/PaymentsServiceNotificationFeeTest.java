@@ -21,29 +21,36 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.modelmapper.ModelMapper;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentsServiceNotificationFeeTest {
 
-  @Mock private PaymentPositionRepository paymentPositionRepository;
+  @Mock
+  private PaymentPositionRepository paymentPositionRepository;
 
-  @Mock private PaymentOptionRepository paymentOptionRepository;
+  @Mock
+  private PaymentOptionRepository paymentOptionRepository;
 
-  @Mock private ModelMapper modelMapper;
+  @Mock
+  private ModelMapper modelMapper;
 
-  @Mock private NodeClient nodeClient;
+  @Mock
+  private NodeClient nodeClient;
 
-  @Mock private SendClient sendClient;
+  @Mock
+  private SendClient sendClient;
 
-  @Mock private NotificationFeeUpdateService notificationFeeUpdateService;
-  
-  @Mock private PaymentOptionLookupService paymentOptionLookupService;
+  @Mock
+  private NotificationFeeUpdateService notificationFeeUpdateService;
+
+  @Mock
+  private PaymentOptionLookupService paymentOptionLookupService;
 
   private PaymentsService paymentsService;
 

@@ -345,7 +345,7 @@ public class PaymentsService {
   /**
    * find the primary transfer of the payment option
    *
-   * @param paymentOption the entity of the payment option
+   * @param paymentOption          the entity of the payment option
    * @param organizationFiscalCode EC
    * @return the transfer of the primary Creditor Institution
    */
@@ -504,9 +504,15 @@ public class PaymentsService {
         }
       }
 
-      if (groupHasAnyProgress) anyPlanInProgress = true;
-      if (allPaidOrReported) anyPlanFullyPaid = true;
-      if (allReported) anyPlanFullyReported = true;
+      if (groupHasAnyProgress) {
+        anyPlanInProgress = true;
+      }
+      if (allPaidOrReported) {
+        anyPlanFullyPaid = true;
+      }
+      if (allReported) {
+        anyPlanFullyReported = true;
+      }
     }
 
     if (anyPlanFullyReported) {
@@ -518,7 +524,9 @@ public class PaymentsService {
     }
   }
 
-  /** Grouping key: PLAN:<paymentPlanId> or SINGLE:<id> */
+  /**
+   * Grouping key: PLAN:<paymentPlanId> or SINGLE:<id>
+   */
   private static String groupKeyOf(PaymentOption po) {
     if (Boolean.TRUE.equals(po.getIsPartialPayment())) {
       return PLAN + po.getPaymentPlanId();

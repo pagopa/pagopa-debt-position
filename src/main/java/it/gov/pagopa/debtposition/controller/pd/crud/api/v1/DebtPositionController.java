@@ -26,6 +26,8 @@ import it.gov.pagopa.debtposition.service.pd.crud.PaymentPositionCRUDService;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.Constants;
 import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -33,8 +35,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -91,9 +91,11 @@ public class DebtPositionController implements IDebtPositionController {
             debtPosition, organizationFiscalCode, toPublish, segCodes, CREATE_ACTION);
 
     if (null != createdPaymentPositionModel) {
-      PaymentPositionModel paymentPosition = ObjectMapperUtils.map(createdPaymentPositionModel, PaymentPositionModel.class);
+      PaymentPositionModel paymentPosition = ObjectMapperUtils.map(createdPaymentPositionModel,
+          PaymentPositionModel.class);
       // set the switchToExpired flag in the response
-      boolean allMatchSwitchToExpired = UtilityMapper.hasAllMarkedExpired(createdPaymentPositionModel.getPaymentOption());
+      boolean allMatchSwitchToExpired = UtilityMapper.hasAllMarkedExpired(
+          createdPaymentPositionModel.getPaymentOption());
       paymentPosition.setSwitchToExpired(allMatchSwitchToExpired);
       // set validityDate as min of the validityDate on the PaymentOption
       LocalDateTime minValidityDate = CommonUtil.resolveMinValidity(createdPaymentPositionModel);
@@ -147,9 +149,11 @@ public class DebtPositionController implements IDebtPositionController {
                     .dueDateFrom(dueDateFrom != null ? dueDateFrom.atStartOfDay() : null)
                     .dueDateTo(dueDateTo != null ? dueDateTo.atTime(LocalTime.MAX) : null)
                     .paymentDateFrom(
-                        paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : paymentDateTimeFrom)
+                        paymentDateFrom != null ? paymentDateFrom.atStartOfDay()
+                            : paymentDateTimeFrom)
                     .paymentDateTo(
-                        paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : paymentDateTimeTo)
+                        paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX)
+                            : paymentDateTimeTo)
                     .status(status)
                     .segregationCodes(segCodesList)
                     .serviceType(serviceType)
@@ -157,19 +161,21 @@ public class DebtPositionController implements IDebtPositionController {
             .order(Order.builder().orderBy(orderBy).ordering(ordering).build())
             .build();
 
-    Page<PaymentPosition> pagePP = paymentPositionService.getOrganizationDebtPositions(limit, page, filterOrder);
+    Page<PaymentPosition> pagePP = paymentPositionService.getOrganizationDebtPositions(limit, page,
+        filterOrder);
 
     List<PaymentPosition> entities = pagePP.getContent();
     List<PaymentPositionModelBaseResponse> ppResponseList = entities.stream()
-            .filter(entity -> !isMultiInstallments(entity))
-            .map(entity -> {
-                PaymentPositionModelBaseResponse dto = ObjectMapperUtils.map(entity, PaymentPositionModelBaseResponse.class);
-                LocalDateTime minValidity = CommonUtil.resolveMinValidity(entity);
-                dto.setValidityDate(minValidity);
+        .filter(entity -> !isMultiInstallments(entity))
+        .map(entity -> {
+          PaymentPositionModelBaseResponse dto = ObjectMapperUtils.map(entity,
+              PaymentPositionModelBaseResponse.class);
+          LocalDateTime minValidity = CommonUtil.resolveMinValidity(entity);
+          dto.setValidityDate(minValidity);
 
-                return dto;
-            })
-            .collect(Collectors.toList());
+          return dto;
+        })
+        .collect(Collectors.toList());
 
     return new ResponseEntity<>(
         PaymentPositionsInfo.builder()
@@ -200,15 +206,16 @@ public class DebtPositionController implements IDebtPositionController {
             : null;
     // flip entity to model
     PaymentPosition entity =
-    	    paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segCodes);
+        paymentPositionService.getDebtPositionByIUPD(organizationFiscalCode, iupd, segCodes);
 
     if (isMultiInstallments(entity)) {
-        // Return 422 because MULTI_INSTALLMENTS debt-position is not readable by v1 API.
-        throw new AppException(AppError.V1_UNPROCESSABLE_ENTITY_MULTI_INSTALLMENTS, organizationFiscalCode, iupd);
+      // Return 422 because MULTI_INSTALLMENTS debt-position is not readable by v1 API.
+      throw new AppException(AppError.V1_UNPROCESSABLE_ENTITY_MULTI_INSTALLMENTS,
+          organizationFiscalCode, iupd);
     }
 
     PaymentPositionModelBaseResponse paymentPositionResponse =
-            ObjectMapperUtils.map(entity, PaymentPositionModelBaseResponse.class);
+        ObjectMapperUtils.map(entity, PaymentPositionModelBaseResponse.class);
 
     // set validityDate as min of the validityDate on the PaymentOption
     paymentPositionResponse.setValidityDate(CommonUtil.resolveMinValidity(entity));
@@ -236,7 +243,8 @@ public class DebtPositionController implements IDebtPositionController {
             ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
             : null;
     paymentPositionService.delete(organizationFiscalCode, iupd, segCodes);
-    return new ResponseEntity<>(CommonUtil.escapeString(Constants.DEBT_POSITION_DELETED), HttpStatus.OK);
+    return new ResponseEntity<>(CommonUtil.escapeString(Constants.DEBT_POSITION_DELETED),
+        HttpStatus.OK);
   }
 
   @Override
@@ -260,14 +268,16 @@ public class DebtPositionController implements IDebtPositionController {
                 CommonUtil.sanitize(iupd))));
     // verifico la congruenza di dati tra lo iupd path variable e lo iupd nel request body
     if (!paymentPositionModel.getIupd().equals(iupd)) {
-        log.debug("{} : {}", String.format(
-                LOG_BASE_HEADER_INFO,
-                "PUT",
-                "updateDebtPosition",
-                String.format(
-                        LOG_BASE_PARAMS_DETAIL,
-                        "[" + CommonUtil.sanitize(organizationFiscalCode) + "]",
-                        "[" + CommonUtil.sanitize(iupd) + "]")), String.format(IUPD_VALIDATION_ERROR, CommonUtil.sanitize(iupd), CommonUtil.sanitize(paymentPositionModel.getIupd())));
+      log.debug("{} : {}", String.format(
+              LOG_BASE_HEADER_INFO,
+              "PUT",
+              "updateDebtPosition",
+              String.format(
+                  LOG_BASE_PARAMS_DETAIL,
+                  "[" + CommonUtil.sanitize(organizationFiscalCode) + "]",
+                  "[" + CommonUtil.sanitize(iupd) + "]")),
+          String.format(IUPD_VALIDATION_ERROR, CommonUtil.sanitize(iupd),
+              CommonUtil.sanitize(paymentPositionModel.getIupd())));
 
       throw new AppException(
           AppError.DEBT_POSITION_REQUEST_DATA_ERROR,
@@ -283,10 +293,12 @@ public class DebtPositionController implements IDebtPositionController {
             paymentPositionModel, organizationFiscalCode, toPublish, segCodes, UPDATE_ACTION);
 
     if (null != updatedPaymentPositionModel) {
-      PaymentPositionModel paymentPosition = ObjectMapperUtils.map(updatedPaymentPositionModel, PaymentPositionModel.class);
+      PaymentPositionModel paymentPosition = ObjectMapperUtils.map(updatedPaymentPositionModel,
+          PaymentPositionModel.class);
       // set the switchToExpired flag in the response
-      boolean allMatchSwitchToExpired = UtilityMapper.hasAllMarkedExpired(updatedPaymentPositionModel.getPaymentOption());
-      paymentPosition.setSwitchToExpired(allMatchSwitchToExpired );
+      boolean allMatchSwitchToExpired = UtilityMapper.hasAllMarkedExpired(
+          updatedPaymentPositionModel.getPaymentOption());
+      paymentPosition.setSwitchToExpired(allMatchSwitchToExpired);
       // set validityDate as min of the validityDate on the PaymentOption
       LocalDateTime minValidityDate = CommonUtil.resolveMinValidity(updatedPaymentPositionModel);
       paymentPosition.setValidityDate(minValidityDate);
@@ -412,13 +424,13 @@ public class DebtPositionController implements IDebtPositionController {
             : null;
     // flip entity to model
     PaymentPosition entity =
-    	    paymentPositionService.getDebtPositionByIUV(organizationFiscalCode, iuv, segCodes);
+        paymentPositionService.getDebtPositionByIUV(organizationFiscalCode, iuv, segCodes);
 
-    	PaymentPositionModelBaseResponse paymentPositionResponse =
-    	    ObjectMapperUtils.map(entity, PaymentPositionModelBaseResponse.class);
+    PaymentPositionModelBaseResponse paymentPositionResponse =
+        ObjectMapperUtils.map(entity, PaymentPositionModelBaseResponse.class);
 
-    	// set validityDate as min of the validityDate on the PaymentOption
-    	paymentPositionResponse.setValidityDate(CommonUtil.resolveMinValidity(entity));
+    // set validityDate as min of the validityDate on the PaymentOption
+    paymentPositionResponse.setValidityDate(CommonUtil.resolveMinValidity(entity));
 
     return new ResponseEntity<>(paymentPositionResponse, HttpStatus.OK);
   }

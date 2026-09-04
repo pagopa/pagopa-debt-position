@@ -1,18 +1,20 @@
 package it.gov.pagopa.debtposition.util;
 
+import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.groupByPlanId;
+
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.model.PageInfo;
 import it.gov.pagopa.debtposition.model.filterandorder.FilterAndOrder;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
 import it.gov.pagopa.debtposition.model.filterandorder.OrderType;
-
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
-
 import lombok.experimental.UtilityClass;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -20,8 +22,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-
-import static it.gov.pagopa.debtposition.mapper.utils.UtilityMapper.groupByPlanId;
 
 @UtilityClass
 public class CommonUtil {
@@ -66,9 +66,9 @@ public class CommonUtil {
   }
 
   /**
-   * @param list the page content
-   * @param pageNumber the page number
-   * @param pageSize the number of items per page
+   * @param list         the page content
+   * @param pageNumber   the page number
+   * @param pageSize     the number of items per page
    * @param totalRecords the total amount of items available
    * @return return the page info
    */
@@ -87,12 +87,12 @@ public class CommonUtil {
   }
 
   /**
-   *
    * @param nav
    * @param segregationCodes
    * @return
    */
-  public static boolean isAuthorizedOnNavBySegregationCode(String nav, List<String> segregationCodes) {
+  public static boolean isAuthorizedOnNavBySegregationCode(String nav,
+      List<String> segregationCodes) {
     // It is enough to check only one NAV of the payment position. Here it is assumed that they all
     // have the same segregation code.
     String paymentPositionSegregationCode = nav.substring(1, 3);
@@ -109,7 +109,8 @@ public class CommonUtil {
 
   public static String sanitize(String input) {
     // Remove line-breaks, tabs, and anything non-alphanumeric/hyphen/asterisk
-    return input == null ? null : input.replaceAll("[\\n\\r\\t]", "_").replaceAll("[^A-Za-z0-9\\-\\*]", "");
+    return input == null ? null
+        : input.replaceAll("[\\n\\r\\t]", "_").replaceAll("[^A-Za-z0-9\\-\\*]", "");
   }
 
   /**
@@ -120,12 +121,12 @@ public class CommonUtil {
    */
   @SuppressWarnings("java:S2245") // used only for testing/non-sensitive data
   public static String randomDigits(int len) {
-	  ThreadLocalRandom rnd = ThreadLocalRandom.current();
-	  char[] out = new char[len];
-	  for (int i = 0; i < len; i++) {
-		  out[i] = (char) ('0' + rnd.nextInt(10));
-	  }
-	  return new String(out);
+    ThreadLocalRandom rnd = ThreadLocalRandom.current();
+    char[] out = new char[len];
+    for (int i = 0; i < len; i++) {
+      out[i] = (char) ('0' + rnd.nextInt(10));
+    }
+    return new String(out);
   }
 
   /**
@@ -135,29 +136,29 @@ public class CommonUtil {
    * @return the escaped string with "\"" prefix and suffix
    */
   public static String escapeString(String value) {
-      return "\"" + value + "\"";
+    return "\"" + value + "\"";
   }
-  
+
   /**
-   * Resolves the minimum validity date among the payment options of a payment
-   * position
-   * 
+   * Resolves the minimum validity date among the payment options of a payment position
+   *
    * @param pp the payment position
    * @return the minimum validity date, or null if no validity date is set
    */
   public static LocalDateTime resolveMinValidity(PaymentPosition pp) {
-	  if (pp == null || pp.getPaymentOption() == null || pp.getPaymentOption().isEmpty()) {
-		  return null;
-	  }
-	  return pp.getPaymentOption().stream()
-			  .map(PaymentOption::getValidityDate)
-			  .filter(Objects::nonNull)
-			  .min(Comparator.naturalOrder())
-			  .orElse(null);
+    if (pp == null || pp.getPaymentOption() == null || pp.getPaymentOption().isEmpty()) {
+      return null;
+    }
+    return pp.getPaymentOption().stream()
+        .map(PaymentOption::getValidityDate)
+        .filter(Objects::nonNull)
+        .min(Comparator.naturalOrder())
+        .orElse(null);
   }
 
   public static boolean isMultiInstallments(PaymentPosition pp) {
-      List<PaymentOption> paymentOptions = pp.getPaymentOption().stream().filter(PaymentOption::getIsPartialPayment).toList();
-      return groupByPlanId(paymentOptions).size() > 1;
+    List<PaymentOption> paymentOptions = pp.getPaymentOption().stream()
+        .filter(PaymentOption::getIsPartialPayment).toList();
+    return groupByPlanId(paymentOptions).size() > 1;
   }
 }

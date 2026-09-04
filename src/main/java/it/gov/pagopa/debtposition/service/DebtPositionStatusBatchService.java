@@ -1,13 +1,11 @@
 package it.gov.pagopa.debtposition.service;
 
+import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import java.time.LocalDateTime;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
-import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 
 @Service
 public class DebtPositionStatusBatchService {

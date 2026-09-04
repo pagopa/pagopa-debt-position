@@ -4,13 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.hibernate.annotations.BatchSize;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,11 +21,21 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import org.hibernate.annotations.BatchSize;
 
 /**
  * @author aacitelli
- *     <p>JPA Entity
+ * <p>JPA Entity
  */
 @Builder(toBuilder = true)
 @Getter
@@ -43,20 +46,23 @@ import lombok.*;
 @Table(
     name = "payment_option",
     uniqueConstraints = {
-      @UniqueConstraint(
-          name = "UniquePaymentOpt",
-          columnNames = {"iuv", "organization_fiscal_code"}),
-      @UniqueConstraint(
-          name = "UniquePaymentOptNav",
-          columnNames = {"nav", "organization_fiscal_code"}),
+        @UniqueConstraint(
+            name = "UniquePaymentOpt",
+            columnNames = {"iuv", "organization_fiscal_code"}),
+        @UniqueConstraint(
+            name = "UniquePaymentOptNav",
+            columnNames = {"nav", "organization_fiscal_code"}),
     })
 @JsonIdentityInfo(
-	    generator = ObjectIdGenerators.PropertyGenerator.class,
-	    property = "id")
+    generator = ObjectIdGenerators.PropertyGenerator.class,
+    property = "id")
 public class PaymentOption implements Serializable {
+
   public static final String SINGLE_OPTION = "SINGLE_OPTION";
 
-  /** generated serialVersionUID */
+  /**
+   * generated serialVersionUID
+   */
   private static final long serialVersionUID = -2800191377721368418L;
 
   @Id
@@ -64,29 +70,32 @@ public class PaymentOption implements Serializable {
   @SequenceGenerator(name = "PAYMENT_OPT_SEQ", sequenceName = "PAYMENT_OPT_SEQ", allocationSize = 1)
   private Long id;
 
-  @NotNull private String nav;
+  @NotNull
+  private String nav;
 
-  @NotNull private String iuv;
+  @NotNull
+  private String iuv;
 
   @NotNull
   @Column(name = "organization_fiscal_code")
   private String organizationFiscalCode;
-  
+
   // payment_plan_id (null for single, '<uuid>' for installment plans)
   @Column(name = "payment_plan_id", length = 50)
   private String paymentPlanId;
 
-  @NotNull private long amount;
-  
+  @NotNull
+  private long amount;
+
   private String description;
-  
+
   @Column(name = "payment_option_description")
   private String paymentOptionDescription;
 
   @NotNull
   @Column(name = "is_partial_payment")
   private Boolean isPartialPayment;
-  
+
   @Column(name = "validity_date")
   private LocalDateTime validityDate;
 
@@ -170,23 +179,32 @@ public class PaymentOption implements Serializable {
   @ToString.Exclude
   private String postalCode;
 
-  @ToString.Exclude private String city;
-  @ToString.Exclude private String province;
-  @ToString.Exclude private String region;
-  @ToString.Exclude private String country;
-  @ToString.Exclude private String email;
-  @ToString.Exclude private String phone;
+  @ToString.Exclude
+  private String city;
+  @ToString.Exclude
+  private String province;
+  @ToString.Exclude
+  private String region;
+  @ToString.Exclude
+  private String country;
+  @ToString.Exclude
+  private String email;
+  @ToString.Exclude
+  private String phone;
 
   @Column(name = "send_sync")
-  @Builder.Default private Boolean sendSync = false;
-  
+  @Builder.Default
+  private Boolean sendSync = false;
+
   @Builder.Default
   @Column(name = "switch_to_expired", columnDefinition = "boolean DEFAULT false")
   private Boolean switchToExpired = false;
 
   // flag that identifies if the payment option has a payment in progress (false = no payment in
   // progress)
-  @Builder.Default @Transient private boolean paymentInProgress = false;
+  @Builder.Default
+  @Transient
+  private boolean paymentInProgress = false;
 
   @ManyToOne(
       targetEntity = PaymentPosition.class,

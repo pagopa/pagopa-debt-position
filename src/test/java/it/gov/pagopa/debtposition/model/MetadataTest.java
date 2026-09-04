@@ -3,12 +3,11 @@ package it.gov.pagopa.debtposition.model;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.debtposition.model.pd.PaymentOptionModel;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import it.gov.pagopa.debtposition.model.v3.InstallmentModel;
 import org.junit.jupiter.api.Test;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 class MetadataTest {
 
@@ -41,7 +40,7 @@ class MetadataTest {
     assertNotNull(model.getInstallmentMetadata());
     assertTrue(model.getInstallmentMetadata().isEmpty());
   }
-  
+
   @Test
   void paymentOptionModel_deserializeExplicitNullPaymentOptionMetadata_setsEmptyList()
       throws Exception {
@@ -50,10 +49,10 @@ class MetadataTest {
     PaymentOptionModel model =
         objectMapper.readValue(
             """
-            {
-              "paymentOptionMetadata": null
-            }
-            """,
+                {
+                  "paymentOptionMetadata": null
+                }
+                """,
             PaymentOptionModel.class);
 
     assertNotNull(model.getPaymentOptionMetadata());
@@ -68,10 +67,10 @@ class MetadataTest {
     TransferModel model =
         objectMapper.readValue(
             """
-            {
-              "transferMetadata": null
-            }
-            """,
+                {
+                  "transferMetadata": null
+                }
+                """,
             TransferModel.class);
 
     assertNotNull(model.getTransferMetadata());
@@ -86,10 +85,10 @@ class MetadataTest {
     InstallmentModel model =
         objectMapper.readValue(
             """
-            {
-              "installmentMetadata": null
-            }
-            """,
+                {
+                  "installmentMetadata": null
+                }
+                """,
             InstallmentModel.class);
 
     assertNotNull(model.getInstallmentMetadata());

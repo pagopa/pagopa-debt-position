@@ -33,7 +33,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 @Slf4j
 class ConcurrentReportedPaymentsControllerTest {
 
-  @Autowired private MockMvc mvc;
+  @Autowired
+  private MockMvc mvc;
 
   @Value("${nav.aux.digit}")
   private String auxDigit = "3";
@@ -51,8 +52,8 @@ class ConcurrentReportedPaymentsControllerTest {
     // effettuo la notifica di pagamento
     mvc.perform(
             post("/organizations/12345678901999999/paymentoptions/"
-                    + auxDigit
-                    + "1234568/pay")
+                + auxDigit
+                + "1234568/pay")
                 .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());

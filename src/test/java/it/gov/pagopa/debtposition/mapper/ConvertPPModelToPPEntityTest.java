@@ -14,7 +14,6 @@ import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.modelmapper.spi.MappingContext;
@@ -221,7 +220,7 @@ class ConvertPPModelToPPEntityTest {
 
     assertEquals(1, entity.getPaymentOption().get(0).getTransfer().size());
   }
-  
+
   @Test
   void paymentPlanId_singleIsNull_andPlanGetsSharedUuid() {
     // Arrange: 1 single option and 2 installment options
@@ -263,7 +262,7 @@ class ConvertPPModelToPPEntityTest {
     assertEquals(pidA1, pidA2);
     assertDoesNotThrow(() -> UUID.fromString(pidA1));
   }
-  
+
   @Test
   void shouldClearExistingStampFieldsWhenSourceStampIsNull() {
     PaymentPosition destination = new PaymentPosition();
@@ -307,7 +306,8 @@ class ConvertPPModelToPPEntityTest {
 
     ConvertPPModelToPPEntity mapper = new ConvertPPModelToPPEntity();
 
-    MappingContext<PaymentPositionModel, PaymentPosition> context = Mockito.mock(MappingContext.class);
+    MappingContext<PaymentPositionModel, PaymentPosition> context = Mockito.mock(
+        MappingContext.class);
     Mockito.when(context.getSource()).thenReturn(source);
     Mockito.when(context.getDestination()).thenReturn(destination);
 
@@ -341,12 +341,12 @@ class ConvertPPModelToPPEntityTest {
     model.setType(Type.F);
     return model;
   }
-  
+
   private static PaymentOption findByIuv(PaymentPosition pp, String iuv) {
-	  return pp.getPaymentOption().stream()
-			  .filter(po -> iuv.equals(po.getIuv()))
-			  .findFirst()
-			  .orElseThrow(() -> new AssertionError("PaymentOption con iuv " + iuv + " non trovata"));
+    return pp.getPaymentOption().stream()
+        .filter(po -> iuv.equals(po.getIuv()))
+        .findFirst()
+        .orElseThrow(() -> new AssertionError("PaymentOption con iuv " + iuv + " non trovata"));
   }
 
 }

@@ -2,7 +2,6 @@ package it.gov.pagopa.debtposition.entity;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import java.io.Serializable;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,6 +15,7 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,9 +24,9 @@ import lombok.NoArgsConstructor;
 @Table(
     name = "transfer_metadata",
     uniqueConstraints = {
-      @UniqueConstraint(
-          name = "UniqueTransferMetadata",
-          columnNames = {"\"key\"", "transfer_id"})
+        @UniqueConstraint(
+            name = "UniqueTransferMetadata",
+            columnNames = {"\"key\"", "transfer_id"})
     })
 @Data
 @NoArgsConstructor
@@ -38,7 +38,9 @@ import lombok.NoArgsConstructor;
     property = "@transferMetadataId")
 public class TransferMetadata implements Serializable {
 
-  /** generated serialVersionUID */
+  /**
+   * generated serialVersionUID
+   */
   private static final long serialVersionUID = -385216542341056723L;
 
   @Id

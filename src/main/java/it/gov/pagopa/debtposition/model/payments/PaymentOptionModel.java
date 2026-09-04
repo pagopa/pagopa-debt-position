@@ -1,11 +1,10 @@
 package it.gov.pagopa.debtposition.model.payments;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.io.Serializable;
-import java.time.LocalDateTime;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-
+import java.io.Serializable;
+import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,7 +13,9 @@ import lombok.NoArgsConstructor;
 @Schema(name = "PayPaymentOptionModel")
 public class PaymentOptionModel implements Serializable {
 
-  /** generated serialVersionUID */
+  /**
+   * generated serialVersionUID
+   */
   private static final long serialVersionUID = 661757182968854177L;
 
   private LocalDateTime paymentDate;

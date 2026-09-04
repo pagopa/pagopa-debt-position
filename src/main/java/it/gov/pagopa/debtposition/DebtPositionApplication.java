@@ -2,7 +2,12 @@ package it.gov.pagopa.debtposition;
 
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
-import it.gov.pagopa.debtposition.mapper.*;
+import it.gov.pagopa.debtposition.mapper.ConvertPOEntityToPOWithDebtor;
+import it.gov.pagopa.debtposition.mapper.ConvertPOEntityToPaidPOModel;
+import it.gov.pagopa.debtposition.mapper.ConvertPPModelToPPEntity;
+import it.gov.pagopa.debtposition.mapper.ConverterV3PPEntityToModel;
+import it.gov.pagopa.debtposition.mapper.ConverterV3PPEntityToModelResponse;
+import it.gov.pagopa.debtposition.mapper.ConverterV3PPModelToEntity;
 import it.gov.pagopa.debtposition.model.payments.response.PaidPaymentOptionModel;
 import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebtorInfoModelResponse;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;

@@ -16,7 +16,6 @@ import it.gov.pagopa.debtposition.model.v3.PaymentOptionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import java.util.Collections;
 import java.util.UUID;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.modelmapper.spi.MappingContext;
@@ -245,7 +244,7 @@ class ConverterV3PPModelToEntityTest {
     assertEquals(
         1, entity.getPaymentOption().get(0).getTransfer().get(0).getTransferMetadata().size());
   }
-  
+
   @Test
   void paymentPlanId_singleVsPlan() {
     // Arrange: 1 single option + 1 plan with 2 installments
@@ -274,7 +273,8 @@ class ConverterV3PPModelToEntityTest {
     model.setPaymentOption(java.util.List.of(single, plan));
 
     ConverterV3PPModelToEntity mapper = new ConverterV3PPModelToEntity();
-    MappingContext<PaymentPositionModelV3, PaymentPosition> ctx = Mockito.mock(MappingContext.class);
+    MappingContext<PaymentPositionModelV3, PaymentPosition> ctx = Mockito.mock(
+        MappingContext.class);
     Mockito.when(ctx.getSource()).thenReturn(model);
     Mockito.when(ctx.getDestination()).thenReturn(null);
 
@@ -301,20 +301,29 @@ class ConverterV3PPModelToEntityTest {
 
     PaymentOptionModelV3 planA = new PaymentOptionModelV3();
     planA.setSwitchToExpired(true);
-    InstallmentModel a1 = new InstallmentModel(); a1.setIuv("A1"); a1.setAmount(1L);
-    InstallmentModel a2 = new InstallmentModel(); a2.setIuv("A2"); a2.setAmount(1L);
+    InstallmentModel a1 = new InstallmentModel();
+    a1.setIuv("A1");
+    a1.setAmount(1L);
+    InstallmentModel a2 = new InstallmentModel();
+    a2.setIuv("A2");
+    a2.setAmount(1L);
     planA.setInstallments(java.util.List.of(a1, a2));
 
     PaymentOptionModelV3 planB = new PaymentOptionModelV3();
     planB.setSwitchToExpired(true);
-    InstallmentModel b1 = new InstallmentModel(); b1.setIuv("B1"); b1.setAmount(1L);
-    InstallmentModel b2 = new InstallmentModel(); b2.setIuv("B2"); b2.setAmount(1L);
+    InstallmentModel b1 = new InstallmentModel();
+    b1.setIuv("B1");
+    b1.setAmount(1L);
+    InstallmentModel b2 = new InstallmentModel();
+    b2.setIuv("B2");
+    b2.setAmount(1L);
     planB.setInstallments(java.util.List.of(b1, b2));
 
     model.setPaymentOption(java.util.List.of(planA, planB));
 
     ConverterV3PPModelToEntity mapper = new ConverterV3PPModelToEntity();
-    MappingContext<PaymentPositionModelV3, PaymentPosition> ctx = Mockito.mock(MappingContext.class);
+    MappingContext<PaymentPositionModelV3, PaymentPosition> ctx = Mockito.mock(
+        MappingContext.class);
     Mockito.when(ctx.getSource()).thenReturn(model);
     Mockito.when(ctx.getDestination()).thenReturn(null);
 
@@ -326,7 +335,8 @@ class ConverterV3PPModelToEntityTest {
     String pidB = findByIuv(entity, "B1").getPaymentPlanId();
     String pidB2 = findByIuv(entity, "B2").getPaymentPlanId();
 
-    assertNotNull(pidA); assertNotNull(pidB);
+    assertNotNull(pidA);
+    assertNotNull(pidB);
     assertEquals(pidA, pidA2);
     assertEquals(pidB, pidB2);
     assertNotEquals(pidA, pidB);
@@ -346,13 +356,18 @@ class ConverterV3PPModelToEntityTest {
 
     PaymentOptionModelV3 plan = new PaymentOptionModelV3();
     plan.setSwitchToExpired(true);
-    InstallmentModel x1 = new InstallmentModel(); x1.setIuv("X1"); x1.setAmount(1L); // existing
-    InstallmentModel x2 = new InstallmentModel(); x2.setIuv("X2"); x2.setAmount(1L); // new
+    InstallmentModel x1 = new InstallmentModel();
+    x1.setIuv("X1");
+    x1.setAmount(1L); // existing
+    InstallmentModel x2 = new InstallmentModel();
+    x2.setIuv("X2");
+    x2.setAmount(1L); // new
     plan.setInstallments(java.util.List.of(x1, x2));
     model.setPaymentOption(java.util.List.of(plan));
 
     ConverterV3PPModelToEntity mapper = new ConverterV3PPModelToEntity();
-    MappingContext<PaymentPositionModelV3, PaymentPosition> ctx = Mockito.mock(MappingContext.class);
+    MappingContext<PaymentPositionModelV3, PaymentPosition> ctx = Mockito.mock(
+        MappingContext.class);
     Mockito.when(ctx.getSource()).thenReturn(model);
     Mockito.when(ctx.getDestination()).thenReturn(existing); // <- simulate UPDATE
 
@@ -364,7 +379,7 @@ class ConverterV3PPModelToEntityTest {
     assertNotNull(pidX1);
     assertEquals(pidX1, pidX2);
   }
-  
+
   @Test
   void shouldClearExistingStampFieldsWhenSourceStampIsNull() {
     PaymentPosition destination = new PaymentPosition();
@@ -410,7 +425,8 @@ class ConverterV3PPModelToEntityTest {
 
     ConverterV3PPModelToEntity mapper = new ConverterV3PPModelToEntity();
 
-    MappingContext<PaymentPositionModelV3, PaymentPosition> context = Mockito.mock(MappingContext.class);
+    MappingContext<PaymentPositionModelV3, PaymentPosition> context = Mockito.mock(
+        MappingContext.class);
     Mockito.when(context.getSource()).thenReturn(source);
     Mockito.when(context.getDestination()).thenReturn(destination);
 
@@ -424,13 +440,13 @@ class ConverterV3PPModelToEntityTest {
     assertNull(updatedTransfer.getStampType());
     assertNull(updatedTransfer.getProvincialResidence());
   }
-  
-//--- UTILITY: Find PaymentOption for IUV in the mapped entity ---
- private static PaymentOption findByIuv(PaymentPosition pp, String iuv) {
-   return pp.getPaymentOption()
-       .stream()
-       .filter(po -> iuv.equals(po.getIuv()))
-       .findFirst()
-       .orElseThrow(() -> new AssertionError("PaymentOption with iuv " + iuv + " not found"));
- }
+
+  //--- UTILITY: Find PaymentOption for IUV in the mapped entity ---
+  private static PaymentOption findByIuv(PaymentPosition pp, String iuv) {
+    return pp.getPaymentOption()
+        .stream()
+        .filter(po -> iuv.equals(po.getIuv()))
+        .findFirst()
+        .orElseThrow(() -> new AssertionError("PaymentOption with iuv " + iuv + " not found"));
+  }
 }

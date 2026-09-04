@@ -24,8 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class PaymentPositionActionsService {
 
-  @Autowired private PaymentPositionCRUDService paymentPositionCRUDService;
-  @Autowired private PaymentPositionRepository paymentPositionRepository;
+  @Autowired
+  private PaymentPositionCRUDService paymentPositionCRUDService;
+  @Autowired
+  private PaymentPositionRepository paymentPositionRepository;
 
   public PaymentPosition publish(
       @NotBlank String organizationFiscalCode,
@@ -67,7 +69,7 @@ public class PaymentPositionActionsService {
    * This method handles validation of the current status of the payment position (verifying that is
    * publishable) and calling the publication process.
    *
-   * @param ppToPublish PaymentPosition that the user wants to publish
+   * @param ppToPublish     PaymentPosition that the user wants to publish
    * @param publishDatetime LocalDateTime when the publish API or workflow is called
    */
   private void publishFlowHandler(PaymentPosition ppToPublish, LocalDateTime publishDatetime) {

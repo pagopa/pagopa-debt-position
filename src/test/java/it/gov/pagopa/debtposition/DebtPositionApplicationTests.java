@@ -23,18 +23,18 @@ class DebtPositionApplicationTests {
 
   @Test
   void applicationContextTest() {
-    DebtPositionApplication.main(new String[] {});
+    DebtPositionApplication.main(new String[]{});
     assertTrue(true); // it just tests that an error has not occurred
   }
 
   @Test
   void constructorIsPrivate()
       throws NoSuchMethodException,
-          IllegalAccessException,
-          InvocationTargetException,
-          InstantiationException,
-          NoSuchFieldException,
-          SecurityException {
+      IllegalAccessException,
+      InvocationTargetException,
+      InstantiationException,
+      NoSuchFieldException,
+      SecurityException {
     Constructor<Constants> constructor = Constants.class.getDeclaredConstructor();
     assertTrue(Modifier.isPrivate(constructor.getModifiers()));
     assertNotNull(Constants.class.getDeclaredField("HEADER_REQUEST_ID"));

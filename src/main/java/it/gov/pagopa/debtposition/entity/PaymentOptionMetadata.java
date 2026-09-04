@@ -2,7 +2,6 @@ package it.gov.pagopa.debtposition.entity;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import java.io.Serializable;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,6 +15,7 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,9 +24,9 @@ import lombok.NoArgsConstructor;
 @Table(
     name = "payment_option_metadata",
     uniqueConstraints = {
-      @UniqueConstraint(
-          name = "UniquePaymentOptMetadata",
-          columnNames = {"\"key\"", "payment_option_id"})
+        @UniqueConstraint(
+            name = "UniquePaymentOptMetadata",
+            columnNames = {"\"key\"", "payment_option_id"})
     })
 @Data
 @NoArgsConstructor
@@ -34,11 +34,13 @@ import lombok.NoArgsConstructor;
 @Entity
 @Builder
 @JsonIdentityInfo(
-	    generator = ObjectIdGenerators.PropertyGenerator.class,
-	    property = "id")
+    generator = ObjectIdGenerators.PropertyGenerator.class,
+    property = "id")
 public class PaymentOptionMetadata implements Serializable {
 
-  /** generated serialVersionUID */
+  /**
+   * generated serialVersionUID
+   */
   private static final long serialVersionUID = -9014105148787448923L;
 
   @Id

@@ -1,6 +1,9 @@
 package it.gov.pagopa.debtposition.exception;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -19,7 +22,8 @@ class AppExceptionTest {
   @Test
   void constructor_statusTitleMessageWithCause_setsCauseAndNullAppError() {
     RuntimeException cause = new RuntimeException("root");
-    AppException ex = new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "error title", "error msg", cause);
+    AppException ex = new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "error title", "error msg",
+        cause);
     assertEquals("error title", ex.getTitle());
     assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, ex.getHttpStatus());
     assertEquals("error msg", ex.getMessage());
@@ -37,13 +41,13 @@ class AppExceptionTest {
     assertEquals(err.title, ex.getTitle());
     assertTrue(
         ex.getMessage().contains("77777777777")
-        && ex.getMessage().contains("ABC123"),
+            && ex.getMessage().contains("ABC123"),
         "Message should contain formatted placeholders");
   }
 
   @Test
   void constructor_appErrorWithNullDetails_fallbackDoesNotThrow_andMessageIsGraceful() {
-	// AppError with details = null (UNPROCESSABLE_ENTITY)
+    // AppError with details = null (UNPROCESSABLE_ENTITY)
     AppError err = AppError.UNPROCESSABLE_ENTITY; // details = null
     AppException exNoArgs = new AppException(err /* no args */);
     assertEquals(err, exNoArgs.getAppError());

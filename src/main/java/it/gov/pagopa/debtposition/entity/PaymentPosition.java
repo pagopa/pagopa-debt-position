@@ -5,17 +5,35 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
+import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * @author aacitelli
- *     <p>JPA Entity
+ * <p>JPA Entity
  */
 @Builder(toBuilder = true)
 @Getter
@@ -26,16 +44,18 @@ import lombok.*;
 @Table(
     name = "payment_position",
     uniqueConstraints = {
-      @UniqueConstraint(
-          name = "UniquePaymentPos",
-          columnNames = {"iupd", "organization_fiscal_code"})
+        @UniqueConstraint(
+            name = "UniquePaymentPos",
+            columnNames = {"iupd", "organization_fiscal_code"})
     })
 @JsonIdentityInfo(
     generator = ObjectIdGenerators.IntSequenceGenerator.class,
     property = "@paymentPositionId")
 public class PaymentPosition implements Serializable {
 
-  /** generated serialVersionUID */
+  /**
+   * generated serialVersionUID
+   */
   private static final long serialVersionUID = -8637183968286214359L;
 
   @Id
@@ -43,7 +63,8 @@ public class PaymentPosition implements Serializable {
   @SequenceGenerator(name = "PAYMENT_POS_SEQ", sequenceName = "PAYMENT_POS_SEQ", allocationSize = 1)
   private Long id;
 
-  @NotNull private String iupd;
+  @NotNull
+  private String iupd;
 
   @NotNull
   @Column(name = "organization_fiscal_code")
@@ -84,8 +105,10 @@ public class PaymentPosition implements Serializable {
   private String province;
   private String region;
   private String country;
-  @ToString.Exclude private String email;
-  @ToString.Exclude private String phone;
+  @ToString.Exclude
+  private String email;
+  @ToString.Exclude
+  private String phone;
 
   @Builder.Default
   @Enumerated(EnumType.STRING)

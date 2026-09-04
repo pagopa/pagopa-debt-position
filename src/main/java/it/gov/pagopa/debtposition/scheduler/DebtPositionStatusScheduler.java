@@ -4,20 +4,18 @@ import static it.gov.pagopa.debtposition.util.SchedulerUtils.updateMDCError;
 import static it.gov.pagopa.debtposition.util.SchedulerUtils.updateMDCForEndExecution;
 import static it.gov.pagopa.debtposition.util.SchedulerUtils.updateMDCForStartExecution;
 
+import it.gov.pagopa.debtposition.service.DebtPositionStatusBatchService;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.function.BiFunction;
-
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import it.gov.pagopa.debtposition.service.DebtPositionStatusBatchService;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
 @Component
 @Slf4j
@@ -116,7 +114,7 @@ public class DebtPositionStatusScheduler {
 
       totalAffectedRows += affectedRows;
 
-     
+
       /*
        * Logging:
        * - the first processed batch
@@ -127,16 +125,16 @@ public class DebtPositionStatusScheduler {
        * With batchSize=500, logs are emitted at batchIndex 1, 500, 1000, etc.
        */
       if (affectedRows > 0
-    		  && (batchIndex == 1
-    		  || batchIndex % batchSize == 0
-    		  || affectedRows < batchSize)) {
-    	  log.info(
-    			  "{} - processed batchIndex={}, batchSize={}, affectedRows={}, totalAffectedRows={}",
-    			  operationName,
-    			  batchIndex,
-    			  batchSize,
-    			  affectedRows,
-    			  totalAffectedRows);
+          && (batchIndex == 1
+          || batchIndex % batchSize == 0
+          || affectedRows < batchSize)) {
+        log.info(
+            "{} - processed batchIndex={}, batchSize={}, affectedRows={}, totalAffectedRows={}",
+            operationName,
+            batchIndex,
+            batchSize,
+            affectedRows,
+            totalAffectedRows);
       }
 
     } while (affectedRows == batchSize);
@@ -159,8 +157,8 @@ public class DebtPositionStatusScheduler {
 
   private static class BatchJobException extends RuntimeException {
 
-	private static final long serialVersionUID = -4793571952750239643L;
-	private final String operationName;
+    private static final long serialVersionUID = -4793571952750239643L;
+    private final String operationName;
     private final int batchIndex;
     private final int batchSize;
     private final int totalAffectedRows;

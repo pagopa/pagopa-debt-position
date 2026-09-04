@@ -1,6 +1,8 @@
 package it.gov.pagopa.debtposition.scheduler;
 
-import static it.gov.pagopa.debtposition.util.SchedulerUtils.*;
+import static it.gov.pagopa.debtposition.util.SchedulerUtils.updateMDCError;
+import static it.gov.pagopa.debtposition.util.SchedulerUtils.updateMDCForEndExecution;
+import static it.gov.pagopa.debtposition.util.SchedulerUtils.updateMDCForStartExecution;
 
 import com.azure.data.tables.TableClient;
 import com.azure.data.tables.TableClientBuilder;
@@ -14,6 +16,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceUnit;
+import jakarta.transaction.Transactional;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.time.LocalDateTime;
@@ -24,10 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.PersistenceUnit;
-import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +51,8 @@ public class HistoricizationScheduler {
       "[OperationType: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
   private static final String CRON_JOB = "CRON JOB";
   private static final String METHOD = "manageDebtPositionsToHistoricize";
-  @Getter private Thread threadOfExecution;
+  @Getter
+  private Thread threadOfExecution;
 
   // extraction params
   @Value(
@@ -82,8 +85,10 @@ public class HistoricizationScheduler {
   @Value("${azure.archive.storage.batch.operation.size:100}")
   private short maxBatchOperationSize;
 
-  @Autowired private PaymentPositionRepository paymentPositionRepository;
-  @PersistenceUnit private EntityManagerFactory emf;
+  @Autowired
+  private PaymentPositionRepository paymentPositionRepository;
+  @PersistenceUnit
+  private EntityManagerFactory emf;
 
   public HistoricizationScheduler(PaymentPositionRepository paymentPositionRepository) {
     super();
@@ -106,7 +111,7 @@ public class HistoricizationScheduler {
               METHOD,
               "Running at "
                   + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                      .format(LocalDateTime.now())));
+                  .format(LocalDateTime.now())));
       EntityManager em = this.getEntityManager();
       LocalDateTime ldt = LocalDateTime.now().minusDays(extractionInterval);
       List<PaymentPosition> ppList;
@@ -161,7 +166,7 @@ public class HistoricizationScheduler {
               METHOD,
               "Finished at "
                   + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                      .format(LocalDateTime.now())));
+                  .format(LocalDateTime.now())));
       updateMDCForEndExecution();
     } catch (Exception e) {
       updateMDCError(e, "Historicize Scheduler Error");

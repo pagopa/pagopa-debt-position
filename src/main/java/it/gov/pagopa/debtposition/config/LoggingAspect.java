@@ -3,12 +3,12 @@ package it.gov.pagopa.debtposition.config;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.model.ProblemJson;
 import it.gov.pagopa.debtposition.util.CommonUtil;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -39,9 +39,11 @@ public class LoggingAspect {
   public static final String OPERATION_ID = "operationId";
   public static final String ARGS = "args";
 
-  @Autowired HttpServletRequest httRequest;
+  @Autowired
+  HttpServletRequest httRequest;
 
-  @Autowired HttpServletResponse httpResponse;
+  @Autowired
+  HttpServletResponse httpResponse;
 
   @Value("${info.application.name}")
   private String name;
@@ -55,13 +57,17 @@ public class LoggingAspect {
   private static String getDetail(ResponseEntity<ProblemJson> result) {
     if (result != null && result.getBody() != null && result.getBody().getDetail() != null) {
       return result.getBody().getDetail();
-    } else return AppError.UNKNOWN.getDetails();
+    } else {
+      return AppError.UNKNOWN.getDetails();
+    }
   }
 
   private static String getTitle(ResponseEntity<ProblemJson> result) {
     if (result != null && result.getBody() != null && result.getBody().getTitle() != null) {
       return result.getBody().getTitle();
-    } else return AppError.UNKNOWN.getTitle();
+    } else {
+      return AppError.UNKNOWN.getTitle();
+    }
   }
 
   public static String getExecutionTime() {
@@ -99,7 +105,9 @@ public class LoggingAspect {
     // all service methods
   }
 
-  /** Log essential info of application during the startup. */
+  /**
+   * Log essential info of application during the startup.
+   */
   @PostConstruct
   public void logStartup() {
     log.info("-> Starting {} version {} - environment {}", name, version, environment);

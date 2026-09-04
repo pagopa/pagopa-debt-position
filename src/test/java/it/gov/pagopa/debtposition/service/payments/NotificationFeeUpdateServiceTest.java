@@ -15,14 +15,15 @@ import it.gov.pagopa.debtposition.service.payments.NotificationFeeUpdateService.
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationFeeUpdateServiceTest {
 
-  @Mock private PaymentOptionRepository paymentOptionRepository;
+  @Mock
+  private PaymentOptionRepository paymentOptionRepository;
 
   private NotificationFeeUpdateService notificationFeeUpdateService;
 
@@ -40,10 +41,10 @@ class NotificationFeeUpdateServiceTest {
     paymentOption.setStatus(PaymentOptionStatus.PO_UNPAID);
 
     when(paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
-            "77777777777",
-            "12345678901234567",
-            "77777777777",
-            "12345678901234567"))
+        "77777777777",
+        "12345678901234567",
+        "77777777777",
+        "12345678901234567"))
         .thenReturn(Optional.of(paymentOption));
 
     PaymentOptionNotificationFeeContext context =
@@ -58,10 +59,10 @@ class NotificationFeeUpdateServiceTest {
   @Test
   void loadContext_notFound_shouldThrowAppException() {
     when(paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
-            "77777777777",
-            "12345678901234567",
-            "77777777777",
-            "12345678901234567"))
+        "77777777777",
+        "12345678901234567",
+        "77777777777",
+        "12345678901234567"))
         .thenReturn(Optional.empty());
 
     assertThrows(
@@ -78,10 +79,10 @@ class NotificationFeeUpdateServiceTest {
     paymentOption.setStatus(PaymentOptionStatus.PO_PAID);
 
     when(paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
-            "77777777777",
-            "12345678901234567",
-            "77777777777",
-            "12345678901234567"))
+        "77777777777",
+        "12345678901234567",
+        "77777777777",
+        "12345678901234567"))
         .thenReturn(Optional.of(paymentOption));
 
     assertThrows(

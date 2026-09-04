@@ -10,7 +10,11 @@ import lombok.Getter;
 @NotNull
 public class FilterAndOrder {
 
-  @NotNull @Valid private Filter filter;
+  @NotNull
+  @Valid
+  private Filter filter;
 
-  @NotNull @Valid private Order order;
+  @NotNull
+  @Valid
+  private Order order;
 }

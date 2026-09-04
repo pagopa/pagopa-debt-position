@@ -4,7 +4,6 @@ import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import jakarta.persistence.LockModeType;
-
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,6 +20,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PaymentOptionRepository
     extends JpaRepository<PaymentOption, Long>, JpaSpecificationExecutor<PaymentOption> {
+
   // Derived Query - using method naming convention
   // Optional<PaymentOption> findByOrganizationFiscalCodeAndNav(String organizationFiscalCode,
   // String nav);  // search only by nav
@@ -39,24 +39,24 @@ public interface PaymentOptionRepository
   // Configuration Query
   @Modifying
   @Query(
-          "update PaymentOption i set i.sendSync = true " +
-                  "where i.organizationFiscalCode = :organization " +
-                  "and i.nav = :noticeNumber")
+      "update PaymentOption i set i.sendSync = true " +
+          "where i.organizationFiscalCode = :organization " +
+          "and i.nav = :noticeNumber")
   int updatePaymentOptionSendSync(
-          @Param(value = "organization") String organizationFiscalCode,
-          @Param(value = "noticeNumber") String noticeNumber);
-  
-   // lock for update to avoid race condition with cross-payment cases
-	@Query(value = """
-			select po.*
-			from apd.payment_option po
-			where po.payment_position_id = :ppId
-			for update
-			""", nativeQuery = true)
+      @Param(value = "organization") String organizationFiscalCode,
+      @Param(value = "noticeNumber") String noticeNumber);
+
+  // lock for update to avoid race condition with cross-payment cases
+  @Query(value = """
+      select po.*
+      from apd.payment_option po
+      where po.payment_position_id = :ppId
+      for update
+      """, nativeQuery = true)
   List<PaymentOption> lockAllByPaymentPositionId(@Param("ppId") Long ppId);
-	
-	
-	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	@Query("SELECT po FROM PaymentOption po WHERE po.id = :id")
-	Optional<PaymentOption> findByIdForUpdate(@Param("id") Long id);
+
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT po FROM PaymentOption po WHERE po.id = :id")
+  Optional<PaymentOption> findByIdForUpdate(@Param("id") Long id);
 }

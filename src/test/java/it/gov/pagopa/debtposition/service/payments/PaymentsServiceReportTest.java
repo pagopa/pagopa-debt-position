@@ -28,11 +28,14 @@ import org.modelmapper.ModelMapper;
 @ExtendWith(MockitoExtension.class)
 class PaymentsServiceReportTest {
 
-  @Mock private PaymentPositionRepository paymentPositionRepository;
+  @Mock
+  private PaymentPositionRepository paymentPositionRepository;
 
-  @Mock private PaymentOptionRepository paymentOptionRepository;
+  @Mock
+  private PaymentOptionRepository paymentOptionRepository;
 
-  @Mock private ModelMapper modelMapper;
+  @Mock
+  private ModelMapper modelMapper;
 
   private PaymentsService paymentsService;
 
@@ -59,8 +62,8 @@ class PaymentsServiceReportTest {
     PaymentPosition pp = createPaymentPosition(organizationFiscalCode, iuv, transferId, iur);
 
     when(paymentPositionRepository
-            .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionIdReceiptAndPaymentOptionTransferIdTransfer(
-                organizationFiscalCode, iuv, iur, transferId))
+        .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionIdReceiptAndPaymentOptionTransferIdTransfer(
+            organizationFiscalCode, iuv, iur, transferId))
         .thenReturn(Optional.of(pp));
 
     // Mock the static validation method to avoid state check failures
@@ -94,8 +97,8 @@ class PaymentsServiceReportTest {
     String iur = "2024001";
 
     when(paymentPositionRepository
-            .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionIdReceiptAndPaymentOptionTransferIdTransfer(
-                organizationFiscalCode, iuv, iur, transferId))
+        .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionIdReceiptAndPaymentOptionTransferIdTransfer(
+            organizationFiscalCode, iuv, iur, transferId))
         .thenReturn(Optional.empty());
 
     org.junit.jupiter.api.Assertions.assertThrows(
@@ -117,8 +120,8 @@ class PaymentsServiceReportTest {
     PaymentPosition pp = createPaymentPosition(organizationFiscalCode, iuv, transferId, null);
 
     when(paymentPositionRepository
-            .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
-                organizationFiscalCode, iuv, transferId))
+        .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
+            organizationFiscalCode, iuv, transferId))
         .thenReturn(Optional.of(pp));
 
     // Mock the static validation method to avoid state check failures
@@ -155,8 +158,8 @@ class PaymentsServiceReportTest {
     String transferId = "1";
 
     when(paymentPositionRepository
-            .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
-                organizationFiscalCode, iuv, transferId))
+        .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
+            organizationFiscalCode, iuv, transferId))
         .thenReturn(Optional.empty());
 
     org.junit.jupiter.api.Assertions.assertThrows(
@@ -179,8 +182,8 @@ class PaymentsServiceReportTest {
     PaymentPosition pp = createPaymentPosition(organizationFiscalCode, iuv, transferId, null);
 
     when(paymentPositionRepository
-            .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
-                organizationFiscalCode, iuv, transferId))
+        .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
+            organizationFiscalCode, iuv, transferId))
         .thenReturn(Optional.of(pp));
 
     // Mock the static validation method to avoid state check failures
@@ -214,8 +217,8 @@ class PaymentsServiceReportTest {
     PaymentPosition pp = createPaymentPosition(organizationFiscalCode, iuv, transferId, null);
 
     when(paymentPositionRepository
-            .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
-                organizationFiscalCode, iuv, transferId))
+        .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
+            organizationFiscalCode, iuv, transferId))
         .thenReturn(Optional.of(pp));
 
     try (MockedStatic<DebtPositionValidation> mockedValidation =

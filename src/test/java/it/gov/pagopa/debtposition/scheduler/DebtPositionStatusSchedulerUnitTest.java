@@ -15,10 +15,10 @@ import it.gov.pagopa.debtposition.util.SchedulerUtils;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.MDC;
 
 @ExtendWith(MockitoExtension.class)

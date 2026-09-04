@@ -13,7 +13,9 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest(classes = DebtPositionApplication.class)
 @AutoConfigureMockMvc
 class BaseControllerTest {
-  @Autowired private MockMvc mockMvc;
+
+  @Autowired
+  private MockMvc mockMvc;
 
   @Test
   void shouldRespondOKtoHeartBeat() throws Exception {

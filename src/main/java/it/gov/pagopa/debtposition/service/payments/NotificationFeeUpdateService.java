@@ -2,18 +2,16 @@ package it.gov.pagopa.debtposition.service.payments;
 
 import static it.gov.pagopa.debtposition.service.payments.PaymentsService.updateAmountsWithNotificationFee;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Optional;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import it.gov.pagopa.debtposition.entity.PaymentOption;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Optional;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class NotificationFeeUpdateService {
@@ -123,5 +121,7 @@ public class NotificationFeeUpdateService {
   public record PaymentOptionNotificationFeeContext(
       Long paymentOptionId,
       String organizationFiscalCode,
-      String nav) {}
+      String nav) {
+
+  }
 }

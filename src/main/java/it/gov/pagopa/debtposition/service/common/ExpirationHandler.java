@@ -18,7 +18,8 @@ public final class ExpirationHandler {
   }
 
   /**
-   * Evaluates the state of the Payment Position and updates it to {@code EXPIRED} if all criteria are met.
+   * Evaluates the state of the Payment Position and updates it to {@code EXPIRED} if all criteria
+   * are met.
    *
    * <p>The transition to {@code DebtPositionStatus.EXPIRED} occurs only if:
    * <ul>
@@ -54,7 +55,8 @@ public final class ExpirationHandler {
   }
 
   /**
-   * Determines if a specific Payment Option (installment) meets the business criteria to be considered expired.
+   * Determines if a specific Payment Option (installment) meets the business criteria to be
+   * considered expired.
    *
    * <p>An installment is considered effectively expired if:
    * <ul>
@@ -67,7 +69,7 @@ public final class ExpirationHandler {
    * <p>Note: This method is a pure check (predicate) and does not modify the entity state.
    *
    * @param currentDate the reference date-time to check against (usually UTC now).
-   * @param po the PaymentOption to evaluate.
+   * @param po          the PaymentOption to evaluate.
    * @return {@code true} if the installment is considered expired; {@code false} otherwise.
    */
   public static boolean isInstallmentExpired(LocalDateTime currentDate, PaymentOption po) {
@@ -99,10 +101,10 @@ public final class ExpirationHandler {
    * the {@code switchToExpired} flag. It performs a strict temporal comparison intended for APIs
    * like logic {@code verifyPaymentOptions}.
    *
-   * @param po the PaymentOption to check.
+   * @param po  the PaymentOption to check.
    * @param now the reference date-time (usually UTC now).
    * @return {@code true} if the due date exists and is in the past; {@code false} if the due date
-   *     is null (no expiration) or in the future.
+   * is null (no expiration) or in the future.
    */
   public static boolean isPastDueDate(PaymentOption po, LocalDateTime now) {
     LocalDateTime due = po.getDueDate();

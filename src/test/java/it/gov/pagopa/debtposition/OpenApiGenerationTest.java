@@ -1,19 +1,12 @@
 package it.gov.pagopa.debtposition;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,9 +20,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 @AutoConfigureMockMvc
 class OpenApiGenerationTest {
 
-  @Autowired ObjectMapper objectMapper;
+  @Autowired
+  ObjectMapper objectMapper;
 
-  @Autowired private MockMvc mvc;
+  @Autowired
+  private MockMvc mvc;
 
   @Test
   void swaggerSpringPlugin() throws Exception {
@@ -44,22 +39,23 @@ class OpenApiGenerationTest {
 
   private void saveOpenAPI(String fromUri, String toFile) throws Exception {
     mvc.perform(MockMvcRequestBuilders.get(fromUri).accept(MediaType.APPLICATION_JSON))
-            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
-            .andDo(
-                    (result) -> {
-                      assertNotNull(result);
-                      assertNotNull(result.getResponse());
-                      final String content = result.getResponse().getContentAsString();
-                      assertFalse(content.isBlank());
+        .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+        .andDo(
+            (result) -> {
+              assertNotNull(result);
+              assertNotNull(result.getResponse());
+              final String content = result.getResponse().getContentAsString();
+              assertFalse(content.isBlank());
 //                      assertFalse(content.contains("${"), "Generated swagger contains placeholders");
-                      Object swagger =
-                              objectMapper.readValue(result.getResponse().getContentAsString(), Object.class);
+              Object swagger =
+                  objectMapper.readValue(result.getResponse().getContentAsString(), Object.class);
 
-                      String formatted = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(swagger);
-                      Path basePath = Paths.get("openapi/");
-                      Files.createDirectories(basePath);
-                      Files.write(basePath.resolve(toFile), formatted.getBytes());
-                    });
+              String formatted = objectMapper.writerWithDefaultPrettyPrinter()
+                  .writeValueAsString(swagger);
+              Path basePath = Paths.get("openapi/");
+              Files.createDirectories(basePath);
+              Files.write(basePath.resolve(toFile), formatted.getBytes());
+            });
   }
 
 }

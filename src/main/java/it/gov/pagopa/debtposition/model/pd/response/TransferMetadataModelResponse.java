@@ -11,7 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class TransferMetadataModelResponse implements Serializable {
-  /** generated serialVersionUID */
+
+  /**
+   * generated serialVersionUID
+   */
   private static final long serialVersionUID = -8317651914223038540L;
 
   private String key;

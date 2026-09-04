@@ -11,9 +11,11 @@ import org.springframework.data.domain.Sort;
 @Builder
 public class Order {
 
-  @NotNull private OrderType orderBy;
+  @NotNull
+  private OrderType orderBy;
 
-  @NotNull private Sort.Direction ordering;
+  @NotNull
+  private Sort.Direction ordering;
 
   @Getter
   @AllArgsConstructor

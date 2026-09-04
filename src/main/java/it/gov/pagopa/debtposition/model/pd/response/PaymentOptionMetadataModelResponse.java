@@ -12,7 +12,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PaymentOptionMetadataModelResponse implements Serializable {
 
-  /** generated serialVersionUID */
+  /**
+   * generated serialVersionUID
+   */
   private static final long serialVersionUID = 4575041445781686511L;
 
   private String key;

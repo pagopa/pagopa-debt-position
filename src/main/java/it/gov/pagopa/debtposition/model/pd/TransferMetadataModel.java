@@ -1,9 +1,8 @@
 package it.gov.pagopa.debtposition.model.pd;
 
-import java.io.Serializable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,13 +11,11 @@ import lombok.NoArgsConstructor;
 /**
  * Model representing a metadata entry for a transfer.
  * <p>
- * This class is aligned with the PagoPA SANP specification
- * at:
+ * This class is aligned with the PagoPA SANP specification at:
  * https://github.com/pagopa/pagopa-api/blob/b70d47bfae96a4c8782ed3f78305126a0601ff46/xsd-common/sac-common-types-1.0.xsd#L104
  * <p>
- * According to the SANP:
- * - Both {@code key} and {@code value} are required.
- * - Maximum length: 140 characters.
+ * According to the SANP: - Both {@code key} and {@code value} are required. - Maximum length: 140
+ * characters.
  */
 
 
@@ -28,7 +25,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class TransferMetadataModel implements Serializable {
 
-  /** generated serialVersionUID */
+  /**
+   * generated serialVersionUID
+   */
   private static final long serialVersionUID = -1509450417943158597L;
 
   @NotBlank(message = "key is required")

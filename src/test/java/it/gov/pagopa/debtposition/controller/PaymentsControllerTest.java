@@ -4,7 +4,11 @@ import static org.assertj.core.api.Assertions.fail;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -71,25 +75,34 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 @AutoConfigureMockMvc
 class PaymentsControllerTest {
 
-  @Autowired private ObjectMapper objectMapper;
+  @Autowired
+  private ObjectMapper objectMapper;
 
-  @Autowired private MockMvc mvc;
+  @Autowired
+  private MockMvc mvc;
 
-  @Mock private ModelMapper modelMapperMock;
+  @Mock
+  private ModelMapper modelMapperMock;
 
-  @MockitoBean private NodeClient nodeClient;
+  @MockitoBean
+  private NodeClient nodeClient;
 
-  @MockitoBean private SendClient sendClient;
+  @MockitoBean
+  private SendClient sendClient;
 
-  @MockitoSpyBean private PaymentsService paymentsService;
+  @MockitoSpyBean
+  private PaymentsService paymentsService;
 
   @Value("${nav.aux.digit}")
   private String auxDigit;
 
   @BeforeEach
-  void setUp() {}
+  void setUp() {
+  }
 
-  /** GET PAYMENT OPTION BY NAV */
+  /**
+   * GET PAYMENT OPTION BY NAV
+   */
   @Test
   void getPaymentOptionByNAV_200() throws Exception {
     // creo una posizione debitoria con NAV custom e recupero la payment option associata
@@ -361,7 +374,9 @@ class PaymentsControllerTest {
                 .value("keytransfermetadatamock3"));
   }
 
-  /** PAY A PAYMENT OPTION */
+  /**
+   * PAY A PAYMENT OPTION
+   */
   @Test
   void payPaymentOption_200() throws Exception {
     // creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato)
@@ -855,7 +870,9 @@ class PaymentsControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
 
-  /** REPORT A TRANSFER */
+  /**
+   * REPORT A TRANSFER
+   */
   @Test
   void reportTransfer_200() throws Exception {
     // creo una posizione debitoria (senza 'validity date' impostata e nav non valorizzato) con una
@@ -1454,7 +1471,8 @@ class PaymentsControllerTest {
     // provo a rendicontare una transazione che non esiste (si continua ad utilizzare lo IUV e non
     // il NAV)
     mvc.perform(
-            post("/organizations/123456789011111/paymentoptions/123456IUVMULTIPLEMOCK3/transfers/x/report")
+            post(
+                "/organizations/123456789011111/paymentoptions/123456IUVMULTIPLEMOCK3/transfers/x/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
   }
@@ -1515,7 +1533,9 @@ class PaymentsControllerTest {
                 .value(DebtPositionStatus.REPORTED.toString()));
   }
 
-  /** UPDATE PAYMENT OPTION'S NOTIFICATION FEE */
+  /**
+   * UPDATE PAYMENT OPTION'S NOTIFICATION FEE
+   */
   @Test
   void updateNotificationFee_200() throws Exception {
 
@@ -2242,9 +2262,9 @@ class PaymentsControllerTest {
 
     mvc.perform(
             post(
-                    "/payment-options/organizations/{organizationfiscalcode}/notices/{nav}",
-                    organization,
-                    navOrIuv)
+                "/payment-options/organizations/{organizationfiscalcode}/notices/{nav}",
+                organization,
+                navOrIuv)
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -2280,9 +2300,9 @@ class PaymentsControllerTest {
 
     mvc.perform(
             post(
-                    "/payment-options/organizations/{organizationfiscalcode}/notices/{nav}",
-                    organization,
-                    singleNavOrIuv)
+                "/payment-options/organizations/{organizationfiscalcode}/notices/{nav}",
+                organization,
+                singleNavOrIuv)
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -2320,9 +2340,9 @@ class PaymentsControllerTest {
 
     mvc.perform(
             post(
-                    "/payment-options/organizations/{organizationfiscalcode}/notices/{nav}",
-                    organization,
-                    navOrIuv)
+                "/payment-options/organizations/{organizationfiscalcode}/notices/{nav}",
+                organization,
+                navOrIuv)
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -2363,9 +2383,9 @@ class PaymentsControllerTest {
 
     mvc.perform(
             post(
-                    "/payment-options/organizations/{organizationfiscalcode}/notices/{nav}",
-                    organization,
-                    navOrIuv)
+                "/payment-options/organizations/{organizationfiscalcode}/notices/{nav}",
+                organization,
+                navOrIuv)
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -2394,9 +2414,9 @@ class PaymentsControllerTest {
 
     mvc.perform(
             post(
-                    "/payment-options/organizations/{organizationfiscalcode}/notices/{nav}",
-                    organization,
-                    navOrIuv)
+                "/payment-options/organizations/{organizationfiscalcode}/notices/{nav}",
+                organization,
+                navOrIuv)
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -2416,9 +2436,9 @@ class PaymentsControllerTest {
 
     mvc.perform(
             post(
-                    "/payment-options/organizations/{organization-fiscal-code}/notices/{notice-number}",
-                    organization,
-                    navOrIuv)
+                "/payment-options/organizations/{organization-fiscal-code}/notices/{notice-number}",
+                organization,
+                navOrIuv)
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -2437,9 +2457,9 @@ class PaymentsControllerTest {
 
     mvc.perform(
             post(
-                    "/payment-options/organizations/{organization-fiscal-code}/notices/{notice-number}",
-                    organization,
-                    badNav)
+                "/payment-options/organizations/{organization-fiscal-code}/notices/{notice-number}",
+                organization,
+                badNav)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
@@ -2459,9 +2479,9 @@ class PaymentsControllerTest {
 
     mvc.perform(
             post(
-                    "/payment-options/organizations/{organization-fiscal-code}/notices/{notice-number}",
-                    organization,
-                    nav)
+                "/payment-options/organizations/{organization-fiscal-code}/notices/{notice-number}",
+                organization,
+                nav)
                 .queryParam("segregationCodes", "11,22") // does not include "33" => not authorized
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
@@ -2492,9 +2512,9 @@ class PaymentsControllerTest {
     mvcStandalone
         .perform(
             post(
-                    "/payment-options/organizations/{organization-fiscal-code}/notices/{notice-number}",
-                    organization,
-                    nav)
+                "/payment-options/organizations/{organization-fiscal-code}/notices/{notice-number}",
+                organization,
+                nav)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isInternalServerError())
@@ -2506,7 +2526,9 @@ class PaymentsControllerTest {
                 "$.errorMessage", Matchers.containsString("PAA_SYSTEM_ERROR")));
   }
 
-  /** VALIDATION TEST - unexpected case */
+  /**
+   * VALIDATION TEST - unexpected case
+   */
   @Test
   void ValidationError_checkPaymentPositionOpen() throws Exception {
     try {
@@ -2694,11 +2716,15 @@ class PaymentsControllerTest {
   private static String randomNum(int len) {
     StringBuilder sb = new StringBuilder(len);
     java.util.Random r = new java.util.Random();
-    for (int i = 0; i < len; i++) sb.append((char) ('0' + r.nextInt(10)));
+    for (int i = 0; i < len; i++) {
+      sb.append((char) ('0' + r.nextInt(10)));
+    }
     return sb.toString();
   }
 
-  /** Manually inject write-only "description" fields into POs */
+  /**
+   * Manually inject write-only "description" fields into POs
+   */
   private String toJsonInjectWriteOnlyDescriptions(
       PaymentPositionModelV3 pp, String... descriptions) throws Exception {
     String json = TestUtil.toJson(pp);
@@ -2729,7 +2755,9 @@ class PaymentsControllerTest {
     return om.writeValueAsString(root);
   }
 
-  /** Build a V3 position with 1 SINGLE and 1 PLAN (2 installments) */
+  /**
+   * Build a V3 position with 1 SINGLE and 1 PLAN (2 installments)
+   */
   private PaymentPositionModelV3 buildV3SingleAndPlan(
       String organization, String singleNavOrIuv, String planIuv1, String planIuv2) {
     PaymentPositionModelV3 pp = new PaymentPositionModelV3();

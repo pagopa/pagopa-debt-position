@@ -14,30 +14,27 @@ import it.gov.pagopa.debtposition.dto.PaymentPositionDTO;
 import it.gov.pagopa.debtposition.mock.DebtPositionMock;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
-import net.javacrumbs.shedlock.core.LockProvider;
-
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-
+import net.javacrumbs.shedlock.core.LockProvider;
 import org.awaitility.Awaitility;
 import org.hamcrest.core.IsNull;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -48,11 +45,14 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Execution(ExecutionMode.SAME_THREAD)
 class DebtPositionStatusSchedulerTest {
 
-  @Autowired DebtPositionStatusScheduler scheduler;
+  @Autowired
+  DebtPositionStatusScheduler scheduler;
 
-  @Autowired private MockMvc mvc;
+  @Autowired
+  private MockMvc mvc;
 
-  @MockitoBean private LockProvider lockProvider;
+  @MockitoBean
+  private LockProvider lockProvider;
 
   @SuppressWarnings("resource")
   @Container
@@ -89,7 +89,8 @@ class DebtPositionStatusSchedulerTest {
   @BeforeEach
   void mockShedlock() {
     when(lockProvider.lock(any()))
-        .thenReturn(Optional.of(() -> {}));
+        .thenReturn(Optional.of(() -> {
+        }));
   }
 
   @Test
@@ -170,7 +171,8 @@ class DebtPositionStatusSchedulerTest {
 
     // porto in pubblicata lo stato della posizione debitoria
     mvc.perform(
-            post("/organizations/SCHEDULEVALIDAFTERDUEDATE_12345678901/debtpositions/12345678901IUPDMOCK3/publish")
+            post(
+                "/organizations/SCHEDULEVALIDAFTERDUEDATE_12345678901/debtpositions/12345678901IUPDMOCK3/publish")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 
@@ -330,7 +332,8 @@ class DebtPositionStatusSchedulerTest {
 
     // porto in PUBLISHED lo stato della posizione debitoria
     mvc.perform(
-            post("/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions/12345678901IUPDMOCK3/publish")
+            post(
+                "/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions/12345678901IUPDMOCK3/publish")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 
@@ -463,7 +466,7 @@ class DebtPositionStatusSchedulerTest {
         .andExpect(MockMvcResultMatchers.jsonPath("$.validityDate").value(IsNull.notNullValue()))
         .andExpect(MockMvcResultMatchers.jsonPath("$.companyName").value("Comune di Latina"));
   }
-  
+
   @Test
   void manualChangeDebtPositionStatusToValidShouldNotUpdateBeforeValidityDate() throws Exception {
 
@@ -487,7 +490,8 @@ class DebtPositionStatusSchedulerTest {
 
     // publish the debt position
     mvc.perform(
-            post("/organizations/SCHEDULEVALIDFUTURE_12345678901/debtpositions/12345678901IUPDMOCK_VALID_FUTURE/publish")
+            post(
+                "/organizations/SCHEDULEVALIDFUTURE_12345678901/debtpositions/12345678901IUPDMOCK_VALID_FUTURE/publish")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 
@@ -515,9 +519,10 @@ class DebtPositionStatusSchedulerTest {
             MockMvcResultMatchers.jsonPath("$.status")
                 .value(DebtPositionStatus.PUBLISHED.toString()));
   }
-  
+
   @Test
-  void manualChangeDebtPositionStatusToValidShouldUpdateMultiplePositionsInSameRun() throws Exception {
+  void manualChangeDebtPositionStatusToValidShouldUpdateMultiplePositionsInSameRun()
+      throws Exception {
 
     LocalDateTime now = nowUtc();
     LocalDateTime validityDate = now.plusSeconds(2);
@@ -553,13 +558,15 @@ class DebtPositionStatusSchedulerTest {
 
     // set the first debt position to PUBLISHED
     mvc.perform(
-            post("/organizations/SCHEDULEVALIDBATCH_12345678901/debtpositions/12345678901IUPDMOCK_BATCH_1/publish")
+            post(
+                "/organizations/SCHEDULEVALIDBATCH_12345678901/debtpositions/12345678901IUPDMOCK_BATCH_1/publish")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 
     // set the second debt position to PUBLISHED
     mvc.perform(
-            post("/organizations/SCHEDULEVALIDBATCH_12345678901/debtpositions/12345678901IUPDMOCK_BATCH_2/publish")
+            post(
+                "/organizations/SCHEDULEVALIDBATCH_12345678901/debtpositions/12345678901IUPDMOCK_BATCH_2/publish")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 

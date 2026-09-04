@@ -22,19 +22,32 @@ import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.repository.TransferRepository;
-import it.gov.pagopa.debtposition.repository.specification.*;
+import it.gov.pagopa.debtposition.repository.specification.PaymentOptionByAttribute;
+import it.gov.pagopa.debtposition.repository.specification.PaymentOptionByPaymentPositionIdIn;
+import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByIUPD;
+import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByIUPDList;
+import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByOptionsAttribute;
+import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByOrganizationFiscalCode;
+import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByOrganizationFiscalCodeNoDistinct;
+import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByPaymentDate;
+import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByServiceType;
+import it.gov.pagopa.debtposition.repository.specification.PaymentPositionByStatus;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
 import it.gov.pagopa.debtposition.util.PublishPaymentUtil;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.SerializationUtils;
 import org.hibernate.exception.ConstraintViolationException;
@@ -66,10 +79,14 @@ public class PaymentPositionCRUDService {
   @Value("${max.days.interval}")
   private String maxDaysInterval;
 
-  @Autowired private PaymentPositionRepository paymentPositionRepository;
-  @Autowired private PaymentOptionRepository paymentOptionRepository;
-  @Autowired private ModelMapper modelMapper;
-  @Autowired private TransferRepository transferRepository;
+  @Autowired
+  private PaymentPositionRepository paymentPositionRepository;
+  @Autowired
+  private PaymentOptionRepository paymentOptionRepository;
+  @Autowired
+  private ModelMapper modelMapper;
+  @Autowired
+  private TransferRepository transferRepository;
 
   @Value("${nav.aux.digit}")
   private String auxDigit;
@@ -91,17 +108,18 @@ public class PaymentPositionCRUDService {
 
       return paymentPositionRepository.saveAndFlush(toSave);
     } catch (DataIntegrityViolationException e) {
-       log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
-       if (e.getCause() instanceof ConstraintViolationException constraintViolationException) {
-          handleUniqueViolationAppException(constraintViolationException, organizationFiscalCode);
-       }
-       throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
+      log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
+      if (e.getCause() instanceof ConstraintViolationException constraintViolationException) {
+        handleUniqueViolationAppException(constraintViolationException, organizationFiscalCode);
+      }
+      throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
     } catch (ValidationException e) {
       throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
     } catch (AppException appException) {
       throw appException;
     } catch (OptimisticLockingFailureException e) {
-      throw new AppException(AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE, organizationFiscalCode);
+      throw new AppException(AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE,
+          organizationFiscalCode);
     } catch (Exception e) {
       log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
       throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
@@ -178,86 +196,88 @@ public class PaymentPositionCRUDService {
 
   @Transactional(readOnly = true)
   public Page<PaymentPosition> getOrganizationDebtPositions(
-		  @Positive Integer limit, @Positive Integer pageNum, FilterAndOrder filterAndOrder) {
+      @Positive Integer limit, @Positive Integer pageNum, FilterAndOrder filterAndOrder) {
 
-	  int ppCount = 0;
-	  Page<PaymentPosition> page;
-	  List<PaymentPosition> positions;
+    int ppCount = 0;
+    Page<PaymentPosition> page;
+    List<PaymentPosition> positions;
 
-	  // filter snapshot to avoid repeated getters
-	  checkAndUpdateDates(filterAndOrder);
-	  final Filter f = filterAndOrder.getFilter();
-	  final String orgFiscalCode = f.getOrganizationFiscalCode();
-	  final LocalDateTime dueFrom = f.getDueDateFrom();
-	  final LocalDateTime dueTo = f.getDueDateTo();
-	  final LocalDateTime payFrom = f.getPaymentDateFrom();
-	  final LocalDateTime payTo = f.getPaymentDateTo();
-	  final DebtPositionStatus status = f.getStatus();
-	  final ServiceType serviceType = f.getServiceType();
-	  final List<String> segregationCodes = f.getSegregationCodes();
+    // filter snapshot to avoid repeated getters
+    checkAndUpdateDates(filterAndOrder);
+    final Filter f = filterAndOrder.getFilter();
+    final String orgFiscalCode = f.getOrganizationFiscalCode();
+    final LocalDateTime dueFrom = f.getDueDateFrom();
+    final LocalDateTime dueTo = f.getDueDateTo();
+    final LocalDateTime payFrom = f.getPaymentDateFrom();
+    final LocalDateTime payTo = f.getPaymentDateTo();
+    final DebtPositionStatus status = f.getStatus();
+    final ServiceType serviceType = f.getServiceType();
+    final List<String> segregationCodes = f.getSegregationCodes();
 
-	  final boolean hasDueFilter = (dueFrom != null || dueTo != null);
-	  final boolean hasSegFilter = (segregationCodes != null && !segregationCodes.isEmpty());
-	  final boolean hasPoFilters = hasDueFilter || hasSegFilter;
-	  final boolean hasPayFilter = (payFrom != null || payTo != null);
+    final boolean hasDueFilter = (dueFrom != null || dueTo != null);
+    final boolean hasSegFilter = (segregationCodes != null && !segregationCodes.isEmpty());
+    final boolean hasPoFilters = hasDueFilter || hasSegFilter;
+    final boolean hasPayFilter = (payFrom != null || payTo != null);
 
-	  Pageable pageable = PageRequest.of(pageNum, limit, CommonUtil.getSort(filterAndOrder));
+    Pageable pageable = PageRequest.of(pageNum, limit, CommonUtil.getSort(filterAndOrder));
 
-	  // the base spec is built (filters on PaymentPosition only)
-	  Specification<PaymentPosition> paymentPositionSpecification =
-			  new PaymentPositionByOrganizationFiscalCodeNoDistinct(orgFiscalCode)
-			  .and(new PaymentPositionByStatus(status))
-			  .and(new PaymentPositionByServiceType(serviceType));
+    // the base spec is built (filters on PaymentPosition only)
+    Specification<PaymentPosition> paymentPositionSpecification =
+        new PaymentPositionByOrganizationFiscalCodeNoDistinct(orgFiscalCode)
+            .and(new PaymentPositionByStatus(status))
+            .and(new PaymentPositionByServiceType(serviceType));
 
-	  // EXISTS is applied to PaymentOption ONLY if the user actually requested filters on the PO (otherwise, the expensive Nested Loop Semi-Join is avoided for "default" cases)
-	  if (hasPoFilters) {
-		  paymentPositionSpecification = paymentPositionSpecification.and(new PaymentPositionByOptionsAttribute(orgFiscalCode, dueFrom, dueTo, segregationCodes));
-	  }
+    // EXISTS is applied to PaymentOption ONLY if the user actually requested filters on the PO (otherwise, the expensive Nested Loop Semi-Join is avoided for "default" cases)
+    if (hasPoFilters) {
+      paymentPositionSpecification = paymentPositionSpecification.and(
+          new PaymentPositionByOptionsAttribute(orgFiscalCode, dueFrom, dueTo, segregationCodes));
+    }
 
-	  // filter is applied on payment_date ONLY if the user has passed it
-	  if (hasPayFilter) {
-		  paymentPositionSpecification = paymentPositionSpecification.and(new PaymentPositionByPaymentDate(payFrom, payTo));
-	  }
+    // filter is applied on payment_date ONLY if the user has passed it
+    if (hasPayFilter) {
+      paymentPositionSpecification = paymentPositionSpecification.and(
+          new PaymentPositionByPaymentDate(payFrom, payTo));
+    }
 
-	  Specification<PaymentPosition> specPP = allOf(paymentPositionSpecification);
+    Specification<PaymentPosition> specPP = allOf(paymentPositionSpecification);
 
-	  // Q1 - initial query to load PaymentPositions with filters on PP
-	  page = paymentPositionRepository.findAll(specPP, pageable);
+    // Q1 - initial query to load PaymentPositions with filters on PP
+    page = paymentPositionRepository.findAll(specPP, pageable);
 
-	  positions = page.getContent();
-	  ppCount = positions.size();
+    positions = page.getContent();
+    ppCount = positions.size();
 
-	  // empty page
-	  if (ppCount == 0) {
-		  return page;
-	  }
+    // empty page
+    if (ppCount == 0) {
+      return page;
+    }
 
-	  List<Long> ppIds = positions.stream()
-			  .map(PaymentPosition::getId)
-			  .filter(Objects::nonNull)
-			  .toList();
+    List<Long> ppIds = positions.stream()
+        .map(PaymentPosition::getId)
+        .filter(Objects::nonNull)
+        .toList();
 
-	  Specification<PaymentOption> poSpecification =
-			  new PaymentOptionByPaymentPositionIdIn(ppIds);
+    Specification<PaymentOption> poSpecification =
+        new PaymentOptionByPaymentPositionIdIn(ppIds);
 
-	  if (hasPoFilters) {
-		  poSpecification = poSpecification.and(new PaymentOptionByAttribute(dueFrom, dueTo, segregationCodes));
-	  }
+    if (hasPoFilters) {
+      poSpecification = poSpecification.and(
+          new PaymentOptionByAttribute(dueFrom, dueTo, segregationCodes));
+    }
 
-	  // Q2 - BULK LOAD of PaymentOptions for all the PaymentPositions
-	  List<PaymentOption> options = paymentOptionRepository.findAll(allOf(poSpecification));
+    // Q2 - BULK LOAD of PaymentOptions for all the PaymentPositions
+    List<PaymentOption> options = paymentOptionRepository.findAll(allOf(poSpecification));
 
-	  Map<Long, List<PaymentOption>> optionsByPpId = options.stream()
-			  .collect(Collectors.groupingBy(po -> po.getPaymentPosition().getId()));
+    Map<Long, List<PaymentOption>> optionsByPpId = options.stream()
+        .collect(Collectors.groupingBy(po -> po.getPaymentPosition().getId()));
 
-	  for (PaymentPosition pp : positions) {
-		  List<PaymentOption> poList = optionsByPpId.getOrDefault(pp.getId(), List.of());
-		  pp.setPaymentOption(poList);
-	  }
+    for (PaymentPosition pp : positions) {
+      List<PaymentOption> poList = optionsByPpId.getOrDefault(pp.getId(), List.of());
+      pp.setPaymentOption(poList);
+    }
 
-	  return CommonUtil.toPage(positions, page.getNumber(), page.getSize(), page.getTotalElements());
+    return CommonUtil.toPage(positions, page.getNumber(), page.getSize(), page.getTotalElements());
   }
-
 
 
   @Transactional
@@ -307,7 +327,7 @@ public class PaymentPositionCRUDService {
       // update amounts adding notification fee
       updateAmounts(organizationFiscalCode, ppToUpdate);
       // If the input is null and the actual (database) validity_date is before now preserve it
-      preserveValidityDateIfValidStatus(ppToUpdate, actualValidityDatesMap, toPublish); 
+      preserveValidityDateIfValidStatus(ppToUpdate, actualValidityDatesMap, toPublish);
 
       // check the data
       DebtPositionValidation.checkPaymentPositionInputDataAccuracy(ppToUpdate, action);
@@ -333,34 +353,39 @@ public class PaymentPositionCRUDService {
       // Handle database constraint violations explicitly.
       log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
       if (e.getCause() instanceof ConstraintViolationException constraintViolationException) {
-    	    handleUniqueViolationAppException(constraintViolationException, organizationFiscalCode);
+        handleUniqueViolationAppException(constraintViolationException, organizationFiscalCode);
       }
       throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
     } catch (OptimisticLockingFailureException e) {
-      throw new AppException(AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE, organizationFiscalCode);
-    }  catch (Exception e) {
+      throw new AppException(AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE,
+          organizationFiscalCode);
+    } catch (Exception e) {
       log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
       throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
     }
   }
 
   /**
-   * This method preserves the validity date if the validity date in input is null and
-   * if the validity dates on the database are valid and already in use, i.e. before now.
+   * This method preserves the validity date if the validity date in input is null and if the
+   * validity dates on the database are valid and already in use, i.e. before now.
    *
-   * @param ppToUpdate the Payment Position Entity mixed with new inputs entered.
-   *                   values such as fee, notificationFee, PSP etc are not modified, while
-   *                   values such as company name, due date, amount etc are updated with user input.
-   * @param actualValidityDatesMap The validity dates actually persisted on the database before update.
+   * @param ppToUpdate             the Payment Position Entity mixed with new inputs entered. values
+   *                               such as fee, notificationFee, PSP etc are not modified, while
+   *                               values such as company name, due date, amount etc are updated
+   *                               with user input.
+   * @param actualValidityDatesMap The validity dates actually persisted on the database before
+   *                               update.
    */
-  private static void preserveValidityDateIfValidStatus(PaymentPosition ppToUpdate, Map<Long, LocalDateTime> actualValidityDatesMap, boolean toPublish) {
+  private static void preserveValidityDateIfValidStatus(PaymentPosition ppToUpdate,
+      Map<Long, LocalDateTime> actualValidityDatesMap, boolean toPublish) {
     // po.validity_date is the input, actualValidityDate is the value on the database.
     LocalDateTime now = LocalDateTime.now();
-    for(PaymentOption po : ppToUpdate.getPaymentOption()) {
+    for (PaymentOption po : ppToUpdate.getPaymentOption()) {
       LocalDateTime actualValidityDate = actualValidityDatesMap.get(po.getId());
       // If the input is null and the actual (on database) validity_date is before now preserve it.
-      if (po.getValidityDate() == null && actualValidityDate != null && actualValidityDate.isBefore(now)
-              && ppToUpdate.getStatus().equals(DebtPositionStatus.VALID) && toPublish) {
+      if (po.getValidityDate() == null && actualValidityDate != null && actualValidityDate.isBefore(
+          now)
+          && ppToUpdate.getStatus().equals(DebtPositionStatus.VALID) && toPublish) {
         po.setValidityDate(actualValidityDate);
       }
     }
@@ -375,7 +400,7 @@ public class PaymentPositionCRUDService {
    * Transfer
    *
    * @param organizationFiscalCode EC
-   * @param ppToUpdate the entity of the debt position to update
+   * @param ppToUpdate             the entity of the debt position to update
    */
   private static void updateAmounts(String organizationFiscalCode, PaymentPosition ppToUpdate) {
     ppToUpdate
@@ -422,15 +447,16 @@ public class PaymentPositionCRUDService {
     } catch (DataIntegrityViolationException e) {
       log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
       if (e.getCause() instanceof ConstraintViolationException constraintViolationException) {
-         handleUniqueViolationAppException(constraintViolationException, organizationFiscalCode);
-       }
-       throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
+        handleUniqueViolationAppException(constraintViolationException, organizationFiscalCode);
+      }
+      throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
     } catch (ValidationException e) {
       throw new AppException(AppError.DEBT_POSITION_REQUEST_DATA_ERROR, e.getMessage());
     } catch (AppException appException) {
       throw appException;
     } catch (OptimisticLockingFailureException e) {
-      throw new AppException(AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE, organizationFiscalCode);
+      throw new AppException(AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE,
+          organizationFiscalCode);
     } catch (Exception e) {
       log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
       throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
@@ -496,18 +522,18 @@ public class PaymentPositionCRUDService {
             organizationFiscalCode,
             e.getMessage());
       }
-      if(AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE.equals(e.getAppError())) {
+      if (AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE.equals(e.getAppError())) {
         throw new AppException(
-                AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE,
-                organizationFiscalCode,
-                e.getMessage());
+            AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE,
+            organizationFiscalCode,
+            e.getMessage());
       }
       throw e;
     } catch (DataIntegrityViolationException e) {
       // Handle database constraint violations explicitly.
       log.error("Error during debt position update process", e);
       if (e.getCause() instanceof ConstraintViolationException constraintViolationException) {
-         handleUniqueViolationAppException(constraintViolationException, organizationFiscalCode);
+        handleUniqueViolationAppException(constraintViolationException, organizationFiscalCode);
       }
       throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
     } catch (Exception e) {
@@ -693,21 +719,22 @@ public class PaymentPositionCRUDService {
     String paymentPositionSegregationCode = iuv.substring(0, 2);
     return segregationCodes.contains(paymentPositionSegregationCode);
   }
-  
-  private void handleUniqueViolationAppException(
-		  ConstraintViolationException constraintViolationException, String organizationFiscalCode) {
-	  String sqlState = constraintViolationException.getSQLState();
 
-	  if (UNIQUE_KEY_VIOLATION.equals(sqlState)) {
-		  String constraintName = constraintViolationException.getConstraintName();
-		  if (PAYMENT_OPTION_METADATA_UNIQUE_CONSTRAINT.equalsIgnoreCase(constraintName)) {
-			  throw new AppException(
-					  AppError.DEBT_POSITION_PO_METADATA_UNIQUE_VIOLATION, organizationFiscalCode);
-		  }
-		  if (TRANSFER_METADATA_UNIQUE_CONSTRAINT.equalsIgnoreCase(constraintName)) {
-			  throw new AppException(AppError.DEBT_POSITION_TRANSFER_METADATA_UNIQUE_VIOLATION, organizationFiscalCode);
-		  }
-		  throw new AppException(AppError.DEBT_POSITION_UNIQUE_VIOLATION, organizationFiscalCode);
-	  }
+  private void handleUniqueViolationAppException(
+      ConstraintViolationException constraintViolationException, String organizationFiscalCode) {
+    String sqlState = constraintViolationException.getSQLState();
+
+    if (UNIQUE_KEY_VIOLATION.equals(sqlState)) {
+      String constraintName = constraintViolationException.getConstraintName();
+      if (PAYMENT_OPTION_METADATA_UNIQUE_CONSTRAINT.equalsIgnoreCase(constraintName)) {
+        throw new AppException(
+            AppError.DEBT_POSITION_PO_METADATA_UNIQUE_VIOLATION, organizationFiscalCode);
+      }
+      if (TRANSFER_METADATA_UNIQUE_CONSTRAINT.equalsIgnoreCase(constraintName)) {
+        throw new AppException(AppError.DEBT_POSITION_TRANSFER_METADATA_UNIQUE_VIOLATION,
+            organizationFiscalCode);
+      }
+      throw new AppException(AppError.DEBT_POSITION_UNIQUE_VIOLATION, organizationFiscalCode);
+    }
   }
 }

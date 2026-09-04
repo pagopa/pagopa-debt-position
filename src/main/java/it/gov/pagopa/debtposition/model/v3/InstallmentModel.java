@@ -1,19 +1,20 @@
 package it.gov.pagopa.debtposition.model.v3;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import it.gov.pagopa.debtposition.controller.pd.validator.UniqueMetadataKeys;
 import it.gov.pagopa.debtposition.model.enumeration.InstallmentStatus;
 import it.gov.pagopa.debtposition.model.pd.TransferModel;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -29,7 +30,7 @@ public class InstallmentModel implements Serializable {
   private String iuv;
 
   @NotNull(message = "amount is required")
-  @Min(value= 1L, message = "minimum amount is 1 eurocent")
+  @Min(value = 1L, message = "minimum amount is 1 eurocent")
   private Long amount;
 
   @NotBlank(message = "payment option description is required")
@@ -64,9 +65,9 @@ public class InstallmentModel implements Serializable {
           "It can be added a maximum of 10 key-value pairs for metadata. Metadata keys must be unique within the same installment.")
   @ArraySchema(uniqueItems = true)
   private List<InstallmentMetadataModel> installmentMetadata = new ArrayList<>();
-  
+
   public void setInstallmentMetadata(List<InstallmentMetadataModel> installmentMetadata) {
-	  this.installmentMetadata =
-			  installmentMetadata == null ? new ArrayList<>() : installmentMetadata;
+    this.installmentMetadata =
+        installmentMetadata == null ? new ArrayList<>() : installmentMetadata;
   }
 }

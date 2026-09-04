@@ -1,6 +1,16 @@
 package it.gov.pagopa.debtposition.util;
 
-import static it.gov.pagopa.debtposition.config.LoggingAspect.*;
+import static it.gov.pagopa.debtposition.config.LoggingAspect.ARGS;
+import static it.gov.pagopa.debtposition.config.LoggingAspect.CODE;
+import static it.gov.pagopa.debtposition.config.LoggingAspect.FAULT_CODE;
+import static it.gov.pagopa.debtposition.config.LoggingAspect.FAULT_DETAIL;
+import static it.gov.pagopa.debtposition.config.LoggingAspect.METHOD;
+import static it.gov.pagopa.debtposition.config.LoggingAspect.OPERATION_ID;
+import static it.gov.pagopa.debtposition.config.LoggingAspect.REQUEST_ID;
+import static it.gov.pagopa.debtposition.config.LoggingAspect.RESPONSE_TIME;
+import static it.gov.pagopa.debtposition.config.LoggingAspect.START_TIME;
+import static it.gov.pagopa.debtposition.config.LoggingAspect.STATUS;
+import static it.gov.pagopa.debtposition.config.LoggingAspect.getExecutionTime;
 
 import java.util.Calendar;
 import java.util.UUID;

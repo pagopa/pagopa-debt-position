@@ -51,7 +51,7 @@ class ExpirationHandlerTest {
     // Mocking UtilityMapper static call
     try (MockedStatic<UtilityMapper> utilityMapperMock = mockStatic(UtilityMapper.class)) {
       utilityMapperMock.when(() -> UtilityMapper.hasAllMarkedExpired(anyList()))
-              .thenReturn(true);
+          .thenReturn(true);
 
       // Act
       ExpirationHandler.handlePaymentPositionExpirationLogic(paymentPosition);
@@ -70,7 +70,7 @@ class ExpirationHandlerTest {
 
     try (MockedStatic<UtilityMapper> utilityMapperMock = mockStatic(UtilityMapper.class)) {
       utilityMapperMock.when(() -> UtilityMapper.hasAllMarkedExpired(anyList()))
-              .thenReturn(true);
+          .thenReturn(true);
 
       // Act
       ExpirationHandler.handlePaymentPositionExpirationLogic(paymentPosition);
@@ -89,7 +89,7 @@ class ExpirationHandlerTest {
 
     try (MockedStatic<UtilityMapper> utilityMapperMock = mockStatic(UtilityMapper.class)) {
       utilityMapperMock.when(() -> UtilityMapper.hasAllMarkedExpired(anyList()))
-              .thenReturn(true);
+          .thenReturn(true);
 
       // Act
       ExpirationHandler.handlePaymentPositionExpirationLogic(paymentPosition);
@@ -109,7 +109,7 @@ class ExpirationHandlerTest {
     try (MockedStatic<UtilityMapper> utilityMapperMock = mockStatic(UtilityMapper.class)) {
       // Return false: not all installments are configured to expire
       utilityMapperMock.when(() -> UtilityMapper.hasAllMarkedExpired(anyList()))
-              .thenReturn(false);
+          .thenReturn(false);
 
       // Act
       ExpirationHandler.handlePaymentPositionExpirationLogic(paymentPosition);

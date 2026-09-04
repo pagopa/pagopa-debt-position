@@ -14,7 +14,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PaymentPositionDTO implements Serializable {
 
-  /** generated serialVersionUID */
+  /**
+   * generated serialVersionUID
+   */
   private static final long serialVersionUID = 6990851241801808964L;
 
   private String iupd;
