@@ -24,58 +24,41 @@ public class NotificationFeeUpdateService {
 
   @Transactional(readOnly = true)
   public PaymentOptionNotificationFeeContext loadContext(
-      String organizationFiscalCode,
-      String nav) {
+      String organizationFiscalCode, String nav) {
 
     PaymentOption paymentOption =
         paymentOptionRepository
             .findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
-                organizationFiscalCode,
-                nav,
-                organizationFiscalCode,
-                nav)
+                organizationFiscalCode, nav, organizationFiscalCode, nav)
             .orElseThrow(
                 () ->
                     new AppException(
-                        AppError.PAYMENT_OPTION_NOT_FOUND,
-                        organizationFiscalCode,
-                        nav));
+                        AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, nav));
 
     assertPaymentOptionStillUpdatable(paymentOption, organizationFiscalCode, nav);
 
     return new PaymentOptionNotificationFeeContext(
-        paymentOption.getId(),
-        paymentOption.getOrganizationFiscalCode(),
-        paymentOption.getNav());
+        paymentOption.getId(), paymentOption.getOrganizationFiscalCode(), paymentOption.getNav());
   }
 
   @Transactional
   public PaymentOption applyNotificationFeeUpdate(
-      Long paymentOptionId,
-      Long notificationFeeAmount,
-      Boolean paymentInProgress) {
+      Long paymentOptionId, Long notificationFeeAmount, Boolean paymentInProgress) {
 
     return applyNotificationFeeUpdateInternal(
-        paymentOptionId,
-        notificationFeeAmount,
-        Optional.ofNullable(paymentInProgress));
+        paymentOptionId, notificationFeeAmount, Optional.ofNullable(paymentInProgress));
   }
 
   @Transactional
   public PaymentOption applyNotificationFeeUpdate(
-      Long paymentOptionId,
-      Long notificationFeeAmount) {
+      Long paymentOptionId, Long notificationFeeAmount) {
 
     return applyNotificationFeeUpdateInternal(
-        paymentOptionId,
-        notificationFeeAmount,
-        Optional.empty());
+        paymentOptionId, notificationFeeAmount, Optional.empty());
   }
 
   private PaymentOption applyNotificationFeeUpdateInternal(
-      Long paymentOptionId,
-      Long notificationFeeAmount,
-      Optional<Boolean> paymentInProgress) {
+      Long paymentOptionId, Long notificationFeeAmount, Optional<Boolean> paymentInProgress) {
 
     PaymentOption paymentOption =
         paymentOptionRepository
@@ -83,19 +66,13 @@ public class NotificationFeeUpdateService {
             .orElseThrow(
                 () ->
                     new AppException(
-                        AppError.PAYMENT_OPTION_NOT_FOUND,
-                        String.valueOf(paymentOptionId),
-                        ""));
+                        AppError.PAYMENT_OPTION_NOT_FOUND, String.valueOf(paymentOptionId), ""));
 
     assertPaymentOptionStillUpdatable(
-        paymentOption,
-        paymentOption.getOrganizationFiscalCode(),
-        paymentOption.getNav());
+        paymentOption, paymentOption.getOrganizationFiscalCode(), paymentOption.getNav());
 
     updateAmountsWithNotificationFee(
-        paymentOption,
-        paymentOption.getOrganizationFiscalCode(),
-        notificationFeeAmount);
+        paymentOption, paymentOption.getOrganizationFiscalCode(), notificationFeeAmount);
 
     paymentInProgress.ifPresent(paymentOption::setPaymentInProgress);
 
@@ -106,9 +83,7 @@ public class NotificationFeeUpdateService {
   }
 
   private void assertPaymentOptionStillUpdatable(
-      PaymentOption paymentOption,
-      String organizationFiscalCode,
-      String nav) {
+      PaymentOption paymentOption, String organizationFiscalCode, String nav) {
 
     if (!PaymentOptionStatus.PO_UNPAID.equals(paymentOption.getStatus())) {
       throw new AppException(
@@ -119,9 +94,5 @@ public class NotificationFeeUpdateService {
   }
 
   public record PaymentOptionNotificationFeeContext(
-      Long paymentOptionId,
-      String organizationFiscalCode,
-      String nav) {
-
-  }
+      Long paymentOptionId, String organizationFiscalCode, String nav) {}
 }

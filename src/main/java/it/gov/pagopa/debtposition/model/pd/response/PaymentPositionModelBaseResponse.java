@@ -13,9 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PaymentPositionModelBaseResponse implements Serializable {
 
-  /**
-   * generated serialVersionUID
-   */
+  /** generated serialVersionUID */
   private static final long serialVersionUID = 3162169541264601092L;
 
   private String iupd;

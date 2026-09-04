@@ -33,7 +33,7 @@ import lombok.ToString;
 
 /**
  * @author aacitelli
- * <p>JPA Entity
+ *     <p>JPA Entity
  */
 @Builder(toBuilder = true)
 @Getter
@@ -44,18 +44,16 @@ import lombok.ToString;
 @Table(
     name = "payment_position",
     uniqueConstraints = {
-        @UniqueConstraint(
-            name = "UniquePaymentPos",
-            columnNames = {"iupd", "organization_fiscal_code"})
+      @UniqueConstraint(
+          name = "UniquePaymentPos",
+          columnNames = {"iupd", "organization_fiscal_code"})
     })
 @JsonIdentityInfo(
     generator = ObjectIdGenerators.IntSequenceGenerator.class,
     property = "@paymentPositionId")
 public class PaymentPosition implements Serializable {
 
-  /**
-   * generated serialVersionUID
-   */
+  /** generated serialVersionUID */
   private static final long serialVersionUID = -8637183968286214359L;
 
   @Id
@@ -63,8 +61,7 @@ public class PaymentPosition implements Serializable {
   @SequenceGenerator(name = "PAYMENT_POS_SEQ", sequenceName = "PAYMENT_POS_SEQ", allocationSize = 1)
   private Long id;
 
-  @NotNull
-  private String iupd;
+  @NotNull private String iupd;
 
   @NotNull
   @Column(name = "organization_fiscal_code")
@@ -105,10 +102,8 @@ public class PaymentPosition implements Serializable {
   private String province;
   private String region;
   private String country;
-  @ToString.Exclude
-  private String email;
-  @ToString.Exclude
-  private String phone;
+  @ToString.Exclude private String email;
+  @ToString.Exclude private String phone;
 
   @Builder.Default
   @Enumerated(EnumType.STRING)

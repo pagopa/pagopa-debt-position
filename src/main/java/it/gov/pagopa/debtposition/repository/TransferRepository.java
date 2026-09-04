@@ -17,7 +17,8 @@ public interface TransferRepository extends JpaRepository<Transfer, Long> {
   @Transactional
   @Query(
       nativeQuery = true,
-      value = """
+      value =
+          """
           UPDATE apd.transfer AS tr
           SET iban = :newIban,
               last_updated_date = :currentDate
@@ -32,8 +33,7 @@ public interface TransferRepository extends JpaRepository<Transfer, Long> {
                 AND pp.status IN (:ppStatus)
               LIMIT :limit
           )
-          """
-  )
+          """)
   int updateTransferIban(
       @Param("organizationFiscalCode") String organizationFiscalCode,
       @Param("oldIban") String oldIban,
@@ -41,6 +41,5 @@ public interface TransferRepository extends JpaRepository<Transfer, Long> {
       @Param("currentDate") LocalDateTime currentDate,
       @Param("poStatus") List<String> poStatus,
       @Param("ppStatus") List<String> ppStatus,
-      @Param("limit") int limit
-  );
+      @Param("limit") int limit);
 }

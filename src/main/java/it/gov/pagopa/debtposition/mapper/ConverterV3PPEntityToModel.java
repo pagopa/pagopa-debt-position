@@ -64,19 +64,16 @@ public class ConverterV3PPEntityToModel
     }
 
     if (uniquePO != null && !uniquePO.isEmpty()) {
-      paymentOptionsModelV3.addAll(uniquePO.stream()
-          .map(this::convertUniquePO)
-          .toList());
+      paymentOptionsModelV3.addAll(uniquePO.stream().map(this::convertUniquePO).toList());
     }
 
     // Sort options by minimum dueDate between the installments
-    paymentOptionsModelV3.sort(Comparator.comparing(
-        this::minDueDateOrNull,
-        Comparator.nullsLast(Comparator.naturalOrder())));
+    paymentOptionsModelV3.sort(
+        Comparator.comparing(
+            this::minDueDateOrNull, Comparator.nullsLast(Comparator.naturalOrder())));
 
     destination.setPaymentOption(
-        paymentOptionsModelV3.isEmpty() ? Collections.emptyList() : paymentOptionsModelV3
-    );
+        paymentOptionsModelV3.isEmpty() ? Collections.emptyList() : paymentOptionsModelV3);
 
     return destination;
   }
@@ -96,8 +93,9 @@ public class ConverterV3PPEntityToModel
     // Set installments
     List<InstallmentModel> installments =
         partialPOs.stream()
-            .sorted(Comparator.comparing(PaymentOption::getDueDate,
-                Comparator.nullsLast(Comparator.naturalOrder())))
+            .sorted(
+                Comparator.comparing(
+                    PaymentOption::getDueDate, Comparator.nullsLast(Comparator.naturalOrder())))
             .map(this::convertInstallment)
             .toList();
     pov3.setInstallments(installments);

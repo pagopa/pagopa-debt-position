@@ -71,7 +71,8 @@ public class PaymentPositionCRUDService {
   private static final String UNIQUE_KEY_VIOLATION = "23505";
 
   // Database constraint enforcing unique metadata keys within the same payment option.
-  private static final String PAYMENT_OPTION_METADATA_UNIQUE_CONSTRAINT = "uniquepaymentoptmetadata";
+  private static final String PAYMENT_OPTION_METADATA_UNIQUE_CONSTRAINT =
+      "uniquepaymentoptmetadata";
 
   // Database constraint enforcing unique metadata keys within the same transfer.
   private static final String TRANSFER_METADATA_UNIQUE_CONSTRAINT = "uniquetransfermetadata";
@@ -79,14 +80,10 @@ public class PaymentPositionCRUDService {
   @Value("${max.days.interval}")
   private String maxDaysInterval;
 
-  @Autowired
-  private PaymentPositionRepository paymentPositionRepository;
-  @Autowired
-  private PaymentOptionRepository paymentOptionRepository;
-  @Autowired
-  private ModelMapper modelMapper;
-  @Autowired
-  private TransferRepository transferRepository;
+  @Autowired private PaymentPositionRepository paymentPositionRepository;
+  @Autowired private PaymentOptionRepository paymentOptionRepository;
+  @Autowired private ModelMapper modelMapper;
+  @Autowired private TransferRepository transferRepository;
 
   @Value("${nav.aux.digit}")
   private String auxDigit;
@@ -118,8 +115,8 @@ public class PaymentPositionCRUDService {
     } catch (AppException appException) {
       throw appException;
     } catch (OptimisticLockingFailureException e) {
-      throw new AppException(AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE,
-          organizationFiscalCode);
+      throw new AppException(
+          AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE, organizationFiscalCode);
     } catch (Exception e) {
       log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
       throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
@@ -227,16 +224,19 @@ public class PaymentPositionCRUDService {
             .and(new PaymentPositionByStatus(status))
             .and(new PaymentPositionByServiceType(serviceType));
 
-    // EXISTS is applied to PaymentOption ONLY if the user actually requested filters on the PO (otherwise, the expensive Nested Loop Semi-Join is avoided for "default" cases)
+    // EXISTS is applied to PaymentOption ONLY if the user actually requested filters on the PO
+    // (otherwise, the expensive Nested Loop Semi-Join is avoided for "default" cases)
     if (hasPoFilters) {
-      paymentPositionSpecification = paymentPositionSpecification.and(
-          new PaymentPositionByOptionsAttribute(orgFiscalCode, dueFrom, dueTo, segregationCodes));
+      paymentPositionSpecification =
+          paymentPositionSpecification.and(
+              new PaymentPositionByOptionsAttribute(
+                  orgFiscalCode, dueFrom, dueTo, segregationCodes));
     }
 
     // filter is applied on payment_date ONLY if the user has passed it
     if (hasPayFilter) {
-      paymentPositionSpecification = paymentPositionSpecification.and(
-          new PaymentPositionByPaymentDate(payFrom, payTo));
+      paymentPositionSpecification =
+          paymentPositionSpecification.and(new PaymentPositionByPaymentDate(payFrom, payTo));
     }
 
     Specification<PaymentPosition> specPP = allOf(paymentPositionSpecification);
@@ -252,24 +252,21 @@ public class PaymentPositionCRUDService {
       return page;
     }
 
-    List<Long> ppIds = positions.stream()
-        .map(PaymentPosition::getId)
-        .filter(Objects::nonNull)
-        .toList();
+    List<Long> ppIds =
+        positions.stream().map(PaymentPosition::getId).filter(Objects::nonNull).toList();
 
-    Specification<PaymentOption> poSpecification =
-        new PaymentOptionByPaymentPositionIdIn(ppIds);
+    Specification<PaymentOption> poSpecification = new PaymentOptionByPaymentPositionIdIn(ppIds);
 
     if (hasPoFilters) {
-      poSpecification = poSpecification.and(
-          new PaymentOptionByAttribute(dueFrom, dueTo, segregationCodes));
+      poSpecification =
+          poSpecification.and(new PaymentOptionByAttribute(dueFrom, dueTo, segregationCodes));
     }
 
     // Q2 - BULK LOAD of PaymentOptions for all the PaymentPositions
     List<PaymentOption> options = paymentOptionRepository.findAll(allOf(poSpecification));
 
-    Map<Long, List<PaymentOption>> optionsByPpId = options.stream()
-        .collect(Collectors.groupingBy(po -> po.getPaymentPosition().getId()));
+    Map<Long, List<PaymentOption>> optionsByPpId =
+        options.stream().collect(Collectors.groupingBy(po -> po.getPaymentPosition().getId()));
 
     for (PaymentPosition pp : positions) {
       List<PaymentOption> poList = optionsByPpId.getOrDefault(pp.getId(), List.of());
@@ -278,7 +275,6 @@ public class PaymentPositionCRUDService {
 
     return CommonUtil.toPage(positions, page.getNumber(), page.getSize(), page.getTotalElements());
   }
-
 
   @Transactional
   public void delete(
@@ -311,7 +307,8 @@ public class PaymentPositionCRUDService {
           AppError.DEBT_POSITION_NOT_UPDATABLE, organizationFiscalCode, ppModel.getIupd());
     }
 
-    // Save the actual validity date because if the validity date entered is null and the status is VALID, these must be retained.
+    // Save the actual validity date because if the validity date entered is null and the status is
+    // VALID, these must be retained.
     Map<Long, LocalDateTime> actualValidityDatesMap = new HashMap<>();
     for (PaymentOption po : ppToUpdate.getPaymentOption()) {
       // (key,value) = (Payment Option entity ID, Payment Option entity validity_date)
@@ -321,7 +318,8 @@ public class PaymentPositionCRUDService {
     try {
 
       // Flip the model into entities. This mapper is safe and does not overwrite protected values:
-      // for example, for a value such as fee, GPD is the only possible writer, while the organization can only read.
+      // for example, for a value such as fee, GPD is the only possible writer, while the
+      // organization can only read.
       modelMapper.map(ppModel, ppToUpdate);
 
       // update amounts adding notification fee
@@ -357,8 +355,8 @@ public class PaymentPositionCRUDService {
       }
       throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
     } catch (OptimisticLockingFailureException e) {
-      throw new AppException(AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE,
-          organizationFiscalCode);
+      throw new AppException(
+          AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE, organizationFiscalCode);
     } catch (Exception e) {
       log.error(String.format(ERROR_UPDATE_LOG_MSG, e.getMessage()), e);
       throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
@@ -369,23 +367,26 @@ public class PaymentPositionCRUDService {
    * This method preserves the validity date if the validity date in input is null and if the
    * validity dates on the database are valid and already in use, i.e. before now.
    *
-   * @param ppToUpdate             the Payment Position Entity mixed with new inputs entered. values
-   *                               such as fee, notificationFee, PSP etc are not modified, while
-   *                               values such as company name, due date, amount etc are updated
-   *                               with user input.
+   * @param ppToUpdate the Payment Position Entity mixed with new inputs entered. values such as
+   *     fee, notificationFee, PSP etc are not modified, while values such as company name, due
+   *     date, amount etc are updated with user input.
    * @param actualValidityDatesMap The validity dates actually persisted on the database before
-   *                               update.
+   *     update.
    */
-  private static void preserveValidityDateIfValidStatus(PaymentPosition ppToUpdate,
-      Map<Long, LocalDateTime> actualValidityDatesMap, boolean toPublish) {
+  private static void preserveValidityDateIfValidStatus(
+      PaymentPosition ppToUpdate,
+      Map<Long, LocalDateTime> actualValidityDatesMap,
+      boolean toPublish) {
     // po.validity_date is the input, actualValidityDate is the value on the database.
     LocalDateTime now = LocalDateTime.now();
     for (PaymentOption po : ppToUpdate.getPaymentOption()) {
       LocalDateTime actualValidityDate = actualValidityDatesMap.get(po.getId());
       // If the input is null and the actual (on database) validity_date is before now preserve it.
-      if (po.getValidityDate() == null && actualValidityDate != null && actualValidityDate.isBefore(
-          now)
-          && ppToUpdate.getStatus().equals(DebtPositionStatus.VALID) && toPublish) {
+      if (po.getValidityDate() == null
+          && actualValidityDate != null
+          && actualValidityDate.isBefore(now)
+          && ppToUpdate.getStatus().equals(DebtPositionStatus.VALID)
+          && toPublish) {
         po.setValidityDate(actualValidityDate);
       }
     }
@@ -400,7 +401,7 @@ public class PaymentPositionCRUDService {
    * Transfer
    *
    * @param organizationFiscalCode EC
-   * @param ppToUpdate             the entity of the debt position to update
+   * @param ppToUpdate the entity of the debt position to update
    */
   private static void updateAmounts(String organizationFiscalCode, PaymentPosition ppToUpdate) {
     ppToUpdate
@@ -455,8 +456,8 @@ public class PaymentPositionCRUDService {
     } catch (AppException appException) {
       throw appException;
     } catch (OptimisticLockingFailureException e) {
-      throw new AppException(AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE,
-          organizationFiscalCode);
+      throw new AppException(
+          AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE, organizationFiscalCode);
     } catch (Exception e) {
       log.error(String.format(ERROR_CREATION_LOG_MSG, e.getMessage()), e);
       throw new AppException(AppError.DEBT_POSITION_CREATION_FAILED, organizationFiscalCode);
@@ -489,7 +490,8 @@ public class PaymentPositionCRUDService {
               inputPaymentPosition.getIupd());
         }
 
-        // Save the actual validity date because if the validity date entered is null and the status is VALID, these must be retained.
+        // Save the actual validity date because if the validity date entered is null and the status
+        // is VALID, these must be retained.
         Map<Long, LocalDateTime> actualValidityDatesMap = new HashMap<>();
         for (PaymentOption po : currentPP.getPaymentOption()) {
           // (key,value) = (Payment Option entity ID, Payment Option entity validity_date)
@@ -731,8 +733,8 @@ public class PaymentPositionCRUDService {
             AppError.DEBT_POSITION_PO_METADATA_UNIQUE_VIOLATION, organizationFiscalCode);
       }
       if (TRANSFER_METADATA_UNIQUE_CONSTRAINT.equalsIgnoreCase(constraintName)) {
-        throw new AppException(AppError.DEBT_POSITION_TRANSFER_METADATA_UNIQUE_VIOLATION,
-            organizationFiscalCode);
+        throw new AppException(
+            AppError.DEBT_POSITION_TRANSFER_METADATA_UNIQUE_VIOLATION, organizationFiscalCode);
       }
       throw new AppException(AppError.DEBT_POSITION_UNIQUE_VIOLATION, organizationFiscalCode);
     }

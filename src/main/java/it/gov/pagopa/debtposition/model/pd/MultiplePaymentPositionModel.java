@@ -12,9 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MultiplePaymentPositionModel implements Serializable {
 
-  /**
-   * generated serialVersionUID
-   */
+  /** generated serialVersionUID */
   private static final long serialVersionUID = -928726282710084991L;
 
   @Valid

@@ -13,9 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class NodeCheckPositionModel implements Serializable {
 
-  /**
-   * generated serialVersionUID
-   */
+  /** generated serialVersionUID */
   private static final long serialVersionUID = -8146130541120434068L;
 
   private List<NodePosition> positionslist;

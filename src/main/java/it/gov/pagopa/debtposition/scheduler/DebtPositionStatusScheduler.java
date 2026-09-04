@@ -45,9 +45,7 @@ public class DebtPositionStatusScheduler {
     updateMDCForStartExecution("changeDebtPositionStatusToValid", "");
 
     try {
-      runBatchJob(
-          "changeDebtPositionStatusToValid",
-          batchService::updatePublishedToValidBatch);
+      runBatchJob("changeDebtPositionStatusToValid", batchService::updatePublishedToValidBatch);
 
       updateMDCForEndExecution();
     } catch (BatchJobException e) {
@@ -71,9 +69,7 @@ public class DebtPositionStatusScheduler {
     updateMDCForStartExecution("changeDebtPositionStatusToExpired", "");
 
     try {
-      runBatchJob(
-          "changeDebtPositionStatusToExpired",
-          batchService::updateValidToExpiredBatch);
+      runBatchJob("changeDebtPositionStatusToExpired", batchService::updateValidToExpiredBatch);
 
       updateMDCForEndExecution();
     } catch (BatchJobException e) {
@@ -89,8 +85,7 @@ public class DebtPositionStatusScheduler {
   }
 
   private void runBatchJob(
-      String operationName,
-      BiFunction<LocalDateTime, Integer, Integer> batchOperation) {
+      String operationName, BiFunction<LocalDateTime, Integer, Integer> batchOperation) {
 
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
 
@@ -104,16 +99,10 @@ public class DebtPositionStatusScheduler {
       try {
         affectedRows = batchOperation.apply(currentDate, batchSize);
       } catch (Exception e) {
-        throw new BatchJobException(
-            operationName,
-            batchIndex,
-            batchSize,
-            totalAffectedRows,
-            e);
+        throw new BatchJobException(operationName, batchIndex, batchSize, totalAffectedRows, e);
       }
 
       totalAffectedRows += affectedRows;
-
 
       /*
        * Logging:
@@ -125,9 +114,7 @@ public class DebtPositionStatusScheduler {
        * With batchSize=500, logs are emitted at batchIndex 1, 500, 1000, etc.
        */
       if (affectedRows > 0
-          && (batchIndex == 1
-          || batchIndex % batchSize == 0
-          || affectedRows < batchSize)) {
+          && (batchIndex == 1 || batchIndex % batchSize == 0 || affectedRows < batchSize)) {
         log.info(
             "{} - processed batchIndex={}, batchSize={}, affectedRows={}, totalAffectedRows={}",
             operationName,
@@ -172,10 +159,7 @@ public class DebtPositionStatusScheduler {
       super(
           String.format(
               "%s failed at batchIndex=%d, batchSize=%d, totalAffectedRows=%d",
-              operationName,
-              batchIndex,
-              batchSize,
-              totalAffectedRows),
+              operationName, batchIndex, batchSize, totalAffectedRows),
           cause);
       this.operationName = operationName;
       this.batchIndex = batchIndex;

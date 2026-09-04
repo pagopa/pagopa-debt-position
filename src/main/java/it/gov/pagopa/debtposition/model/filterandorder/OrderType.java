@@ -1,8 +1,6 @@
 package it.gov.pagopa.debtposition.model.filterandorder;
 
-/**
- * This interface is implemented by the enumerations in the {@link Order} class
- */
+/** This interface is implemented by the enumerations in the {@link Order} class */
 public interface OrderType {
 
   /**

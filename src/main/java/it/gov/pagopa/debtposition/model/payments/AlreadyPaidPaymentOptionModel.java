@@ -11,9 +11,7 @@ import lombok.NoArgsConstructor;
 @Schema(name = "AlreadyPaidPaymentOptionModel")
 public class AlreadyPaidPaymentOptionModel implements Serializable {
 
-  /**
-   * generated serialVersionUID
-   */
+  /** generated serialVersionUID */
   private static final long serialVersionUID = 121803220168846009L;
 
   private LocalDateTime paymentDate;

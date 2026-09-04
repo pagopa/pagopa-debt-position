@@ -15,9 +15,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 public class PaymentPositionByOptionsAttribute implements Specification<PaymentPosition> {
 
-  /**
-   * generated serialVersionUID
-   */
+  /** generated serialVersionUID */
   private static final long serialVersionUID = 6534338388239897792L;
 
   private static final String PO_PAYMENT_POSITION_FIELD = "paymentPosition";
@@ -30,8 +28,11 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
   private final LocalDateTime dateTo;
   private final List<String> segregationCodes;
 
-  public PaymentPositionByOptionsAttribute(String organizationFiscalCode,
-      LocalDateTime dateFrom, LocalDateTime dateTo, List<String> segregationCodes) {
+  public PaymentPositionByOptionsAttribute(
+      String organizationFiscalCode,
+      LocalDateTime dateFrom,
+      LocalDateTime dateTo,
+      List<String> segregationCodes) {
     this.organizationFiscalCode = organizationFiscalCode;
     this.dateFrom = dateFrom;
     this.dateTo = dateTo;
@@ -39,13 +40,14 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
   }
 
   @Override
-  public Predicate toPredicate(Root<PaymentPosition> root, CriteriaQuery<?> query,
-      CriteriaBuilder cb) {
+  public Predicate toPredicate(
+      Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
 
     boolean hasDueFilter = (dateFrom != null || dateTo != null);
     boolean hasSegFilter = (segregationCodes != null && !segregationCodes.isEmpty());
 
-    // If there are no filters on PaymentOption, no join/subquery is forced and the predicate is always true
+    // If there are no filters on PaymentOption, no join/subquery is forced and the predicate is
+    // always true
     if (!hasDueFilter && !hasSegFilter) {
       return cb.conjunction();
     }
@@ -83,9 +85,8 @@ public class PaymentPositionByOptionsAttribute implements Specification<PaymentP
                 seg,
                 cb.and(
                     cb.greaterThanOrEqualTo(po.get(IUV_FIELD), segregationCode),
-                    cb.lessThan(po.get(IUV_FIELD),
-                        CommonUtil.getSegregationCodeEnd(segregationCode))
-                ));
+                    cb.lessThan(
+                        po.get(IUV_FIELD), CommonUtil.getSegregationCodeEnd(segregationCode))));
       }
       predicates.add(seg);
     }

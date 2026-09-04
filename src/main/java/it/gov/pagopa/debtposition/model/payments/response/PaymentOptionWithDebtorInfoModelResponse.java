@@ -19,9 +19,7 @@ import lombok.ToString;
 @Schema(name = "PaymentsWithDebtorInfoModelResponse")
 public class PaymentOptionWithDebtorInfoModelResponse implements Serializable {
 
-  /**
-   * generated serialVersionUID
-   */
+  /** generated serialVersionUID */
   private static final long serialVersionUID = 9129763339251863583L;
 
   // PaymentOption entity fields
@@ -51,8 +49,7 @@ public class PaymentOptionWithDebtorInfoModelResponse implements Serializable {
   private String iupd;
   private Type type;
   private String fiscalCode;
-  @ToString.Exclude
-  private String fullName;
+  @ToString.Exclude private String fullName;
   private String streetName;
   private String civicNumber;
   private String postalCode;
@@ -60,10 +57,8 @@ public class PaymentOptionWithDebtorInfoModelResponse implements Serializable {
   private String province;
   private String region;
   private String country;
-  @ToString.Exclude
-  private String email;
-  @ToString.Exclude
-  private String phone;
+  @ToString.Exclude private String email;
+  @ToString.Exclude private String phone;
   private String companyName;
   private String officeName;
   private DebtPositionStatus debtPositionStatus;

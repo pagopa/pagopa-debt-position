@@ -7,8 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class UniqueMetadataKeysValidator implements
-    ConstraintValidator<UniqueMetadataKeys, List<?>> {
+public class UniqueMetadataKeysValidator
+    implements ConstraintValidator<UniqueMetadataKeys, List<?>> {
 
   @Override
   public boolean isValid(List<?> metadata, ConstraintValidatorContext context) {

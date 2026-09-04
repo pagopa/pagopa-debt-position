@@ -306,8 +306,8 @@ class ConvertPPModelToPPEntityTest {
 
     ConvertPPModelToPPEntity mapper = new ConvertPPModelToPPEntity();
 
-    MappingContext<PaymentPositionModel, PaymentPosition> context = Mockito.mock(
-        MappingContext.class);
+    MappingContext<PaymentPositionModel, PaymentPosition> context =
+        Mockito.mock(MappingContext.class);
     Mockito.when(context.getSource()).thenReturn(source);
     Mockito.when(context.getDestination()).thenReturn(destination);
 
@@ -348,5 +348,4 @@ class ConvertPPModelToPPEntityTest {
         .findFirst()
         .orElseThrow(() -> new AssertionError("PaymentOption con iuv " + iuv + " non trovata"));
   }
-
 }

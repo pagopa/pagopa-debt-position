@@ -20,9 +20,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PaymentOptionModel implements Serializable {
 
-  /**
-   * generated serialVersionUID
-   */
+  /** generated serialVersionUID */
   private static final long serialVersionUID = -8328320637402363721L;
 
   private String nav;
@@ -54,8 +52,7 @@ public class PaymentOptionModel implements Serializable {
   @Schema(accessMode = Schema.AccessMode.READ_ONLY)
   private long notificationFee;
 
-  @Valid
-  private List<TransferModel> transfer = new ArrayList<>();
+  @Valid private List<TransferModel> transfer = new ArrayList<>();
 
   @Valid
   @Size(min = 0, max = 10)
@@ -63,7 +60,8 @@ public class PaymentOptionModel implements Serializable {
   @UniqueMetadataKeys(message = "paymentOptionMetadata keys must be unique")
   @Schema(
       description =
-          "It can be added a maximum of 10 key-value pairs for metadata. Metadata keys must be unique within the same payment option.")
+          "It can be added a maximum of 10 key-value pairs for metadata. Metadata keys must be"
+              + " unique within the same payment option.")
   @ArraySchema(uniqueItems = true)
   private List<PaymentOptionMetadataModel> paymentOptionMetadata = new ArrayList<>();
 

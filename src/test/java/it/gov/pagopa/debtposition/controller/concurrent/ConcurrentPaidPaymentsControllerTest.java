@@ -33,8 +33,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 @Slf4j
 class ConcurrentPaidPaymentsControllerTest {
 
-  @Autowired
-  private MockMvc mvc;
+  @Autowired private MockMvc mvc;
 
   @Value("${nav.aux.digit}")
   private String auxDigit = "3";
@@ -64,9 +63,7 @@ class ConcurrentPaidPaymentsControllerTest {
             + Thread.currentThread().getName());
     // effettuo la notifica di pagamento di una rata parziale (setIsPartialPayment = true)
     mvc.perform(
-            post("/organizations/1234567890177777/paymentoptions/"
-                + auxDigit
-                + "1234564/pay")
+            post("/organizations/1234567890177777/paymentoptions/" + auxDigit + "1234564/pay")
                 .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is(oneOf(200, 409)))
@@ -88,9 +85,7 @@ class ConcurrentPaidPaymentsControllerTest {
             + Thread.currentThread().getName());
     // effettuo la notifica di pagamento di una rata parziale (setIsPartialPayment = true)
     mvc.perform(
-            post("/organizations/1234567890177777/paymentoptions/"
-                + auxDigit
-                + "1234565/pay")
+            post("/organizations/1234567890177777/paymentoptions/" + auxDigit + "1234565/pay")
                 .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is(oneOf(200, 409)))
@@ -107,10 +102,7 @@ class ConcurrentPaidPaymentsControllerTest {
     log.trace(
         "checkDebtPosition_after_partially_paid start => " + Thread.currentThread().getName());
     // recupero la PO e verifico lo stato in PO_PAID
-    String url =
-        "/organizations/1234567890177777/paymentoptions/"
-            + auxDigit
-            + "1234564";
+    String url = "/organizations/1234567890177777/paymentoptions/" + auxDigit + "1234564";
     mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))

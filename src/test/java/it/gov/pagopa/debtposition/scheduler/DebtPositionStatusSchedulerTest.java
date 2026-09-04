@@ -45,14 +45,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Execution(ExecutionMode.SAME_THREAD)
 class DebtPositionStatusSchedulerTest {
 
-  @Autowired
-  DebtPositionStatusScheduler scheduler;
+  @Autowired DebtPositionStatusScheduler scheduler;
 
-  @Autowired
-  private MockMvc mvc;
+  @Autowired private MockMvc mvc;
 
-  @MockitoBean
-  private LockProvider lockProvider;
+  @MockitoBean private LockProvider lockProvider;
 
   @SuppressWarnings("resource")
   @Container
@@ -72,11 +69,8 @@ class DebtPositionStatusSchedulerTest {
     registry.add("spring.jpa.properties.hibernate.default_schema", () -> "apd");
     registry.add("SCHEMA_NAME", () -> "apd");
     registry.add(
-        "spring.jpa.properties.hibernate.dialect",
-        () -> "org.hibernate.dialect.PostgreSQLDialect");
-    registry.add(
-        "spring.jpa.database-platform",
-        () -> "org.hibernate.dialect.PostgreSQLDialect");
+        "spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.PostgreSQLDialect");
+    registry.add("spring.jpa.database-platform", () -> "org.hibernate.dialect.PostgreSQLDialect");
     registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
     registry.add("cron.job.schedule.enabled", () -> "true");
     registry.add("cron.job.schedule.expression.valid.status", () -> "0 0 0 1 1 *");
@@ -88,9 +82,7 @@ class DebtPositionStatusSchedulerTest {
 
   @BeforeEach
   void mockShedlock() {
-    when(lockProvider.lock(any()))
-        .thenReturn(Optional.of(() -> {
-        }));
+    when(lockProvider.lock(any())).thenReturn(Optional.of(() -> {}));
   }
 
   @Test
@@ -101,8 +93,7 @@ class DebtPositionStatusSchedulerTest {
     LocalDateTime dueDate = now.plusSeconds(10);
 
     PaymentPositionDTO pp =
-        prepareScheduledPosition(
-            DebtPositionMock.getMock5(), validityDate, dueDate, false);
+        prepareScheduledPosition(DebtPositionMock.getMock5(), validityDate, dueDate, false);
 
     // creo una posizione debitoria (con 'validity date')
     mvc.perform(
@@ -158,8 +149,7 @@ class DebtPositionStatusSchedulerTest {
     LocalDateTime dueDate = now.plusSeconds(5);
 
     PaymentPositionDTO pp =
-        prepareScheduledPosition(
-            DebtPositionMock.getMock5(), validityDate, dueDate, false);
+        prepareScheduledPosition(DebtPositionMock.getMock5(), validityDate, dueDate, false);
 
     // creo una posizione debitoria (con 'validity date') senza valorizzare il campo switchToExpired
     // (quindi per default verrà messo a false) -> Lo stato deve rimanere VALID passata la due_date
@@ -171,8 +161,7 @@ class DebtPositionStatusSchedulerTest {
 
     // porto in pubblicata lo stato della posizione debitoria
     mvc.perform(
-            post(
-                "/organizations/SCHEDULEVALIDAFTERDUEDATE_12345678901/debtpositions/12345678901IUPDMOCK3/publish")
+            post("/organizations/SCHEDULEVALIDAFTERDUEDATE_12345678901/debtpositions/12345678901IUPDMOCK3/publish")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 
@@ -238,8 +227,7 @@ class DebtPositionStatusSchedulerTest {
     LocalDateTime dueDate = now.plusSeconds(5);
 
     PaymentPositionDTO pp =
-        prepareScheduledPosition(
-            DebtPositionMock.getMock7(), validityDate, dueDate, true);
+        prepareScheduledPosition(DebtPositionMock.getMock7(), validityDate, dueDate, true);
 
     // creo una posizione debitoria (con 'validity date') valorizzando il campo switchToExpired a
     // true -> Lo stato deve passare ad EXPIRED passata la due_date
@@ -317,8 +305,7 @@ class DebtPositionStatusSchedulerTest {
     LocalDateTime commonDueDate = now.plusSeconds(5);
 
     PaymentPositionDTO pp7 =
-        prepareScheduledPosition(
-            DebtPositionMock.getMock7(), validityDate, commonDueDate, true);
+        prepareScheduledPosition(DebtPositionMock.getMock7(), validityDate, commonDueDate, true);
 
     // All POs must be UNPAID + switchable to expired + have a dueDate that will expire soon
 
@@ -332,8 +319,7 @@ class DebtPositionStatusSchedulerTest {
 
     // porto in PUBLISHED lo stato della posizione debitoria
     mvc.perform(
-            post(
-                "/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions/12345678901IUPDMOCK3/publish")
+            post("/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions/12345678901IUPDMOCK3/publish")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 
@@ -379,16 +365,16 @@ class DebtPositionStatusSchedulerTest {
     Awaitility.await()
         .atMost(10, TimeUnit.SECONDS)
         .pollInterval(100, TimeUnit.MILLISECONDS)
-        .untilAsserted(() ->
-            mvc.perform(
-                    get("/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions/12345678901IUPDMOCK3")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.status")
-                        .value(DebtPositionStatus.EXPIRED.toString()))
-        );
+        .untilAsserted(
+            () ->
+                mvc.perform(
+                        get("/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions/12345678901IUPDMOCK3")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(
+                        MockMvcResultMatchers.jsonPath("$.status")
+                            .value(DebtPositionStatus.EXPIRED.toString())));
 
     // aggiorno la posizione debitoria (stato atteso DRAFT)
     pp7.setCompanyName("Comune di Napoli");
@@ -426,12 +412,14 @@ class DebtPositionStatusSchedulerTest {
     LocalDateTime futureDue = publishNow.plus(2, ChronoUnit.DAYS);
 
     pp7.setValidityDate(futureValidity);
-    pp7.getPaymentOption().forEach(opt -> {
-      opt.setStatus(PaymentOptionStatus.PO_UNPAID);
-      opt.setSwitchToExpired(true);
-      opt.setDueDate(futureDue);
-      opt.setValidityDate(futureValidity);
-    });
+    pp7.getPaymentOption()
+        .forEach(
+            opt -> {
+              opt.setStatus(PaymentOptionStatus.PO_UNPAID);
+              opt.setSwitchToExpired(true);
+              opt.setDueDate(futureDue);
+              opt.setValidityDate(futureValidity);
+            });
 
     mvc.perform(
             put("/organizations/SCHEDULEEXPANDUPD_12345678901/debtpositions/12345678901IUPDMOCK3?toPublish=True")
@@ -475,13 +463,13 @@ class DebtPositionStatusSchedulerTest {
     LocalDateTime dueDate = now.plusDays(2);
 
     PaymentPositionDTO pp =
-        prepareScheduledPosition(
-            DebtPositionMock.getMock5(), validityDate, dueDate, false);
+        prepareScheduledPosition(DebtPositionMock.getMock5(), validityDate, dueDate, false);
 
     pp.setIupd("12345678901IUPDMOCK_VALID_FUTURE");
     pp.getPaymentOption().get(0).setIuv("123456_VALID_FUTURE");
 
-    // create a debt position with a validity date in the future and switchToExpired = false -> The status should remain PUBLISHED even after the batch runs before the validity date
+    // create a debt position with a validity date in the future and switchToExpired = false -> The
+    // status should remain PUBLISHED even after the batch runs before the validity date
     mvc.perform(
             post("/organizations/SCHEDULEVALIDFUTURE_12345678901/debtpositions")
                 .content(TestUtil.toJson(pp))
@@ -490,8 +478,7 @@ class DebtPositionStatusSchedulerTest {
 
     // publish the debt position
     mvc.perform(
-            post(
-                "/organizations/SCHEDULEVALIDFUTURE_12345678901/debtpositions/12345678901IUPDMOCK_VALID_FUTURE/publish")
+            post("/organizations/SCHEDULEVALIDFUTURE_12345678901/debtpositions/12345678901IUPDMOCK_VALID_FUTURE/publish")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 
@@ -529,15 +516,13 @@ class DebtPositionStatusSchedulerTest {
     LocalDateTime dueDate = now.plusSeconds(10);
 
     PaymentPositionDTO pp1 =
-        prepareScheduledPosition(
-            DebtPositionMock.getMock5(), validityDate, dueDate, false);
+        prepareScheduledPosition(DebtPositionMock.getMock5(), validityDate, dueDate, false);
 
     pp1.setIupd("12345678901IUPDMOCK_BATCH_1");
     pp1.getPaymentOption().get(0).setIuv("123456_BATCH_1");
 
     PaymentPositionDTO pp2 =
-        prepareScheduledPosition(
-            DebtPositionMock.getMock5(), validityDate, dueDate, false);
+        prepareScheduledPosition(DebtPositionMock.getMock5(), validityDate, dueDate, false);
 
     pp2.setIupd("12345678901IUPDMOCK_BATCH_2");
     pp2.getPaymentOption().get(0).setIuv("123456_BATCH_2");
@@ -549,7 +534,8 @@ class DebtPositionStatusSchedulerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
-    // create the second debt position with a validity date in the future and switchToExpired = false
+    // create the second debt position with a validity date in the future and switchToExpired =
+    // false
     mvc.perform(
             post("/organizations/SCHEDULEVALIDBATCH_12345678901/debtpositions")
                 .content(TestUtil.toJson(pp2))
@@ -558,15 +544,13 @@ class DebtPositionStatusSchedulerTest {
 
     // set the first debt position to PUBLISHED
     mvc.perform(
-            post(
-                "/organizations/SCHEDULEVALIDBATCH_12345678901/debtpositions/12345678901IUPDMOCK_BATCH_1/publish")
+            post("/organizations/SCHEDULEVALIDBATCH_12345678901/debtpositions/12345678901IUPDMOCK_BATCH_1/publish")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 
     // set the second debt position to PUBLISHED
     mvc.perform(
-            post(
-                "/organizations/SCHEDULEVALIDBATCH_12345678901/debtpositions/12345678901IUPDMOCK_BATCH_2/publish")
+            post("/organizations/SCHEDULEVALIDBATCH_12345678901/debtpositions/12345678901IUPDMOCK_BATCH_2/publish")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 
@@ -636,12 +620,14 @@ class DebtPositionStatusSchedulerTest {
     pp.setValidityDate(validityDate);
     pp.setSwitchToExpired(switchToExpired);
 
-    pp.getPaymentOption().forEach(po -> {
-      po.setValidityDate(validityDate);
-      po.setDueDate(dueDate);
-      po.setStatus(PaymentOptionStatus.PO_UNPAID);
-      po.setSwitchToExpired(switchToExpired);
-    });
+    pp.getPaymentOption()
+        .forEach(
+            po -> {
+              po.setValidityDate(validityDate);
+              po.setDueDate(dueDate);
+              po.setStatus(PaymentOptionStatus.PO_UNPAID);
+              po.setSwitchToExpired(switchToExpired);
+            });
 
     return pp;
   }

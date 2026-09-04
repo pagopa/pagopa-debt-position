@@ -35,7 +35,7 @@ import org.hibernate.annotations.BatchSize;
 
 /**
  * @author aacitelli
- * <p>JPA Entity
+ *     <p>JPA Entity
  */
 @Builder(toBuilder = true)
 @Getter
@@ -46,23 +46,19 @@ import org.hibernate.annotations.BatchSize;
 @Table(
     name = "payment_option",
     uniqueConstraints = {
-        @UniqueConstraint(
-            name = "UniquePaymentOpt",
-            columnNames = {"iuv", "organization_fiscal_code"}),
-        @UniqueConstraint(
-            name = "UniquePaymentOptNav",
-            columnNames = {"nav", "organization_fiscal_code"}),
+      @UniqueConstraint(
+          name = "UniquePaymentOpt",
+          columnNames = {"iuv", "organization_fiscal_code"}),
+      @UniqueConstraint(
+          name = "UniquePaymentOptNav",
+          columnNames = {"nav", "organization_fiscal_code"}),
     })
-@JsonIdentityInfo(
-    generator = ObjectIdGenerators.PropertyGenerator.class,
-    property = "id")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class PaymentOption implements Serializable {
 
   public static final String SINGLE_OPTION = "SINGLE_OPTION";
 
-  /**
-   * generated serialVersionUID
-   */
+  /** generated serialVersionUID */
   private static final long serialVersionUID = -2800191377721368418L;
 
   @Id
@@ -70,11 +66,9 @@ public class PaymentOption implements Serializable {
   @SequenceGenerator(name = "PAYMENT_OPT_SEQ", sequenceName = "PAYMENT_OPT_SEQ", allocationSize = 1)
   private Long id;
 
-  @NotNull
-  private String nav;
+  @NotNull private String nav;
 
-  @NotNull
-  private String iuv;
+  @NotNull private String iuv;
 
   @NotNull
   @Column(name = "organization_fiscal_code")
@@ -84,8 +78,7 @@ public class PaymentOption implements Serializable {
   @Column(name = "payment_plan_id", length = 50)
   private String paymentPlanId;
 
-  @NotNull
-  private long amount;
+  @NotNull private long amount;
 
   private String description;
 
@@ -179,18 +172,12 @@ public class PaymentOption implements Serializable {
   @ToString.Exclude
   private String postalCode;
 
-  @ToString.Exclude
-  private String city;
-  @ToString.Exclude
-  private String province;
-  @ToString.Exclude
-  private String region;
-  @ToString.Exclude
-  private String country;
-  @ToString.Exclude
-  private String email;
-  @ToString.Exclude
-  private String phone;
+  @ToString.Exclude private String city;
+  @ToString.Exclude private String province;
+  @ToString.Exclude private String region;
+  @ToString.Exclude private String country;
+  @ToString.Exclude private String email;
+  @ToString.Exclude private String phone;
 
   @Column(name = "send_sync")
   @Builder.Default
@@ -202,9 +189,7 @@ public class PaymentOption implements Serializable {
 
   // flag that identifies if the payment option has a payment in progress (false = no payment in
   // progress)
-  @Builder.Default
-  @Transient
-  private boolean paymentInProgress = false;
+  @Builder.Default @Transient private boolean paymentInProgress = false;
 
   @ManyToOne(
       targetEntity = PaymentPosition.class,

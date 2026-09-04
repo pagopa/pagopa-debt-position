@@ -123,9 +123,9 @@ public class PaymentsController implements IPaymentsController {
             "POST",
             "reportTransfer",
             String.format(
-                LOG_BASE_PARAMS_DETAIL,
-                CommonUtil.sanitize(organizationFiscalCode),
-                CommonUtil.sanitize(iuv))
+                    LOG_BASE_PARAMS_DETAIL,
+                    CommonUtil.sanitize(organizationFiscalCode),
+                    CommonUtil.sanitize(iuv))
                 + "; transferId="
                 + CommonUtil.sanitize(transferId)
                 + "; iur="
@@ -152,9 +152,9 @@ public class PaymentsController implements IPaymentsController {
             "PUT",
             "updateNotificationFee",
             String.format(
-                LOG_BASE_PARAMS_DETAIL,
-                CommonUtil.sanitize(organizationFiscalCode),
-                CommonUtil.sanitize(iuv))
+                    LOG_BASE_PARAMS_DETAIL,
+                    CommonUtil.sanitize(organizationFiscalCode),
+                    CommonUtil.sanitize(iuv))
                 + "; notificationFee="
                 + notificationFee));
     PaymentOption updatedPaymentOption =

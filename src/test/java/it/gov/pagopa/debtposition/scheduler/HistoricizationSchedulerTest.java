@@ -36,8 +36,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 @SpringJUnitConfig(SchedulerConfig.class)
 class HistoricizationSchedulerTest {
 
-  @MockitoBean
-  PaymentPositionRepository paymentPositionRepository;
+  @MockitoBean PaymentPositionRepository paymentPositionRepository;
 
   // azure storage params
   @Value("${azure.archive.storage.connection}")

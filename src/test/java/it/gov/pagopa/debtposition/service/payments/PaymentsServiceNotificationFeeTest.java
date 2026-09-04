@@ -31,26 +31,19 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(MockitoExtension.class)
 class PaymentsServiceNotificationFeeTest {
 
-  @Mock
-  private PaymentPositionRepository paymentPositionRepository;
+  @Mock private PaymentPositionRepository paymentPositionRepository;
 
-  @Mock
-  private PaymentOptionRepository paymentOptionRepository;
+  @Mock private PaymentOptionRepository paymentOptionRepository;
 
-  @Mock
-  private ModelMapper modelMapper;
+  @Mock private ModelMapper modelMapper;
 
-  @Mock
-  private NodeClient nodeClient;
+  @Mock private NodeClient nodeClient;
 
-  @Mock
-  private SendClient sendClient;
+  @Mock private SendClient sendClient;
 
-  @Mock
-  private NotificationFeeUpdateService notificationFeeUpdateService;
+  @Mock private NotificationFeeUpdateService notificationFeeUpdateService;
 
-  @Mock
-  private PaymentOptionLookupService paymentOptionLookupService;
+  @Mock private PaymentOptionLookupService paymentOptionLookupService;
 
   private PaymentsService paymentsService;
 
@@ -80,15 +73,7 @@ class PaymentsServiceNotificationFeeTest {
 
     NotificationPriceResponse priceResponse =
         new NotificationPriceResponse(
-            "IUN",
-            1,
-            1,
-            0,
-            0,
-            ZonedDateTime.now(),
-            ZonedDateTime.now(),
-            1,
-            1);
+            "IUN", 1, 1, 0, 0, ZonedDateTime.now(), ZonedDateTime.now(), 1, 1);
 
     PaymentOption updatedPaymentOption = new PaymentOption();
     updatedPaymentOption.setId(10L);
@@ -111,8 +96,7 @@ class PaymentsServiceNotificationFeeTest {
     org.assertj.core.api.Assertions.assertThat(paymentOption.getAmount()).isEqualTo(1001L);
     org.assertj.core.api.Assertions.assertThat(paymentOption.getNotificationFee()).isEqualTo(1L);
     org.assertj.core.api.Assertions.assertThat(paymentOption.getLastUpdatedDate()).isNotNull();
-    org.assertj.core.api.Assertions
-        .assertThat(paymentOption.getLastUpdatedDateNotificationFee())
+    org.assertj.core.api.Assertions.assertThat(paymentOption.getLastUpdatedDateNotificationFee())
         .isNotNull();
   }
 
@@ -138,9 +122,7 @@ class PaymentsServiceNotificationFeeTest {
     when(notificationFeeUpdateService.loadContext("77777777777", "12345678901234567"))
         .thenReturn(
             new NotificationFeeUpdateService.PaymentOptionNotificationFeeContext(
-                10L,
-                "77777777777",
-                "312345678901234567"));
+                10L, "77777777777", "312345678901234567"));
 
     when(nodeClient.getCheckPosition(any(NodeCheckPositionModel.class)))
         .thenReturn(NodeCheckPositionResponse.builder().outcome("OK").build());
@@ -160,8 +142,8 @@ class PaymentsServiceNotificationFeeTest {
     verify(nodeClient).getCheckPosition(captor.capture());
     verify(notificationFeeUpdateService).applyNotificationFeeUpdate(10L, 150L, false);
 
-    org.assertj.core.api.Assertions
-        .assertThat(captor.getValue().getPositionslist().get(0).getNoticeNumber())
+    org.assertj.core.api.Assertions.assertThat(
+            captor.getValue().getPositionslist().get(0).getNoticeNumber())
         .isEqualTo("312345678901234567");
   }
 
@@ -170,9 +152,7 @@ class PaymentsServiceNotificationFeeTest {
     when(notificationFeeUpdateService.loadContext("77777777777", "12345678901234567"))
         .thenReturn(
             new NotificationFeeUpdateService.PaymentOptionNotificationFeeContext(
-                10L,
-                "77777777777",
-                "312345678901234567"));
+                10L, "77777777777", "312345678901234567"));
 
     when(nodeClient.getCheckPosition(any(NodeCheckPositionModel.class)))
         .thenReturn(NodeCheckPositionResponse.builder().outcome("KO").build());
@@ -195,9 +175,7 @@ class PaymentsServiceNotificationFeeTest {
     when(notificationFeeUpdateService.loadContext("77777777777", "12345678901234567"))
         .thenReturn(
             new NotificationFeeUpdateService.PaymentOptionNotificationFeeContext(
-                10L,
-                "77777777777",
-                "312345678901234567"));
+                10L, "77777777777", "312345678901234567"));
 
     when(nodeClient.getCheckPosition(any(NodeCheckPositionModel.class)))
         .thenThrow(FeignException.BadRequest.class)
@@ -218,12 +196,12 @@ class PaymentsServiceNotificationFeeTest {
     verify(nodeClient, org.mockito.Mockito.times(2)).getCheckPosition(captor.capture());
     verify(notificationFeeUpdateService).applyNotificationFeeUpdate(10L, 150L, false);
 
-    org.assertj.core.api.Assertions
-        .assertThat(captor.getAllValues().get(0).getPositionslist().get(0).getNoticeNumber())
+    org.assertj.core.api.Assertions.assertThat(
+            captor.getAllValues().get(0).getPositionslist().get(0).getNoticeNumber())
         .isEqualTo("312345678901234567");
 
-    org.assertj.core.api.Assertions
-        .assertThat(captor.getAllValues().get(1).getPositionslist().get(0).getNoticeNumber())
+    org.assertj.core.api.Assertions.assertThat(
+            captor.getAllValues().get(1).getPositionslist().get(0).getNoticeNumber())
         .isEqualTo("12345678901234567");
   }
 
@@ -232,9 +210,7 @@ class PaymentsServiceNotificationFeeTest {
     when(notificationFeeUpdateService.loadContext("77777777777", "12345678901234567"))
         .thenReturn(
             new NotificationFeeUpdateService.PaymentOptionNotificationFeeContext(
-                10L,
-                "77777777777",
-                "312345678901234567"));
+                10L, "77777777777", "312345678901234567"));
 
     when(nodeClient.getCheckPosition(any(NodeCheckPositionModel.class)))
         .thenThrow(new RuntimeException("Node timeout"));

@@ -17,11 +17,12 @@ public class PaymentPositionByServiceType implements Specification<PaymentPositi
   private ServiceType serviceType;
 
   @Override
-  public Predicate toPredicate(Root<PaymentPosition> root, CriteriaQuery<?> query,
-      CriteriaBuilder cb) {
+  public Predicate toPredicate(
+      Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
 
     if (serviceType == null) {
-      return cb.notEqual(root.get("serviceType"),
+      return cb.notEqual(
+          root.get("serviceType"),
           ServiceType.WISP); // If serviceType is null, return true for all except WISP
     }
 

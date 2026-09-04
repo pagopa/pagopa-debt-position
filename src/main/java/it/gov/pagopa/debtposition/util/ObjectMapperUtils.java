@@ -65,18 +65,15 @@ public class ObjectMapperUtils {
         .setConverter(convertPPv3EntityToPPv3Response);
   }
 
-  /**
-   * Hide from public usage.
-   */
-  private ObjectMapperUtils() {
-  }
+  /** Hide from public usage. */
+  private ObjectMapperUtils() {}
 
   /**
    * Note: outClass object must have default constructor with no arguments
    *
-   * @param <D>      type of result object.
-   * @param <T>      type of source object to map from.
-   * @param entity   entity that needs to be mapped.
+   * @param <D> type of result object.
+   * @param <T> type of source object to map from.
+   * @param entity entity that needs to be mapped.
    * @param outClass class of result object.
    * @return new object of <code>outClass</code> type.
    */
@@ -88,9 +85,9 @@ public class ObjectMapperUtils {
    * Note: outClass object must have default constructor with no arguments
    *
    * @param entityList list of entities that needs to be mapped
-   * @param outCLass   class of result list element
-   * @param <D>        type of objects in result list
-   * @param <T>        type of entity in <code>entityList</code>
+   * @param outCLass class of result list element
+   * @param <D> type of objects in result list
+   * @param <T> type of entity in <code>entityList</code>
    * @return list of mapped object with <code><D></code> type.
    */
   public static <D, T> List<D> mapAll(final Collection<T> entityList, Class<D> outCLass) {
@@ -100,7 +97,7 @@ public class ObjectMapperUtils {
   /**
    * Maps {@code source} to {@code destination}.
    *
-   * @param source      object to map from
+   * @param source object to map from
    * @param destination object to map to
    */
   public static <S, D> D map(final S source, D destination) {

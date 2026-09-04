@@ -114,7 +114,7 @@ public class DebtPositionValidation {
     if (from != null
         && to != null
         && (!(from.isBefore(to) || from.isEqual(to))
-        || Duration.between(from, to).toDays() > maxDaysInterval)) {
+            || Duration.between(from, to).toDays() > maxDaysInterval)) {
       throw new AppException(
           AppError.DEBT_POSITION_NOT_RECOVERABLE,
           from,
@@ -306,7 +306,7 @@ public class DebtPositionValidation {
 
     if (!ppToReport.getServiceType().equals(ServiceType.ACA)
         && (!poToReport.getStatus().equals(PaymentOptionStatus.PO_PAID)
-        && !poToReport.getStatus().equals(PaymentOptionStatus.PO_PARTIALLY_REPORTED))) {
+            && !poToReport.getStatus().equals(PaymentOptionStatus.PO_PARTIALLY_REPORTED))) {
       throw new AppException(
           AppError.TRANSFER_NOT_ACCOUNTABLE,
           poToReport.getOrganizationFiscalCode(),

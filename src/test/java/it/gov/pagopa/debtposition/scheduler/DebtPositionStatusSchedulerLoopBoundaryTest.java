@@ -19,14 +19,14 @@ class DebtPositionStatusSchedulerLoopBoundaryTest {
 
   private static final int BATCH_SIZE = 2;
 
-  @Mock
-  private DebtPositionStatusBatchService batchService;
+  @Mock private DebtPositionStatusBatchService batchService;
 
   private DebtPositionStatusScheduler scheduler;
 
   @BeforeEach
   void setUp() {
-    // The scheduler is instantiated directly to verify the loop boundary without loading the Spring context.
+    // The scheduler is instantiated directly to verify the loop boundary without loading the Spring
+    // context.
     scheduler = new DebtPositionStatusScheduler(batchService, BATCH_SIZE);
   }
 

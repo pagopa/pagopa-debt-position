@@ -47,11 +47,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 @AutoConfigureMockMvc
 class DebtPositionControllerV3Test {
 
-  @Autowired
-  private MockMvc mvc;
+  @Autowired private MockMvc mvc;
 
-  @Mock
-  private ModelMapper modelMapperMock;
+  @Mock private ModelMapper modelMapperMock;
 
   private static final String ORG_FISCAL_CODE = "7777777777";
 
@@ -172,7 +170,6 @@ class DebtPositionControllerV3Test {
         .andExpect(status().isCreated());
   }
 
-
   @Test
   void createDebtPosition_400_duplicateIuvAcrossInstallments() throws Exception {
     final String uri = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
@@ -185,20 +182,21 @@ class DebtPositionControllerV3Test {
 
     PaymentOptionModelV3 po1 = basePaymentOption(false);
     po1.setDescription("PO Single option");
-    po1.getInstallments().add(
-        buildInstallmentWithIuv(DUPL_IUV, 500L, "Saldo unico", LocalDateTime.now().plusDays(30)));
+    po1.getInstallments()
+        .add(
+            buildInstallmentWithIuv(
+                DUPL_IUV, 500L, "Saldo unico", LocalDateTime.now().plusDays(30)));
 
     PaymentOptionModelV3 po2 = basePaymentOption(true);
     po2.setDescription("PO Plan A");
-    po2.getInstallments().add(buildInstallmentWithIuv(DUPL_IUV, 600L, "Piano A - Rata 1/1",
-        LocalDateTime.now().plusDays(40)));
+    po2.getInstallments()
+        .add(
+            buildInstallmentWithIuv(
+                DUPL_IUV, 600L, "Piano A - Rata 1/1", LocalDateTime.now().plusDays(40)));
 
     pp.setPaymentOption(List.of(po1, po2));
 
-    mvc.perform(
-            post(uri)
-                .content(TestUtil.toJson(pp))
-                .contentType(MediaType.APPLICATION_JSON))
+    mvc.perform(post(uri).content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.title").value("BAD REQUEST"))
         .andExpect(jsonPath("$.status").value(400));
@@ -211,9 +209,7 @@ class DebtPositionControllerV3Test {
     PaymentPositionModelV3 ppNoInst = createPaymentPositionV3(1, 0); // <-- 0 installments
 
     mvc.perform(
-            post(uri)
-                .content(TestUtil.toJson(ppNoInst))
-                .contentType(MediaType.APPLICATION_JSON))
+            post(uri).content(TestUtil.toJson(ppNoInst)).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.detail").value(containsString("installments")));
   }
@@ -229,10 +225,7 @@ class DebtPositionControllerV3Test {
             new InstallmentMetadataModel("INSTALLMENT-DUP-KEY", "value-1"),
             new InstallmentMetadataModel("INSTALLMENT-DUP-KEY", "value-2")));
 
-    mvc.perform(
-            post(uri)
-                .content(TestUtil.toJson(pp))
-                .contentType(MediaType.APPLICATION_JSON))
+    mvc.perform(post(uri).content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
@@ -252,10 +245,7 @@ class DebtPositionControllerV3Test {
             new TransferMetadataModel("TRANSFER-DUP-KEY", "value-1"),
             new TransferMetadataModel("TRANSFER-DUP-KEY", "value-2")));
 
-    mvc.perform(
-            post(uri)
-                .content(TestUtil.toJson(pp))
-                .contentType(MediaType.APPLICATION_JSON))
+    mvc.perform(post(uri).content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
@@ -307,12 +297,14 @@ class DebtPositionControllerV3Test {
 
   @Test
   void createDebtPosition_MixedValidity_toPublishTrue() throws Exception {
-    String uri = String.format("/v3/organizations/%s/debtpositions?toPublish=true",
-        ORG_FISCAL_CODE);
+    String uri =
+        String.format("/v3/organizations/%s/debtpositions?toPublish=true", ORG_FISCAL_CODE);
     PaymentPositionModelV3 paymentPosition = createPaymentPositionV3(2, 1);
 
     // PO_1 with validity valued
-    paymentPosition.getPaymentOption().get(0)
+    paymentPosition
+        .getPaymentOption()
+        .get(0)
         .setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plusDays(1));
     // PO_2 with validity = null
     paymentPosition.getPaymentOption().get(1).setValidityDate(null);
@@ -332,20 +324,23 @@ class DebtPositionControllerV3Test {
 
   @Test
   void createDebtPosition_MixedValidity_toPublishFalse() throws Exception {
-    String uri = String.format("/v3/organizations/%s/debtpositions?toPublish=false",
-        ORG_FISCAL_CODE);
+    String uri =
+        String.format("/v3/organizations/%s/debtpositions?toPublish=false", ORG_FISCAL_CODE);
     PaymentPositionModelV3 paymentPosition = createPaymentPositionV3(2, 1);
 
     // PO_1 with validity valued
-    paymentPosition.getPaymentOption().get(0)
+    paymentPosition
+        .getPaymentOption()
+        .get(0)
         .setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plusDays(1));
     // PO_2 with validity = null
     paymentPosition.getPaymentOption().get(1).setValidityDate(null);
 
     var mvcResult =
-        mvc.perform(post(uri)
-                .content(TestUtil.toJson(paymentPosition))
-                .contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(
+                post(uri)
+                    .content(TestUtil.toJson(paymentPosition))
+                    .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isCreated())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andReturn();
@@ -376,30 +371,32 @@ class DebtPositionControllerV3Test {
     pp.setCompanyName("CompanyName");
 
     PaymentOptionModelV3 po0 = basePaymentOption(false); // expected description: "PO Single option"
-    po0.getInstallments().add(
-        buildInstallmentWithIuv(randomAlphaNum(17), 500L, "Saldo unico",
-            LocalDateTime.now().plusDays(30))
-    );
+    po0.getInstallments()
+        .add(
+            buildInstallmentWithIuv(
+                randomAlphaNum(17), 500L, "Saldo unico", LocalDateTime.now().plusDays(30)));
 
-    PaymentOptionModelV3 po1 = basePaymentOption(true);  // expected description: "PO Plan A"
-    po1.getInstallments().add(
-        buildInstallmentWithIuv(randomAlphaNum(17), 600L, "Piano A - Rata 1/1",
-            LocalDateTime.now().plusDays(40))
-    );
+    PaymentOptionModelV3 po1 = basePaymentOption(true); // expected description: "PO Plan A"
+    po1.getInstallments()
+        .add(
+            buildInstallmentWithIuv(
+                randomAlphaNum(17), 600L, "Piano A - Rata 1/1", LocalDateTime.now().plusDays(40)));
 
     pp.setPaymentOption(List.of(po0, po1));
 
-    mvc.perform(post(uri)
-            // with @JsonProperty(access = WRITE_ONLY) the description field is discarded by TestUtil.toJson(...) --> manual injection
-            .content(toJsonInjectWriteOnlyDescriptions(pp))
-            .contentType(MediaType.APPLICATION_JSON))
+    mvc.perform(
+            post(uri)
+                // with @JsonProperty(access = WRITE_ONLY) the description field is discarded by
+                // TestUtil.toJson(...) --> manual injection
+                .content(toJsonInjectWriteOnlyDescriptions(pp))
+                .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.paymentOption[0].description").doesNotExist())
         .andExpect(jsonPath("$.paymentOption[1].description").doesNotExist());
 
     // GET by IUPD
-    String getUri = String.format("/v3/organizations/%s/debtpositions/%s", ORG_FISCAL_CODE,
-        pp.getIupd());
+    String getUri =
+        String.format("/v3/organizations/%s/debtpositions/%s", ORG_FISCAL_CODE, pp.getIupd());
     mvc.perform(get(getUri).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -416,8 +413,7 @@ class DebtPositionControllerV3Test {
   void shouldNotFindDebtPositionsWithServiceTypeWISP() throws Exception {
     // Create a debt position with service type WISP
     String uri = "/v3/organizations/12345678905/debtpositions?serviceType=WISP";
-    PaymentPositionModelV3 paymentPositionV3 =
-        createPaymentPositionV3(1, 1);
+    PaymentPositionModelV3 paymentPositionV3 = createPaymentPositionV3(1, 1);
 
     mvc.perform(
             post(uri)
@@ -425,22 +421,21 @@ class DebtPositionControllerV3Test {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
-    // Retrieve debt positions; expect no results since the uploaded debt position has service type WISP
+    // Retrieve debt positions; expect no results since the uploaded debt position has service type
+    // WISP
     mvc.perform(
             get("/v3/organizations/12345678905/debtpositions")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.page_info.items_found").value(0));
+        .andExpect(MockMvcResultMatchers.jsonPath("$.page_info.items_found").value(0));
   }
 
   @Test
   void shouldFindDebtPositionsWithServiceTypeWISP() throws Exception {
     // Create a debt position with service type WISP
     String uri = "/v3/organizations/12345678906/debtpositions?serviceType=WISP";
-    PaymentPositionModelV3 paymentPositionV3 =
-        createPaymentPositionV3(1, 1);
+    PaymentPositionModelV3 paymentPositionV3 = createPaymentPositionV3(1, 1);
 
     mvc.perform(
             post(uri)
@@ -448,7 +443,8 @@ class DebtPositionControllerV3Test {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
-    // Retrieve debt positions; expect no results since the uploaded debt position has service type WISP
+    // Retrieve debt positions; expect no results since the uploaded debt position has service type
+    // WISP
     mvc.perform(
             get("/v3/organizations/12345678906/debtpositions?serviceType=WISP")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -466,20 +462,17 @@ class DebtPositionControllerV3Test {
     PaymentPositionModelV3 pp = createPaymentPositionV3(1, 1);
     pp.setIupd("IUPD-V3-STAMP-01");
 
-    TransferModel createTransfer = pp.getPaymentOption().get(0).getInstallments().get(0)
-        .getTransfer().get(0);
+    TransferModel createTransfer =
+        pp.getPaymentOption().get(0).getInstallments().get(0).getTransfer().get(0);
     createTransfer.setIban(null);
     createTransfer.setPostalIban(null);
     createTransfer.setStamp(new it.gov.pagopa.debtposition.model.pd.Stamp("hash-v3", "01", "RM"));
 
-    mvc.perform(
-            post(uri)
-                .content(TestUtil.toJson(pp))
-                .contentType(MediaType.APPLICATION_JSON))
+    mvc.perform(post(uri).content(TestUtil.toJson(pp)).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
-    TransferModel updateTransfer = pp.getPaymentOption().get(0).getInstallments().get(0)
-        .getTransfer().get(0);
+    TransferModel updateTransfer =
+        pp.getPaymentOption().get(0).getInstallments().get(0).getTransfer().get(0);
     updateTransfer.setStamp(null);
     updateTransfer.setIban("IT58C0200805403000102985524");
     updateTransfer.setAmount(pp.getPaymentOption().get(0).getInstallments().get(0).getAmount());
@@ -490,11 +483,11 @@ class DebtPositionControllerV3Test {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 
-    mvc.perform(
-            get(uri + "/IUPD-V3-STAMP-01").contentType(MediaType.APPLICATION_JSON))
+    mvc.perform(get(uri + "/IUPD-V3-STAMP-01").contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.paymentOption[0].installments[0].transfer[0].iban")
-            .value("IT58C0200805403000102985524"))
+        .andExpect(
+            jsonPath("$.paymentOption[0].installments[0].transfer[0].iban")
+                .value("IT58C0200805403000102985524"))
         .andExpect(jsonPath("$.paymentOption[0].installments[0].transfer[0].stamp").doesNotExist());
   }
 
@@ -526,8 +519,7 @@ class DebtPositionControllerV3Test {
             jsonPath("$.paymentOption[0].installments[0].transfer[0].stamp.hashDocument")
                 .value("hash-v3-b"))
         .andExpect(
-            jsonPath("$.paymentOption[0].installments[0].transfer[0].stamp.stampType")
-                .value("01"))
+            jsonPath("$.paymentOption[0].installments[0].transfer[0].stamp.stampType").value("01"))
         .andExpect(
             jsonPath("$.paymentOption[0].installments[0].transfer[0].stamp.provincialResidence")
                 .value("RM"));
@@ -586,12 +578,7 @@ class DebtPositionControllerV3Test {
 
     ObjectNode transferNode =
         (ObjectNode)
-            root.path("paymentOption")
-                .get(0)
-                .path("installments")
-                .get(0)
-                .path("transfer")
-                .get(0);
+            root.path("paymentOption").get(0).path("installments").get(0).path("transfer").get(0);
     transferNode.putNull("transferMetadata");
 
     mvc.perform(
@@ -604,8 +591,8 @@ class DebtPositionControllerV3Test {
 
   // ################### UTILS #################
 
-  public static PaymentPositionModelV3 createPaymentPositionV3(int numberOfPO,
-      int numberOfInstallment) {
+  public static PaymentPositionModelV3 createPaymentPositionV3(
+      int numberOfPO, int numberOfInstallment) {
     PaymentPositionModelV3 paymentPosition = new PaymentPositionModelV3();
     paymentPosition.setIupd(String.format("IUPD-%s", randomAlphaNum(10)));
     paymentPosition.setCompanyName("CompanyName");
@@ -694,8 +681,8 @@ class DebtPositionControllerV3Test {
     return po;
   }
 
-  private InstallmentModel buildInstallmentWithIuv(String iuv, long amount, String description,
-      LocalDateTime due) {
+  private InstallmentModel buildInstallmentWithIuv(
+      String iuv, long amount, String description, LocalDateTime due) {
     InstallmentModel inst = new InstallmentModel();
     inst.setIuv(iuv);
     inst.setAmount(amount);
@@ -713,10 +700,11 @@ class DebtPositionControllerV3Test {
 
     inst.setTransfer(List.of(tr));
 
-    ArrayList<InstallmentMetadataModel> instMetadataList = new ArrayList<>(
-        Arrays.asList(
-            new InstallmentMetadataModel("key1", "value1"),
-            new InstallmentMetadataModel("key2", "value2")));
+    ArrayList<InstallmentMetadataModel> instMetadataList =
+        new ArrayList<>(
+            Arrays.asList(
+                new InstallmentMetadataModel("key1", "value1"),
+                new InstallmentMetadataModel("key2", "value2")));
     inst.setInstallmentMetadata(instMetadataList);
 
     return inst;
@@ -735,8 +723,8 @@ class DebtPositionControllerV3Test {
     return String.format(formatSpec, s).replace(' ', '0');
   }
 
-  private String toJsonInjectWriteOnlyDescriptions(PaymentPositionModelV3 pp,
-      String... descriptions) throws Exception {
+  private String toJsonInjectWriteOnlyDescriptions(
+      PaymentPositionModelV3 pp, String... descriptions) throws Exception {
     String json = TestUtil.toJson(pp);
     ObjectMapper om = new ObjectMapper();
     JsonNode root = om.readTree(json);
@@ -762,5 +750,4 @@ class DebtPositionControllerV3Test {
 
     return om.writeValueAsString(root);
   }
-
 }

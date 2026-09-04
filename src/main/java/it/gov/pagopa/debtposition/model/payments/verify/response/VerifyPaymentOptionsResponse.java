@@ -20,9 +20,11 @@ public class VerifyPaymentOptionsResponse {
   private String organizationFiscalCode;
   private String companyName;
   private String officeName;
+
   @Schema(hidden = true)
   @JsonIgnore
   @JsonProperty("standin")
   private Boolean standIn;
+
   private List<PaymentOptionGroup> paymentOptions;
 }

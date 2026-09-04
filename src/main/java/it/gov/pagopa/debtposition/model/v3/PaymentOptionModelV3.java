@@ -19,7 +19,7 @@ public class PaymentOptionModelV3 implements Serializable {
 
   @Size(max = 140) // compliant to paForNode.xsd
   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-  //TODO to be made available on output to the new version of SANP
+  // TODO to be made available on output to the new version of SANP
   private String description;
 
   private LocalDateTime validityDate;
@@ -32,9 +32,7 @@ public class PaymentOptionModelV3 implements Serializable {
   @NotNull(message = "switch to expired value is required")
   private Boolean switchToExpired;
 
-  @Valid
-  @NotNull
-  private DebtorModel debtor;
+  @Valid @NotNull private DebtorModel debtor;
 
   @Valid
   @NotNull

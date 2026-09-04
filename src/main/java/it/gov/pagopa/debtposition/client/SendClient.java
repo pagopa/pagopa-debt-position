@@ -20,6 +20,6 @@ public interface SendClient {
   @GetMapping(
       value = "${service.get.notification.fee.path}",
       consumes = MediaType.APPLICATION_JSON_VALUE)
-  NotificationPriceResponse getNotificationFee(@PathVariable("paTaxId") String paFiscalCode,
-      @PathVariable("noticeCode") String nav);
+  NotificationPriceResponse getNotificationFee(
+      @PathVariable("paTaxId") String paFiscalCode, @PathVariable("noticeCode") String nav);
 }

@@ -256,9 +256,7 @@ public class OptionsService {
     return null;
   }
 
-  /**
-   * flag to identify a payment in progress
-   */
+  /** flag to identify a payment in progress */
   private static boolean hasProgress(PaymentOption po) {
     return po.getStatus() == PaymentOptionStatus.PO_PAID
         || po.getStatus() == PaymentOptionStatus.PO_PARTIALLY_REPORTED
@@ -287,9 +285,7 @@ public class OptionsService {
         .orElse(null);
   }
 
-  /**
-   * Converts the group's POs to InstallmentSummaries sorted by dueDate.
-   */
+  /** Converts the group's POs to InstallmentSummaries sorted by dueDate. */
   private List<InstallmentSummary> toInstallmentSummaries(
       List<PaymentOption> list, boolean ppInvalidOrExpired, boolean forceInvalid) {
     return list.stream()

@@ -33,25 +33,19 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 class DebtPositionControllerBulkTest {
 
-  @Autowired
-  private MockMvc mvc;
+  @Autowired private MockMvc mvc;
 
-  @Mock
-  private ModelMapper modelMapperMock;
+  @Mock private ModelMapper modelMapperMock;
 
-  @MockitoBean
-  private NodeClient nodeClient;
+  @MockitoBean private NodeClient nodeClient;
 
   @Value("${nav.aux.digit}")
   private String auxDigit;
 
   @BeforeEach
-  void setUp() {
-  }
+  void setUp() {}
 
-  /**
-   * CREATE MULTIPLE DEBT POSITIONS
-   */
+  /** CREATE MULTIPLE DEBT POSITIONS */
   @Test
   void createMultipleDebtPositions_201() throws Exception {
     mvc.perform(
@@ -97,9 +91,7 @@ class DebtPositionControllerBulkTest {
         .andExpect(status().isConflict());
   }
 
-  /**
-   * UPDATE MULTIPLE DEBT POSITIONS
-   */
+  /** UPDATE MULTIPLE DEBT POSITIONS */
   @Test
   void updateMultipleDebtPositions_200() throws Exception {
     MultiplePaymentPositionDTO multiplePaymentPositionDTO =
@@ -132,7 +124,6 @@ class DebtPositionControllerBulkTest {
         .andExpect(status().isNotFound());
   }
 
-
   @Test
   void updateMultipleDebtPositions_400() throws Exception {
     mvc.perform(
@@ -153,9 +144,7 @@ class DebtPositionControllerBulkTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
 
-  /**
-   * DELETE MULTIPLE DEBT POSITIONS
-   */
+  /** DELETE MULTIPLE DEBT POSITIONS */
   @Test
   void deleteMultipleDebtPositions_200() throws Exception {
     List<String> iupdList = new ArrayList<>();

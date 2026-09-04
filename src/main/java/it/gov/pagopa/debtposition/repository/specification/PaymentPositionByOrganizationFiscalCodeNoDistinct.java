@@ -9,16 +9,16 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 
 @AllArgsConstructor
-public class PaymentPositionByOrganizationFiscalCodeNoDistinct implements
-    Specification<PaymentPosition> {
+public class PaymentPositionByOrganizationFiscalCodeNoDistinct
+    implements Specification<PaymentPosition> {
 
   private static final long serialVersionUID = -5267534063062183370L;
 
   private final String organizationFiscalCode;
 
   @Override
-  public Predicate toPredicate(Root<PaymentPosition> root, CriteriaQuery<?> query,
-      CriteriaBuilder cb) {
+  public Predicate toPredicate(
+      Root<PaymentPosition> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
     if (organizationFiscalCode == null) {
       return cb.conjunction(); // CriteriaBuilder method to create a neutral predicate
     }
@@ -26,4 +26,3 @@ public class PaymentPositionByOrganizationFiscalCodeNoDistinct implements
     return cb.equal(root.get("organizationFiscalCode"), organizationFiscalCode);
   }
 }
-

@@ -12,33 +12,25 @@ public class DebtPositionStatusBatchService {
 
   private final PaymentPositionRepository paymentPositionRepository;
 
-  public DebtPositionStatusBatchService(
-      PaymentPositionRepository paymentPositionRepository) {
+  public DebtPositionStatusBatchService(PaymentPositionRepository paymentPositionRepository) {
     this.paymentPositionRepository = paymentPositionRepository;
   }
 
   @Transactional(
       propagation = Propagation.REQUIRES_NEW,
       timeoutString = "${cron.job.schedule.batch.timeout.seconds}")
-  public int updatePublishedToValidBatch(
-      LocalDateTime currentDate,
-      int batchSize) {
+  public int updatePublishedToValidBatch(LocalDateTime currentDate, int batchSize) {
 
     return paymentPositionRepository.updatePaymentPositionStatusToValidBatch(
-        currentDate,
-        DebtPositionStatus.VALID.name(),
-        batchSize);
+        currentDate, DebtPositionStatus.VALID.name(), batchSize);
   }
 
   @Transactional(
       propagation = Propagation.REQUIRES_NEW,
       timeoutString = "${cron.job.schedule.batch.timeout.seconds}")
-  public int updateValidToExpiredBatch(
-      LocalDateTime currentDate,
-      int batchSize) {
+  public int updateValidToExpiredBatch(LocalDateTime currentDate, int batchSize) {
 
     return paymentPositionRepository.updatePaymentPositionStatusToExpiredBatch(
-        currentDate,
-        batchSize);
+        currentDate, batchSize);
   }
 }

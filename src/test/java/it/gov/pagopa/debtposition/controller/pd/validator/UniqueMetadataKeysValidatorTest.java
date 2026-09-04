@@ -23,8 +23,7 @@ class UniqueMetadataKeysValidatorTest {
   void isValid_withUniquePaymentOptionMetadataKeys_returnsTrue() {
     List<PaymentOptionMetadataModel> metadata =
         List.of(
-            paymentOptionMetadata("key-1", "value-1"),
-            paymentOptionMetadata("key-2", "value-2"));
+            paymentOptionMetadata("key-1", "value-1"), paymentOptionMetadata("key-2", "value-2"));
 
     assertTrue(validator.isValid(metadata, null));
   }
@@ -76,16 +75,16 @@ class UniqueMetadataKeysValidatorTest {
 
   @Test
   void isValid_withNullKey_ignoresKeyAndReturnsTrue() {
-    List<MetadataWithNullKey> metadata = List.of(new MetadataWithNullKey(),
-        new MetadataWithNullKey());
+    List<MetadataWithNullKey> metadata =
+        List.of(new MetadataWithNullKey(), new MetadataWithNullKey());
 
     assertTrue(validator.isValid(metadata, null));
   }
 
   @Test
   void isValid_withObjectWithoutGetKey_ignoresItemAndReturnsTrue() {
-    List<ObjectWithoutGetKey> metadata = List.of(new ObjectWithoutGetKey(),
-        new ObjectWithoutGetKey());
+    List<ObjectWithoutGetKey> metadata =
+        List.of(new ObjectWithoutGetKey(), new ObjectWithoutGetKey());
 
     assertTrue(validator.isValid(metadata, null));
   }

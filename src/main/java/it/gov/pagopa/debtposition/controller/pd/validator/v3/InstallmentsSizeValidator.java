@@ -26,8 +26,8 @@ public class InstallmentsSizeValidator
     return validateGlobalIuvUniqueness(options, ctx);
   }
 
-  private boolean validateGlobalIuvUniqueness(List<PaymentOptionModelV3> options,
-      ConstraintValidatorContext ctx) {
+  private boolean validateGlobalIuvUniqueness(
+      List<PaymentOptionModelV3> options, ConstraintValidatorContext ctx) {
     // Global uniqueness of IUVs across all installments
     boolean ok = true;
     Set<String> seenIuv = new HashSet<>();
@@ -56,6 +56,4 @@ public class InstallmentsSizeValidator
   private void addViolation(ConstraintValidatorContext ctx, String msg) {
     ctx.buildConstraintViolationWithTemplate(msg).addConstraintViolation();
   }
-
 }
-

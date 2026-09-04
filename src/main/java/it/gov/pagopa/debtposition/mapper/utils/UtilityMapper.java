@@ -224,8 +224,7 @@ public class UtilityMapper {
     // same as hasAnyMarkedExpired
     return paymentOptions != null
         && !paymentOptions.isEmpty()
-        && paymentOptions.stream()
-        .allMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
+        && paymentOptions.stream().allMatch(po -> Boolean.TRUE.equals(po.getSwitchToExpired()));
   }
 
   /**
@@ -264,10 +263,10 @@ public class UtilityMapper {
 
   public static void applyStamp(Stamp stamp, Transfer destination) {
     /**
-     * [PIDM-1637] During update, if the incoming payload does not contain the stamp object,
-     * the existing stamp fields must be explicitly cleared. Otherwise the previous
-     * stamp values remain in the entity, causing an inconsistent state where both
-     * stamp data and IBAN may coexist and triggering validation errors.
+     * [PIDM-1637] During update, if the incoming payload does not contain the stamp object, the
+     * existing stamp fields must be explicitly cleared. Otherwise the previous stamp values remain
+     * in the entity, causing an inconsistent state where both stamp data and IBAN may coexist and
+     * triggering validation errors.
      */
     if (stamp != null) {
       destination.setHashDocument(stamp.getHashDocument());

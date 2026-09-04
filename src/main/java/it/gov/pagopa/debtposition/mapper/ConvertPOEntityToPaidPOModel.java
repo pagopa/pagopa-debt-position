@@ -7,8 +7,8 @@ import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 
-public class ConvertPOEntityToPaidPOModel implements
-    Converter<PaymentOption, PaidPaymentOptionModel> {
+public class ConvertPOEntityToPaidPOModel
+    implements Converter<PaymentOption, PaidPaymentOptionModel> {
 
   @Override
   public PaidPaymentOptionModel convert(
@@ -16,8 +16,8 @@ public class ConvertPOEntityToPaidPOModel implements
     PaymentOption source = context.getSource();
     PaymentPosition paymentPosition = source.getPaymentPosition();
 
-    PaidPaymentOptionModel destination = ObjectMapperUtils.map(source,
-        PaidPaymentOptionModel.class);
+    PaidPaymentOptionModel destination =
+        ObjectMapperUtils.map(source, PaidPaymentOptionModel.class);
     destination.setServiceType(paymentPosition.getServiceType().name());
 
     return destination;

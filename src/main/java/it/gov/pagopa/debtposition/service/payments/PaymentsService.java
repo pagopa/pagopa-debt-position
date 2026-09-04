@@ -345,7 +345,7 @@ public class PaymentsService {
   /**
    * find the primary transfer of the payment option
    *
-   * @param paymentOption          the entity of the payment option
+   * @param paymentOption the entity of the payment option
    * @param organizationFiscalCode EC
    * @return the transfer of the primary Creditor Institution
    */
@@ -524,9 +524,7 @@ public class PaymentsService {
     }
   }
 
-  /**
-   * Grouping key: PLAN:<paymentPlanId> or SINGLE:<id>
-   */
+  /** Grouping key: PLAN:<paymentPlanId> or SINGLE:<id> */
   private static String groupKeyOf(PaymentOption po) {
     if (Boolean.TRUE.equals(po.getIsPartialPayment())) {
       return PLAN + po.getPaymentPlanId();

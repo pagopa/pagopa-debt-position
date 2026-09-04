@@ -49,10 +49,10 @@ class MetadataTest {
     PaymentOptionModel model =
         objectMapper.readValue(
             """
-                {
-                  "paymentOptionMetadata": null
-                }
-                """,
+            {
+              "paymentOptionMetadata": null
+            }
+            """,
             PaymentOptionModel.class);
 
     assertNotNull(model.getPaymentOptionMetadata());
@@ -60,17 +60,16 @@ class MetadataTest {
   }
 
   @Test
-  void transferModel_deserializeExplicitNullTransferMetadata_setsEmptyList()
-      throws Exception {
+  void transferModel_deserializeExplicitNullTransferMetadata_setsEmptyList() throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
 
     TransferModel model =
         objectMapper.readValue(
             """
-                {
-                  "transferMetadata": null
-                }
-                """,
+            {
+              "transferMetadata": null
+            }
+            """,
             TransferModel.class);
 
     assertNotNull(model.getTransferMetadata());
@@ -85,10 +84,10 @@ class MetadataTest {
     InstallmentModel model =
         objectMapper.readValue(
             """
-                {
-                  "installmentMetadata": null
-                }
-                """,
+            {
+              "installmentMetadata": null
+            }
+            """,
             InstallmentModel.class);
 
     assertNotNull(model.getInstallmentMetadata());

@@ -87,8 +87,8 @@ public class ConverterV3PPModelToEntity
           PaymentOption managedOpt = managedOptionsByIuv.get(installment.getIuv());
           if (managedOpt != null) {
             // UPDATE
-            mapAndUpdateSinglePaymentOption(sourceOption, installment, managedOpt,
-                planIdForThisOption);
+            mapAndUpdateSinglePaymentOption(
+                sourceOption, installment, managedOpt, planIdForThisOption);
             optionsToRemove.remove(managedOpt);
           } else {
             // CREATE
@@ -106,11 +106,10 @@ public class ConverterV3PPModelToEntity
     destination.getPaymentOption().removeAll(optionsToRemove);
   }
 
-
   /**
-   * @param source            the input model
+   * @param source the input model
    * @param sourceInstallment the input installment
-   * @param destination       the output entity
+   * @param destination the output entity
    */
   private void mapAndUpdateSinglePaymentOption(
       PaymentOptionModelV3 source,
@@ -225,8 +224,7 @@ public class ConverterV3PPModelToEntity
   }
 
   private Optional<String> findExistingPlanUUIDAmongManaged(
-      List<InstallmentModel> installments,
-      Map<String, PaymentOption> managedByIuv) {
+      List<InstallmentModel> installments, Map<String, PaymentOption> managedByIuv) {
 
     for (InstallmentModel inst : installments) {
       PaymentOption existing = managedByIuv.get(inst.getIuv());

@@ -22,8 +22,8 @@ class AppExceptionTest {
   @Test
   void constructor_statusTitleMessageWithCause_setsCauseAndNullAppError() {
     RuntimeException cause = new RuntimeException("root");
-    AppException ex = new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "error title", "error msg",
-        cause);
+    AppException ex =
+        new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "error title", "error msg", cause);
     assertEquals("error title", ex.getTitle());
     assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, ex.getHttpStatus());
     assertEquals("error msg", ex.getMessage());
@@ -33,15 +33,17 @@ class AppExceptionTest {
 
   @Test
   void constructor_appError_formatsMessageAndSetsAppError() {
-    AppError err = AppError.PAYMENT_OPTION_NOT_FOUND; // "Not found a payment option for Organization Fiscal Code %s and NAV %s"
+    AppError err =
+        AppError
+            .PAYMENT_OPTION_NOT_FOUND; // "Not found a payment option for Organization Fiscal Code
+                                       // %s and NAV %s"
     AppException ex = new AppException(err, "77777777777", "ABC123");
 
     assertEquals(err, ex.getAppError());
     assertEquals(err.httpStatus, ex.getHttpStatus());
     assertEquals(err.title, ex.getTitle());
     assertTrue(
-        ex.getMessage().contains("77777777777")
-            && ex.getMessage().contains("ABC123"),
+        ex.getMessage().contains("77777777777") && ex.getMessage().contains("ABC123"),
         "Message should contain formatted placeholders");
   }
 

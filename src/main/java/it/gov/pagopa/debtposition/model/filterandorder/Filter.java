@@ -16,8 +16,7 @@ import lombok.Setter;
 @Builder
 public class Filter {
 
-  @NotNull
-  private String organizationFiscalCode;
+  @NotNull private String organizationFiscalCode;
 
   private LocalDateTime dueDateFrom;
   private LocalDateTime dueDateTo;

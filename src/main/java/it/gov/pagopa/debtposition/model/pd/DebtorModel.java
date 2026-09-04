@@ -27,18 +27,12 @@ public class DebtorModel implements Serializable {
   @ToString.Exclude
   private String fullName;
 
-  @ToString.Exclude
-  private String streetName;
-  @ToString.Exclude
-  private String civicNumber;
-  @ToString.Exclude
-  private String postalCode;
-  @ToString.Exclude
-  private String city;
-  @ToString.Exclude
-  private String province;
-  @ToString.Exclude
-  private String region;
+  @ToString.Exclude private String streetName;
+  @ToString.Exclude private String civicNumber;
+  @ToString.Exclude private String postalCode;
+  @ToString.Exclude private String city;
+  @ToString.Exclude private String province;
+  @ToString.Exclude private String region;
 
   @ToString.Exclude
   @Schema(example = "IT")
@@ -52,6 +46,5 @@ public class DebtorModel implements Serializable {
   @ToString.Exclude
   private String email;
 
-  @ToString.Exclude
-  private String phone;
+  @ToString.Exclude private String phone;
 }

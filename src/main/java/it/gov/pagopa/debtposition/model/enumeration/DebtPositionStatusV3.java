@@ -15,5 +15,4 @@ public enum DebtPositionStatusV3 {
       default -> DebtPositionStatusV3.valueOf(debtPositionStatusV1.name());
     };
   }
-
 }

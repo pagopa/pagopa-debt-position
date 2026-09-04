@@ -15,8 +15,7 @@ public class SendConfigurator {
   private final PaymentOptionRepository paymentOptionRepository;
 
   @Autowired
-  public SendConfigurator(
-      PaymentOptionRepository paymentOptionRepository) {
+  public SendConfigurator(PaymentOptionRepository paymentOptionRepository) {
     this.paymentOptionRepository = paymentOptionRepository;
   }
 
@@ -24,8 +23,9 @@ public class SendConfigurator {
   public int updateSendSync(List<Notice> notices) {
     int updated = 0;
     for (Notice n : notices) {
-      updated += paymentOptionRepository.updatePaymentOptionSendSync(n.getOrganizationFiscalCode(),
-          n.getNav());
+      updated +=
+          paymentOptionRepository.updatePaymentOptionSendSync(
+              n.getOrganizationFiscalCode(), n.getNav());
     }
     return updated;
   }

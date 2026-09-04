@@ -39,11 +39,9 @@ public class LoggingAspect {
   public static final String OPERATION_ID = "operationId";
   public static final String ARGS = "args";
 
-  @Autowired
-  HttpServletRequest httRequest;
+  @Autowired HttpServletRequest httRequest;
 
-  @Autowired
-  HttpServletResponse httpResponse;
+  @Autowired HttpServletResponse httpResponse;
 
   @Value("${info.application.name}")
   private String name;
@@ -105,9 +103,7 @@ public class LoggingAspect {
     // all service methods
   }
 
-  /**
-   * Log essential info of application during the startup.
-   */
+  /** Log essential info of application during the startup. */
   @PostConstruct
   public void logStartup() {
     log.info("-> Starting {} version {} - environment {}", name, version, environment);

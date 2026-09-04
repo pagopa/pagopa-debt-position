@@ -16,7 +16,8 @@ public enum AppError {
   DEBT_POSITION_CONCURRENT_CREATION_FAILURE(
       HttpStatus.CONFLICT,
       "The debt position creation is failed - concurrent creation",
-      "Creation failed for the debt position with Organization Fiscal Code %s ->  concurrent modification detected"),
+      "Creation failed for the debt position with Organization Fiscal Code %s ->  concurrent"
+          + " modification detected"),
   DEBT_POSITION_UPDATE_FAILED(
       HttpStatus.INTERNAL_SERVER_ERROR,
       "The debt position update is failed",
@@ -24,7 +25,8 @@ public enum AppError {
   DEBT_POSITION_CONCURRENT_UPDATE_FAILURE(
       HttpStatus.CONFLICT,
       "The debt position update is failed - concurrent modification",
-      "Update failed for the debt position with Organization Fiscal Code %s ->  concurrent modification detected"),
+      "Update failed for the debt position with Organization Fiscal Code %s ->  concurrent"
+          + " modification detected"),
   DEBT_POSITION_DELETE_FAILED(
       HttpStatus.INTERNAL_SERVER_ERROR,
       "The debt position delete is failed",
@@ -37,11 +39,13 @@ public enum AppError {
   DEBT_POSITION_PO_METADATA_UNIQUE_VIOLATION(
       HttpStatus.CONFLICT,
       "The metadata violated constraints of uniqueness",
-      "Duplicate metadata key for the Organization Fiscal Code %s. Metadata keys must be unique within the same payment option or installment"),
+      "Duplicate metadata key for the Organization Fiscal Code %s. Metadata keys must be unique"
+          + " within the same payment option or installment"),
   DEBT_POSITION_TRANSFER_METADATA_UNIQUE_VIOLATION(
       HttpStatus.CONFLICT,
       "The transfer metadata violated constraints of uniqueness",
-      "Duplicate transfer metadata key for the Organization Fiscal Code %s. Metadata keys must be unique within the same transfer"),
+      "Duplicate transfer metadata key for the Organization Fiscal Code %s. Metadata keys must be"
+          + " unique within the same transfer"),
   DEBT_POSITION_UPDATE_FAILED_NO_TRANSFER_FOR_NOTIFICATION_FEE(
       HttpStatus.UNPROCESSABLE_ENTITY,
       "The debt position update is failed",
@@ -83,8 +87,8 @@ public enum AppError {
   DEBT_POSITION_PUBLISH_DUE_DATE_BEFORE_VALIDITY_DATE(
       HttpStatus.CONFLICT,
       "The due date of a payment option is before the validity date",
-      "Invalid publish request: the payment option due date cannot be before the validity date for the debt"
-          + " position with Organization Fiscal Code %s and IUPD %s"),
+      "Invalid publish request: the payment option due date cannot be before the validity date for"
+          + " the debt position with Organization Fiscal Code %s and IUPD %s"),
   DEBT_POSITION_PUBLISH_FAILED(
       HttpStatus.INTERNAL_SERVER_ERROR,
       "The debt position publish is failed",
@@ -118,7 +122,8 @@ public enum AppError {
   PAYMENT_OPTION_RESERVED_METADATA(
       HttpStatus.CONFLICT,
       "The payment option contains reserved metadata",
-      "The caller should not add or modify reserved payment option metadata. Reserved metadata list = {NOTIFICATION_FEE}."),
+      "The caller should not add or modify reserved payment option metadata. Reserved metadata list"
+          + " = {NOTIFICATION_FEE}."),
   ORGANIZATION_NOT_FOUND(
       HttpStatus.NOT_FOUND,
       "Not found the organization",
@@ -174,16 +179,16 @@ public enum AppError {
   UNPROCESSABLE_ENTITY(
       HttpStatus.UNPROCESSABLE_ENTITY, "The debt position operation is failed", null),
   V1_UNPROCESSABLE_ENTITY_MULTI_INSTALLMENTS(
-      HttpStatus.UNPROCESSABLE_ENTITY, "MULTI_INSTALLMENT_NOT_SUPPORTED_IN_V1",
-      "Multi-installment positions are not supported " +
-          "by this version of the API (v1). Organization Fiscal Code %s, IUPD %s."),
+      HttpStatus.UNPROCESSABLE_ENTITY,
+      "MULTI_INSTALLMENT_NOT_SUPPORTED_IN_V1",
+      "Multi-installment positions are not supported "
+          + "by this version of the API (v1). Organization Fiscal Code %s, IUPD %s."),
   PAYMENT_PLAN_ID_MISSING(
       HttpStatus.UNPROCESSABLE_ENTITY,
       "Invalid payment plan",
-      "Installment with isPartialPayment=true must have a non-blank paymentPlanId. IUV=%s, Organization Fiscal Code=%s"
-  ),
+      "Installment with isPartialPayment=true must have a non-blank paymentPlanId. IUV=%s,"
+          + " Organization Fiscal Code=%s"),
   UNKNOWN(null, null, null);
-
 
   public final HttpStatus httpStatus;
   public final String title;
@@ -195,13 +200,13 @@ public enum AppError {
     this.details = details;
   }
 
-  //====== ODP/PAA Mapping ======
+  // ====== ODP/PAA Mapping ======
 
   public static final class OdpSpec {
 
-    public final String appErrorCode;  // e.g.: "ODP-107"
+    public final String appErrorCode; // e.g.: "ODP-107"
     public final HttpStatus httpStatusOverride;
-    public final String paaCode;       // e.g.: "PAA_PAGAMENTO_SCONOSCIUTO"
+    public final String paaCode; // e.g.: "PAA_PAGAMENTO_SCONOSCIUTO"
 
     private OdpSpec(String appErrorCode, HttpStatus httpStatusOverride, String paaCode) {
       this.appErrorCode = appErrorCode;
@@ -214,9 +219,7 @@ public enum AppError {
     }
   }
 
-  /**
-   * ODP overlays
-   */
+  /** ODP overlays */
   private static final Map<AppError, OdpSpec> ODP_OVERLAY = new EnumMap<>(AppError.class);
 
   static {
@@ -238,45 +241,55 @@ public enum AppError {
     final String ODP_107 = "ODP-107";
     final String ODP_103 = "ODP-103";
 
-    ODP_OVERLAY.put(PAYMENT_OPTION_NOT_FOUND,
+    ODP_OVERLAY.put(
+        PAYMENT_OPTION_NOT_FOUND,
         OdpSpec.of(ODP_107, HttpStatus.NOT_FOUND, PAA_PAGAMENTO_SCONOSCIUTO));
-    ODP_OVERLAY.put(PAYMENT_OPTION_IUV_NOT_FOUND,
+    ODP_OVERLAY.put(
+        PAYMENT_OPTION_IUV_NOT_FOUND,
         OdpSpec.of(ODP_107, HttpStatus.NOT_FOUND, PAA_PAGAMENTO_SCONOSCIUTO));
-    ODP_OVERLAY.put(TRANSFER_NOT_FOUND,
-        OdpSpec.of(ODP_107, HttpStatus.NOT_FOUND, PAA_PAGAMENTO_SCONOSCIUTO));
+    ODP_OVERLAY.put(
+        TRANSFER_NOT_FOUND, OdpSpec.of(ODP_107, HttpStatus.NOT_FOUND, PAA_PAGAMENTO_SCONOSCIUTO));
 
-    ODP_OVERLAY.put(PAYMENT_OPTION_ALREADY_PAID,
+    ODP_OVERLAY.put(
+        PAYMENT_OPTION_ALREADY_PAID,
         OdpSpec.of("ODP-108", HttpStatus.CONFLICT, "PAA_PAGAMENTO_DUPLICATO"));
-    ODP_OVERLAY.put(TRANSFER_NOT_ACCOUNTABLE,
+    ODP_OVERLAY.put(
+        TRANSFER_NOT_ACCOUNTABLE,
         OdpSpec.of("ODP-109", HttpStatus.CONFLICT, "PAA_PAGAMENTO_IN_CORSO"));
 
-    ODP_OVERLAY.put(PAYMENT_OPTION_NOT_PAYABLE,
+    ODP_OVERLAY.put(
+        PAYMENT_OPTION_NOT_PAYABLE,
         OdpSpec.of("ODP-110", HttpStatus.UNPROCESSABLE_ENTITY, "PAA_PAGAMENTO_SCADUTO"));
 
     // 422 Errors
-    ODP_OVERLAY.put(UNPROCESSABLE_ENTITY,
+    ODP_OVERLAY.put(
+        UNPROCESSABLE_ENTITY,
         OdpSpec.of("ODP-102", HttpStatus.UNPROCESSABLE_ENTITY, "PAA_SEMANTICA"));
-    ODP_OVERLAY.put(PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_NOT_UPDATABLE,
+    ODP_OVERLAY.put(
+        PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_NOT_UPDATABLE,
         OdpSpec.of("ODP-102", HttpStatus.UNPROCESSABLE_ENTITY, "PAA_SEMANTICA"));
 
     // 500 System error
-    ODP_OVERLAY.put(PAYMENT_OPTION_PAY_FAILED,
+    ODP_OVERLAY.put(
+        PAYMENT_OPTION_PAY_FAILED,
         OdpSpec.of(ODP_103, HttpStatus.INTERNAL_SERVER_ERROR, PAA_SYSTEM_ERROR));
-    ODP_OVERLAY.put(PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_FAILED,
+    ODP_OVERLAY.put(
+        PAYMENT_OPTION_NOTIFICATION_FEE_UPDATE_FAILED,
         OdpSpec.of(ODP_103, HttpStatus.INTERNAL_SERVER_ERROR, PAA_SYSTEM_ERROR));
-    ODP_OVERLAY.put(TRANSFER_REPORTING_FAILED,
+    ODP_OVERLAY.put(
+        TRANSFER_REPORTING_FAILED,
         OdpSpec.of(ODP_103, HttpStatus.INTERNAL_SERVER_ERROR, PAA_SYSTEM_ERROR));
 
     // Errors of type 403 are NOT recorded → they are mapped as 404/ODP-107
-    ODP_OVERLAY.put(DEBT_POSITION_FORBIDDEN,
+    ODP_OVERLAY.put(
+        DEBT_POSITION_FORBIDDEN,
         OdpSpec.of(ODP_107, HttpStatus.NOT_FOUND, PAA_PAGAMENTO_SCONOSCIUTO));
-    ODP_OVERLAY.put(DEBT_POSITION_FORBIDDEN_ON_NAV,
+    ODP_OVERLAY.put(
+        DEBT_POSITION_FORBIDDEN_ON_NAV,
         OdpSpec.of(ODP_107, HttpStatus.NOT_FOUND, PAA_PAGAMENTO_SCONOSCIUTO));
   }
 
-  /**
-   * Returns the ODP spec for the error
-   */
+  /** Returns the ODP spec for the error */
   public OdpSpec odpSpec() {
     return ODP_OVERLAY.get(this);
   }

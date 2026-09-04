@@ -69,18 +69,20 @@ public class ConverterV3PPEntityToModelResponse
     }
 
     if (null != uniquePO && !uniquePO.isEmpty()) {
-      List<PaymentOptionModelResponseV3> pov3List = uniquePO.stream()
-          .map(this::convertUniquePO)
-          .toList();
+      List<PaymentOptionModelResponseV3> pov3List =
+          uniquePO.stream().map(this::convertUniquePO).toList();
       paymentOptionsToAdd.addAll(pov3List);
     }
 
     // order by earliest dueDate among installments
-    paymentOptionsToAdd
-        .sort(Comparator.comparing(
-            p -> p.getInstallments().stream().map(InstallmentModelResponse::getDueDate)
-                .filter(Objects::nonNull)
-                .min(LocalDateTime::compareTo).orElse(null),
+    paymentOptionsToAdd.sort(
+        Comparator.comparing(
+            p ->
+                p.getInstallments().stream()
+                    .map(InstallmentModelResponse::getDueDate)
+                    .filter(Objects::nonNull)
+                    .min(LocalDateTime::compareTo)
+                    .orElse(null),
             Comparator.nullsLast(Comparator.naturalOrder())));
 
     destination.setPaymentOption(paymentOptionsToAdd);
@@ -103,8 +105,9 @@ public class ConverterV3PPEntityToModelResponse
     // Set installments
     List<InstallmentModelResponse> installments =
         partialPOs.stream()
-            .sorted(Comparator.comparing(PaymentOption::getDueDate,
-                Comparator.nullsLast(Comparator.naturalOrder())))
+            .sorted(
+                Comparator.comparing(
+                    PaymentOption::getDueDate, Comparator.nullsLast(Comparator.naturalOrder())))
             .map(this::convertInstallment)
             .toList();
     pov3.setInstallments(installments);
@@ -117,7 +120,8 @@ public class ConverterV3PPEntityToModelResponse
     pov3.setRetentionDate(po.getRetentionDate());
     pov3.setInsertedDate(po.getInsertedDate());
     pov3.setDebtor(UtilityMapper.extractDebtor(po));
-    //pov3.setPaymentOptionDescription(po.getPaymentOptionDescription()); // this line breaks SANP response body.
+    // pov3.setPaymentOptionDescription(po.getPaymentOptionDescription()); // this line breaks SANP
+    // response body.
     // The value of the child (Installment) for the parent (Option)
     pov3.setValidityDate(po.getValidityDate());
     pov3.setSwitchToExpired(po.getSwitchToExpired());

@@ -43,9 +43,11 @@ public class TestUtil {
 
   // Uses the passed mapper for serialization.
   public String toJson(Object object, ObjectMapper objectMapper) throws JsonProcessingException {
-    return (objectMapper != null ? objectMapper : new ObjectMapper()
-        .registerModule(new JavaTimeModule())
-        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false))
+    return (objectMapper != null
+            ? objectMapper
+            : new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false))
         .writeValueAsString(object);
   }
 

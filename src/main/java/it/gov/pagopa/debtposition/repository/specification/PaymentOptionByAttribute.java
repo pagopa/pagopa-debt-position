@@ -14,9 +14,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 public class PaymentOptionByAttribute implements Specification<PaymentOption> {
 
-  /**
-   * generated serialVersionUID
-   */
+  /** generated serialVersionUID */
   private static final long serialVersionUID = 6534338388239897792L;
 
   private static final String DUEDATE_FIELD = "dueDate";
@@ -39,9 +37,7 @@ public class PaymentOptionByAttribute implements Specification<PaymentOption> {
   }
 
   public PaymentOptionByAttribute(
-      LocalDateTime dateFrom,
-      LocalDateTime dateTo,
-      List<String> segregationCodes) {
+      LocalDateTime dateFrom, LocalDateTime dateTo, List<String> segregationCodes) {
     this.paymentPosition = null; // bulk mode
     this.dateFrom = dateFrom;
     this.dateTo = dateTo;
@@ -75,9 +71,7 @@ public class PaymentOptionByAttribute implements Specification<PaymentOption> {
         ors.add(
             cb.and(
                 cb.greaterThanOrEqualTo(root.get(IUV_FIELD), code),
-                cb.lessThan(root.get(IUV_FIELD), CommonUtil.getSegregationCodeEnd(code))
-            )
-        );
+                cb.lessThan(root.get(IUV_FIELD), CommonUtil.getSegregationCodeEnd(code))));
       }
       predicates.add(cb.or(ors.toArray(new Predicate[0])));
     }

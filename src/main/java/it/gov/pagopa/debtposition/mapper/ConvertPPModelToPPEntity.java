@@ -71,11 +71,12 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     // V1: all installment of the same debt position plan share one UUID
     String sharedPlanId = null;
     boolean hasAnyPlan =
-        sourceOptions != null && sourceOptions.stream()
-            .anyMatch(o -> Boolean.TRUE.equals(o.getIsPartialPayment()));
+        sourceOptions != null
+            && sourceOptions.stream().anyMatch(o -> Boolean.TRUE.equals(o.getIsPartialPayment()));
     if (hasAnyPlan) {
-      sharedPlanId = findExistingSharedPlanUuid(managedOptionsByIuv.values())
-          .orElseGet(() -> java.util.UUID.randomUUID().toString());
+      sharedPlanId =
+          findExistingSharedPlanUuid(managedOptionsByIuv.values())
+              .orElseGet(() -> java.util.UUID.randomUUID().toString());
     }
 
     if (sourceOptions != null) {
@@ -99,7 +100,6 @@ public class ConvertPPModelToPPEntity implements Converter<PaymentPositionModel,
     // DELETE orphans
     destination.getPaymentOption().removeAll(optionsToRemove);
   }
-
 
   private void mapAndUpdateSinglePaymentOption(
       PaymentPositionModel paymentPosition,

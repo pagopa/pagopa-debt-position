@@ -51,8 +51,7 @@ public class HistoricizationScheduler {
       "[OperationType: %s] - [ClassMethod: %s] - [MethodParamsToLog: %s]";
   private static final String CRON_JOB = "CRON JOB";
   private static final String METHOD = "manageDebtPositionsToHistoricize";
-  @Getter
-  private Thread threadOfExecution;
+  @Getter private Thread threadOfExecution;
 
   // extraction params
   @Value(
@@ -85,10 +84,8 @@ public class HistoricizationScheduler {
   @Value("${azure.archive.storage.batch.operation.size:100}")
   private short maxBatchOperationSize;
 
-  @Autowired
-  private PaymentPositionRepository paymentPositionRepository;
-  @PersistenceUnit
-  private EntityManagerFactory emf;
+  @Autowired private PaymentPositionRepository paymentPositionRepository;
+  @PersistenceUnit private EntityManagerFactory emf;
 
   public HistoricizationScheduler(PaymentPositionRepository paymentPositionRepository) {
     super();
@@ -111,7 +108,7 @@ public class HistoricizationScheduler {
               METHOD,
               "Running at "
                   + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                  .format(LocalDateTime.now())));
+                      .format(LocalDateTime.now())));
       EntityManager em = this.getEntityManager();
       LocalDateTime ldt = LocalDateTime.now().minusDays(extractionInterval);
       List<PaymentPosition> ppList;
@@ -166,7 +163,7 @@ public class HistoricizationScheduler {
               METHOD,
               "Finished at "
                   + DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                  .format(LocalDateTime.now())));
+                      .format(LocalDateTime.now())));
       updateMDCForEndExecution();
     } catch (Exception e) {
       updateMDCError(e, "Historicize Scheduler Error");

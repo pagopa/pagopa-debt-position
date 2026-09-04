@@ -22,18 +22,19 @@ public final class ExpirationHandler {
    * are met.
    *
    * <p>The transition to {@code DebtPositionStatus.EXPIRED} occurs only if:
+   *
    * <ul>
-   * <li>All installments are marked to switch to expired ({@code switchToExpired} is true).</li>
-   * <li>The current status is {@code VALID}.</li>
-   * <li>The max due date exists and is in the past relative to the current UTC time.</li>
+   *   <li>All installments are marked to switch to expired ({@code switchToExpired} is true).
+   *   <li>The current status is {@code VALID}.
+   *   <li>The max due date exists and is in the past relative to the current UTC time.
    * </ul>
    *
    * <p><b>Persistence Note (Dirty Checking):</b><br>
-   * This method modifies the {@code status} attribute of the {@code PaymentPosition} entity.
-   * If this method is invoked within an active {@code @Transactional} context and the entity is
+   * This method modifies the {@code status} attribute of the {@code PaymentPosition} entity. If
+   * this method is invoked within an active {@code @Transactional} context and the entity is
    * <em>managed</em> (loaded within the current transaction), the JPA provider will automatically
-   * detect the change and execute an {@code UPDATE} statement on the database upon transaction commit.
-   * An explicit call to {@code repository.save(pp)} is not required.
+   * detect the change and execute an {@code UPDATE} statement on the database upon transaction
+   * commit. An explicit call to {@code repository.save(pp)} is not required.
    *
    * @param pp the PaymentPosition to check and potentially update.
    */
@@ -59,17 +60,18 @@ public final class ExpirationHandler {
    * considered expired.
    *
    * <p>An installment is considered effectively expired if:
+   *
    * <ul>
-   * <li>The parent position is in a payable status ({@code VALID} or {@code PARTIALLY_PAID}).</li>
-   * <li>The installment status is {@code PO_UNPAID}.</li>
-   * <li>The {@code switchToExpired} flag is explicitly set to {@code true}.</li>
-   * <li>The due date is strictly before the current reference date.</li>
+   *   <li>The parent position is in a payable status ({@code VALID} or {@code PARTIALLY_PAID}).
+   *   <li>The installment status is {@code PO_UNPAID}.
+   *   <li>The {@code switchToExpired} flag is explicitly set to {@code true}.
+   *   <li>The due date is strictly before the current reference date.
    * </ul>
    *
    * <p>Note: This method is a pure check (predicate) and does not modify the entity state.
    *
    * @param currentDate the reference date-time to check against (usually UTC now).
-   * @param po          the PaymentOption to evaluate.
+   * @param po the PaymentOption to evaluate.
    * @return {@code true} if the installment is considered expired; {@code false} otherwise.
    */
   public static boolean isInstallmentExpired(LocalDateTime currentDate, PaymentOption po) {
@@ -101,10 +103,10 @@ public final class ExpirationHandler {
    * the {@code switchToExpired} flag. It performs a strict temporal comparison intended for APIs
    * like logic {@code verifyPaymentOptions}.
    *
-   * @param po  the PaymentOption to check.
+   * @param po the PaymentOption to check.
    * @param now the reference date-time (usually UTC now).
    * @return {@code true} if the due date exists and is in the past; {@code false} if the due date
-   * is null (no expiration) or in the future.
+   *     is null (no expiration) or in the future.
    */
   public static boolean isPastDueDate(PaymentOption po, LocalDateTime now) {
     LocalDateTime due = po.getDueDate();

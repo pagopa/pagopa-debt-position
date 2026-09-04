@@ -91,9 +91,9 @@ public final class PaymentConflictValidator {
 
   /**
    * Read-only cross-payment validation.
-   * <p>
-   * Mirrors the payment-flow rules without DB locks and hides options that are no longer compatible
-   * with already paid/reported siblings.
+   *
+   * <p>Mirrors the payment-flow rules without DB locks and hides options that are no longer
+   * compatible with already paid/reported siblings.
    */
   public static void checkAlreadyPaidInstallmentsReadOnly(PaymentOption poToCheck, String nav) {
 
@@ -114,27 +114,28 @@ public final class PaymentConflictValidator {
     // option should be exposed as payable/activable
     if (pp.getStatus() == DebtPositionStatus.PAID
         || pp.getStatus() == DebtPositionStatus.REPORTED) {
-      throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND,
-          poToCheck.getOrganizationFiscalCode(), nav);
+      throw new AppException(
+          AppError.PAYMENT_OPTION_NOT_FOUND, poToCheck.getOrganizationFiscalCode(), nav);
     }
 
     boolean isFullPayment = !Boolean.TRUE.equals(poToCheck.getIsPartialPayment());
     String planId = poToCheck.getPaymentPlanId();
 
     // In this validation, every status different from PO_UNPAID is considered already progressed
-    java.util.function.Predicate<PaymentOption> isAlreadyPaid = po -> po
-        .getStatus() != PaymentOptionStatus.PO_UNPAID;
+    java.util.function.Predicate<PaymentOption> isAlreadyPaid =
+        po -> po.getStatus() != PaymentOptionStatus.PO_UNPAID;
 
     if (isFullPayment) {
       // A full payment option must no longer be visible if any sibling installment or
       // alternative option has already progressed (e.g. paid, reported, in progress...)
-      boolean anyPaid = pp.getPaymentOption().stream()
-          .filter(po -> !po.getId().equals(poToCheck.getId()))
-          .anyMatch(isAlreadyPaid);
+      boolean anyPaid =
+          pp.getPaymentOption().stream()
+              .filter(po -> !po.getId().equals(poToCheck.getId()))
+              .anyMatch(isAlreadyPaid);
 
       if (anyPaid) {
-        throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND,
-            poToCheck.getOrganizationFiscalCode(), nav);
+        throw new AppException(
+            AppError.PAYMENT_OPTION_NOT_FOUND, poToCheck.getOrganizationFiscalCode(), nav);
       }
 
       return;
@@ -142,21 +143,24 @@ public final class PaymentConflictValidator {
 
     // For installment payments, the option remains visible only if already
     // progressed siblings belong to the same payment plan
-    boolean conflict = pp.getPaymentOption().stream()
-        .filter(po -> !po.getId().equals(poToCheck.getId()))
-        .filter(isAlreadyPaid).anyMatch(paid -> {
-          boolean paidIsInstallment = Boolean.TRUE.equals(paid.getIsPartialPayment());
+    boolean conflict =
+        pp.getPaymentOption().stream()
+            .filter(po -> !po.getId().equals(poToCheck.getId()))
+            .filter(isAlreadyPaid)
+            .anyMatch(
+                paid -> {
+                  boolean paidIsInstallment = Boolean.TRUE.equals(paid.getIsPartialPayment());
 
-          if (!paidIsInstallment) {
-            return true;
-          }
+                  if (!paidIsInstallment) {
+                    return true;
+                  }
 
-          return !Objects.equals(planId, paid.getPaymentPlanId());
-        });
+                  return !Objects.equals(planId, paid.getPaymentPlanId());
+                });
 
     if (conflict) {
-      throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND,
-          poToCheck.getOrganizationFiscalCode(), nav);
+      throw new AppException(
+          AppError.PAYMENT_OPTION_NOT_FOUND, poToCheck.getOrganizationFiscalCode(), nav);
     }
   }
 }

@@ -24,23 +24,19 @@ import lombok.NoArgsConstructor;
 @Table(
     name = "payment_option_metadata",
     uniqueConstraints = {
-        @UniqueConstraint(
-            name = "UniquePaymentOptMetadata",
-            columnNames = {"\"key\"", "payment_option_id"})
+      @UniqueConstraint(
+          name = "UniquePaymentOptMetadata",
+          columnNames = {"\"key\"", "payment_option_id"})
     })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Builder
-@JsonIdentityInfo(
-    generator = ObjectIdGenerators.PropertyGenerator.class,
-    property = "id")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class PaymentOptionMetadata implements Serializable {
 
-  /**
-   * generated serialVersionUID
-   */
+  /** generated serialVersionUID */
   private static final long serialVersionUID = -9014105148787448923L;
 
   @Id

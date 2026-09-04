@@ -33,8 +33,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 @Slf4j
 class ConcurrentReportedPaymentsControllerTest {
 
-  @Autowired
-  private MockMvc mvc;
+  @Autowired private MockMvc mvc;
 
   @Value("${nav.aux.digit}")
   private String auxDigit = "3";
@@ -51,9 +50,7 @@ class ConcurrentReportedPaymentsControllerTest {
 
     // effettuo la notifica di pagamento
     mvc.perform(
-            post("/organizations/12345678901999999/paymentoptions/"
-                + auxDigit
-                + "1234568/pay")
+            post("/organizations/12345678901999999/paymentoptions/" + auxDigit + "1234568/pay")
                 .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
@@ -117,10 +114,7 @@ class ConcurrentReportedPaymentsControllerTest {
   void checkDebtPosition_after_reporting() throws Exception {
     log.trace("checkDebtPosition_after_reporting start => " + Thread.currentThread().getName());
     // recupero la PO e verifico lo stato in PO_PARTIALLY_REPORTED
-    String url =
-        "/organizations/12345678901999999/paymentoptions/"
-            + auxDigit
-            + "1234568";
+    String url = "/organizations/12345678901999999/paymentoptions/" + auxDigit + "1234568";
     mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))

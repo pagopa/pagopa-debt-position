@@ -21,14 +21,14 @@ public final class ValidityHandler {
    * DEBT_POSITION_STATUS.VALID} occurs only if:
    *
    * <ul>
-   * <li>The current status is {@code PUBLISHED}.
-   * <li>A minimum validity date is defined across installments.
-   * <li>The current UTC time is on or after the calculated minimum validity date.
+   *   <li>The current status is {@code PUBLISHED}.
+   *   <li>A minimum validity date is defined across installments.
+   *   <li>The current UTC time is on or after the calculated minimum validity date.
    * </ul>
    *
    * <p><b>Persistence Note (Dirty Checking):</b><br>
-   * This method modifies the {@code status} attribute of the {@code PaymentPosition} entity.
-   * If this method is invoked within an active {@code @Transactional} context and the entity is
+   * This method modifies the {@code status} attribute of the {@code PaymentPosition} entity. If
+   * this method is invoked within an active {@code @Transactional} context and the entity is
    * <em>managed</em> (loaded within the current transaction), the JPA provider (e.g., Hibernate)
    * will automatically detect the change and execute an {@code UPDATE} statement on the database
    * upon transaction commit. An explicit call to {@code repository.save(pp)} is not required.
@@ -60,7 +60,7 @@ public final class ValidityHandler {
    * </ul>
    *
    * @param currentDate the reference date-time to check against.
-   * @param po          the PaymentOption (installment) to check.
+   * @param po the PaymentOption (installment) to check.
    * @return {@code true} if the option is valid, {@code false} otherwise.
    */
   public static boolean isInstallmentValid(LocalDateTime currentDate, PaymentOption po) {

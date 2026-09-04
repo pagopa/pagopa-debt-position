@@ -24,9 +24,9 @@ import lombok.NoArgsConstructor;
 @Table(
     name = "transfer_metadata",
     uniqueConstraints = {
-        @UniqueConstraint(
-            name = "UniqueTransferMetadata",
-            columnNames = {"\"key\"", "transfer_id"})
+      @UniqueConstraint(
+          name = "UniqueTransferMetadata",
+          columnNames = {"\"key\"", "transfer_id"})
     })
 @Data
 @NoArgsConstructor
@@ -38,9 +38,7 @@ import lombok.NoArgsConstructor;
     property = "@transferMetadataId")
 public class TransferMetadata implements Serializable {
 
-  /**
-   * generated serialVersionUID
-   */
+  /** generated serialVersionUID */
   private static final long serialVersionUID = -385216542341056723L;
 
   @Id

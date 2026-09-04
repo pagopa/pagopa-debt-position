@@ -15,8 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ExclusiveParamAspect {
 
-  @Autowired
-  private HttpServletRequest request;
+  @Autowired private HttpServletRequest request;
 
   /**
    * This method is triggered when the @ExclusiveParam annotation is used. If the two sets of
@@ -37,11 +36,12 @@ public class ExclusiveParamAspect {
     Set<String> set = request.getParameterMap().keySet();
 
     // If two of the three couple of parameters are present, we return bad request
-    boolean multiplePresent = Arrays.stream(paramsPaymentDate).anyMatch(set::contains) ?
-        Arrays.stream(paramsDueDate).anyMatch(set::contains) || Arrays.stream(paramsPaymentDateTime)
-            .anyMatch(set::contains) :
-        Arrays.stream(paramsDueDate).anyMatch(set::contains) && Arrays.stream(paramsPaymentDateTime)
-            .anyMatch(set::contains);
+    boolean multiplePresent =
+        Arrays.stream(paramsPaymentDate).anyMatch(set::contains)
+            ? Arrays.stream(paramsDueDate).anyMatch(set::contains)
+                || Arrays.stream(paramsPaymentDateTime).anyMatch(set::contains)
+            : Arrays.stream(paramsDueDate).anyMatch(set::contains)
+                && Arrays.stream(paramsPaymentDateTime).anyMatch(set::contains);
 
     if (multiplePresent) {
       throw new AppException(

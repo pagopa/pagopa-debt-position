@@ -22,7 +22,8 @@ class ValidityHandlerTest {
 
     try (MockedStatic<LocalDateTime> localDateTimeMock =
         mockStatic(LocalDateTime.class, CALLS_REAL_METHODS)) {
-      localDateTimeMock.when(() -> LocalDateTime.now(ZoneOffset.UTC))
+      localDateTimeMock
+          .when(() -> LocalDateTime.now(ZoneOffset.UTC))
           .thenReturn(REFERENCE_DATETIME);
 
       ValidityHandler.handlePaymentPositionValidTransition(paymentPosition);

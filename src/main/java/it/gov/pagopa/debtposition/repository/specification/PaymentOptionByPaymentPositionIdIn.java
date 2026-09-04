@@ -10,7 +10,6 @@ import org.springframework.data.jpa.domain.Specification;
 
 public class PaymentOptionByPaymentPositionIdIn implements Specification<PaymentOption> {
 
-
   private static final long serialVersionUID = -1350007136076964588L;
   private final List<Long> paymentPositionIds;
 
@@ -19,8 +18,8 @@ public class PaymentOptionByPaymentPositionIdIn implements Specification<Payment
   }
 
   @Override
-  public Predicate toPredicate(Root<PaymentOption> root, CriteriaQuery<?> query,
-      CriteriaBuilder cb) {
+  public Predicate toPredicate(
+      Root<PaymentOption> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
     // po.paymentPosition.id IN (:ids)
     return root.get("paymentPosition").get("id").in(paymentPositionIds);
   }

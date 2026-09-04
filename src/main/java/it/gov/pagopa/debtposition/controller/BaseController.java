@@ -61,34 +61,32 @@ public class BaseController {
    */
   @Operation(
       summary = "Return OK if application is started",
-      security = {
-          @SecurityRequirement(name = "ApiKey")
-      },
+      security = {@SecurityRequirement(name = "ApiKey")},
       tags = {"Home"})
   @ApiResponses(
       value = {
-          @ApiResponse(
-              responseCode = "200",
-              description = "OK.",
-              content =
-              @Content(
-                  mediaType = MediaType.APPLICATION_JSON_VALUE,
-                  schema = @Schema(implementation = AppInfo.class))),
-          @ApiResponse(
-              responseCode = "401",
-              description = "Wrong or missing function key.",
-              content = @Content(schema = @Schema())),
-          @ApiResponse(
-              responseCode = "403",
-              description = "Forbidden.",
-              content = @Content(schema = @Schema())),
-          @ApiResponse(
-              responseCode = "500",
-              description = "Service unavailable.",
-              content =
-              @Content(
-                  mediaType = MediaType.APPLICATION_JSON_VALUE,
-                  schema = @Schema(implementation = ProblemJson.class)))
+        @ApiResponse(
+            responseCode = "200",
+            description = "OK.",
+            content =
+                @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = AppInfo.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Wrong or missing function key.",
+            content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden.",
+            content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Service unavailable.",
+            content =
+                @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ProblemJson.class)))
       })
   @GetMapping("/info")
   public ResponseEntity<AppInfo> healthCheck() {
@@ -103,34 +101,32 @@ public class BaseController {
    */
   @Operation(
       summary = "Configures payment options for which communication with SeND is synchronous",
-      security = {
-          @SecurityRequirement(name = "ApiKey")
-      },
+      security = {@SecurityRequirement(name = "ApiKey")},
       tags = {"Configuration"})
   @ApiResponses(
       value = {
-          @ApiResponse(
-              responseCode = "200",
-              description = "OK.",
-              content =
-              @Content(
-                  mediaType = MediaType.APPLICATION_JSON_VALUE,
-                  schema = @Schema(implementation = AppInfo.class))),
-          @ApiResponse(
-              responseCode = "401",
-              description = "Wrong or missing function key.",
-              content = @Content(schema = @Schema())),
-          @ApiResponse(
-              responseCode = "403",
-              description = "Forbidden.",
-              content = @Content(schema = @Schema())),
-          @ApiResponse(
-              responseCode = "500",
-              description = "Service unavailable.",
-              content =
-              @Content(
-                  mediaType = MediaType.APPLICATION_JSON_VALUE,
-                  schema = @Schema(implementation = ProblemJson.class)))
+        @ApiResponse(
+            responseCode = "200",
+            description = "OK.",
+            content =
+                @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = AppInfo.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Wrong or missing function key.",
+            content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden.",
+            content = @Content(schema = @Schema())),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Service unavailable.",
+            content =
+                @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ProblemJson.class)))
       })
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, path = "internal/config/send")
   public ResponseEntity<String> handleSyncSendConfiguration(

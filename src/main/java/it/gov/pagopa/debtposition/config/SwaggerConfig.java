@@ -35,10 +35,14 @@ import org.springframework.context.annotation.Configuration;
 public class SwaggerConfig {
 
   private static final String INFO_API = "/info";
-  private static final String DEBT_POSITIONS_API = "/organizations/{organizationfiscalcode}/debtpositions";
-  private static final String DEBT_POSITIONS_BULK_API = "/organizations/{organizationfiscalcode}/debtpositions/bulk";
-  private static final String PAYMENTS_MARK_AS_PAID_API = "/organizations/{organizationfiscalcode}/paymentoptions/paids/{nav}";
-  private static final String DEBT_POSITION_API_BLOCK = "/organizations/{organizationfiscalcode}/debtpositions/**";
+  private static final String DEBT_POSITIONS_API =
+      "/organizations/{organizationfiscalcode}/debtpositions";
+  private static final String DEBT_POSITIONS_BULK_API =
+      "/organizations/{organizationfiscalcode}/debtpositions/bulk";
+  private static final String PAYMENTS_MARK_AS_PAID_API =
+      "/organizations/{organizationfiscalcode}/paymentoptions/paids/{nav}";
+  private static final String DEBT_POSITION_API_BLOCK =
+      "/organizations/{organizationfiscalcode}/debtpositions/**";
 
   @Bean
   OpenAPI customOpenAPI(
@@ -54,8 +58,7 @@ public class SwaggerConfig {
                         .type(SecurityScheme.Type.APIKEY)
                         .description("The API key to access this function app.")
                         .name("Ocp-Apim-Subscription-Key")
-                        .in(SecurityScheme.In.HEADER))
-        )
+                        .in(SecurityScheme.In.HEADER)))
         .info(
             new Info()
                 .title("PagoPA API Debt Position ${service}")
@@ -80,8 +83,7 @@ public class SwaggerConfig {
   }
 
   @Bean
-  Map<String, GroupedOpenApi> configureGroupOpenApi(
-      Map<String, GroupedOpenApi> groupOpenApi) {
+  Map<String, GroupedOpenApi> configureGroupOpenApi(Map<String, GroupedOpenApi> groupOpenApi) {
     groupOpenApi.forEach(
         (id, groupedOpenApi) -> groupedOpenApi.getOpenApiCustomizers().add(addCommonHeaders()));
     return groupOpenApi;
@@ -128,15 +130,12 @@ public class SwaggerConfig {
   GroupedOpenApi internalV1Api() {
 
     // api to remove
-    Map<String, Set<String>> removeFromInternalV1 = Map.of(
-        DEBT_POSITIONS_API, Set.of("put", "delete"),
-        DEBT_POSITIONS_BULK_API, Set.of("post")
-    );
+    Map<String, Set<String>> removeFromInternalV1 =
+        Map.of(
+            DEBT_POSITIONS_API, Set.of("put", "delete"),
+            DEBT_POSITIONS_BULK_API, Set.of("post"));
 
-    Set<String> schemasToRemove = Set.of(
-        "MultiplePaymentPositionModel",
-        "MultipleIUPDModel"
-    );
+    Set<String> schemasToRemove = Set.of("MultiplePaymentPositionModel", "MultipleIUPDModel");
 
     // server list
     List<Server> serverInfo = new ArrayList<>();
@@ -159,34 +158,32 @@ public class SwaggerConfig {
   GroupedOpenApi internalV2Api() {
 
     // api to remove
-    Map<String, Set<String>> removeFromInternalV2 = Map.of(
-        DEBT_POSITIONS_API, Set.of("post")
-    );
+    Map<String, Set<String>> removeFromInternalV2 = Map.of(DEBT_POSITIONS_API, Set.of("post"));
 
     // server list
     List<Server> serverInfo = new ArrayList<>();
     serverInfo.add(createServer(".uat", "gpd/api", "v2", "GPD Test environment"));
     serverInfo.add(createServer("", "gpd/api", "v2", "GPD Production Environment"));
 
-    GroupedOpenApi openapi = GroupedOpenApi.builder()
-        .group("internal_v2")
-        .displayName("GPD - Internal API - v2")
-        .pathsToMatch("/**/**")
-        .pathsToExclude("/v3/**")
-        .addOpenApiCustomizer(customizeServer(serverInfo))
-        .addOpenApiCustomizer(customizeOpenApi(removeFromInternalV2))
-        .addOpenApiCustomizer(renamePath(DEBT_POSITIONS_BULK_API, DEBT_POSITIONS_API))
-        .addOpenApiCustomizer(sortOpenApi())
-        .build();
+    GroupedOpenApi openapi =
+        GroupedOpenApi.builder()
+            .group("internal_v2")
+            .displayName("GPD - Internal API - v2")
+            .pathsToMatch("/**/**")
+            .pathsToExclude("/v3/**")
+            .addOpenApiCustomizer(customizeServer(serverInfo))
+            .addOpenApiCustomizer(customizeOpenApi(removeFromInternalV2))
+            .addOpenApiCustomizer(renamePath(DEBT_POSITIONS_BULK_API, DEBT_POSITIONS_API))
+            .addOpenApiCustomizer(sortOpenApi())
+            .build();
 
     return openapi;
   }
 
   @Bean
   GroupedOpenApi externalV1Api() {
-    Map<String, Set<String>> removeFromExternalV1 = Map.of(
-        DEBT_POSITIONS_API, Set.of("put", "delete")
-    );
+    Map<String, Set<String>> removeFromExternalV1 =
+        Map.of(DEBT_POSITIONS_API, Set.of("put", "delete"));
 
     // server list
     List<Server> serverInfo = new ArrayList<>();
@@ -195,10 +192,7 @@ public class SwaggerConfig {
     serverInfo.add(
         createServer("", "gpd/debt-positions-service", "v1", "GPD Production Environment"));
 
-    Set<String> schemasToRemove = Set.of(
-        "MultiplePaymentPositionModel",
-        "MultipleIUPDModel"
-    );
+    Set<String> schemasToRemove = Set.of("MultiplePaymentPositionModel", "MultipleIUPDModel");
 
     return GroupedOpenApi.builder()
         .group("external_v1")
@@ -214,9 +208,8 @@ public class SwaggerConfig {
 
   @Bean
   GroupedOpenApi externalV2Api() {
-    Map<String, Set<String>> removeFromExternalV2 = Map.of(
-        DEBT_POSITIONS_API, Set.of("get", "post")
-    );
+    Map<String, Set<String>> removeFromExternalV2 =
+        Map.of(DEBT_POSITIONS_API, Set.of("get", "post"));
 
     // server list
     List<Server> serverInfo = new ArrayList<>();
@@ -228,8 +221,8 @@ public class SwaggerConfig {
     return GroupedOpenApi.builder()
         .group("external_v2")
         .displayName("GPD - External API - v2")
-        .pathsToMatch(DEBT_POSITIONS_API, DEBT_POSITIONS_BULK_API, PAYMENTS_MARK_AS_PAID_API,
-            INFO_API)
+        .pathsToMatch(
+            DEBT_POSITIONS_API, DEBT_POSITIONS_BULK_API, PAYMENTS_MARK_AS_PAID_API, INFO_API)
         .addOpenApiCustomizer(customizeServer(serverInfo))
         .addOpenApiCustomizer(customizeOpenApi(removeFromExternalV2))
         .addOpenApiCustomizer(renamePath(DEBT_POSITIONS_BULK_API, DEBT_POSITIONS_API))
@@ -261,10 +254,12 @@ public class SwaggerConfig {
 
   @Bean
   GroupedOpenApi acaV1Api() {
-    Map<String, Set<String>> removeFromAcaV1 = Map.of(
-        DEBT_POSITIONS_API, Set.of("put", "delete"),
-        "/organizations/{organizationfiscalcode}/debtpositions/transfers", Set.of("patch")
-    );
+    Map<String, Set<String>> removeFromAcaV1 =
+        Map.of(
+            DEBT_POSITIONS_API,
+            Set.of("put", "delete"),
+            "/organizations/{organizationfiscalcode}/debtpositions/transfers",
+            Set.of("patch"));
 
     // server list
     List<Server> serverInfo = new ArrayList<>();
@@ -273,12 +268,12 @@ public class SwaggerConfig {
     serverInfo.add(
         createServer("", "aca/debt-positions-service", "v1", "ACA Production Environment"));
 
-    Set<String> schemasToRemove = Set.of(
-        "MultiplePaymentPositionModel",
-        "MultipleIUPDModel",
-        "UpdateTransferIbanMassiveModel",
-        "UpdateTransferIbanMassiveResponse"
-    );
+    Set<String> schemasToRemove =
+        Set.of(
+            "MultiplePaymentPositionModel",
+            "MultipleIUPDModel",
+            "UpdateTransferIbanMassiveModel",
+            "UpdateTransferIbanMassiveResponse");
 
     return GroupedOpenApi.builder()
         .group("aca_v1")
@@ -306,7 +301,8 @@ public class SwaggerConfig {
         .displayName("GPD - Send API - v1")
         .pathsToMatch(
             "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}/notificationfee",
-            "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}", INFO_API)
+            "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}",
+            INFO_API)
         .addOpenApiCustomizer(customizeServer(serverInfo))
         .addOpenApiCustomizer(customizeOpenApi(removeFromSendV1))
         .addOpenApiCustomizer(sortOpenApi())
@@ -344,19 +340,25 @@ public class SwaggerConfig {
 
       Map<String, PathItem> updatedPaths = new LinkedHashMap<>();
 
-      openApi.getPaths().forEach((path, pathItem) -> {
-        String newPath = path.startsWith(prefix) ? path.substring(prefix.length()) : path;
+      openApi
+          .getPaths()
+          .forEach(
+              (path, pathItem) -> {
+                String newPath = path.startsWith(prefix) ? path.substring(prefix.length()) : path;
 
-        updatedPaths.merge(newPath, pathItem, (target, source) -> {
-          mergePathItems(target, source);
-          return target;
-        });
+                updatedPaths.merge(
+                    newPath,
+                    pathItem,
+                    (target, source) -> {
+                      mergePathItems(target, source);
+                      return target;
+                    });
 
-        if (!updatedPaths.isEmpty()) {
-          openApi.setPaths(new Paths());
-          updatedPaths.forEach((p, pi) -> openApi.getPaths().addPathItem(p, pi));
-        }
-      });
+                if (!updatedPaths.isEmpty()) {
+                  openApi.setPaths(new Paths());
+                  updatedPaths.forEach((p, pi) -> openApi.getPaths().addPathItem(p, pi));
+                }
+              });
     };
   }
 
@@ -377,12 +379,14 @@ public class SwaggerConfig {
   }
 
   private void mergePathItems(PathItem target, PathItem source) {
-    Arrays.stream(PathItem.HttpMethod.values()).forEach(method -> {
-      if (source.readOperationsMap().containsKey(method) && !target.readOperationsMap()
-          .containsKey(method)) {
-        target.operation(method, source.readOperationsMap().get(method));
-      }
-    });
+    Arrays.stream(PathItem.HttpMethod.values())
+        .forEach(
+            method -> {
+              if (source.readOperationsMap().containsKey(method)
+                  && !target.readOperationsMap().containsKey(method)) {
+                target.operation(method, source.readOperationsMap().get(method));
+              }
+            });
   }
 
   private OpenApiCustomizer customizeOpenApi(Map<String, Set<String>> pathsToRemove) {
@@ -394,33 +398,40 @@ public class SwaggerConfig {
       // paths to remove
       List<String> pathsToDelete = new ArrayList<>();
 
-      pathsToRemove.forEach((path, methods) -> {
-        PathItem pathItem = openApi.getPaths().get(path);
-        if (pathItem != null) {
+      pathsToRemove.forEach(
+          (path, methods) -> {
+            PathItem pathItem = openApi.getPaths().get(path);
+            if (pathItem != null) {
 
-          // remove specified methods
-          methods.forEach(method -> {
-            BiConsumer<PathItem, Operation> remover = getMethodRemovers().get(method.toLowerCase());
-            if (remover != null) {
-              remover.accept(pathItem, null);
+              // remove specified methods
+              methods.forEach(
+                  method -> {
+                    BiConsumer<PathItem, Operation> remover =
+                        getMethodRemovers().get(method.toLowerCase());
+                    if (remover != null) {
+                      remover.accept(pathItem, null);
+                    }
+                  });
+
+              // if the path is empty then remove all
+              if (isPathItemEmpty(pathItem)) {
+                pathsToDelete.add(path);
+              }
             }
           });
-
-          // if the path is empty then remove all
-          if (isPathItemEmpty(pathItem)) {
-            pathsToDelete.add(path);
-          }
-        }
-      });
 
       // remove paths with no methods
       pathsToDelete.forEach(openApi.getPaths()::remove);
 
-      openApi.getPaths().values().forEach(pathItem -> {
-        // remove serviceType from parameters
-        List<Operation> operations = getAllOperations(pathItem);
-        operations.forEach(this::removeServiceType);
-      });
+      openApi
+          .getPaths()
+          .values()
+          .forEach(
+              pathItem -> {
+                // remove serviceType from parameters
+                List<Operation> operations = getAllOperations(pathItem);
+                operations.forEach(this::removeServiceType);
+              });
     };
   }
 
@@ -430,8 +441,8 @@ public class SwaggerConfig {
         return;
       }
 
-      Map<String, io.swagger.v3.oas.models.media.Schema> schemaMap = openApi.getComponents()
-          .getSchemas();
+      Map<String, io.swagger.v3.oas.models.media.Schema> schemaMap =
+          openApi.getComponents().getSchemas();
 
       // remove schemas
       schemasToRemove.forEach(schemaMap::remove);
@@ -461,8 +472,8 @@ public class SwaggerConfig {
             pathItem.getPatch(),
             pathItem.getHead(),
             pathItem.getOptions(),
-            pathItem.getTrace()
-        ).filter(Objects::nonNull)
+            pathItem.getTrace())
+        .filter(Objects::nonNull)
         .toList();
   }
 
@@ -472,20 +483,17 @@ public class SwaggerConfig {
       operation.setParameters(
           operation.getParameters().stream()
               .filter(param -> !"serviceType".equals(param.getName()))
-              .collect(Collectors.toList())
-      );
+              .collect(Collectors.toList()));
     }
   }
 
   private void sortPaths(OpenAPI openApi) {
-    Map<String, PathItem> sortedPaths = openApi.getPaths().entrySet().stream()
-        .sorted(Map.Entry.comparingByKey())
-        .collect(Collectors.toMap(
-            Map.Entry::getKey,
-            Map.Entry::getValue,
-            (e1, e2) -> e1,
-            LinkedHashMap::new
-        ));
+    Map<String, PathItem> sortedPaths =
+        openApi.getPaths().entrySet().stream()
+            .sorted(Map.Entry.comparingByKey())
+            .collect(
+                Collectors.toMap(
+                    Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
     Paths paths = new Paths();
     sortedPaths.forEach(paths::addPathItem);
@@ -529,14 +537,12 @@ public class SwaggerConfig {
 
     for (Operation operation : operations) {
       if (operation != null && operation.getResponses() != null) {
-        ApiResponses sortedResponses = operation.getResponses().entrySet().stream()
-            .sorted(Comparator.comparingInt(e -> parseStatusCode(e.getKey())))
-            .collect(Collectors.toMap(
-                Map.Entry::getKey,
-                Map.Entry::getValue,
-                (e1, e2) -> e1,
-                ApiResponses::new
-            ));
+        ApiResponses sortedResponses =
+            operation.getResponses().entrySet().stream()
+                .sorted(Comparator.comparingInt(e -> parseStatusCode(e.getKey())))
+                .collect(
+                    Collectors.toMap(
+                        Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, ApiResponses::new));
         operation.setResponses(sortedResponses);
       }
     }
@@ -552,14 +558,14 @@ public class SwaggerConfig {
   }
 
   private boolean isPathItemEmpty(PathItem pathItem) {
-    return pathItem.getGet() == null &&
-        pathItem.getPost() == null &&
-        pathItem.getPut() == null &&
-        pathItem.getDelete() == null &&
-        pathItem.getPatch() == null &&
-        pathItem.getHead() == null &&
-        pathItem.getOptions() == null &&
-        pathItem.getTrace() == null;
+    return pathItem.getGet() == null
+        && pathItem.getPost() == null
+        && pathItem.getPut() == null
+        && pathItem.getDelete() == null
+        && pathItem.getPatch() == null
+        && pathItem.getHead() == null
+        && pathItem.getOptions() == null
+        && pathItem.getTrace() == null;
   }
 
   private Map<String, BiConsumer<PathItem, Operation>> getMethodRemovers() {
@@ -571,7 +577,6 @@ public class SwaggerConfig {
         "patch", PathItem::setPatch,
         "head", PathItem::setHead,
         "options", PathItem::setOptions,
-        "trace", PathItem::setTrace
-    );
+        "trace", PathItem::setTrace);
   }
 }

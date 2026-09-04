@@ -34,7 +34,7 @@ import org.hibernate.annotations.BatchSize;
 /**
  * @param <transferMetadata>
  * @author aacitelli
- * <p>JPA Entity
+ *     <p>JPA Entity
  */
 @Builder(toBuilder = true)
 @Getter
@@ -45,9 +45,9 @@ import org.hibernate.annotations.BatchSize;
 @Table(
     name = "transfer",
     uniqueConstraints = {
-        @UniqueConstraint(
-            name = "unique_transfer",
-            columnNames = {"iuv", "organization_fiscal_code", "transfer_id", "payment_option_id"})
+      @UniqueConstraint(
+          name = "unique_transfer",
+          columnNames = {"iuv", "organization_fiscal_code", "transfer_id", "payment_option_id"})
     },
     indexes = @Index(name = "transfer_payment_option_id_idx", columnList = "payment_option_id"))
 @JsonIdentityInfo(
@@ -55,9 +55,7 @@ import org.hibernate.annotations.BatchSize;
     property = "@transferId")
 public class Transfer implements Serializable {
 
-  /**
-   * generated serialVersionUID
-   */
+  /** generated serialVersionUID */
   private static final long serialVersionUID = -886970813082991109L;
 
   @Id
@@ -73,17 +71,14 @@ public class Transfer implements Serializable {
   @Column(name = "transfer_id")
   private String idTransfer;
 
-  @NotNull
-  private String iuv;
-  @NotNull
-  private long amount;
+  @NotNull private String iuv;
+  @NotNull private long amount;
 
   @NotNull
   @Column(name = "remittance_information")
   private String remittanceInformation; // causale
 
-  @NotNull
-  private String category; // taxonomy
+  @NotNull private String category; // taxonomy
 
   private String iban;
 

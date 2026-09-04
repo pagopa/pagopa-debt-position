@@ -64,10 +64,7 @@ class PublishPaymentUtilTest {
 
     for (int index = 0; index < validityDates.length; index++) {
       PaymentOption paymentOption =
-          PaymentOption.builder()
-              .id((long) index + 1)
-              .validityDate(validityDates[index])
-              .build();
+          PaymentOption.builder().id((long) index + 1).validityDate(validityDates[index]).build();
       paymentPosition.addPaymentOption(paymentOption);
     }
 

@@ -62,7 +62,8 @@ public class InstallmentModel implements Serializable {
   @UniqueMetadataKeys(message = "installmentMetadata keys must be unique")
   @Schema(
       description =
-          "It can be added a maximum of 10 key-value pairs for metadata. Metadata keys must be unique within the same installment.")
+          "It can be added a maximum of 10 key-value pairs for metadata. Metadata keys must be"
+              + " unique within the same installment.")
   @ArraySchema(uniqueItems = true)
   private List<InstallmentMetadataModel> installmentMetadata = new ArrayList<>();
 

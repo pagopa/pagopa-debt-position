@@ -13,9 +13,7 @@ import org.springframework.data.jpa.domain.Specification;
 @AllArgsConstructor
 public class PaymentPositionByOrganizationFiscalCode implements Specification<PaymentPosition> {
 
-  /**
-   * generated serialVersionUID
-   */
+  /** generated serialVersionUID */
   private static final long serialVersionUID = -2618936236986229586L;
 
   private String organizationFiscalCode;

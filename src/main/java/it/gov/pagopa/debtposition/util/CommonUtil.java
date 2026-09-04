@@ -66,9 +66,9 @@ public class CommonUtil {
   }
 
   /**
-   * @param list         the page content
-   * @param pageNumber   the page number
-   * @param pageSize     the number of items per page
+   * @param list the page content
+   * @param pageNumber the page number
+   * @param pageSize the number of items per page
    * @param totalRecords the total amount of items available
    * @return return the page info
    */
@@ -91,8 +91,8 @@ public class CommonUtil {
    * @param segregationCodes
    * @return
    */
-  public static boolean isAuthorizedOnNavBySegregationCode(String nav,
-      List<String> segregationCodes) {
+  public static boolean isAuthorizedOnNavBySegregationCode(
+      String nav, List<String> segregationCodes) {
     // It is enough to check only one NAV of the payment position. Here it is assumed that they all
     // have the same segregation code.
     String paymentPositionSegregationCode = nav.substring(1, 3);
@@ -109,7 +109,8 @@ public class CommonUtil {
 
   public static String sanitize(String input) {
     // Remove line-breaks, tabs, and anything non-alphanumeric/hyphen/asterisk
-    return input == null ? null
+    return input == null
+        ? null
         : input.replaceAll("[\\n\\r\\t]", "_").replaceAll("[^A-Za-z0-9\\-\\*]", "");
   }
 
@@ -157,8 +158,8 @@ public class CommonUtil {
   }
 
   public static boolean isMultiInstallments(PaymentPosition pp) {
-    List<PaymentOption> paymentOptions = pp.getPaymentOption().stream()
-        .filter(PaymentOption::getIsPartialPayment).toList();
+    List<PaymentOption> paymentOptions =
+        pp.getPaymentOption().stream().filter(PaymentOption::getIsPartialPayment).toList();
     return groupByPlanId(paymentOptions).size() > 1;
   }
 }

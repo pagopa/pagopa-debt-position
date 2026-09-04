@@ -20,11 +20,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 @AutoConfigureMockMvc
 class OpenApiGenerationTest {
 
-  @Autowired
-  ObjectMapper objectMapper;
+  @Autowired ObjectMapper objectMapper;
 
-  @Autowired
-  private MockMvc mvc;
+  @Autowired private MockMvc mvc;
 
   @Test
   void swaggerSpringPlugin() throws Exception {
@@ -46,16 +44,16 @@ class OpenApiGenerationTest {
               assertNotNull(result.getResponse());
               final String content = result.getResponse().getContentAsString();
               assertFalse(content.isBlank());
-//                      assertFalse(content.contains("${"), "Generated swagger contains placeholders");
+              //                      assertFalse(content.contains("${"), "Generated swagger
+              // contains placeholders");
               Object swagger =
                   objectMapper.readValue(result.getResponse().getContentAsString(), Object.class);
 
-              String formatted = objectMapper.writerWithDefaultPrettyPrinter()
-                  .writeValueAsString(swagger);
+              String formatted =
+                  objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(swagger);
               Path basePath = Paths.get("openapi/");
               Files.createDirectories(basePath);
               Files.write(basePath.resolve(toFile), formatted.getBytes());
             });
   }
-
 }
