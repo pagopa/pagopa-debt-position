@@ -1,18 +1,9 @@
 package it.gov.pagopa.debtposition.service.payments;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import static it.gov.pagopa.debtposition.service.common.ExpirationHandler.isInstallmentExpired;
+import static it.gov.pagopa.debtposition.service.common.PaymentConflictValidator.checkAlreadyPaidInstallmentsWithLock;
+import static it.gov.pagopa.debtposition.service.common.ValidityHandler.handlePaymentPositionValidTransition;
+import static it.gov.pagopa.debtposition.service.common.ValidityHandler.isInstallmentValid;
 
 import feign.FeignException;
 import it.gov.pagopa.debtposition.client.NodeClient;
@@ -33,18 +24,25 @@ import it.gov.pagopa.debtposition.model.payments.response.PaymentOptionWithDebto
 import it.gov.pagopa.debtposition.model.send.response.NotificationPriceResponse;
 import it.gov.pagopa.debtposition.repository.PaymentOptionRepository;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
-import static it.gov.pagopa.debtposition.service.common.ExpirationHandler.isInstallmentExpired;
-import static it.gov.pagopa.debtposition.service.common.PaymentConflictValidator.checkAlreadyPaidInstallmentsWithLock;
-import static it.gov.pagopa.debtposition.service.common.ValidityHandler.handlePaymentPositionValidTransition;
-import static it.gov.pagopa.debtposition.service.common.ValidityHandler.isInstallmentValid;
 import it.gov.pagopa.debtposition.service.payments.NotificationFeeUpdateService.PaymentOptionNotificationFeeContext;
-
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import it.gov.pagopa.debtposition.util.DebtPositionValidation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -83,14 +81,14 @@ public class PaymentsService {
   public PaymentOptionWithDebtorInfoModelResponse getPaymentOptionByNAV(
       @NotBlank String organizationFiscalCode, @NotBlank String nav) {
 
-	  PaymentOption paymentOption =
-			    paymentOptionLookupService.getPaymentOptionByNAVInternal(organizationFiscalCode, nav);
+    PaymentOption paymentOption =
+        paymentOptionLookupService.getPaymentOptionByNAVInternal(organizationFiscalCode, nav);
 
     // Synchronous update of notification fees
     updateNotificationFeeIfSendSync(paymentOption);
 
     PaymentOptionWithDebtorInfoModelResponse paymentOptionResponse =
-            modelMapper.map(paymentOption, PaymentOptionWithDebtorInfoModelResponse.class);
+        modelMapper.map(paymentOption, PaymentOptionWithDebtorInfoModelResponse.class);
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
 
     // Update only in memory response
@@ -142,180 +140,184 @@ public class PaymentsService {
 
   @Transactional
   public Transfer report(
-      @NotBlank String organizationFiscalCode, @NotBlank String iuv, @NotBlank String transferId) {
+      @NotBlank String organizationFiscalCode,
+      @NotBlank String iuv,
+      @NotBlank String transferId,
+      String iur) {
 
-    Optional<PaymentPosition> ppToReport =
-        paymentPositionRepository
-            .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
-                organizationFiscalCode, iuv, transferId);
-
-    if (ppToReport.isEmpty()) {
-      throw new AppException(AppError.TRANSFER_NOT_FOUND, organizationFiscalCode, iuv, transferId);
+    Optional<PaymentPosition> ppToReport;
+    if (iur != null && !iur.isBlank()) {
+      ppToReport =
+          paymentPositionRepository
+              .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionIdReceiptAndPaymentOptionTransferIdTransfer(
+                  organizationFiscalCode, iuv, iur, transferId);
+      if (ppToReport.isEmpty()) {
+        throw new AppException(
+            AppError.TRANSFER_NOT_FOUND, organizationFiscalCode, iuv, transferId, iur);
+      }
+    } else {
+      ppToReport =
+          paymentPositionRepository
+              .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
+                  organizationFiscalCode, iuv, transferId);
+      if (ppToReport.isEmpty()) {
+        throw new AppException(
+            AppError.TRANSFER_NOT_FOUND, organizationFiscalCode, iuv, transferId);
+      }
     }
 
-    DebtPositionValidation.checkPaymentPositionAccountability(ppToReport.get(), iuv, transferId);
+    PaymentPosition paymentPosition = ppToReport.get();
 
-    ppToReport.get().getPaymentOption().stream()
+    DebtPositionValidation.checkPaymentPositionAccountability(paymentPosition, iuv, transferId);
+
+    paymentPosition.getPaymentOption().stream()
         .filter(po -> iuv.equals(po.getIuv()))
         .findFirst()
         .orElseThrow(
             () -> new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, iuv));
 
-    return this.updateTransferStatus(ppToReport.get(), iuv, transferId);
+    return this.updateTransferStatus(paymentPosition, iuv, transferId);
   }
-  
+
   /**
-   * Handles the synchronous notification fee update flow.
-   * - Invokes SEND outside the transaction.
-   * - Opens a transaction only for saving data
+   * Handles the synchronous notification fee update flow. - Invokes SEND outside the transaction. -
+   * Opens a transaction only for saving data
    */
   public boolean updateNotificationFeeSync(PaymentOption paymentOption) {
-	  try {
-		  // call SEND API to retrieve notification fee amount
-		  NotificationPriceResponse sendResponse =
-				  sendClient.getNotificationFee(
-						  paymentOption.getOrganizationFiscalCode(),
-						  paymentOption.getNav());
+    try {
+      // call SEND API to retrieve notification fee amount
+      NotificationPriceResponse sendResponse =
+          sendClient.getNotificationFee(
+              paymentOption.getOrganizationFiscalCode(), paymentOption.getNav());
 
-		  long notificationFeeAmount = sendResponse.getTotalPrice();
-          
-		  // call transactional service method to execute the update of the notification fee and related amounts 
-		  PaymentOption updatedPaymentOption =
-				  notificationFeeUpdateService.applyNotificationFeeUpdate(
-						  paymentOption.getId(),
-						  notificationFeeAmount);
+      long notificationFeeAmount = sendResponse.getTotalPrice();
 
-		  paymentOption.setNotificationFee(updatedPaymentOption.getNotificationFee());
-		  paymentOption.setAmount(updatedPaymentOption.getAmount());
-		  paymentOption.setLastUpdatedDate(updatedPaymentOption.getLastUpdatedDate());
-		  paymentOption.setLastUpdatedDateNotificationFee(
-				  updatedPaymentOption.getLastUpdatedDateNotificationFee());
+      // call transactional service method to execute the update of the notification fee and related
+      // amounts
+      PaymentOption updatedPaymentOption =
+          notificationFeeUpdateService.applyNotificationFeeUpdate(
+              paymentOption.getId(), notificationFeeAmount);
 
-		  return true;
+      paymentOption.setNotificationFee(updatedPaymentOption.getNotificationFee());
+      paymentOption.setAmount(updatedPaymentOption.getAmount());
+      paymentOption.setLastUpdatedDate(updatedPaymentOption.getLastUpdatedDate());
+      paymentOption.setLastUpdatedDateNotificationFee(
+          updatedPaymentOption.getLastUpdatedDateNotificationFee());
 
-	  } catch (Exception e) {
-		  log.error(
-				  "[GPD-ERR-SEND-00] Exception while calling getNotificationFee for NAV {}, class = {}, message = {}.",
-				  CommonUtil.sanitize(paymentOption.getNav()),
-				  e.getClass(),
-				  CommonUtil.sanitize(e.getMessage()));
-		  return false;
-	  }
+      return true;
+
+    } catch (Exception e) {
+      log.error(
+          "[GPD-ERR-SEND-00] Exception while calling getNotificationFee for NAV {}, class = {},"
+              + " message = {}.",
+          CommonUtil.sanitize(paymentOption.getNav()),
+          e.getClass(),
+          CommonUtil.sanitize(e.getMessage()));
+      return false;
+    }
   }
-  
+
   /**
-   * Handles the notification fee update flow after checking payment status on Nodo.
-   * The process is split into three distinct phases:
-   * 1. Database Read: Fetch necessary data.
-   * 2. HTTP Call to nodeClient.getCheckPosition(...): Executed outside the transaction to avoid holding DB connections during potentially long HTTP calls.
-   * 3. Database Update: Persist results back to the DB.
+   * Handles the notification fee update flow after checking payment status on Nodo. The process is
+   * split into three distinct phases: 1. Database Read: Fetch necessary data. 2. HTTP Call to
+   * nodeClient.getCheckPosition(...): Executed outside the transaction to avoid holding DB
+   * connections during potentially long HTTP calls. 3. Database Update: Persist results back to the
+   * DB.
    */
   public PaymentOption updateNotificationFee(
-		  @NotBlank String organizationFiscalCode,
-		  @NotBlank String nav,
-		  Long notificationFeeAmount) {
+      @NotBlank String organizationFiscalCode, @NotBlank String nav, Long notificationFeeAmount) {
 
-	  PaymentOptionNotificationFeeContext context =
-			  notificationFeeUpdateService.loadContext(
-					  organizationFiscalCode,
-					  nav);
+    PaymentOptionNotificationFeeContext context =
+        notificationFeeUpdateService.loadContext(organizationFiscalCode, nav);
 
-	  Boolean paymentInProgress =
-			    checkPaymentInProgressOnNode(
-			        context.organizationFiscalCode(),
-			        nav);
+    Boolean paymentInProgress = checkPaymentInProgressOnNode(context.organizationFiscalCode(), nav);
 
-	  return notificationFeeUpdateService.applyNotificationFeeUpdate(
-			  context.paymentOptionId(),
-			  notificationFeeAmount,
-			  paymentInProgress);
+    return notificationFeeUpdateService.applyNotificationFeeUpdate(
+        context.paymentOptionId(), notificationFeeAmount, paymentInProgress);
   }
-  
+
   private void updateNotificationFeeIfSendSync(PaymentOption paymentOption) {
-	  if (!Boolean.TRUE.equals(paymentOption.getSendSync())) {
-		  return;
-	  }
+    if (!Boolean.TRUE.equals(paymentOption.getSendSync())) {
+      return;
+    }
 
-	  String safeNav = CommonUtil.sanitize(paymentOption.getNav());
+    String safeNav = CommonUtil.sanitize(paymentOption.getNav());
 
-	  try {
-		  if (this.updateNotificationFeeSync(paymentOption)) {
-			  log.info(
-					  "Notification fee amount of Payment Option with NAV {} has been updated with notification-fee: {}.",
-					  safeNav,
-					  paymentOption.getNotificationFee());
-		  } else {
-			  log.error(
-					  "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.",
-					  safeNav);
-		  }
-	  } catch (Exception e) {
-		  log.error(
-				  "[GPD-ERR-SEND-02] Failed to update notification fee for NAV {}: {}",
-				  safeNav,
-				  CommonUtil.sanitize(e.getMessage()));
-	  }
+    try {
+      if (this.updateNotificationFeeSync(paymentOption)) {
+        log.info(
+            "Notification fee amount of Payment Option with NAV {} has been updated with"
+                + " notification-fee: {}.",
+            safeNav,
+            paymentOption.getNotificationFee());
+      } else {
+        log.error(
+            "[GPD-ERR-SEND-01] Error while updating notification fee amount for NAV {}.", safeNav);
+      }
+    } catch (Exception e) {
+      log.error(
+          "[GPD-ERR-SEND-02] Failed to update notification fee for NAV {}: {}",
+          safeNav,
+          CommonUtil.sanitize(e.getMessage()));
+    }
   }
-  
-  private Boolean checkPaymentInProgressOnNode(
-		  String organizationFiscalCode,
-		  String nav) {
 
-	  String safeOrganizationFiscalCode = CommonUtil.sanitize(organizationFiscalCode);
-	  String safeNav = CommonUtil.sanitize(nav);
+  private Boolean checkPaymentInProgressOnNode(String organizationFiscalCode, String nav) {
 
-	  try {
-		  NodePosition position =
-				  NodePosition.builder()
-				  .fiscalCode(organizationFiscalCode)
-				  .noticeNumber(auxDigit + nav)
-				  .build();
+    String safeOrganizationFiscalCode = CommonUtil.sanitize(organizationFiscalCode);
+    String safeNav = CommonUtil.sanitize(nav);
 
-		  NodeCheckPositionResponse response =
-				  nodeClient.getCheckPosition(
-						  NodeCheckPositionModel.builder()
-						  .positionslist(Collections.singletonList(position))
-						  .build());
+    try {
+      NodePosition position =
+          NodePosition.builder()
+              .fiscalCode(organizationFiscalCode)
+              .noticeNumber(auxDigit + nav)
+              .build();
 
-		  return !"OK".equalsIgnoreCase(response.getOutcome());
+      NodeCheckPositionResponse response =
+          nodeClient.getCheckPosition(
+              NodeCheckPositionModel.builder()
+                  .positionslist(Collections.singletonList(position))
+                  .build());
 
-	  } catch (FeignException.BadRequest e) {
-		  NodePosition position =
-				  NodePosition.builder()
-				  .fiscalCode(organizationFiscalCode)
-				  .noticeNumber(nav)
-				  .build();
+      return !"OK".equalsIgnoreCase(response.getOutcome());
 
-		  try {
-			  NodeCheckPositionResponse response =
-					  nodeClient.getCheckPosition(
-							  NodeCheckPositionModel.builder()
-							  .positionslist(Collections.singletonList(position))
-							  .build());
+    } catch (FeignException.BadRequest e) {
+      NodePosition position =
+          NodePosition.builder().fiscalCode(organizationFiscalCode).noticeNumber(nav).build();
 
-			  return !"OK".equalsIgnoreCase(response.getOutcome());
+      try {
+        NodeCheckPositionResponse response =
+            nodeClient.getCheckPosition(
+                NodeCheckPositionModel.builder()
+                    .positionslist(Collections.singletonList(position))
+                    .build());
 
-		  } catch (Exception ex) {
-			  log.error(
-					  "Error checking the position on the node for PO with fiscalCode {} and noticeNumber ({}){}",
-					  safeOrganizationFiscalCode,
-					  auxDigit,
-					  safeNav,
-					  ex);
+        return !"OK".equalsIgnoreCase(response.getOutcome());
 
-			  return Boolean.TRUE;
-		  }
+      } catch (Exception ex) {
+        log.error(
+            "Error checking the position on the node for PO with fiscalCode {} and noticeNumber"
+                + " ({}){}",
+            safeOrganizationFiscalCode,
+            auxDigit,
+            safeNav,
+            ex);
 
-	  } catch (Exception e) {
-		  log.error(
-				  "Error checking the position on the node for PO with fiscalCode {} and noticeNumber ({}){}",
-				  safeOrganizationFiscalCode,
-				  auxDigit,
-				  safeNav,
-				  e);
+        return Boolean.TRUE;
+      }
 
-		  return Boolean.TRUE;
-	  }
+    } catch (Exception e) {
+      log.error(
+          "Error checking the position on the node for PO with fiscalCode {} and noticeNumber"
+              + " ({}){}",
+          safeOrganizationFiscalCode,
+          auxDigit,
+          safeNav,
+          e);
+
+      return Boolean.TRUE;
+    }
   }
 
   public static void updateAmountsWithNotificationFee(
