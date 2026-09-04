@@ -25,23 +25,17 @@ public enum CustomHttpStatus {
     this.reasonPhrase = reasonPhrase;
   }
 
-  /**
-   * Return the integer value of this status code.
-   */
+  /** Return the integer value of this status code. */
   public int value() {
     return this.value;
   }
 
-  /**
-   * Return the HTTP status series of this status code.
-   */
+  /** Return the HTTP status series of this status code. */
   public Series series() {
     return this.series;
   }
 
-  /**
-   * Return the reason phrase of this status code.
-   */
+  /** Return the reason phrase of this status code. */
   public String getReasonPhrase() {
     return this.reasonPhrase;
   }
@@ -70,17 +64,13 @@ public enum CustomHttpStatus {
     return (is4xxClientError() || is5xxServerError());
   }
 
-  /**
-   * Return a string representation of this status code.
-   */
+  /** Return a string representation of this status code. */
   @Override
   public String toString() {
     return this.value + " " + name();
   }
 
-  /**
-   * Return the {@code HttpStatus} enum constant with the specified numeric value.
-   */
+  /** Return the {@code HttpStatus} enum constant with the specified numeric value. */
   public static CustomHttpStatus valueOf(int statusCode) {
     CustomHttpStatus status = resolve(statusCode);
     if (status == null) {
@@ -89,9 +79,7 @@ public enum CustomHttpStatus {
     return status;
   }
 
-  /**
-   * Resolve the given status code to an {@code HttpStatus}, if possible.
-   */
+  /** Resolve the given status code to an {@code HttpStatus}, if possible. */
   @Nullable
   public static CustomHttpStatus resolve(int statusCode) {
     // Use cached VALUES instead of values() to prevent array allocation.
@@ -103,9 +91,7 @@ public enum CustomHttpStatus {
     return null;
   }
 
-  /**
-   * Enumeration of HTTP status series.
-   */
+  /** Enumeration of HTTP status series. */
   public enum Series {
     INFORMATIONAL(1),
     SUCCESSFUL(2),
@@ -119,16 +105,12 @@ public enum CustomHttpStatus {
       this.value = value;
     }
 
-    /**
-     * Return the integer value of this status series. Ranges from 1 to 5.
-     */
+    /** Return the integer value of this status series. Ranges from 1 to 5. */
     public int value() {
       return this.value;
     }
 
-    /**
-     * Return the {@code Series} enum constant for the supplied status code.
-     */
+    /** Return the {@code Series} enum constant for the supplied status code. */
     public static Series valueOf(int statusCode) {
       Series series = resolve(statusCode);
       if (series == null) {
@@ -137,9 +119,7 @@ public enum CustomHttpStatus {
       return series;
     }
 
-    /**
-     * Resolve the given status code to an {@code HttpStatus.Series}, if possible.
-     */
+    /** Resolve the given status code to an {@code HttpStatus.Series}, if possible. */
     @Nullable
     public static Series resolve(int statusCode) {
       int seriesCode = statusCode / 100;
