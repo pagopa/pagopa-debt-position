@@ -2,6 +2,7 @@ package it.gov.pagopa.debtposition.exception;
 
 import java.util.Formatter;
 import jakarta.validation.constraints.NotNull;
+import java.util.regex.Pattern;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.springframework.http.HttpStatus;
@@ -92,8 +93,9 @@ public class AppException extends RuntimeException {
       return template.replace("%s", "");
     }
     String result = template;
+    Pattern pattern = Pattern.compile("%s", Pattern.LITERAL);
     for (Object arg : args) {
-      result = result.replaceFirst("%s", arg != null ? arg.toString() : "null");
+      result = pattern.matcher(result).replaceFirst(arg != null ? arg.toString() : "null");
     }
     result = result.replace("%s", "");
     return result;
