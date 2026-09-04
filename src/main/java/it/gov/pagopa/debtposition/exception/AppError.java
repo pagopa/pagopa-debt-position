@@ -163,7 +163,7 @@ public enum AppError {
 		  TRANSFER_NOT_FOUND(
 		      HttpStatus.NOT_FOUND,
 		      "Not found the transfer",
-		      "Not found a transfer for Organization Fiscal Code %s, IUV %s and TxID %s"),
+		      "Not found a transfer for Organization Fiscal Code %s, IUV %s, TxID %s, IUR %s"),
 		  TRANSFER_REPORTING_FAILED(
 		      HttpStatus.INTERNAL_SERVER_ERROR,
 		      "The reporting for the transfer is failed",

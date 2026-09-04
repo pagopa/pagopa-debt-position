@@ -145,72 +145,37 @@ public class PaymentsService {
       @NotBlank String transferId,
       String iur) {
 
-    log.info("=== REPORT START ===");
-    log.info("organizationFiscalCode: " + organizationFiscalCode);
-    log.info("iuv: " + iuv);
-    log.info("transferId: " + transferId);
-    log.info("iur: " + iur);
-
     Optional<PaymentPosition> ppToReport;
     if (iur != null && !iur.isBlank()) {
-      log.info("RAMO 1: Cercando con IUR (4 parametri)");
-      log.info("Query parameters: org=" + organizationFiscalCode + ", iuv=" + iuv
-          + ", iur=" + iur + ", transferId=" + transferId);
+
       ppToReport =
           paymentPositionRepository
               .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionIdReceiptAndPaymentOptionTransferIdTransfer(
                   organizationFiscalCode, iuv, iur, transferId);
-      log.info("Repository returned - isPresent: " + ppToReport.isPresent());
-
+      if (ppToReport.isEmpty()) {
+        throw new AppException(AppError.TRANSFER_NOT_FOUND, organizationFiscalCode, iuv, transferId, iur);
+      }
     } else {
-
-      log.info("RAMO 2: Cercando SENZA IUR (3 parametri)");
-      log.info("Query parameters: org=" + organizationFiscalCode + ", iuv=" + iuv
-          + ", transferId=" + transferId);
       ppToReport =
           paymentPositionRepository
               .findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
                   organizationFiscalCode, iuv, transferId);
-      log.info("Repository returned - isPresent: " + ppToReport.isPresent());
+      if (ppToReport.isEmpty()) {
+        throw new AppException(AppError.TRANSFER_NOT_FOUND, organizationFiscalCode, iuv, transferId);
+      }
     }
 
-    if (ppToReport.isEmpty()) {
-      log.error("ppToReport è EMPTY - lanciando TRANSFER_NOT_FOUND");
-      throw new AppException(AppError.TRANSFER_NOT_FOUND, organizationFiscalCode, iuv, transferId);
-    }
 
-    log.info("ppToReport TROVATO - Procedendo con validazioni");
-    log.info("PaymentPosition ID: " + ppToReport.get().getId());
-    log.info("PaymentOption size: " + ppToReport.get().getPaymentOption().size());
 
-    try {
-      log.info("Eseguendo checkPaymentPositionAccountability...");
-      DebtPositionValidation.checkPaymentPositionAccountability(ppToReport.get(), iuv, transferId);
-      log.info("Validazione accountability passata");
-    } catch (Exception e) {
-      log.error("Validazione accountability fallita: " + e.getMessage(), e);
-      throw e;
-    }
+    DebtPositionValidation.checkPaymentPositionAccountability(ppToReport.get(), iuv, transferId);
 
-    log.info("Cercando PaymentOption con iuv=" + iuv);
-    var transferFound = ppToReport.get().getPaymentOption().stream()
-        .peek(po -> log.info("  - Po iuv: " + po.getIuv() + ", status: " + po.getStatus()))
+    ppToReport.get().getPaymentOption().stream()
         .filter(po -> iuv.equals(po.getIuv()))
-        .findFirst();
+        .findFirst()
+        .orElseThrow(
+            () -> new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, iuv));
 
-    if (transferFound.isEmpty()) {
-      log.error("PaymentOption non trovato - lanciando PAYMENT_OPTION_NOT_FOUND");
-      throw new AppException(AppError.PAYMENT_OPTION_NOT_FOUND, organizationFiscalCode, iuv);
-    }
-
-    log.info("PaymentOption trovato - iuv: " + transferFound.get().getIuv());
-
-    log.info("Eseguendo updateTransferStatus...");
-    Transfer result = this.updateTransferStatus(ppToReport.get(), iuv, transferId);
-    log.info("updateTransferStatus completato - transfer status: " + (result != null ? result.getStatus() : "null"));
-    log.info("=== REPORT END ===");
-
-    return result;
+    return this.updateTransferStatus(ppToReport.get(), iuv, transferId);
   }
 
   /**

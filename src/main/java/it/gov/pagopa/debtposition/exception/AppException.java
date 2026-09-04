@@ -88,7 +88,18 @@ public class AppException extends RuntimeException {
   private static String formatDetails(AppError appError, Object[] args) {
 	  // if appError.details is null, fallback to a single-string pattern
 	  String template = appError.details != null ? appError.details : "%s";
-	  return (args == null || args.length == 0) ? template.replace("%s", "") : String.format(template, args);
+    if (args == null || args.length == 0) {
+      return template.replaceAll("%s", "");  // ← Rimuovi i placeholder irrisolti
+    }
+
+    String result = template;
+    for (Object arg : args) {
+      result = result.replaceFirst("%s", arg != null ? arg.toString() : "null");
+    }
+
+    result = result.replaceAll("%s", "");
+
+    return result;
   }
 
   @Override

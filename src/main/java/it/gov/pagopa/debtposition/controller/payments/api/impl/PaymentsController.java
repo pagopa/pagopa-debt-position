@@ -116,11 +116,7 @@ public class PaymentsController implements IPaymentsController {
       ReportTransferRequest reportTransferRequest) {
 
     String iur = (reportTransferRequest != null) ? reportTransferRequest.getIur() : null;
-    log.info("=== reportTransfer START ===");
-    log.info("reportTransferRequest: " + reportTransferRequest);
-    log.info("iur extracted: '" + iur + "'");
-    log.info("iur is null: " + (iur == null));
-    log.info("iur is blank: " + (iur != null && iur.isBlank()));
+
     log.debug(
         String.format(
             LOG_BASE_HEADER_INFO,
