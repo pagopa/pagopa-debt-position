@@ -787,6 +787,7 @@ public class DebtPositionMock {
 
     return poMock;
   }
+
   public static PaymentOptionDTO createPaymentOption(
       int amount,
       String iuv,
