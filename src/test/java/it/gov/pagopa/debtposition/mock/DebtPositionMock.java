@@ -786,6 +786,7 @@ public class DebtPositionMock {
             LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
 
     return poMock;
+  }
   public static PaymentOptionDTO createPaymentOption(
       int amount,
       String iuv,
