@@ -348,7 +348,7 @@ class PaymentsControllerTest {
     // effettuo la rendicontazione per l'unica transazione della PO con id 3 (la chiamata report
     // lavora con lo IUV e non con il NAV)
     mvc.perform(
-            post("/organizations/123456789017/paymentoptions/1234569/transfers/3/report")
+            post("/organizations/123456789017/paymentoptions/1234569/transfers/1/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -965,7 +965,7 @@ class PaymentsControllerTest {
     // effettuo la rendicontazione per l'unica transazione della PO (si continua ad utilizzare lo
     // IUV e non il NAV)
     mvc.perform(
-            post("/organizations/12345678901555/paymentoptions/1234563/transfers/3/report")
+            post("/organizations/12345678901555/paymentoptions/1234563/transfers/1/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -1035,7 +1035,7 @@ class PaymentsControllerTest {
     // effettuo la rendicontazione per la transazione (si continua ad utilizzare lo IUV e non il
     // NAV)
     mvc.perform(
-            post("/organizations/12345678901666/paymentoptions/1234564/transfers/4/report")
+            post("/organizations/12345678901666/paymentoptions/1234564/transfers/1/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -1118,7 +1118,7 @@ class PaymentsControllerTest {
     // effettuo la rendicontazione per una delle 2 transazioni della PO (si continua ad utilizzare
     // lo IUV e non il NAV)
     mvc.perform(
-            post("/organizations/12345678901777/paymentoptions/1234564/transfers/4/report")
+            post("/organizations/12345678901777/paymentoptions/1234564/transfers/1/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -1137,7 +1137,7 @@ class PaymentsControllerTest {
     // effettuo la rendicontazione per la seconda delle 2 transazioni della PO (si continua ad
     // utilizzare lo IUV e non il NAV)
     mvc.perform(
-            post("/organizations/12345678901777/paymentoptions/1234564/transfers/5/report")
+            post("/organizations/12345678901777/paymentoptions/1234564/transfers/2/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -1239,7 +1239,7 @@ class PaymentsControllerTest {
     // effettuo la rendicontazione per una delle 2 transazioni della PO (si continua ad utilizzare
     // lo IUV e non il NAV)
     mvc.perform(
-            post("/organizations/12345678901888/paymentoptions/1234564/transfers/4/report")
+            post("/organizations/12345678901888/paymentoptions/1234564/transfers/1/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -1258,7 +1258,7 @@ class PaymentsControllerTest {
     // effettuo la rendicontazione per la seconda delle 2 transazioni della PO (si continua ad
     // utilizzare lo IUV e non il NAV)
     mvc.perform(
-            post("/organizations/12345678901888/paymentoptions/1234564/transfers/5/report")
+            post("/organizations/12345678901888/paymentoptions/1234564/transfers/2/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -1287,7 +1287,7 @@ class PaymentsControllerTest {
     // effettuo la rendicontazione per le 2 transazioni della PO ancora in stato PAID (si continua
     // ad utilizzare lo IUV e non il NAV)
     mvc.perform(
-            post("/organizations/12345678901888/paymentoptions/1234565/transfers/4/report")
+            post("/organizations/12345678901888/paymentoptions/1234565/transfers/1/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -1295,7 +1295,7 @@ class PaymentsControllerTest {
             MockMvcResultMatchers.jsonPath("$.status").value(TransferStatus.T_REPORTED.toString()));
 
     mvc.perform(
-            post("/organizations/12345678901888/paymentoptions/1234565/transfers/5/report")
+            post("/organizations/12345678901888/paymentoptions/1234565/transfers/2/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -1396,7 +1396,7 @@ class PaymentsControllerTest {
     // effettuo la rendicontazione per l'unica transazione della PO (si continua ad utilizzare lo
     // IUV e non il NAV)
     mvc.perform(
-            post("/organizations/123456789010000/paymentoptions/1234563/transfers/3/report")
+            post("/organizations/123456789010000/paymentoptions/1234563/transfers/1/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -1415,7 +1415,7 @@ class PaymentsControllerTest {
     // provo a rendicontare nuovamente la transazione già rendicontata (si continua ad utilizzare lo
     // IUV e non il NAV)
     mvc.perform(
-            post("/organizations/123456789010000/paymentoptions/1234563/transfers/3/report")
+            post("/organizations/123456789010000/paymentoptions/1234563/transfers/1/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isConflict());
   }
@@ -2145,14 +2145,14 @@ class PaymentsControllerTest {
     // 4) ONLY one of the two installments is reported (1234564) -> PO_REPORTED, the other remains
     // PO_PAID
     mvc.perform(
-            post("/organizations/555123456789000/paymentoptions/1234564/transfers/4/report")
+            post("/organizations/555123456789000/paymentoptions/1234564/transfers/1/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.status").value(TransferStatus.T_REPORTED.toString()));
 
     mvc.perform(
-            post("/organizations/555123456789000/paymentoptions/1234564/transfers/5/report")
+            post("/organizations/555123456789000/paymentoptions/1234564/transfers/2/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(
@@ -2197,22 +2197,22 @@ class PaymentsControllerTest {
 
     // 3) Both installments are brought to REPORTED
     mvc.perform(
-            post("/organizations/556123456789000/paymentoptions/1234564/transfers/4/report")
+            post("/organizations/556123456789000/paymentoptions/1234564/transfers/1/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 
     mvc.perform(
-            post("/organizations/556123456789000/paymentoptions/1234564/transfers/5/report")
+            post("/organizations/556123456789000/paymentoptions/1234564/transfers/2/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 
     mvc.perform(
-            post("/organizations/556123456789000/paymentoptions/1234565/transfers/4/report")
+            post("/organizations/556123456789000/paymentoptions/1234565/transfers/1/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 
     mvc.perform(
-            post("/organizations/556123456789000/paymentoptions/1234565/transfers/5/report")
+            post("/organizations/556123456789000/paymentoptions/1234565/transfers/2/report")
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 
