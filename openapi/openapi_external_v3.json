@@ -4,7 +4,7 @@
     "title": "PagoPA API Debt Position ${service}",
     "description": "Progetto Gestione Posizioni Debitorie",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.1.39"
+    "version": "1.1.39-1-PIDM-2230-transferIdValidation"
   },
   "servers": [
     {
@@ -1137,7 +1137,7 @@
             "items": {
               "$ref": "#/components/schemas/TransferModel"
             },
-            "maxItems": 2147483647,
+            "maxItems": 5,
             "minItems": 1
           },
           "installmentMetadata": {

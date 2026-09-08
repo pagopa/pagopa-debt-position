@@ -1,6 +1,7 @@
 package it.gov.pagopa.debtposition.controller;
 
 import static it.gov.pagopa.debtposition.controller.DebtPositionControllerV3Test.createPaymentPositionV3;
+import static it.gov.pagopa.debtposition.mock.DebtPositionMock.getPaymentOptionWithTransferList;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -22,6 +23,7 @@ import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.TransferStatus;
 import it.gov.pagopa.debtposition.model.pd.Stamp;
+import it.gov.pagopa.debtposition.model.pd.TransferModel;
 import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import it.gov.pagopa.debtposition.service.pd.crud.PaymentPositionCRUDService;
@@ -37,6 +39,8 @@ import org.hamcrest.Matchers;
 import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -341,6 +345,62 @@ class DebtPositionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+  }
+
+  @ParameterizedTest
+  @MethodSource("it.gov.pagopa.debtposition.controller.pd.validator.ValidTransferListValidatorTest#invalidTransferModelIdsListSizeTestMethodSource")
+  void createDebtPosition__400_wrong_transfer_list_size(List<String>transferModelList) throws Exception {
+    //transfer list with more than 5 transfer
+    PaymentPositionDTO paymentPositionDTO = getPaymentOptionWithTransferList(transferModelList);
+    mvc.perform(
+                    post(String.format("/organizations/%s/debtpositions", ORG_FISCAL_CODE))
+                            .content(TestUtil.toJson(paymentPositionDTO))
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.detail", containsString("paymentOption[0].transfer: Transfer list must contain between 1 and 5 transfers")));
+  }
+
+  @ParameterizedTest
+  @MethodSource("it.gov.pagopa.debtposition.controller.pd.validator.ValidTransferListValidatorTest#invalidTransferModelIdsTestMethodSource")
+  void createDebtPosition__400_transfer_list_with_invalid_ids(String invalidId) throws Exception {
+    //transfer list with more than 5 transfer
+    PaymentPositionDTO paymentPositionDTO = getPaymentOptionWithTransferList(List.of(invalidId));
+    mvc.perform(
+                    post(String.format("/organizations/%s/debtpositions", ORG_FISCAL_CODE))
+                            .content(TestUtil.toJson(paymentPositionDTO))
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.detail", containsString("paymentOption[0].transfer: Transfer list contains invalid transfer ids: [%s]".formatted(invalidId) )));
+  }
+
+  @Test
+  void createDebtPosition__400_transfer_list_with_duplicated_ids() throws Exception {
+    //transfer list with more than 5 transfer
+    PaymentPositionDTO paymentPositionDTO = getPaymentOptionWithTransferList(List.of("1", "1"));
+    mvc.perform(
+                    post(String.format("/organizations/%s/debtpositions", ORG_FISCAL_CODE))
+                            .content(TestUtil.toJson(paymentPositionDTO))
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.detail", containsString("paymentOption[0].transfer: Transfer list invalid value: [1], expected: [2]" )));
+  }
+
+  @ParameterizedTest
+  @MethodSource("it.gov.pagopa.debtposition.controller.pd.validator.ValidTransferListValidatorTest#invalidTransferListMissingIdsMethodSource")
+
+  void createDebtPosition__400_transfer_list_with_missing_id(List<String> transferModelIdsList, String expectedErrorMessage) throws Exception {
+    //transfer list with more than 5 transfer
+    PaymentPositionDTO paymentPositionDTO = getPaymentOptionWithTransferList(transferModelIdsList);
+    mvc.perform(
+                    post(String.format("/organizations/%s/debtpositions", ORG_FISCAL_CODE))
+                            .content(TestUtil.toJson(paymentPositionDTO))
+                            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.detail", containsString("paymentOption[0].transfer: %s".formatted(expectedErrorMessage) )));
   }
 
   @Test

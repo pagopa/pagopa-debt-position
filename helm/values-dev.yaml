@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: ""
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
-    tag: "1.1.39"
+    tag: "1.1.39-1-PIDM-2230-transferIdValidation"
     pullPolicy: Always
   livenessProbe:
     httpGet:
