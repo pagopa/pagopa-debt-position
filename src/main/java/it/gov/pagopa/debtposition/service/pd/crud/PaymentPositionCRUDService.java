@@ -270,7 +270,14 @@ public class PaymentPositionCRUDService {
     if (DebtPositionStatus.getPaymentPosAlreadyPaidStatus().contains(ppToRemove.getStatus())) {
       throw new AppException(AppError.DEBT_POSITION_PAYMENT_FOUND, organizationFiscalCode, iupd);
     }
-    paymentPositionRepository.delete(ppToRemove);
+    try {
+    	paymentPositionRepository.delete(ppToRemove);
+    	paymentPositionRepository.flush();
+    } catch (OptimisticLockingFailureException e) {
+    	throw new AppException(
+    			AppError.DEBT_POSITION_CONCURRENT_DELETE_FAILURE,
+    			organizationFiscalCode);
+    }
   }
 
   @Transactional

@@ -30,6 +30,8 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -421,6 +423,44 @@ class PaymentPositionCRUDServiceTest {
     assertEquals(
             AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE,
             exception.getAppError());
+  }
+  
+  @SuppressWarnings("unchecked")
+  @Test
+  void deleteDebtPosition_ObjectOptimisticLockingFailureException_throwsSpecificAppException() {
+    String organizationFiscalCode = "02406911202";
+    String iupd = "IUPD-1";
+
+    PaymentPosition ppToDelete = new PaymentPosition();
+    ppToDelete.setId(1L);
+    ppToDelete.setIupd(iupd);
+    ppToDelete.setStatus(DebtPositionStatus.DRAFT);
+
+    when(paymentPositionRepository.findOne(any(Specification.class)))
+        .thenReturn(Optional.of(ppToDelete));
+
+    doThrow(
+            new ObjectOptimisticLockingFailureException(
+                PaymentPosition.class,
+                ppToDelete.getId()))
+        .when(paymentPositionRepository)
+        .flush();
+
+    AppException exception =
+        assertThrows(
+            AppException.class,
+            () -> paymentsService.delete(organizationFiscalCode, iupd, null));
+
+    assertEquals(
+        AppError.DEBT_POSITION_CONCURRENT_DELETE_FAILURE,
+        exception.getAppError());
+
+    assertEquals(
+        HttpStatus.CONFLICT,
+        exception.getHttpStatus());
+
+    verify(paymentPositionRepository).delete(ppToDelete);
+    verify(paymentPositionRepository).flush();
   }
 
   private ConstraintViolationException uniqueViolation(String constraintName) {
