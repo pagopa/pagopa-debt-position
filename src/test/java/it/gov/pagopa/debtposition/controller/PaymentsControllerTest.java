@@ -2663,7 +2663,7 @@ class PaymentsControllerTest {
     request.setIur("TRN987654321");
 
     mvc.perform(
-            post("/organizations/12345678901555/paymentoptions/1234567/transfers/3/report")
+            post("/organizations/12345678901555/paymentoptions/1234567/transfers/1/report")
                 .content(TestUtil.toJson(request, objectMapper))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())

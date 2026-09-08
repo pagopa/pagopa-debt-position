@@ -781,8 +781,8 @@ public class DebtPositionMock {
             1000,
             "1234567",
             false,
-            createTransfersMetadataMock3(),
-            LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.SECONDS),
+            createTransfersMultipleMock1(),
+            LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS),
             LocalDateTime.now(ZoneOffset.UTC).plus(7, ChronoUnit.DAYS));
 
     return poMock;
