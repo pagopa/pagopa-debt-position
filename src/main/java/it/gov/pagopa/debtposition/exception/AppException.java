@@ -2,6 +2,7 @@ package it.gov.pagopa.debtposition.exception;
 
 import java.util.Formatter;
 import jakarta.validation.constraints.NotNull;
+import java.util.regex.Pattern;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,8 @@ public class AppException extends RuntimeException {
 
   /** generated serialVersionUID */
   private static final long serialVersionUID = -2887745935671875027L;
+
+  private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%s", Pattern.LITERAL);
 
   /** title returned to the response when this exception occurred */
   String title;
@@ -86,9 +89,17 @@ public class AppException extends RuntimeException {
   }
 
   private static String formatDetails(AppError appError, Object[] args) {
-	  // if appError.details is null, fallback to a single-string pattern
-	  String template = appError.details != null ? appError.details : "%s";
-	  return (args == null || args.length == 0) ? template.replace("%s", "") : String.format(template, args);
+    // if appError.details is null, fallback to a single-string pattern
+    String template = appError.details != null ? appError.details : "%s";
+    if (args == null || args.length == 0) {
+      return template.replace("%s", "");
+    }
+    String result = template;
+    for (Object arg : args) {
+      result = PLACEHOLDER_PATTERN.matcher(result).replaceFirst(arg != null ? arg.toString() : "null");
+    }
+    result = result.replace("%s", "");
+    return result;
   }
 
   @Override
