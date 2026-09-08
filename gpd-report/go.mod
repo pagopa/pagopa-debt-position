@@ -1,6 +1,6 @@
 module go-sql
 
-go 1.25
+go 1.25.0
 
 require (
 	github.com/lib/pq v1.10.9
@@ -9,5 +9,5 @@ require (
 
 require (
 	github.com/gorilla/websocket v1.5.3 // indirect
-	golang.org/x/net v0.38.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
 )
