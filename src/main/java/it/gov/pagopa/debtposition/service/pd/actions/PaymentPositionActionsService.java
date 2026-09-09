@@ -68,7 +68,15 @@ public class PaymentPositionActionsService {
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
     ppToInvalidate.setStatus(DebtPositionStatus.INVALID);
     ppToInvalidate.setLastUpdatedDate(currentDate);
-    return paymentPositionRepository.saveAndFlush(ppToInvalidate);
+
+    try {
+    	return paymentPositionRepository.saveAndFlush(ppToInvalidate);
+    } catch (OptimisticLockingFailureException e) {
+    	throw new AppException(
+    			AppError.DEBT_POSITION_CONCURRENT_INVALIDATE_FAILURE,
+    			organizationFiscalCode,
+    			iupd);
+    }
   }
 
   /**

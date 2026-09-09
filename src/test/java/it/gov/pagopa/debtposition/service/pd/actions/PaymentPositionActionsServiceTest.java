@@ -24,58 +24,68 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @SpringBootTest(classes = DebtPositionApplication.class)
 class PaymentPositionActionsServiceTest {
 
-  @Autowired
-  private PaymentPositionActionsService paymentPositionActionsService;
+	@Autowired
+	private PaymentPositionActionsService paymentPositionActionsService;
 
-  @MockitoBean
-  private PaymentPositionCRUDService paymentPositionCRUDService;
+	@MockitoBean
+	private PaymentPositionCRUDService paymentPositionCRUDService;
 
-  @MockitoBean
-  private PaymentPositionRepository paymentPositionRepository;
-  
-  @Test
-  void publish_ObjectOptimisticLockingFailureException_throwsConcurrentPublishFailure() {
-    String organizationFiscalCode = "02406911202";
-    String iupd = "IUPD-1";
+	@MockitoBean
+	private PaymentPositionRepository paymentPositionRepository;
 
-    PaymentPosition paymentPosition = new PaymentPosition();
-    paymentPosition.setId(1L);
-    paymentPosition.setOrganizationFiscalCode(organizationFiscalCode);
-    paymentPosition.setIupd(iupd);
-    paymentPosition.setStatus(DebtPositionStatus.DRAFT);
-    paymentPosition.setPaymentOption(List.of());
+	@Test
+	void publish_ObjectOptimisticLockingFailureException_throwsConcurrentPublishFailure() {
+		String organizationFiscalCode = "02406911202";
+		String iupd = "IUPD-1";
 
-    when(
-            paymentPositionCRUDService.getDebtPositionByIUPD(
-                organizationFiscalCode,
-                iupd,
-                null))
-        .thenReturn(paymentPosition);
+		PaymentPosition paymentPosition = new PaymentPosition();
+		paymentPosition.setId(1L);
+		paymentPosition.setOrganizationFiscalCode(organizationFiscalCode);
+		paymentPosition.setIupd(iupd);
+		paymentPosition.setStatus(DebtPositionStatus.DRAFT);
+		paymentPosition.setPaymentOption(List.of());
 
-    when(paymentPositionRepository.saveAndFlush(any(PaymentPosition.class)))
-        .thenThrow(
-            new ObjectOptimisticLockingFailureException(
-                PaymentPosition.class,
-                paymentPosition.getId()));
+		when(paymentPositionCRUDService.getDebtPositionByIUPD(organizationFiscalCode, iupd, null))
+				.thenReturn(paymentPosition);
 
-    AppException exception =
-        assertThrows(
-            AppException.class,
-            () ->
-                paymentPositionActionsService.publish(
-                    organizationFiscalCode,
-                    iupd,
-                    null));
+		when(paymentPositionRepository.saveAndFlush(any(PaymentPosition.class)))
+				.thenThrow(new ObjectOptimisticLockingFailureException(PaymentPosition.class, paymentPosition.getId()));
 
-    assertEquals(
-        AppError.DEBT_POSITION_CONCURRENT_PUBLISH_FAILURE,
-        exception.getAppError());
+		AppException exception = assertThrows(AppException.class,
+				() -> paymentPositionActionsService.publish(organizationFiscalCode, iupd, null));
 
-    assertEquals(
-        HttpStatus.CONFLICT,
-        exception.getHttpStatus());
+		assertEquals(AppError.DEBT_POSITION_CONCURRENT_PUBLISH_FAILURE, exception.getAppError());
 
-    verify(paymentPositionRepository)
-        .saveAndFlush(paymentPosition);
-  }
+		assertEquals(HttpStatus.CONFLICT, exception.getHttpStatus());
+
+		verify(paymentPositionRepository).saveAndFlush(paymentPosition);
+	}
+
+	@Test
+	void invalidate_ObjectOptimisticLockingFailureException_throwsConcurrentInvalidateFailure() {
+		String organizationFiscalCode = "02406911202";
+		String iupd = "IUPD-1";
+
+		PaymentPosition paymentPosition = new PaymentPosition();
+		paymentPosition.setId(1L);
+		paymentPosition.setOrganizationFiscalCode(organizationFiscalCode);
+		paymentPosition.setIupd(iupd);
+		paymentPosition.setStatus(DebtPositionStatus.VALID);
+		paymentPosition.setPaymentOption(List.of());
+
+		when(paymentPositionCRUDService.getDebtPositionByIUPD(organizationFiscalCode, iupd, null))
+				.thenReturn(paymentPosition);
+
+		when(paymentPositionRepository.saveAndFlush(any(PaymentPosition.class)))
+				.thenThrow(new ObjectOptimisticLockingFailureException(PaymentPosition.class, paymentPosition.getId()));
+
+		AppException exception = assertThrows(AppException.class,
+				() -> paymentPositionActionsService.invalidate(organizationFiscalCode, iupd, null));
+
+		assertEquals(AppError.DEBT_POSITION_CONCURRENT_INVALIDATE_FAILURE, exception.getAppError());
+
+		assertEquals(HttpStatus.CONFLICT, exception.getHttpStatus());
+
+		verify(paymentPositionRepository).saveAndFlush(paymentPosition);
+	}
 }
