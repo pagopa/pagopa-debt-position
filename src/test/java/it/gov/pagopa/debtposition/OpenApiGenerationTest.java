@@ -35,6 +35,7 @@ class OpenApiGenerationTest {
   void swaggerSpringPlugin() throws Exception {
     saveOpenAPI("/v3/api-docs/internal_v1", "openapi_internal_v1.json");
     saveOpenAPI("/v3/api-docs/internal_v2", "openapi_internal_v2.json");
+    saveOpenAPI("/v3/api-docs/internal_v3", "openapi_internal_v3.json");
     saveOpenAPI("/v3/api-docs/external_v1", "openapi_external_v1.json");
     saveOpenAPI("/v3/api-docs/external_v2", "openapi_external_v2.json");
     saveOpenAPI("/v3/api-docs/external_v3", "openapi_external_v3.json");
