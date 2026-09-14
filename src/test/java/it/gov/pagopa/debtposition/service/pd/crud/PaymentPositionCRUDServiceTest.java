@@ -30,6 +30,8 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -421,6 +423,138 @@ class PaymentPositionCRUDServiceTest {
     assertEquals(
             AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE,
             exception.getAppError());
+  }
+  
+  @SuppressWarnings("unchecked")
+  @Test
+  void deleteDebtPosition_ObjectOptimisticLockingFailureException_throwsSpecificAppException() {
+	  String organizationFiscalCode = "02406911202";
+	  String iupd = "IUPD-1";
+
+	  PaymentPosition ppToDelete = new PaymentPosition();
+	  ppToDelete.setId(1L);
+	  ppToDelete.setIupd(iupd);
+	  ppToDelete.setStatus(DebtPositionStatus.DRAFT);
+
+	  when(paymentPositionRepository.findOne(any(Specification.class)))
+	  .thenReturn(Optional.of(ppToDelete));
+
+	  doThrow(
+			  new ObjectOptimisticLockingFailureException(
+					  PaymentPosition.class,
+					  ppToDelete.getId()))
+	  .when(paymentPositionRepository)
+	  .flush();
+
+	  AppException exception =
+			  assertThrows(
+					  AppException.class,
+					  () -> paymentsService.delete(organizationFiscalCode, iupd, null));
+
+	  assertEquals(
+			  AppError.DEBT_POSITION_CONCURRENT_DELETE_FAILURE,
+			  exception.getAppError());
+
+	  assertEquals(
+			  HttpStatus.CONFLICT,
+			  exception.getHttpStatus());
+
+	  verify(paymentPositionRepository).delete(ppToDelete);
+	  verify(paymentPositionRepository).flush();
+  }
+  
+  @Test
+  void deleteMultipleDebtPositions_ObjectOptimisticLockingFailureException_throwsSpecificAppException() {
+	  String organizationFiscalCode = "02406911202";
+
+	  List<String> iupds = List.of("IUPD-1", "IUPD-2");
+
+	  PaymentPosition firstPosition = new PaymentPosition();
+	  firstPosition.setId(1L);
+	  firstPosition.setIupd("IUPD-1");
+	  firstPosition.setStatus(DebtPositionStatus.DRAFT);
+
+	  PaymentPosition secondPosition = new PaymentPosition();
+	  secondPosition.setId(2L);
+	  secondPosition.setIupd("IUPD-2");
+	  secondPosition.setStatus(DebtPositionStatus.DRAFT);
+
+	  List<PaymentPosition> positions =
+			  List.of(firstPosition, secondPosition);
+
+	  when(
+			  paymentPositionRepository.findAll(
+					  any(Specification.class),
+					  any(Pageable.class)))
+	  .thenReturn(new PageImpl<>(positions));
+
+	  doThrow(
+			  new ObjectOptimisticLockingFailureException(
+					  PaymentPosition.class,
+					  firstPosition.getId()))
+	  .when(paymentPositionRepository)
+	  .flush();
+
+	  AppException exception =
+			  assertThrows(
+					  AppException.class,
+					  () ->
+					  paymentsService.deleteMultipleDebtPositions(
+							  iupds,
+							  organizationFiscalCode,
+							  null));
+
+	  assertEquals(
+			  AppError.DEBT_POSITION_CONCURRENT_DELETE_FAILURE,
+			  exception.getAppError());
+
+	  assertEquals(
+			  HttpStatus.CONFLICT,
+			  exception.getHttpStatus());
+
+	  verify(paymentPositionRepository).deleteAll(positions);
+	  verify(paymentPositionRepository).flush();
+  }
+  
+  @Test
+  void deleteMultipleDebtPositions_GenericException_throwsDeleteFailed() {
+	  String organizationFiscalCode = "02406911202";
+
+	  List<String> iupds = List.of("IUPD-1");
+
+	  PaymentPosition position = new PaymentPosition();
+	  position.setId(1L);
+	  position.setIupd("IUPD-1");
+	  position.setStatus(DebtPositionStatus.DRAFT);
+
+	  List<PaymentPosition> positions = List.of(position);
+
+	  when(
+			  paymentPositionRepository.findAll(
+					  any(Specification.class),
+					  any(Pageable.class)))
+	  .thenReturn(new PageImpl<>(positions));
+
+	  doThrow(new RuntimeException("Generic database error"))
+	  .when(paymentPositionRepository)
+	  .flush();
+
+	  AppException exception =
+			  assertThrows(
+					  AppException.class,
+					  () ->
+					  paymentsService.deleteMultipleDebtPositions(
+							  iupds,
+							  organizationFiscalCode,
+							  null));
+
+	  assertEquals(
+			  AppError.DEBT_POSITION_DELETE_FAILED,
+			  exception.getAppError());
+
+	  assertEquals(
+			  HttpStatus.INTERNAL_SERVER_ERROR,
+			  exception.getHttpStatus());
   }
 
   private ConstraintViolationException uniqueViolation(String constraintName) {
