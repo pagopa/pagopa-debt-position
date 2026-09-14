@@ -27,6 +27,10 @@ public enum AppError {
 			HttpStatus.CONFLICT,
 			"The debt position update is failed - concurrent modification",
 			"Update failed for the debt position with Organization Fiscal Code %s ->  concurrent modification detected"),
+	      DEBT_POSITION_CONCURRENT_DELETE_FAILURE(
+	    	HttpStatus.CONFLICT,
+	    	"The debt position delete is failed - concurrent modification",
+	    	"Delete failed for the debt position with Organization Fiscal Code %s -> concurrent modification detected"),
 		  DEBT_POSITION_DELETE_FAILED(
 		      HttpStatus.INTERNAL_SERVER_ERROR,
 		      "The debt position delete is failed",
@@ -82,15 +86,23 @@ public enum AppError {
 		      "Publish request occurred after the due date of a payment options has expired",
 		      "A publish request occurred after the due date of a payment options has expired for the debt"
 		          + " position with Organization Fiscal Code %s and IUPD %s"),
-      DEBT_POSITION_PUBLISH_DUE_DATE_BEFORE_VALIDITY_DATE(
+          DEBT_POSITION_PUBLISH_DUE_DATE_BEFORE_VALIDITY_DATE(
               HttpStatus.CONFLICT,
               "The due date of a payment option is before the validity date",
               "Invalid publish request: the payment option due date cannot be before the validity date for the debt"
                       + " position with Organization Fiscal Code %s and IUPD %s"),
+          DEBT_POSITION_CONCURRENT_PUBLISH_FAILURE(
+    		  HttpStatus.CONFLICT,
+    		  "The debt position publish is failed - concurrent modification",
+    		  "Publish failed for the debt position with Organization Fiscal Code %s and IUPD %s -> concurrent modification detected"),
 		  DEBT_POSITION_PUBLISH_FAILED(
 		      HttpStatus.INTERNAL_SERVER_ERROR,
 		      "The debt position publish is failed",
 		      "Publish failed for the debt position with Organization Fiscal Code %s and IUPD %s"),
+		  DEBT_POSITION_CONCURRENT_INVALIDATE_FAILURE(
+			  HttpStatus.CONFLICT,
+			  "The debt position invalidate is failed - concurrent modification",
+			  "Invalidate failed for the debt position with Organization Fiscal Code %s and IUPD %s -> concurrent modification detected"),
 		  DEBT_POSITION_INVALIDATE_FAILED(
 		      HttpStatus.INTERNAL_SERVER_ERROR,
 		      "The debt position invalidate is failed",
