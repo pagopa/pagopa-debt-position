@@ -17,6 +17,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +42,14 @@ public class PaymentPositionActionsService {
 
     publishFlowHandler(ppToPublish, LocalDateTime.now(ZoneOffset.UTC));
 
-    return paymentPositionRepository.saveAndFlush(ppToPublish);
+    try {
+      return paymentPositionRepository.saveAndFlush(ppToPublish);
+    } catch (OptimisticLockingFailureException e) {
+      throw new AppException(
+          AppError.DEBT_POSITION_CONCURRENT_PUBLISH_FAILURE,
+          organizationFiscalCode,
+          iupd);
+    }
   }
 
   @Transactional
@@ -60,7 +68,15 @@ public class PaymentPositionActionsService {
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
     ppToInvalidate.setStatus(DebtPositionStatus.INVALID);
     ppToInvalidate.setLastUpdatedDate(currentDate);
-    return paymentPositionRepository.saveAndFlush(ppToInvalidate);
+
+    try {
+    	return paymentPositionRepository.saveAndFlush(ppToInvalidate);
+    } catch (OptimisticLockingFailureException e) {
+    	throw new AppException(
+    			AppError.DEBT_POSITION_CONCURRENT_INVALIDATE_FAILURE,
+    			organizationFiscalCode,
+    			iupd);
+    }
   }
 
   /**
