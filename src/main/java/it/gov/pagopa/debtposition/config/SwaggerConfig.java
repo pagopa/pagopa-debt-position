@@ -174,6 +174,31 @@ public class SwaggerConfig {
   }
 
   @Bean
+  GroupedOpenApi internalV3Api() {
+    // api to remove
+    Map<String, Set<String>> removeFromInternalV3 = Map.of(
+            DEBT_POSITIONS_API, Set.of("post")
+    );
+    Set<String> tagsToRemove = Set.of("Debt Positions API");
+
+    // server list
+    List<Server> serverInfo = new ArrayList<>();
+    serverInfo.add(createServer(".uat", "gpd/api", "v3", "GPD Test environment"));
+    serverInfo.add(createServer("", "gpd/api", "v3", "GPD Production Environment"));
+
+    return GroupedOpenApi.builder()
+            .group("internal_v3")
+            .displayName("GPD - Internal API - v3")
+            .pathsToMatch("/**/**")
+            .addOpenApiCustomizer(customizeServer(serverInfo))
+            .addOpenApiCustomizer(customizeOpenApi(removeFromInternalV3))
+            .addOpenApiCustomizer(customizeOpenApi(tagsToRemove))
+            .addOpenApiCustomizer(removePrefixFromPaths("/v3"))
+            .addOpenApiCustomizer(sortOpenApi())
+            .build();
+  }
+
+  @Bean
   GroupedOpenApi externalV1Api() {
     Map<String, Set<String>> removeFromExternalV1 = Map.of(
             DEBT_POSITIONS_API, Set.of("put", "delete")
@@ -362,6 +387,52 @@ public class SwaggerConfig {
     });
   }
 
+  private OpenApiCustomizer customizeOpenApi(Map<String, Set<String>> pathsToRemove, Set<String> tagsToRemove) {
+    return openApi -> {
+      if (openApi.getPaths() == null) return;
+
+      // paths to remove
+      List<String> pathsToDelete = new ArrayList<>();
+
+      pathsToRemove.forEach((path, methods) -> {
+        PathItem pathItem = openApi.getPaths().get(path);
+        if (pathItem != null) {
+
+          if (pathHasAnyTag(pathItem, tagsToRemove)) {
+            pathsToDelete.add(path);
+          }
+          else {
+
+            // remove specified methods
+            methods.forEach(method -> {
+              BiConsumer<PathItem, Operation> remover = getMethodRemovers().get(method.toLowerCase());
+              if (remover != null) {
+                remover.accept(pathItem, null);
+              }
+            });
+
+            // if the path is empty then remove all
+            if (isPathItemEmpty(pathItem)) {
+              pathsToDelete.add(path);
+            }
+          }
+        }
+      });
+
+      // remove paths with no methods
+      pathsToDelete.forEach(openApi.getPaths()::remove);
+
+//      openApi.getPaths().values().forEach(pathItem -> {
+//        removeServiceType(pathItem);
+//      });
+      openApi.getPaths().values().forEach(pathItem -> {
+        // remove serviceType from parameters
+        List<Operation> operations = getAllOperations(pathItem);
+        operations.forEach(this::removeServiceType);
+      });
+    };
+  }
+
   private OpenApiCustomizer customizeOpenApi(Map<String, Set<String>> pathsToRemove) {
     return openApi -> {
       if (openApi.getPaths() == null) return;
@@ -396,6 +467,24 @@ public class SwaggerConfig {
         List<Operation> operations = getAllOperations(pathItem);
         operations.forEach(this::removeServiceType);
       });
+    };
+  }
+
+  private OpenApiCustomizer customizeOpenApi(Set<String> tagsToRemove) {
+    return openApi -> {
+      if (openApi.getPaths() == null || tagsToRemove == null || tagsToRemove.isEmpty()) return;
+
+      List<String> pathsToDelete = new ArrayList<>();
+
+      openApi.getPaths().forEach((path, pathItem) -> {
+        if (pathHasAnyTag(pathItem, tagsToRemove)) {
+          pathsToDelete.add(path);
+        }
+      });
+
+      pathsToDelete.forEach(openApi.getPaths()::remove);
+
+      openApi.getPaths().values().forEach(this::removeServiceType);
     };
   }
 
@@ -445,6 +534,18 @@ public class SwaggerConfig {
                       .collect(Collectors.toList())
       );
     }
+  }
+
+  private void removeServiceType(PathItem pathItem) {
+    List<Operation> operations = getAllOperations(pathItem);
+    operations.forEach(this::removeServiceType);
+  }
+
+  private boolean pathHasAnyTag(PathItem pathItem, Set<String> tagsToRemove) {
+    return getAllOperations(pathItem).stream()
+            .filter(operation -> operation.getTags() != null)
+            .flatMap(operation -> operation.getTags().stream())
+            .anyMatch(tagsToRemove::contains);
   }
 
   private void sortPaths(OpenAPI openApi) {
