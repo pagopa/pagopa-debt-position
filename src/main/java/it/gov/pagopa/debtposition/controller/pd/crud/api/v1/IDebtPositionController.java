@@ -13,19 +13,17 @@ import it.gov.pagopa.debtposition.model.ProblemJson;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.filterandorder.Order;
-import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.pd.MultipleIUPDModel;
 import it.gov.pagopa.debtposition.model.pd.MultiplePaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionsInfo;
+import it.gov.pagopa.debtposition.model.pd.UpdateTransferIbanMassiveModel;
 import it.gov.pagopa.debtposition.model.pd.response.PaymentPositionModelBaseResponse;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
+import it.gov.pagopa.debtposition.model.pd.response.UpdateTransferIbanMassiveResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
-
-import it.gov.pagopa.debtposition.model.pd.response.UpdateTransferIbanMassiveResponse;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
@@ -40,9 +38,7 @@ public interface IDebtPositionController {
 
   @Operation(
       summary = "The Organization creates a debt Position.",
-      security = {
-        @SecurityRequirement(name = "ApiKey")
-      },
+      security = {@SecurityRequirement(name = "ApiKey")},
       operationId = "createPosition")
   @ApiResponses(
       value = {
@@ -60,11 +56,19 @@ public interface IDebtPositionController {
             content = @Content(schema = @Schema())),
         @ApiResponse(
             responseCode = "403",
-            content = @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+            content =
+                @Content(
+                    schema = @Schema(),
+                    examples = {
+                      @ExampleObject(
+                          value =
+                              """
                 {
                     "statusCode": 403,
                     "message": "You are not allowed to access this resource."
-                }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                }""")
+                    },
+                    mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "409",
             description = "Conflict: duplicate debt position found.",
@@ -109,9 +113,7 @@ public interface IDebtPositionController {
 
   @Operation(
       summary = "The Organization creates multiple debt positions.",
-      security = {
-        @SecurityRequirement(name = "ApiKey")
-      },
+      security = {@SecurityRequirement(name = "ApiKey")},
       operationId = "createMultiplePositions")
   @ApiResponses(
       value = {
@@ -129,11 +131,19 @@ public interface IDebtPositionController {
             content = @Content(schema = @Schema())),
         @ApiResponse(
             responseCode = "403",
-            content = @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+            content =
+                @Content(
+                    schema = @Schema(),
+                    examples = {
+                      @ExampleObject(
+                          value =
+                              """
                 {
                     "statusCode": 403,
                     "message": "You are not allowed to access this resource."
-                }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                }""")
+                    },
+                    mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "409",
             description = "Conflict: duplicate debt position found.",
@@ -180,9 +190,7 @@ public interface IDebtPositionController {
       summary =
           "Return the list of the organization debt positions. "
               + "The due dates interval is mutually exclusive with the payment dates interval.",
-      security = {
-        @SecurityRequirement(name = "ApiKey")
-      },
+      security = {@SecurityRequirement(name = "ApiKey")},
       operationId = "getOrganizationDebtPositions")
   @ApiResponses(
       value = {
@@ -203,11 +211,18 @@ public interface IDebtPositionController {
         @ApiResponse(
             responseCode = "403",
             content =
-                @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                @Content(
+                    schema = @Schema(),
+                    examples = {
+                      @ExampleObject(
+                          value =
+                              """
                     {
                         "statusCode": 403,
                         "message": "You are not allowed to access this resource."
-                    }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    }""")
+                    },
+                    mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "401",
             description = "Wrong or missing function key.",
@@ -312,17 +327,14 @@ public interface IDebtPositionController {
       @Parameter(
               hidden = true,
               description =
-              "The field must not be considered as its value is set via the API Management"
-              + " (APIM) policy")
-      @RequestParam(required = false)
-      ServiceType serviceType
-    );
+                  "The field must not be considered as its value is set via the API Management"
+                      + " (APIM) policy")
+          @RequestParam(required = false)
+          ServiceType serviceType);
 
   @Operation(
       summary = "Return the details of a specific debt position.",
-      security = {
-        @SecurityRequirement(name = "ApiKey")
-      },
+      security = {@SecurityRequirement(name = "ApiKey")},
       operationId = "getOrganizationDebtPositionByIUPD")
   @ApiResponses(
       value = {
@@ -342,11 +354,19 @@ public interface IDebtPositionController {
             content = @Content(schema = @Schema())),
         @ApiResponse(
             responseCode = "403",
-            content = @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+            content =
+                @Content(
+                    schema = @Schema(),
+                    examples = {
+                      @ExampleObject(
+                          value =
+                              """
                 {
                     "statusCode": 403,
                     "message": "You are not allowed to access this resource."
-                }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                }""")
+                    },
+                    mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "404",
             description = "No debt position found.",
@@ -390,9 +410,7 @@ public interface IDebtPositionController {
 
   @Operation(
       summary = "The Organization deletes a debt position",
-      security = {
-        @SecurityRequirement(name = "ApiKey")
-      },
+      security = {@SecurityRequirement(name = "ApiKey")},
       operationId = "deletePosition")
   @ApiResponses(
       value = {
@@ -404,11 +422,18 @@ public interface IDebtPositionController {
         @ApiResponse(
             responseCode = "403",
             content =
-                @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                @Content(
+                    schema = @Schema(),
+                    examples = {
+                      @ExampleObject(
+                          value =
+                              """
                     {
                       "statusCode": 403,
                       "message": "You are not allowed to access this resource."
-                    }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    }""")
+                    },
+                    mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "404",
             description = "No debt position position found.",
@@ -459,9 +484,7 @@ public interface IDebtPositionController {
 
   @Operation(
       summary = "The Organization updates a debt position ",
-      security = {
-        @SecurityRequirement(name = "ApiKey")
-      },
+      security = {@SecurityRequirement(name = "ApiKey")},
       operationId = "updatePosition")
   @ApiResponses(
       value = {
@@ -480,11 +503,18 @@ public interface IDebtPositionController {
         @ApiResponse(
             responseCode = "403",
             content =
-                @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                @Content(
+                    schema = @Schema(),
+                    examples = {
+                      @ExampleObject(
+                          value =
+                              """
                       {
                         "statusCode": 403,
                         "message": "You are not allowed to access this resource."
-                      }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                      }""")
+                    },
+                    mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "404",
             description = "No debt position found.",
@@ -536,9 +566,7 @@ public interface IDebtPositionController {
 
   @Operation(
       summary = "The Organization updates multiple debt positions.",
-      security = {
-        @SecurityRequirement(name = "ApiKey")
-      },
+      security = {@SecurityRequirement(name = "ApiKey")},
       operationId = "updateMultiplePositions")
   @ApiResponses(
       value = {
@@ -557,11 +585,18 @@ public interface IDebtPositionController {
         @ApiResponse(
             responseCode = "403",
             content =
-                @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                @Content(
+                    schema = @Schema(),
+                    examples = {
+                      @ExampleObject(
+                          value =
+                              """
                     {
                         "statusCode": 403,
                         "message": "You are not allowed to access this resource."
-                    }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    }""")
+                    },
+                    mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "409",
             description = "Conflict: existing related payment found.",
@@ -599,9 +634,7 @@ public interface IDebtPositionController {
 
   @Operation(
       summary = "The Organization deletes multiple debt positions.",
-      security = {
-        @SecurityRequirement(name = "ApiKey")
-      },
+      security = {@SecurityRequirement(name = "ApiKey")},
       operationId = "deleteMultipleDebtPositions")
   @ApiResponses(
       value = {
@@ -617,11 +650,18 @@ public interface IDebtPositionController {
         @ApiResponse(
             responseCode = "403",
             content =
-                @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                @Content(
+                    schema = @Schema(),
+                    examples = {
+                      @ExampleObject(
+                          value =
+                              """
                     {
                         "statusCode": 403,
                         "message": "You are not allowed to access this resource."
-                    }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    }""")
+                    },
+                    mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "404",
             description = "Payment Position not found.",
@@ -653,9 +693,7 @@ public interface IDebtPositionController {
 
   @Operation(
       summary = "The organization retrieves a debt position by payment option IUV",
-      security = {
-        @SecurityRequirement(name = "ApiKey")
-      },
+      security = {@SecurityRequirement(name = "ApiKey")},
       operationId = "getDebtPositionByIUV")
   @ApiResponses(
       value = {
@@ -671,11 +709,18 @@ public interface IDebtPositionController {
         @ApiResponse(
             responseCode = "403",
             content =
-                @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                @Content(
+                    schema = @Schema(),
+                    examples = {
+                      @ExampleObject(
+                          value =
+                              """
                     {
                         "statusCode": 403,
                         "message": "You are not allowed to access this resource."
-                    }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    }""")
+                    },
+                    mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "404",
             description = "Payment Position not found.",
@@ -713,9 +758,7 @@ public interface IDebtPositionController {
 
   @Operation(
       summary = "The Organization updates the IBANs of every updatable payment option's transfers",
-      security = {
-        @SecurityRequirement(name = "ApiKey")
-      },
+      security = {@SecurityRequirement(name = "ApiKey")},
       operationId = "updateTransferIbanMassive")
   @ApiResponses(
       value = {
@@ -734,11 +777,18 @@ public interface IDebtPositionController {
         @ApiResponse(
             responseCode = "403",
             content =
-            @Content(schema = @Schema(), examples = {@ExampleObject(value = """
+                @Content(
+                    schema = @Schema(),
+                    examples = {
+                      @ExampleObject(
+                          value =
+                              """
                 {
                     "statusCode": 403,
                     "message": "You are not allowed to access this resource."
-                }""")}, mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                }""")
+                    },
+                    mediaType = MediaType.APPLICATION_JSON_VALUE)),
         @ApiResponse(
             responseCode = "500",
             description = "Service unavailable.",
@@ -758,6 +808,9 @@ public interface IDebtPositionController {
           @PathVariable("organizationfiscalcode")
           String organizationFiscalCode,
       @Parameter(description = "The old iban to replace") @RequestParam @NotBlank String oldIban,
-      @Parameter(description = "Number of Transfer to update (max = 1000, default = 1000)") @Max(1000) @RequestParam(required = false, defaultValue = "1000") int limit,
+      @Parameter(description = "Number of Transfer to update (max = 1000, default = 1000)")
+          @Max(1000)
+          @RequestParam(required = false, defaultValue = "1000")
+          int limit,
       @Valid @RequestBody UpdateTransferIbanMassiveModel updateTransferIbanMassiveModel);
 }

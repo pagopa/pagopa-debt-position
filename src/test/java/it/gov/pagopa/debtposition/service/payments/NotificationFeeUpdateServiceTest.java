@@ -15,9 +15,9 @@ import it.gov.pagopa.debtposition.service.payments.NotificationFeeUpdateService.
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationFeeUpdateServiceTest {
@@ -40,10 +40,7 @@ class NotificationFeeUpdateServiceTest {
     paymentOption.setStatus(PaymentOptionStatus.PO_UNPAID);
 
     when(paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
-            "77777777777",
-            "12345678901234567",
-            "77777777777",
-            "12345678901234567"))
+            "77777777777", "12345678901234567", "77777777777", "12345678901234567"))
         .thenReturn(Optional.of(paymentOption));
 
     PaymentOptionNotificationFeeContext context =
@@ -58,10 +55,7 @@ class NotificationFeeUpdateServiceTest {
   @Test
   void loadContext_notFound_shouldThrowAppException() {
     when(paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
-            "77777777777",
-            "12345678901234567",
-            "77777777777",
-            "12345678901234567"))
+            "77777777777", "12345678901234567", "77777777777", "12345678901234567"))
         .thenReturn(Optional.empty());
 
     assertThrows(
@@ -78,10 +72,7 @@ class NotificationFeeUpdateServiceTest {
     paymentOption.setStatus(PaymentOptionStatus.PO_PAID);
 
     when(paymentOptionRepository.findByOrganizationFiscalCodeAndIuvOrOrganizationFiscalCodeAndNav(
-            "77777777777",
-            "12345678901234567",
-            "77777777777",
-            "12345678901234567"))
+            "77777777777", "12345678901234567", "77777777777", "12345678901234567"))
         .thenReturn(Optional.of(paymentOption));
 
     assertThrows(
@@ -129,8 +120,7 @@ class NotificationFeeUpdateServiceTest {
     when(paymentOptionRepository.saveAndFlush(any(PaymentOption.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
-    PaymentOption result =
-        notificationFeeUpdateService.applyNotificationFeeUpdate(10L, 150L);
+    PaymentOption result = notificationFeeUpdateService.applyNotificationFeeUpdate(10L, 150L);
 
     org.assertj.core.api.Assertions.assertThat(result.getNotificationFee()).isEqualTo(150L);
     org.assertj.core.api.Assertions.assertThat(result.getAmount()).isEqualTo(1150L);
@@ -182,7 +172,8 @@ class NotificationFeeUpdateServiceTest {
   }
 
   @Test
-  void applyNotificationFeeUpdate_writePathWithPaidPaymentOption_shouldThrowAppExceptionAndNotSave() {
+  void
+      applyNotificationFeeUpdate_writePathWithPaidPaymentOption_shouldThrowAppExceptionAndNotSave() {
     PaymentOption paymentOption = buildPaymentOptionWithTransfer();
     paymentOption.setStatus(PaymentOptionStatus.PO_PAID);
     paymentOption.setAmount(1000L);
@@ -201,7 +192,8 @@ class NotificationFeeUpdateServiceTest {
   }
 
   @Test
-  void applyNotificationFeeUpdate_withoutPaymentInProgress_paidPaymentOption_shouldThrowAppExceptionAndNotSave() {
+  void
+      applyNotificationFeeUpdate_withoutPaymentInProgress_paidPaymentOption_shouldThrowAppExceptionAndNotSave() {
     PaymentOption paymentOption = buildPaymentOptionWithTransfer();
     paymentOption.setStatus(PaymentOptionStatus.PO_PAID);
     paymentOption.setAmount(1000L);
@@ -219,7 +211,8 @@ class NotificationFeeUpdateServiceTest {
   }
 
   @Test
-  void applyNotificationFeeUpdate_writePathWithReportedPaymentOption_shouldThrowAppExceptionAndNotSave() {
+  void
+      applyNotificationFeeUpdate_writePathWithReportedPaymentOption_shouldThrowAppExceptionAndNotSave() {
     PaymentOption paymentOption = buildPaymentOptionWithTransfer();
     paymentOption.setStatus(PaymentOptionStatus.PO_REPORTED);
     paymentOption.setAmount(1000L);

@@ -8,9 +8,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Validates that metadata entries do not contain duplicated keys within the same parent item.
- */
+/** Validates that metadata entries do not contain duplicated keys within the same parent item. */
 @Documented
 @Constraint(validatedBy = UniqueMetadataKeysValidator.class)
 @Target({ElementType.FIELD})

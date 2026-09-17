@@ -21,8 +21,10 @@ class ValidityHandlerTest {
     PaymentPosition paymentPosition = buildPublishedPosition(REFERENCE_DATETIME);
 
     try (MockedStatic<LocalDateTime> localDateTimeMock =
-            mockStatic(LocalDateTime.class, CALLS_REAL_METHODS)) {
-      localDateTimeMock.when(() -> LocalDateTime.now(ZoneOffset.UTC)).thenReturn(REFERENCE_DATETIME);
+        mockStatic(LocalDateTime.class, CALLS_REAL_METHODS)) {
+      localDateTimeMock
+          .when(() -> LocalDateTime.now(ZoneOffset.UTC))
+          .thenReturn(REFERENCE_DATETIME);
 
       ValidityHandler.handlePaymentPositionValidTransition(paymentPosition);
 
