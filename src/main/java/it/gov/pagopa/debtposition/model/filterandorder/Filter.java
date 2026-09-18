@@ -1,11 +1,10 @@
 package it.gov.pagopa.debtposition.model.filterandorder;
 
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-
 import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

@@ -22,8 +22,8 @@ public class SendFeignConfig {
   @Bean
   public RequestInterceptor requestInterceptor() {
     return requestTemplate ->
-            requestTemplate
-                    .header(HEADER_REQUEST_ID, MDC.get("requestId"))
-                    .header(HEADER_SUBSCRIBTION_KEY, subscriptionKey);
+        requestTemplate
+            .header(HEADER_REQUEST_ID, MDC.get("requestId"))
+            .header(HEADER_SUBSCRIBTION_KEY, subscriptionKey);
   }
 }

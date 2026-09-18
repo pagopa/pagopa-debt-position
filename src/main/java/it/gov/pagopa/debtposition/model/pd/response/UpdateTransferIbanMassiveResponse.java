@@ -9,6 +9,6 @@ import lombok.Setter;
 @Setter
 public class UpdateTransferIbanMassiveResponse {
 
-    String description;
-    int updatedTransfers;
+  String description;
+  int updatedTransfers;
 }

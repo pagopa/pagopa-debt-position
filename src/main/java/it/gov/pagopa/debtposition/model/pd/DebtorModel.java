@@ -2,10 +2,10 @@ package it.gov.pagopa.debtposition.model.pd;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
-import java.io.Serializable;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import java.io.Serializable;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -16,7 +16,7 @@ public class DebtorModel implements Serializable {
 
   private static final long serialVersionUID = -3988004044071493474L;
 
-@NotNull(message = "type is required")
+  @NotNull(message = "type is required")
   private Type type;
 
   @NotNull(message = "fiscal code is required")

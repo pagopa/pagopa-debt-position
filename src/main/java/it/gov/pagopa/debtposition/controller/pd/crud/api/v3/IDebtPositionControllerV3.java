@@ -16,11 +16,10 @@ import it.gov.pagopa.debtposition.model.filterandorder.Order;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionsInfoV3;
 import it.gov.pagopa.debtposition.model.v3.response.PaymentPositionModelResponseV3;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
@@ -256,10 +255,10 @@ public interface IDebtPositionControllerV3 {
           String segregationCodes,
       @Parameter(
               description =
-                      "The field must not be considered as its value is set via the API Management"
-                              + " (APIM) policy")
-      @RequestParam(required = false)
-      ServiceType serviceType);
+                  "The field must not be considered as its value is set via the API Management"
+                      + " (APIM) policy")
+          @RequestParam(required = false)
+          ServiceType serviceType);
 
   @Operation(
       summary = "Return the details of a specific debt position.",

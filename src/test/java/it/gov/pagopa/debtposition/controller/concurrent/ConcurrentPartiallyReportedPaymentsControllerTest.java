@@ -51,9 +51,7 @@ class ConcurrentPartiallyReportedPaymentsControllerTest {
 
     // effettuo la notifica di pagamento
     mvc.perform(
-            post("/organizations/1234567890100000/paymentoptions/"
-                    + auxDigit
-                    + "1234568/pay")
+            post("/organizations/1234567890100000/paymentoptions/" + auxDigit + "1234568/pay")
                 .content(TestUtil.toJson(DebtPositionMock.getPayPOMock1()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
@@ -98,10 +96,7 @@ class ConcurrentPartiallyReportedPaymentsControllerTest {
     log.trace(
         "checkDebtPosition_after_partially_reporting start => " + Thread.currentThread().getName());
     // recupero la PO e verifico lo stato in PO_PARTIALLY_REPORTED
-    String url =
-        "/organizations/1234567890100000/paymentoptions/"
-            + auxDigit
-            + "1234568";
+    String url = "/organizations/1234567890100000/paymentoptions/" + auxDigit + "1234568";
     mvc.perform(get(url).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))

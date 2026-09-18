@@ -18,21 +18,23 @@ public final class ExpirationHandler {
   }
 
   /**
-   * Evaluates the state of the Payment Position and updates it to {@code EXPIRED} if all criteria are met.
+   * Evaluates the state of the Payment Position and updates it to {@code EXPIRED} if all criteria
+   * are met.
    *
    * <p>The transition to {@code DebtPositionStatus.EXPIRED} occurs only if:
+   *
    * <ul>
-   * <li>All installments are marked to switch to expired ({@code switchToExpired} is true).</li>
-   * <li>The current status is {@code VALID}.</li>
-   * <li>The max due date exists and is in the past relative to the current UTC time.</li>
+   *   <li>All installments are marked to switch to expired ({@code switchToExpired} is true).
+   *   <li>The current status is {@code VALID}.
+   *   <li>The max due date exists and is in the past relative to the current UTC time.
    * </ul>
    *
    * <p><b>Persistence Note (Dirty Checking):</b><br>
-   * This method modifies the {@code status} attribute of the {@code PaymentPosition} entity.
-   * If this method is invoked within an active {@code @Transactional} context and the entity is
+   * This method modifies the {@code status} attribute of the {@code PaymentPosition} entity. If
+   * this method is invoked within an active {@code @Transactional} context and the entity is
    * <em>managed</em> (loaded within the current transaction), the JPA provider will automatically
-   * detect the change and execute an {@code UPDATE} statement on the database upon transaction commit.
-   * An explicit call to {@code repository.save(pp)} is not required.
+   * detect the change and execute an {@code UPDATE} statement on the database upon transaction
+   * commit. An explicit call to {@code repository.save(pp)} is not required.
    *
    * @param pp the PaymentPosition to check and potentially update.
    */
@@ -54,14 +56,16 @@ public final class ExpirationHandler {
   }
 
   /**
-   * Determines if a specific Payment Option (installment) meets the business criteria to be considered expired.
+   * Determines if a specific Payment Option (installment) meets the business criteria to be
+   * considered expired.
    *
    * <p>An installment is considered effectively expired if:
+   *
    * <ul>
-   * <li>The parent position is in a payable status ({@code VALID} or {@code PARTIALLY_PAID}).</li>
-   * <li>The installment status is {@code PO_UNPAID}.</li>
-   * <li>The {@code switchToExpired} flag is explicitly set to {@code true}.</li>
-   * <li>The due date is strictly before the current reference date.</li>
+   *   <li>The parent position is in a payable status ({@code VALID} or {@code PARTIALLY_PAID}).
+   *   <li>The installment status is {@code PO_UNPAID}.
+   *   <li>The {@code switchToExpired} flag is explicitly set to {@code true}.
+   *   <li>The due date is strictly before the current reference date.
    * </ul>
    *
    * <p>Note: This method is a pure check (predicate) and does not modify the entity state.

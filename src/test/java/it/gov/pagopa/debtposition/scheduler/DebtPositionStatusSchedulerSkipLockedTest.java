@@ -32,14 +32,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Execution(ExecutionMode.SAME_THREAD)
 class DebtPositionStatusSchedulerSkipLockedTest {
 
-  @Autowired
-  private DataSource dataSource;
+  @Autowired private DataSource dataSource;
 
-  @Autowired
-  private JdbcTemplate jdbcTemplate;
+  @Autowired private JdbcTemplate jdbcTemplate;
 
-  @Autowired
-  private DebtPositionStatusBatchService batchService;
+  @Autowired private DebtPositionStatusBatchService batchService;
 
   // PostgreSQL is required here because H2 does not reliably support the locking behavior
   // used by the batch query, especially FOR UPDATE SKIP LOCKED.
@@ -61,11 +58,8 @@ class DebtPositionStatusSchedulerSkipLockedTest {
     registry.add("spring.jpa.properties.hibernate.default_schema", () -> "apd");
     registry.add("SCHEMA_NAME", () -> "apd");
     registry.add(
-        "spring.jpa.properties.hibernate.dialect",
-        () -> "org.hibernate.dialect.PostgreSQLDialect");
-    registry.add(
-        "spring.jpa.database-platform",
-        () -> "org.hibernate.dialect.PostgreSQLDialect");
+        "spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.PostgreSQLDialect");
+    registry.add("spring.jpa.database-platform", () -> "org.hibernate.dialect.PostgreSQLDialect");
     registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
     registry.add("cron.job.schedule.enabled", () -> "false");
     registry.add("cron.job.schedule.shedlock.defaultlockatmostfor", () -> "30m");
@@ -130,16 +124,13 @@ class DebtPositionStatusSchedulerSkipLockedTest {
     }
 
     // After releasing the lock, the previously skipped row should become processable.
-    Integer affectedRowsAfterLockRelease =
-        batchService.updatePublishedToValidBatch(now, 2);
+    Integer affectedRowsAfterLockRelease = batchService.updatePublishedToValidBatch(now, 2);
 
     assertThat(affectedRowsAfterLockRelease).isEqualTo(1);
 
-    assertThat(getStatus(lockedPaymentPositionId))
-        .isEqualTo(DebtPositionStatus.VALID.toString());
+    assertThat(getStatus(lockedPaymentPositionId)).isEqualTo(DebtPositionStatus.VALID.toString());
 
-    assertThat(getStatus(unlockedPaymentPositionId))
-        .isEqualTo(DebtPositionStatus.VALID.toString());
+    assertThat(getStatus(unlockedPaymentPositionId)).isEqualTo(DebtPositionStatus.VALID.toString());
   }
 
   // Inserts a minimal PUBLISHED payment position with one eligible unpaid payment option.
