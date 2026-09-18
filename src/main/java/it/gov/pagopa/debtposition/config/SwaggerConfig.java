@@ -172,7 +172,10 @@ public class SwaggerConfig {
   @Bean
   GroupedOpenApi internalV3Api() {
     // api to remove
-    Map<String, Set<String>> removeFromInternalV3 = Map.of(DEBT_POSITIONS_API, Set.of("post"));
+    Map<String, Set<String>> removeFromInternalV3 = Map.of(
+            DEBT_POSITIONS_API, Set.of("post"),
+            DEBT_POSITIONS_API + "/{iupd}/invalidate", Set.of("post")
+    );
     Set<String> tagsToRemove = Set.of("Debt Positions API");
 
     // server list
@@ -397,59 +400,6 @@ public class SwaggerConfig {
                 target.operation(method, source.readOperationsMap().get(method));
               }
             });
-  }
-
-  private OpenApiCustomizer customizeOpenApi(
-      Map<String, Set<String>> pathsToRemove, Set<String> tagsToRemove) {
-    return openApi -> {
-      if (openApi.getPaths() == null) return;
-
-      // paths to remove
-      List<String> pathsToDelete = new ArrayList<>();
-
-      pathsToRemove.forEach(
-          (path, methods) -> {
-            PathItem pathItem = openApi.getPaths().get(path);
-            if (pathItem != null) {
-
-              if (pathHasAnyTag(pathItem, tagsToRemove)) {
-                pathsToDelete.add(path);
-              } else {
-
-                // remove specified methods
-                methods.forEach(
-                    method -> {
-                      BiConsumer<PathItem, Operation> remover =
-                          getMethodRemovers().get(method.toLowerCase());
-                      if (remover != null) {
-                        remover.accept(pathItem, null);
-                      }
-                    });
-
-                // if the path is empty then remove all
-                if (isPathItemEmpty(pathItem)) {
-                  pathsToDelete.add(path);
-                }
-              }
-            }
-          });
-
-      // remove paths with no methods
-      pathsToDelete.forEach(openApi.getPaths()::remove);
-
-      //      openApi.getPaths().values().forEach(pathItem -> {
-      //        removeServiceType(pathItem);
-      //      });
-      openApi
-          .getPaths()
-          .values()
-          .forEach(
-              pathItem -> {
-                // remove serviceType from parameters
-                List<Operation> operations = getAllOperations(pathItem);
-                operations.forEach(this::removeServiceType);
-              });
-    };
   }
 
   private OpenApiCustomizer customizeOpenApi(Map<String, Set<String>> pathsToRemove) {
