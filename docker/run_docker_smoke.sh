@@ -19,10 +19,9 @@ for line in $(echo "$config" | yq -r '. | to_entries[] | select(.key) | "\(.key)
   key=$(echo "$line" | cut -d'=' -f1)
   value=$(echo "$line" | cut -d'=' -f2-)
 
-    # Se la chiave è SPRING_DATASOURCE_URL, assegna il valore specifico
+    # Se la chiave è SPRING_DATASOURCE_URL, punta al postgres avviato in docker (servizio "postgres" della rete gpd-net)
     if [[ "$key" == "SPRING_DATASOURCE_URL" ]]; then
-        value="jdbc:postgresql://pagopa-d-weu-gpd-pgflex.postgres.database.azure.com:5432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true"
-#        value="jdbc:postgresql://fdr-db.d.internal.postgresql.pagopa.it:5432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true"
+        value="jdbc:postgresql://postgres:5432/apd?prepareThreshold=0&tcpKeepAlive=true"
     fi
 
     # Scrivi la chiave-valore nel file .env
@@ -33,6 +32,17 @@ keyvault=$(yq -r '."microservice-chart".keyvault.name' ../helm/values-$ENV.yaml)
 secret=$(yq -r '."microservice-chart".envSecret' ../helm/values-$ENV.yaml)
 for line in $(echo "$secret" | yq -r '. | to_entries[] | select(.key) | "\(.key)=\(.value)"'); do
   IFS='=' read -r -a array <<< "$line"
+
+  # Le credenziali del db devono puntare al postgres locale avviato in docker, non a quello reale
+  if [[ "${array[0]}" == "SPRING_DATASOURCE_USERNAME" ]]; then
+    echo "SPRING_DATASOURCE_USERNAME=postgres_user_test" >> .env
+    continue
+  fi
+  if [[ "${array[0]}" == "SPRING_DATASOURCE_PASSWORD" ]]; then
+    echo "SPRING_DATASOURCE_PASSWORD=postgres_pwd_test" >> .env
+    continue
+  fi
+
   response=$(az keyvault secret show --vault-name "$keyvault" --name "${array[1]}")
   response=$(echo "$response" | tr -d '\n')
   value=$(echo "$response" | yq -r '.value')
