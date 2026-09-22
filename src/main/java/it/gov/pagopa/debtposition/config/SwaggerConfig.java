@@ -33,6 +33,11 @@ public class SwaggerConfig {
   private static final String DEBT_POSITION_API_BLOCK =
       "/organizations/{organizationfiscalcode}/debtpositions/**";
 
+  private static final String MULTIPLE_IUPD_MODEL = "MultipleIUPDModel";
+  private static final String MULTIPLE_PAYMENT_POSITION_MODEL = "MultiplePaymentPositionModel";
+  private static final String ALL_API_MATCH = "/**/**";
+  private static final String GPD_DEBT_POSITIONS_SERVICE = "gpd/debt-positions-service";
+
   @Bean
   OpenAPI customOpenAPI(
       @Value("${info.application.description}") String appDescription,
@@ -124,7 +129,7 @@ public class SwaggerConfig {
             DEBT_POSITIONS_API, Set.of("put", "delete"),
             DEBT_POSITIONS_BULK_API, Set.of("post"));
 
-    Set<String> schemasToRemove = Set.of("MultiplePaymentPositionModel", "MultipleIUPDModel");
+    Set<String> schemasToRemove = Set.of(MULTIPLE_PAYMENT_POSITION_MODEL, MULTIPLE_IUPD_MODEL);
 
     // server list
     List<Server> serverInfo = new ArrayList<>();
@@ -134,7 +139,7 @@ public class SwaggerConfig {
     return GroupedOpenApi.builder()
         .group("internal_v1")
         .displayName("GPD - Internal API - v1")
-        .pathsToMatch("/**/**")
+        .pathsToMatch(ALL_API_MATCH)
         .pathsToExclude("/v3/**")
         .addOpenApiCustomizer(customizeServer(serverInfo))
         .addOpenApiCustomizer(customizeOpenApi(removeFromInternalV1))
@@ -154,19 +159,16 @@ public class SwaggerConfig {
     serverInfo.add(createServer(".uat", "gpd/api", "v2", "GPD Test environment"));
     serverInfo.add(createServer("", "gpd/api", "v2", "GPD Production Environment"));
 
-    GroupedOpenApi openapi =
-        GroupedOpenApi.builder()
+    return GroupedOpenApi.builder()
             .group("internal_v2")
             .displayName("GPD - Internal API - v2")
-            .pathsToMatch("/**/**")
+            .pathsToMatch(ALL_API_MATCH)
             .pathsToExclude("/v3/**")
             .addOpenApiCustomizer(customizeServer(serverInfo))
             .addOpenApiCustomizer(customizeOpenApi(removeFromInternalV2))
             .addOpenApiCustomizer(renamePath(DEBT_POSITIONS_BULK_API, DEBT_POSITIONS_API))
             .addOpenApiCustomizer(sortOpenApi())
             .build();
-
-    return openapi;
   }
 
   @Bean
@@ -186,7 +188,7 @@ public class SwaggerConfig {
     return GroupedOpenApi.builder()
         .group("internal_v3")
         .displayName("GPD - Internal API - v3")
-        .pathsToMatch("/**/**")
+        .pathsToMatch(ALL_API_MATCH)
         .addOpenApiCustomizer(customizeServer(serverInfo))
         .addOpenApiCustomizer(customizeOpenApi(removeFromInternalV3))
         .addOpenApiCustomizer(customizeOpenApi(tagsToRemove))
@@ -203,11 +205,11 @@ public class SwaggerConfig {
     // server list
     List<Server> serverInfo = new ArrayList<>();
     serverInfo.add(
-        createServer(".uat", "gpd/debt-positions-service", "v1", "GPD Test environment"));
+        createServer(".uat", GPD_DEBT_POSITIONS_SERVICE, "v1", "GPD Test environment"));
     serverInfo.add(
-        createServer("", "gpd/debt-positions-service", "v1", "GPD Production Environment"));
+        createServer("", GPD_DEBT_POSITIONS_SERVICE, "v1", "GPD Production Environment"));
 
-    Set<String> schemasToRemove = Set.of("MultiplePaymentPositionModel", "MultipleIUPDModel");
+    Set<String> schemasToRemove = Set.of(MULTIPLE_PAYMENT_POSITION_MODEL, MULTIPLE_IUPD_MODEL);
 
     return GroupedOpenApi.builder()
         .group("external_v1")
@@ -229,9 +231,9 @@ public class SwaggerConfig {
     // server list
     List<Server> serverInfo = new ArrayList<>();
     serverInfo.add(
-        createServer(".uat", "gpd/debt-positions-service", "v2", "GPD Test environment"));
+        createServer(".uat", GPD_DEBT_POSITIONS_SERVICE, "v2", "GPD Test environment"));
     serverInfo.add(
-        createServer("", "gpd/debt-positions-service", "v2", "GPD Production Environment"));
+        createServer("", GPD_DEBT_POSITIONS_SERVICE, "v2", "GPD Production Environment"));
 
     return GroupedOpenApi.builder()
         .group("external_v2")
@@ -252,9 +254,9 @@ public class SwaggerConfig {
     // server list
     List<Server> serverInfo = new ArrayList<>();
     serverInfo.add(
-        createServer(".uat", "gpd/debt-positions-service", "v3", "GPD Test environment"));
+        createServer(".uat", GPD_DEBT_POSITIONS_SERVICE, "v3", "GPD Test environment"));
     serverInfo.add(
-        createServer("", "gpd/debt-positions-service", "v3", "GPD Production Environment"));
+        createServer("", GPD_DEBT_POSITIONS_SERVICE, "v3", "GPD Production Environment"));
 
     return GroupedOpenApi.builder()
         .group("external_v3")
@@ -285,8 +287,8 @@ public class SwaggerConfig {
 
     Set<String> schemasToRemove =
         Set.of(
-            "MultiplePaymentPositionModel",
-            "MultipleIUPDModel",
+            MULTIPLE_PAYMENT_POSITION_MODEL,
+            MULTIPLE_IUPD_MODEL,
             "UpdateTransferIbanMassiveModel",
             "UpdateTransferIbanMassiveResponse");
 
@@ -511,7 +513,7 @@ public class SwaggerConfig {
       operation.setParameters(
           operation.getParameters().stream()
               .filter(param -> !"serviceType".equals(param.getName()))
-              .collect(Collectors.toList()));
+              .toList());
     }
   }
 

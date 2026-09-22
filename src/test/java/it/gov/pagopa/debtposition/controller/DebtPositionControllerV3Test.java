@@ -811,8 +811,7 @@ class DebtPositionControllerV3Test {
         String desc = null;
 
         if (descriptions != null && descriptions.length > 0) {
-          desc =
-              (i < descriptions.length) ? descriptions[i] : descriptions[descriptions.length - 1];
+          desc = descriptions[i < descriptions.length ? i : descriptions.length - 1];
         } else if (pp.getPaymentOption() != null && i < pp.getPaymentOption().size()) {
           desc = pp.getPaymentOption().get(i).getDescription();
         }
