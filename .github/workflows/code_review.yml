@@ -69,7 +69,6 @@ jobs:
         id: run_service_docker
         run: |
           cd ./docker
-          chmod +x ./run_docker.sh
           chmod +x ./run_docker_smoke.sh
           ./run_docker_smoke.sh
 
