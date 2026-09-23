@@ -21,7 +21,7 @@ public class PaymentOptionModelV3 implements Serializable {
   @JsonProperty(
       access =
           JsonProperty.Access
-              .WRITE_ONLY) // TODO to be made available on output to the new version of SANP
+              .WRITE_ONLY) // should be made available on output in a next version of SANP
   private String description;
 
   private LocalDateTime validityDate;
