@@ -3,13 +3,11 @@ package it.gov.pagopa.debtposition.model.pd;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import it.gov.pagopa.debtposition.controller.pd.validator.UniqueMetadataKeys;
-
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -27,7 +25,7 @@ public class TransferModel implements Serializable {
   private String idTransfer;
 
   @NotNull(message = "amount is required")
-  @Min(value= 1L, message = "minimum amount is 1 eurocent")
+  @Min(value = 1L, message = "minimum amount is 1 eurocent")
   private Long amount;
 
   @Schema(
@@ -47,16 +45,26 @@ public class TransferModel implements Serializable {
   private String category; // taxonomy
 
   @Schema(description = "mutual exclusive with stamp", example = "IT0000000000000000000000000")
-  @Size(min = 1, max = 35, message = "The IBAN must not be blank and must not exceed 35 characters.")
-  @Pattern(regexp = "^[A-Za-z0-9]{1,35}$", message = "IBAN must not contain spaces or special characters.")
+  @Size(
+      min = 1,
+      max = 35,
+      message = "The IBAN must not be blank and must not exceed 35 characters.")
+  @Pattern(
+      regexp = "^[A-Za-z0-9]{1,35}$",
+      message = "IBAN must not contain spaces or special characters.")
   private String iban;
 
-  @Schema(description = "optional - can be combined with iban but not with stamp", example = "IT0000000000000000000000000")
-  @Size(min = 1, max = 35, message = "Postal IBAN is optional, but if provided, it must not be blank and must not exceed 35 characters.")
+  @Schema(
+      description = "optional - can be combined with iban but not with stamp",
+      example = "IT0000000000000000000000000")
+  @Size(
+      min = 1,
+      max = 35,
+      message =
+          "Postal IBAN is optional, but if provided, it must not be blank and must not exceed 35 characters.")
   @Pattern(
-		  regexp = "^$|^[A-Za-z0-9]{1,35}$",
-		  message = "Postal IBAN must not contain spaces or special characters."
-		  )
+      regexp = "^$|^[A-Za-z0-9]{1,35}$",
+      message = "Postal IBAN must not contain spaces or special characters.")
   private String postalIban;
 
   @Schema(description = "mutual exclusive with iban and postalIban")
@@ -75,10 +83,9 @@ public class TransferModel implements Serializable {
           "It can be added a maximum of 10 key-value pairs for metadata. Metadata keys must be unique within the same transfer.")
   @ArraySchema(uniqueItems = true)
   private List<TransferMetadataModel> transferMetadata = new ArrayList<>();
-  
+
   public void setTransferMetadata(List<TransferMetadataModel> transferMetadata) {
-	  this.transferMetadata =
-			  transferMetadata == null ? new ArrayList<>() : transferMetadata;
+    this.transferMetadata = transferMetadata == null ? new ArrayList<>() : transferMetadata;
   }
 
   public void addTransferMetadata(TransferMetadataModel trans) {

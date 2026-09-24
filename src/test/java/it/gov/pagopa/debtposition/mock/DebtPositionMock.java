@@ -586,15 +586,17 @@ public class DebtPositionMock {
     return setTransferIdsProgressively(pPMock);
   }
 
-  private static PaymentPositionDTO setTransferIdsProgressively(PaymentPositionDTO paymentPositionDTO){
-    paymentPositionDTO.getPaymentOption().forEach(
+  private static PaymentPositionDTO setTransferIdsProgressively(
+      PaymentPositionDTO paymentPositionDTO) {
+    paymentPositionDTO
+        .getPaymentOption()
+        .forEach(
             paymentOptionDTO -> {
               int transferIdx = 1;
-              for(TransferDTO transferDTO: paymentOptionDTO.getTransfer()) {
+              for (TransferDTO transferDTO : paymentOptionDTO.getTransfer()) {
                 transferDTO.setIdTransfer(String.valueOf(transferIdx++));
               }
-            }
-    );
+            });
     return paymentPositionDTO;
   }
 
@@ -744,12 +746,12 @@ public class DebtPositionMock {
   }
 
   public static PaymentOptionDTO createPaymentOption(
-          int amount,
-          String iuv,
-          boolean isPartialPayment,
-          List<TransferDTO> transferList,
-          LocalDateTime dueDate,
-          LocalDateTime retentionDate) {
+      int amount,
+      String iuv,
+      boolean isPartialPayment,
+      List<TransferDTO> transferList,
+      LocalDateTime dueDate,
+      LocalDateTime retentionDate) {
     PaymentOptionDTO poMock = new PaymentOptionDTO();
     poMock.setAmount(amount);
     poMock.setIuv(iuv);
@@ -1266,6 +1268,7 @@ public class DebtPositionMock {
     pPMockList.add(createPaymentPosition400Mock2());
     return MultiplePaymentPositionDTO.builder().paymentPositions(pPMockList).build();
   }
+
   public static TransferDTO createTransferMockWithId(String transferId) {
     TransferDTO tMock = new TransferDTO();
     tMock.setIdTransfer(transferId);
@@ -1276,7 +1279,9 @@ public class DebtPositionMock {
 
     return tMock;
   }
-  public static final PaymentPositionDTO getPaymentOptionWithTransferList(List<String> transferList) {
+
+  public static final PaymentPositionDTO getPaymentOptionWithTransferList(
+      List<String> transferList) {
     PaymentPositionDTO pPMock = new PaymentPositionDTO();
     // debtor properties
     pPMock.setFiscalCode("MRDPLL54H17D542L");
@@ -1293,10 +1298,10 @@ public class DebtPositionMock {
     pPMock.setIupd("12345678901IUPDMOCK1");
     pPMock.setCompanyName("Comune di Firenze");
     pPMock.setOfficeName("Ufficio tributario");
-    List<TransferDTO> transferDTOList = transferList.stream()
-            .map(DebtPositionMock::createTransferMockWithId)
-            .toList();
-    pPMock.addPaymentOptions(createPaymentOption(
+    List<TransferDTO> transferDTOList =
+        transferList.stream().map(DebtPositionMock::createTransferMockWithId).toList();
+    pPMock.addPaymentOptions(
+        createPaymentOption(
             1000,
             "1234561",
             false,
@@ -1306,4 +1311,3 @@ public class DebtPositionMock {
     return pPMock;
   }
 }
-

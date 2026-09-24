@@ -109,9 +109,13 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
                     .dueDateFrom(dueDateFrom != null ? dueDateFrom.atStartOfDay() : null)
                     .dueDateTo(dueDateTo != null ? dueDateTo.atTime(LocalTime.MAX) : null)
                     .paymentDateFrom(
-                        paymentDateFrom != null ? paymentDateFrom.atStartOfDay() : paymentDateTimeFrom)
+                        paymentDateFrom != null
+                            ? paymentDateFrom.atStartOfDay()
+                            : paymentDateTimeFrom)
                     .paymentDateTo(
-                        paymentDateTo != null ? paymentDateTo.atTime(LocalTime.MAX) : paymentDateTimeTo)
+                        paymentDateTo != null
+                            ? paymentDateTo.atTime(LocalTime.MAX)
+                            : paymentDateTimeTo)
                     .status(status != null ? DebtPositionStatus.valueOf(status.name()) : null)
                     .segregationCodes(segCodesList)
                     .serviceType(serviceType)
@@ -201,6 +205,7 @@ public class DebtPositionControllerV3 implements IDebtPositionControllerV3 {
             ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
             : null;
     paymentPositionService.delete(organizationFiscalCode, iupd, segCodes);
-    return new ResponseEntity<>(CommonUtil.escapeString(Constants.DEBT_POSITION_DELETED), HttpStatus.OK);
+    return new ResponseEntity<>(
+        CommonUtil.escapeString(Constants.DEBT_POSITION_DELETED), HttpStatus.OK);
   }
 }

@@ -106,24 +106,23 @@ class DebtPositionControllerBulkTest {
         .andExpect(status().isOk());
   }
 
-    @Test
-    void updateMultipleDebtPositions_404_differentOrgs() throws Exception {
-        MultiplePaymentPositionDTO multiplePaymentPositionDTO =
-                DebtPositionMock.getMultipleDebtPositions_Mock2();
-        mvc.perform(
-                        post("/organizations/77777777777/debtpositions/bulk")
-                                .content(TestUtil.toJson(multiplePaymentPositionDTO))
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated());
-        mvc.perform(
-                        put("/organizations/12345678901_multiple/debtpositions")
-                                .content(TestUtil.toJson(multiplePaymentPositionDTO))
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
-    }
+  @Test
+  void updateMultipleDebtPositions_404_differentOrgs() throws Exception {
+    MultiplePaymentPositionDTO multiplePaymentPositionDTO =
+        DebtPositionMock.getMultipleDebtPositions_Mock2();
+    mvc.perform(
+            post("/organizations/77777777777/debtpositions/bulk")
+                .content(TestUtil.toJson(multiplePaymentPositionDTO))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated());
+    mvc.perform(
+            put("/organizations/12345678901_multiple/debtpositions")
+                .content(TestUtil.toJson(multiplePaymentPositionDTO))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isNotFound());
+  }
 
-
-    @Test
+  @Test
   void updateMultipleDebtPositions_400() throws Exception {
     mvc.perform(
             put("/organizations/12345678901_multiple/debtpositions")
@@ -177,25 +176,25 @@ class DebtPositionControllerBulkTest {
         .andExpect(status().isNotFound());
   }
 
-    @Test
-    void deleteMultipleDebtPositions_404_differentOrgs() throws Exception {
-        List<String> iupdList = new ArrayList<>();
-        MultiplePaymentPositionDTO mpp = DebtPositionMock.getMultipleDebtPositions_Mock2();
-        mpp.getPaymentPositions().forEach(pp -> iupdList.add(pp.getIupd()));
-        // create if not exist
-        mvc.perform(
-                post("/organizations/77777777777/debtpositions/bulk")
-                        .content(TestUtil.toJson(mpp))
-                        .contentType(MediaType.APPLICATION_JSON));
-        // delete IUPD list
-        mvc.perform(
-                        delete("/organizations/12345678910/debtpositions")
-                                .content(
-                                        TestUtil.toJson(
-                                                MultipleIUPDDTO.builder().paymentPositionIUPDs(iupdList).build()))
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
-    }
+  @Test
+  void deleteMultipleDebtPositions_404_differentOrgs() throws Exception {
+    List<String> iupdList = new ArrayList<>();
+    MultiplePaymentPositionDTO mpp = DebtPositionMock.getMultipleDebtPositions_Mock2();
+    mpp.getPaymentPositions().forEach(pp -> iupdList.add(pp.getIupd()));
+    // create if not exist
+    mvc.perform(
+        post("/organizations/77777777777/debtpositions/bulk")
+            .content(TestUtil.toJson(mpp))
+            .contentType(MediaType.APPLICATION_JSON));
+    // delete IUPD list
+    mvc.perform(
+            delete("/organizations/12345678910/debtpositions")
+                .content(
+                    TestUtil.toJson(
+                        MultipleIUPDDTO.builder().paymentPositionIUPDs(iupdList).build()))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isNotFound());
+  }
 
   @Test
   void deleteMultipleDebtPositions_400() throws Exception {
@@ -211,7 +210,7 @@ class DebtPositionControllerBulkTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
   }
-  
+
   @Test
   void createMultipleDebtPositions_duplicatePaymentOptionMetadataKey_400() throws Exception {
     MultiplePaymentPositionDTO multiplePaymentPositionDTO =

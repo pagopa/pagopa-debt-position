@@ -46,9 +46,7 @@ public class PaymentPositionActionsService {
       return paymentPositionRepository.saveAndFlush(ppToPublish);
     } catch (OptimisticLockingFailureException e) {
       throw new AppException(
-          AppError.DEBT_POSITION_CONCURRENT_PUBLISH_FAILURE,
-          organizationFiscalCode,
-          iupd);
+          AppError.DEBT_POSITION_CONCURRENT_PUBLISH_FAILURE, organizationFiscalCode, iupd);
     }
   }
 
@@ -70,12 +68,10 @@ public class PaymentPositionActionsService {
     ppToInvalidate.setLastUpdatedDate(currentDate);
 
     try {
-    	return paymentPositionRepository.saveAndFlush(ppToInvalidate);
+      return paymentPositionRepository.saveAndFlush(ppToInvalidate);
     } catch (OptimisticLockingFailureException e) {
-    	throw new AppException(
-    			AppError.DEBT_POSITION_CONCURRENT_INVALIDATE_FAILURE,
-    			organizationFiscalCode,
-    			iupd);
+      throw new AppException(
+          AppError.DEBT_POSITION_CONCURRENT_INVALIDATE_FAILURE, organizationFiscalCode, iupd);
     }
   }
 

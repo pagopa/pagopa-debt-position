@@ -6,13 +6,17 @@ services:
     env_file:
       - ./.env
     image: 'gpd:latest'
+    platform: linux/amd64
     build:
       context: ../
     ports:
       - "8080:8080"
     container_name: gpd
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+      flyway:
+        condition: service_completed_successfully
     networks:
       - gpd-net
 
@@ -28,6 +32,33 @@ services:
     environment:
       - POSTGRES_USER=postgres_user_test
       - POSTGRES_PASSWORD=postgres_pwd_test
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres_user_test -d apd" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - gpd-net
+
+  # Applies Flyway migrations (src/main/resources/db/migration/apd) to the
+  # local postgres container before the gpd service starts, since the app
+  # runs with spring.flyway.enabled=false and ddl-auto=validate.
+  flyway:
+    image: flyway/flyway:10-alpine
+    container_name: flyway
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - "../src/main/resources/db/migration/apd:/flyway/sql"
+    command: >
+      -url=jdbc:postgresql://postgres:5432/apd
+      -schemas=apd
+      -user=postgres_user_test
+      -password=postgres_pwd_test
+      -connectRetries=10
+      -postgresql.transactional.lock=false
+      migrate
     networks:
       - gpd-net
 

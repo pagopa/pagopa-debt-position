@@ -9,17 +9,15 @@ import it.gov.pagopa.debtposition.DebtPositionApplication;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
+import it.gov.pagopa.debtposition.model.IPaymentPositionModel;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.repository.TransferRepository;
-import it.gov.pagopa.debtposition.model.IPaymentPositionModel;
-
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
@@ -48,9 +46,17 @@ class PaymentPositionCRUDServiceTest {
   void updateTransferIbanMassive_OK() {
     doReturn(1)
         .when(transferRepository)
-            .updateTransferIban(any(), anyString(), anyString(), any(LocalDateTime.class), anyList(), anyList(), anyInt());
+        .updateTransferIban(
+            any(),
+            anyString(),
+            anyString(),
+            any(LocalDateTime.class),
+            anyList(),
+            anyList(),
+            anyInt());
 
-    int response = paymentsService.updateTransferIbanMassive("orgFiscalCode", "oldIban", "newIban", 10);
+    int response =
+        paymentsService.updateTransferIbanMassive("orgFiscalCode", "oldIban", "newIban", 10);
 
     assertEquals(1, response);
   }
@@ -59,13 +65,21 @@ class PaymentPositionCRUDServiceTest {
   void updateTransferIbanMassive_OK_noTransfer() {
     doReturn(0)
         .when(transferRepository)
-        .updateTransferIban(any(), anyString(), anyString(), any(LocalDateTime.class), anyList(), anyList(), anyInt());
+        .updateTransferIban(
+            any(),
+            anyString(),
+            anyString(),
+            any(LocalDateTime.class),
+            anyList(),
+            anyList(),
+            anyInt());
 
-    int response = paymentsService.updateTransferIbanMassive("orgFiscalCode", "oldIban", "newIban", 10);
+    int response =
+        paymentsService.updateTransferIbanMassive("orgFiscalCode", "oldIban", "newIban", 10);
 
     assertEquals(0, response);
   }
-  
+
   @Test
   void handleUniqueViolation_paymentOptionMetadataConstraint_throwsSpecificAppException() {
     ConstraintViolationException constraintViolationException =
@@ -99,7 +113,8 @@ class PaymentPositionCRUDServiceTest {
                     constraintViolationException,
                     "02406911202"));
 
-    assertEquals(AppError.DEBT_POSITION_TRANSFER_METADATA_UNIQUE_VIOLATION.title, exception.getTitle());
+    assertEquals(
+        AppError.DEBT_POSITION_TRANSFER_METADATA_UNIQUE_VIOLATION.title, exception.getTitle());
   }
 
   @Test
@@ -119,7 +134,7 @@ class PaymentPositionCRUDServiceTest {
 
     assertEquals(AppError.DEBT_POSITION_UNIQUE_VIOLATION.title, exception.getTitle());
   }
-  
+
   @Test
   void handleUniqueViolation_nonUniqueSqlState_doesNotThrowAppException() {
     ConstraintViolationException constraintViolationException =
@@ -133,7 +148,7 @@ class PaymentPositionCRUDServiceTest {
                 constraintViolationException,
                 "02406911202"));
   }
-  
+
   @Test
   void handleUniqueViolation_nullConstraintName_throwsGenericDebtPositionUniqueViolation() {
     ConstraintViolationException constraintViolationException = uniqueViolation(null);
@@ -150,10 +165,11 @@ class PaymentPositionCRUDServiceTest {
 
     assertEquals(AppError.DEBT_POSITION_UNIQUE_VIOLATION.title, exception.getTitle());
   }
-  
+
   @SuppressWarnings("unchecked")
   @Test
-  void update_dataIntegrityViolationWithPaymentOptionMetadataConstraint_throwsSpecificAppException() {
+  void
+      update_dataIntegrityViolationWithPaymentOptionMetadataConstraint_throwsSpecificAppException() {
     String organizationFiscalCode = "02406911202";
     String iupd = "IUPD-1";
 
@@ -174,18 +190,14 @@ class PaymentPositionCRUDServiceTest {
     AppException exception =
         assertThrows(
             AppException.class,
-            () ->
-                paymentsService.update(
-                    ppModel,
-                    organizationFiscalCode,
-                    false,
-                    null));
+            () -> paymentsService.update(ppModel, organizationFiscalCode, false, null));
 
     assertEquals(AppError.DEBT_POSITION_PO_METADATA_UNIQUE_VIOLATION.title, exception.getTitle());
   }
-  
+
   @Test
-  void createMultipleDebtPositions_dataIntegrityViolationWithTransferMetadataConstraint_throwsSpecificAppException() {
+  void
+      createMultipleDebtPositions_dataIntegrityViolationWithTransferMetadataConstraint_throwsSpecificAppException() {
     String organizationFiscalCode = "02406911202";
 
     when(paymentPositionRepository.saveAllAndFlush(anyList()))
@@ -198,19 +210,16 @@ class PaymentPositionCRUDServiceTest {
             AppException.class,
             () ->
                 paymentsService.createMultipleDebtPositions(
-                    debtPositions,
-                    organizationFiscalCode,
-                    false,
-                    null));
+                    debtPositions, organizationFiscalCode, false, null));
 
     assertEquals(
-        AppError.DEBT_POSITION_TRANSFER_METADATA_UNIQUE_VIOLATION.title,
-        exception.getTitle());
+        AppError.DEBT_POSITION_TRANSFER_METADATA_UNIQUE_VIOLATION.title, exception.getTitle());
   }
-  
+
   @SuppressWarnings("unchecked")
   @Test
-  void updateMultipleDebtPositions_dataIntegrityViolationWithPaymentOptionMetadataConstraint_throwsSpecificAppException() {
+  void
+      updateMultipleDebtPositions_dataIntegrityViolationWithPaymentOptionMetadataConstraint_throwsSpecificAppException() {
     String organizationFiscalCode = "02406911202";
     String iupd = "IUPD-1";
 
@@ -237,17 +246,15 @@ class PaymentPositionCRUDServiceTest {
             AppException.class,
             () ->
                 paymentsService.updateMultipleDebtPositions(
-                    inputPaymentPositions,
-                    organizationFiscalCode,
-                    false,
-                    null));
+                    inputPaymentPositions, organizationFiscalCode, false, null));
 
     assertEquals(AppError.DEBT_POSITION_PO_METADATA_UNIQUE_VIOLATION.title, exception.getTitle());
   }
-  
+
   @SuppressWarnings("unchecked")
   @Test
-  void updateMultipleDebtPositions_dataIntegrityViolationDuringMapping_throwsSpecificAppException() {
+  void
+      updateMultipleDebtPositions_dataIntegrityViolationDuringMapping_throwsSpecificAppException() {
     String organizationFiscalCode = "02406911202";
     String iupd = "IUPD-1";
 
@@ -267,22 +274,19 @@ class PaymentPositionCRUDServiceTest {
         .thenReturn(new PageImpl<>(managedPositions));
 
     doThrow(dataIntegrityViolation("uniquepaymentoptmetadata"))
-    .when(modelMapper)
-    .map(inputModel, managedPosition);
+        .when(modelMapper)
+        .map(inputModel, managedPosition);
 
     AppException exception =
         assertThrows(
             AppException.class,
             () ->
                 paymentsService.updateMultipleDebtPositions(
-                    inputPaymentPositions,
-                    organizationFiscalCode,
-                    false,
-                    null));
+                    inputPaymentPositions, organizationFiscalCode, false, null));
 
     assertEquals(AppError.DEBT_POSITION_PO_METADATA_UNIQUE_VIOLATION.title, exception.getTitle());
   }
-  
+
   @SuppressWarnings("unchecked")
   @Test
   void update_dataIntegrityViolationDuringMapping_throwsSpecificAppException() {
@@ -301,18 +305,13 @@ class PaymentPositionCRUDServiceTest {
         .thenReturn(Optional.of(ppToUpdate));
 
     doThrow(dataIntegrityViolation("uniquepaymentoptmetadata"))
-    .when(modelMapper)
-    .map(ppModel, ppToUpdate);
+        .when(modelMapper)
+        .map(ppModel, ppToUpdate);
 
     AppException exception =
         assertThrows(
             AppException.class,
-            () ->
-                paymentsService.update(
-                    ppModel,
-                    organizationFiscalCode,
-                    false,
-                    null));
+            () -> paymentsService.update(ppModel, organizationFiscalCode, false, null));
 
     assertEquals(AppError.DEBT_POSITION_PO_METADATA_UNIQUE_VIOLATION.title, exception.getTitle());
   }
@@ -322,23 +321,16 @@ class PaymentPositionCRUDServiceTest {
     String organizationFiscalCode = "02406911202";
 
     when(paymentPositionRepository.saveAndFlush(any()))
-            .thenThrow(optimisticLockingFailureException());
+        .thenThrow(optimisticLockingFailureException());
 
     PaymentPosition paymentPosition = new PaymentPosition();
 
     AppException exception =
-            assertThrows(
-                    AppException.class,
-                    () ->
-                            paymentsService.create(
-                                    paymentPosition,
-                                    organizationFiscalCode,
-                                    false,
-                                    null));
+        assertThrows(
+            AppException.class,
+            () -> paymentsService.create(paymentPosition, organizationFiscalCode, false, null));
 
-    assertEquals(
-            AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE,
-            exception.getAppError());
+    assertEquals(AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE, exception.getAppError());
   }
 
   @Test
@@ -346,23 +338,18 @@ class PaymentPositionCRUDServiceTest {
     String organizationFiscalCode = "02406911202";
 
     when(paymentPositionRepository.saveAllAndFlush(anyList()))
-            .thenThrow(optimisticLockingFailureException());
+        .thenThrow(optimisticLockingFailureException());
 
     List<PaymentPosition> paymentPositions = List.of(new PaymentPosition());
 
     AppException exception =
-            assertThrows(
-                    AppException.class,
-                    () ->
-                            paymentsService.createMultipleDebtPositions(
-                                    paymentPositions,
-                                    organizationFiscalCode,
-                                    false,
-                                    null));
+        assertThrows(
+            AppException.class,
+            () ->
+                paymentsService.createMultipleDebtPositions(
+                    paymentPositions, organizationFiscalCode, false, null));
 
-    assertEquals(
-            AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE,
-            exception.getAppError());
+    assertEquals(AppError.DEBT_POSITION_CONCURRENT_CREATION_FAILURE, exception.getAppError());
   }
 
   @Test
@@ -376,23 +363,17 @@ class PaymentPositionCRUDServiceTest {
     ppToUpdate.setPaymentOption(List.of());
 
     when(paymentPositionRepository.findOne(any(Specification.class)))
-            .thenReturn(Optional.of(ppToUpdate));
+        .thenReturn(Optional.of(ppToUpdate));
 
     when(paymentPositionRepository.saveAndFlush(any()))
-            .thenThrow(optimisticLockingFailureException());
+        .thenThrow(optimisticLockingFailureException());
     AppException exception =
-            assertThrows(
-                    AppException.class,
-                    () ->
-                            paymentsService.update(
-                                    paymentPositionModel,
-                                    organizationFiscalCode,
-                                    false,
-                                    null));
+        assertThrows(
+            AppException.class,
+            () ->
+                paymentsService.update(paymentPositionModel, organizationFiscalCode, false, null));
 
-    assertEquals(
-            AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE,
-            exception.getAppError());
+    assertEquals(AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE, exception.getAppError());
   }
 
   @Test
@@ -404,157 +385,119 @@ class PaymentPositionCRUDServiceTest {
     pp.setIupd("IUPD-1");
     pp.setStatus(DebtPositionStatus.DRAFT);
     pp.setPaymentOption(List.of());
-    List< PaymentPosition> managedPositions = List.of(pp);
+    List<PaymentPosition> managedPositions = List.of(pp);
     when(paymentPositionRepository.findAll(any(Specification.class), any(Pageable.class)))
-            .thenReturn(new PageImpl<>(managedPositions));
+        .thenReturn(new PageImpl<>(managedPositions));
 
     when(paymentPositionRepository.saveAllAndFlush(anyList()))
-            .thenThrow(optimisticLockingFailureException());
+        .thenThrow(optimisticLockingFailureException());
     AppException exception =
-            assertThrows(
-                    AppException.class,
-                    () ->
-                            paymentsService.updateMultipleDebtPositions(
-                                    paymentPositionModelList,
-                                    organizationFiscalCode,
-                                    false,
-                                    null));
+        assertThrows(
+            AppException.class,
+            () ->
+                paymentsService.updateMultipleDebtPositions(
+                    paymentPositionModelList, organizationFiscalCode, false, null));
 
-    assertEquals(
-            AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE,
-            exception.getAppError());
+    assertEquals(AppError.DEBT_POSITION_CONCURRENT_UPDATE_FAILURE, exception.getAppError());
   }
-  
+
   @SuppressWarnings("unchecked")
   @Test
   void deleteDebtPosition_ObjectOptimisticLockingFailureException_throwsSpecificAppException() {
-	  String organizationFiscalCode = "02406911202";
-	  String iupd = "IUPD-1";
+    String organizationFiscalCode = "02406911202";
+    String iupd = "IUPD-1";
 
-	  PaymentPosition ppToDelete = new PaymentPosition();
-	  ppToDelete.setId(1L);
-	  ppToDelete.setIupd(iupd);
-	  ppToDelete.setStatus(DebtPositionStatus.DRAFT);
+    PaymentPosition ppToDelete = new PaymentPosition();
+    ppToDelete.setId(1L);
+    ppToDelete.setIupd(iupd);
+    ppToDelete.setStatus(DebtPositionStatus.DRAFT);
 
-	  when(paymentPositionRepository.findOne(any(Specification.class)))
-	  .thenReturn(Optional.of(ppToDelete));
+    when(paymentPositionRepository.findOne(any(Specification.class)))
+        .thenReturn(Optional.of(ppToDelete));
 
-	  doThrow(
-			  new ObjectOptimisticLockingFailureException(
-					  PaymentPosition.class,
-					  ppToDelete.getId()))
-	  .when(paymentPositionRepository)
-	  .flush();
+    doThrow(new ObjectOptimisticLockingFailureException(PaymentPosition.class, ppToDelete.getId()))
+        .when(paymentPositionRepository)
+        .flush();
 
-	  AppException exception =
-			  assertThrows(
-					  AppException.class,
-					  () -> paymentsService.delete(organizationFiscalCode, iupd, null));
+    AppException exception =
+        assertThrows(
+            AppException.class, () -> paymentsService.delete(organizationFiscalCode, iupd, null));
 
-	  assertEquals(
-			  AppError.DEBT_POSITION_CONCURRENT_DELETE_FAILURE,
-			  exception.getAppError());
+    assertEquals(AppError.DEBT_POSITION_CONCURRENT_DELETE_FAILURE, exception.getAppError());
 
-	  assertEquals(
-			  HttpStatus.CONFLICT,
-			  exception.getHttpStatus());
+    assertEquals(HttpStatus.CONFLICT, exception.getHttpStatus());
 
-	  verify(paymentPositionRepository).delete(ppToDelete);
-	  verify(paymentPositionRepository).flush();
+    verify(paymentPositionRepository).delete(ppToDelete);
+    verify(paymentPositionRepository).flush();
   }
-  
+
   @Test
-  void deleteMultipleDebtPositions_ObjectOptimisticLockingFailureException_throwsSpecificAppException() {
-	  String organizationFiscalCode = "02406911202";
+  void
+      deleteMultipleDebtPositions_ObjectOptimisticLockingFailureException_throwsSpecificAppException() {
+    String organizationFiscalCode = "02406911202";
 
-	  List<String> iupds = List.of("IUPD-1", "IUPD-2");
+    List<String> iupds = List.of("IUPD-1", "IUPD-2");
 
-	  PaymentPosition firstPosition = new PaymentPosition();
-	  firstPosition.setId(1L);
-	  firstPosition.setIupd("IUPD-1");
-	  firstPosition.setStatus(DebtPositionStatus.DRAFT);
+    PaymentPosition firstPosition = new PaymentPosition();
+    firstPosition.setId(1L);
+    firstPosition.setIupd("IUPD-1");
+    firstPosition.setStatus(DebtPositionStatus.DRAFT);
 
-	  PaymentPosition secondPosition = new PaymentPosition();
-	  secondPosition.setId(2L);
-	  secondPosition.setIupd("IUPD-2");
-	  secondPosition.setStatus(DebtPositionStatus.DRAFT);
+    PaymentPosition secondPosition = new PaymentPosition();
+    secondPosition.setId(2L);
+    secondPosition.setIupd("IUPD-2");
+    secondPosition.setStatus(DebtPositionStatus.DRAFT);
 
-	  List<PaymentPosition> positions =
-			  List.of(firstPosition, secondPosition);
+    List<PaymentPosition> positions = List.of(firstPosition, secondPosition);
 
-	  when(
-			  paymentPositionRepository.findAll(
-					  any(Specification.class),
-					  any(Pageable.class)))
-	  .thenReturn(new PageImpl<>(positions));
+    when(paymentPositionRepository.findAll(any(Specification.class), any(Pageable.class)))
+        .thenReturn(new PageImpl<>(positions));
 
-	  doThrow(
-			  new ObjectOptimisticLockingFailureException(
-					  PaymentPosition.class,
-					  firstPosition.getId()))
-	  .when(paymentPositionRepository)
-	  .flush();
+    doThrow(
+            new ObjectOptimisticLockingFailureException(
+                PaymentPosition.class, firstPosition.getId()))
+        .when(paymentPositionRepository)
+        .flush();
 
-	  AppException exception =
-			  assertThrows(
-					  AppException.class,
-					  () ->
-					  paymentsService.deleteMultipleDebtPositions(
-							  iupds,
-							  organizationFiscalCode,
-							  null));
+    AppException exception =
+        assertThrows(
+            AppException.class,
+            () -> paymentsService.deleteMultipleDebtPositions(iupds, organizationFiscalCode, null));
 
-	  assertEquals(
-			  AppError.DEBT_POSITION_CONCURRENT_DELETE_FAILURE,
-			  exception.getAppError());
+    assertEquals(AppError.DEBT_POSITION_CONCURRENT_DELETE_FAILURE, exception.getAppError());
 
-	  assertEquals(
-			  HttpStatus.CONFLICT,
-			  exception.getHttpStatus());
+    assertEquals(HttpStatus.CONFLICT, exception.getHttpStatus());
 
-	  verify(paymentPositionRepository).deleteAll(positions);
-	  verify(paymentPositionRepository).flush();
+    verify(paymentPositionRepository).deleteAll(positions);
+    verify(paymentPositionRepository).flush();
   }
-  
+
   @Test
   void deleteMultipleDebtPositions_GenericException_throwsDeleteFailed() {
-	  String organizationFiscalCode = "02406911202";
+    String organizationFiscalCode = "02406911202";
 
-	  List<String> iupds = List.of("IUPD-1");
+    List<String> iupds = List.of("IUPD-1");
 
-	  PaymentPosition position = new PaymentPosition();
-	  position.setId(1L);
-	  position.setIupd("IUPD-1");
-	  position.setStatus(DebtPositionStatus.DRAFT);
+    PaymentPosition position = new PaymentPosition();
+    position.setId(1L);
+    position.setIupd("IUPD-1");
+    position.setStatus(DebtPositionStatus.DRAFT);
 
-	  List<PaymentPosition> positions = List.of(position);
+    List<PaymentPosition> positions = List.of(position);
 
-	  when(
-			  paymentPositionRepository.findAll(
-					  any(Specification.class),
-					  any(Pageable.class)))
-	  .thenReturn(new PageImpl<>(positions));
+    when(paymentPositionRepository.findAll(any(Specification.class), any(Pageable.class)))
+        .thenReturn(new PageImpl<>(positions));
 
-	  doThrow(new RuntimeException("Generic database error"))
-	  .when(paymentPositionRepository)
-	  .flush();
+    doThrow(new RuntimeException("Generic database error")).when(paymentPositionRepository).flush();
 
-	  AppException exception =
-			  assertThrows(
-					  AppException.class,
-					  () ->
-					  paymentsService.deleteMultipleDebtPositions(
-							  iupds,
-							  organizationFiscalCode,
-							  null));
+    AppException exception =
+        assertThrows(
+            AppException.class,
+            () -> paymentsService.deleteMultipleDebtPositions(iupds, organizationFiscalCode, null));
 
-	  assertEquals(
-			  AppError.DEBT_POSITION_DELETE_FAILED,
-			  exception.getAppError());
+    assertEquals(AppError.DEBT_POSITION_DELETE_FAILED, exception.getAppError());
 
-	  assertEquals(
-			  HttpStatus.INTERNAL_SERVER_ERROR,
-			  exception.getHttpStatus());
+    assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, exception.getHttpStatus());
   }
 
   private ConstraintViolationException uniqueViolation(String constraintName) {
@@ -563,18 +506,17 @@ class PaymentPositionCRUDServiceTest {
         new SQLException("duplicate key value violates unique constraint", "23505"),
         constraintName);
   }
-  
+
   private ConstraintViolationException constraintViolation(String sqlState, String constraintName) {
-	  return new ConstraintViolationException(
-			  "database constraint violation",
-			  new SQLException("database constraint violation", sqlState),
-			  constraintName);
+    return new ConstraintViolationException(
+        "database constraint violation",
+        new SQLException("database constraint violation", sqlState),
+        constraintName);
   }
-  
+
   private DataIntegrityViolationException dataIntegrityViolation(String constraintName) {
-	  return new DataIntegrityViolationException(
-			  "duplicate key value violates unique constraint",
-			  uniqueViolation(constraintName));
+    return new DataIntegrityViolationException(
+        "duplicate key value violates unique constraint", uniqueViolation(constraintName));
   }
 
   private OptimisticLockingFailureException optimisticLockingFailureException() {

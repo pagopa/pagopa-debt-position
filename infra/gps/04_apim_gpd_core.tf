@@ -73,6 +73,34 @@ module "apim_api_gpd_api_v2" {
   # ⚠️ It would have been better to make the policy on the specific operation.
 }
 
+# Internal v3
+module "apim_api_gpd_api_v3" {
+  source = "git::https://github.com/pagopa/terraform-azurerm-v3.git//api_management_api?ref=v8.62.1"
+
+  name                = "${var.env_short}-api-gpd-api"
+  api_management_name = local.apim.name
+  resource_group_name = local.apim.rg
+  product_ids = [local.apim.internal_gpd_product_id]
+
+  subscription_required = false
+  api_version           = "v3"
+  version_set_id        = azurerm_api_management_api_version_set.api_gpd_api.id
+  service_url           = "${local.gpd_core_service_url}/v3"
+
+  description  = "Api Gestione Posizione Debitorie"
+  display_name = "GPD pagoPA"
+  path         = "gpd/api"
+  protocols    = ["https"]
+
+  content_format = "openapi"
+  content_value = templatefile("../../openapi/openapi_internal_v3.json", {
+    service = local.apim.internal_gpd_product_id
+  })
+
+  xml_content = file("./api/internal_api/v3/_base_policy.xml")
+}
+
+
 ####################
 # GPD EXTERNAL USE #
 ####################
@@ -166,7 +194,7 @@ module "apim_api_debt_positions_api_v3" {
     service = local.apim.external_gpd_product_id
   })
 
-  xml_content = file("./api/external_api/v3/_base_policy.xml") # TODO rivedere, c'è logica di policy
+  xml_content = file("./api/external_api/v3/_base_policy.xml")
 }
 
 #########################################
