@@ -63,11 +63,13 @@ jobs:
 
       - name: Print diffs
         run: git --no-pager diff
-#      - name: suggester / google-java-format
+
+      - name: suggester / google-java-format
 #        uses: reviewdog/action-suggester@db4abb16fbaabe386831e5addb7be1485d0d63d3 # v1
-#        with:
-#          tool_name: google-java-format
-#          fail_on_error: true
+        uses: reviewdog/action-suggester@c387862ad6765a9729f2b40ee4d8b5769f2145c7 # v1.26.1
+        with:
+          tool_name: google-java-format
+          fail_on_error: true
 
   check_size:
     runs-on: ubuntu-latest
