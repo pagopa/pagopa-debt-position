@@ -1,10 +1,10 @@
 package it.gov.pagopa.debtposition.model.pd;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.io.Serializable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

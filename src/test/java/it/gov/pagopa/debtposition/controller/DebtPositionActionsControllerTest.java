@@ -98,8 +98,7 @@ class DebtPositionActionsControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("31234561"));
+        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("31234561"));
 
     // verifico che lo stato sia stato aggiornato a publish (singolo passaggio di stato)
     mvc.perform(
@@ -124,8 +123,7 @@ class DebtPositionActionsControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated())
         .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("CUSTOMNAV_1234561"));
+            MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("CUSTOMNAV_1234561"));
 
     // recupero la posizione debitoria e verifico lo stato in draft
     mvc.perform(
@@ -153,8 +151,7 @@ class DebtPositionActionsControllerTest {
             MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.VALID.toString()))
         .andExpect(MockMvcResultMatchers.jsonPath("$.publishDate").isNotEmpty())
         .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("CUSTOMNAV_1234561"));
+            MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("CUSTOMNAV_1234561"));
   }
 
   @Test
@@ -303,7 +300,7 @@ class DebtPositionActionsControllerTest {
     // porto in pubblicata/validata lo stato della posizione debitoria
     mvc.perform(
             post("/organizations/PBHVALID_SC_12345678901/debtpositions/12345678901IUPDMOCK1/publish?"
-                     + "segregationCodes="
+                    + "segregationCodes="
                     + segregationCode)
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
@@ -342,7 +339,7 @@ class DebtPositionActionsControllerTest {
     // porto in pubblicata/validata lo stato della posizione debitoria
     mvc.perform(
             post("/organizations/PBHVALID_403_SC_12345678901/debtpositions/12345678901IUPDMOCK1/publish?"
-                     + "segregationCodes="
+                    + "segregationCodes="
                     + notSufficientSegregationCode)
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isForbidden());
@@ -392,8 +389,7 @@ class DebtPositionActionsControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.INVALID.toString()))
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("31234561"));
+        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("31234561"));
   }
 
   @Test
@@ -406,9 +402,7 @@ class DebtPositionActionsControllerTest {
                 .content(TestUtil.toJson(pp))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated())
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("3331234561"));
+        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("3331234561"));
 
     // recupero la posizione debitoria e verifico lo stato in draft
     mvc.perform(
@@ -444,9 +438,7 @@ class DebtPositionActionsControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.INVALID.toString()))
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav")
-                .value("3331234561"));
+        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("3331234561"));
   }
 
   @Test
@@ -529,8 +521,7 @@ class DebtPositionActionsControllerTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(
             MockMvcResultMatchers.jsonPath("$.status").value(DebtPositionStatus.INVALID.toString()))
-        .andExpect(
-            MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("31234561"));
+        .andExpect(MockMvcResultMatchers.jsonPath("$.paymentOption[0].nav").value("31234561"));
   }
 
   @Test

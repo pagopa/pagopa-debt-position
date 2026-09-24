@@ -4,13 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import it.gov.pagopa.debtposition.model.enumeration.PaymentOptionStatus;
 import it.gov.pagopa.debtposition.model.enumeration.Type;
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.hibernate.annotations.BatchSize;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,7 +21,12 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 /**
  * @author aacitelli
@@ -50,9 +48,7 @@ import lombok.*;
           name = "UniquePaymentOptNav",
           columnNames = {"nav", "organization_fiscal_code"}),
     })
-@JsonIdentityInfo(
-	    generator = ObjectIdGenerators.PropertyGenerator.class,
-	    property = "id")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class PaymentOption implements Serializable {
   public static final String SINGLE_OPTION = "SINGLE_OPTION";
 
@@ -71,22 +67,22 @@ public class PaymentOption implements Serializable {
   @NotNull
   @Column(name = "organization_fiscal_code")
   private String organizationFiscalCode;
-  
+
   // payment_plan_id (null for single, '<uuid>' for installment plans)
   @Column(name = "payment_plan_id", length = 50)
   private String paymentPlanId;
 
   @NotNull private long amount;
-  
+
   private String description;
-  
+
   @Column(name = "payment_option_description")
   private String paymentOptionDescription;
 
   @NotNull
   @Column(name = "is_partial_payment")
   private Boolean isPartialPayment;
-  
+
   @Column(name = "validity_date")
   private LocalDateTime validityDate;
 
@@ -178,8 +174,9 @@ public class PaymentOption implements Serializable {
   @ToString.Exclude private String phone;
 
   @Column(name = "send_sync")
-  @Builder.Default private Boolean sendSync = false;
-  
+  @Builder.Default
+  private Boolean sendSync = false;
+
   @Builder.Default
   @Column(name = "switch_to_expired", columnDefinition = "boolean DEFAULT false")
   private Boolean switchToExpired = false;

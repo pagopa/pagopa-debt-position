@@ -1,7 +1,7 @@
 package it.gov.pagopa.debtposition.exception;
 
-import java.util.Formatter;
 import jakarta.validation.constraints.NotNull;
+import java.util.Formatter;
 import java.util.regex.Pattern;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -28,7 +28,7 @@ public class AppException extends RuntimeException {
 
   /** http status returned to the response when this exception occurred */
   HttpStatus httpStatus;
-  
+
   /** originating AppError, present only when created via AppError-based constructors */
   AppError appError;
 
@@ -96,7 +96,8 @@ public class AppException extends RuntimeException {
     }
     String result = template;
     for (Object arg : args) {
-      result = PLACEHOLDER_PATTERN.matcher(result).replaceFirst(arg != null ? arg.toString() : "null");
+      result =
+          PLACEHOLDER_PATTERN.matcher(result).replaceFirst(arg != null ? arg.toString() : "null");
     }
     result = result.replace("%s", "");
     return result;

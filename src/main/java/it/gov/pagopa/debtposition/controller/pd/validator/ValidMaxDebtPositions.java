@@ -1,9 +1,9 @@
 package it.gov.pagopa.debtposition.controller.pd.validator;
 
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
-import java.util.List;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import java.util.List;
 import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 import org.springframework.beans.factory.annotation.Value;
 
