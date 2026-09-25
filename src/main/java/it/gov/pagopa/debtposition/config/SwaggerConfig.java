@@ -10,13 +10,12 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import io.swagger.v3.oas.models.servers.ServerVariable;
+import io.swagger.v3.oas.models.servers.ServerVariables;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import io.swagger.v3.oas.models.servers.ServerVariable;
-import io.swagger.v3.oas.models.servers.ServerVariables;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
@@ -154,24 +153,26 @@ public class SwaggerConfig {
     Map<String, Set<String>> removeFromInternalV2 = Map.of(DEBT_POSITIONS_API, Set.of("post"));
 
     return GroupedOpenApi.builder()
-            .group("internal_v2")
-            .displayName("GPD - Internal API - v2")
-            .pathsToMatch(ALL_API_MATCH)
-            .pathsToExclude("/v3/**")
-            .addOpenApiCustomizer(customizeServer(createServers("gpd/api", "v2")))
-            .addOpenApiCustomizer(customizeOpenApi(removeFromInternalV2))
-            .addOpenApiCustomizer(renamePath(DEBT_POSITIONS_BULK_API, DEBT_POSITIONS_API))
-            .addOpenApiCustomizer(sortOpenApi())
-            .build();
+        .group("internal_v2")
+        .displayName("GPD - Internal API - v2")
+        .pathsToMatch(ALL_API_MATCH)
+        .pathsToExclude("/v3/**")
+        .addOpenApiCustomizer(customizeServer(createServers("gpd/api", "v2")))
+        .addOpenApiCustomizer(customizeOpenApi(removeFromInternalV2))
+        .addOpenApiCustomizer(renamePath(DEBT_POSITIONS_BULK_API, DEBT_POSITIONS_API))
+        .addOpenApiCustomizer(sortOpenApi())
+        .build();
   }
 
   @Bean
   GroupedOpenApi internalV3Api() {
     // api to remove
-    Map<String, Set<String>> removeFromInternalV3 = Map.of(
-            DEBT_POSITIONS_API, Set.of("post"),
-            DEBT_POSITIONS_API + "/{iupd}/invalidate", Set.of("post")
-    );
+    Map<String, Set<String>> removeFromInternalV3 =
+        Map.of(
+            DEBT_POSITIONS_API,
+            Set.of("post"),
+            DEBT_POSITIONS_API + "/{iupd}/invalidate",
+            Set.of("post"));
     Set<String> tagsToRemove = Set.of("Debt Positions API");
 
     return GroupedOpenApi.builder()
@@ -285,23 +286,24 @@ public class SwaggerConfig {
   private @NonNull List<Server> createServers(String service, String version) {
     String localPath = String.format("%s://%s:%s", "http", "localhost", 8080);
     return List.of(
-            new Server().url(localPath),
-            new Server()
-                    .url("https://{host}/{basePath}/{version}")
-                    .variables(
-                            new ServerVariables()
-                                    .addServerVariable(
-                                            "host",
-                                            new ServerVariable()
-                                                    ._enum(
-                                                            List.of(
-                                                                    "api.dev.platform.pagopa.it",
-                                                                    "api.uat.platform.pagopa.it",
-                                                                    "api.platform.pagopa.it"))
-                                                    ._default("api.dev.platform.pagopa.it"))
-                                    .addServerVariable("basePath", new ServerVariable()._default(service))
-                                    .addServerVariable("version", new ServerVariable()._default(version))));
+        new Server().url(localPath),
+        new Server()
+            .url("https://{host}/{basePath}/{version}")
+            .variables(
+                new ServerVariables()
+                    .addServerVariable(
+                        "host",
+                        new ServerVariable()
+                            ._enum(
+                                List.of(
+                                    "api.dev.platform.pagopa.it",
+                                    "api.uat.platform.pagopa.it",
+                                    "api.platform.pagopa.it"))
+                            ._default("api.dev.platform.pagopa.it"))
+                    .addServerVariable("basePath", new ServerVariable()._default(service))
+                    .addServerVariable("version", new ServerVariable()._default(version))));
   }
+
   private OpenApiCustomizer customizeServer(List<Server> serverInfo) {
     return openApi -> {
       if (openApi.getPaths() == null) return;
