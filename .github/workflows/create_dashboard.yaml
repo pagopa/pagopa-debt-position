@@ -2,13 +2,6 @@ name: Create Dashboard
 
 on:
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment for which create dashboards and alerts'
-        required: true
-        type: choice
-        options:
-          - prod
 
 permissions:
   id-token: write
@@ -24,8 +17,7 @@ jobs:
         product: [ internal-v1, internal-v3, v1, v3 ]
       max-parallel: 1
     environment:
-      name: ${{ inputs.environment }}
-
+      name: ${{ matrix.environment }}
     steps:
       - name: Checkout
         id: checkout
