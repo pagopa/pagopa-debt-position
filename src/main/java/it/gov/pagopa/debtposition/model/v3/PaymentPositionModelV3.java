@@ -25,7 +25,8 @@ public class PaymentPositionModelV3 implements Serializable, IPaymentPositionMod
 
   @Schema(
       description = "feature flag to enable a debt position in stand-in mode",
-      example = "true")
+      example = "false",
+      defaultValue = "false")
   private boolean payStandIn = true;
 
   @NotBlank(message = "company name is required")

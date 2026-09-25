@@ -766,6 +766,7 @@
           },
           "payStandIn" : {
             "type" : "boolean",
+            "default" : "true",
             "description" : "feature flag to enable a debt position in stand-in mode",
             "example" : true
           },
@@ -807,6 +808,7 @@
           },
           "switchToExpired" : {
             "type" : "boolean",
+            "default" : "false",
             "description" : "feature flag to enable the debt position to expire after the due date",
             "example" : false
           },

@@ -1089,6 +1089,7 @@
           },
           "switchToExpired" : {
             "type" : "boolean",
+            "default" : "false",
             "description" : "feature flag to enable the payment option to expire after the due date",
             "example" : false
           },
@@ -1114,8 +1115,9 @@
           },
           "payStandIn" : {
             "type" : "boolean",
+            "default" : "false",
             "description" : "feature flag to enable a debt position in stand-in mode",
-            "example" : true
+            "example" : false
           },
           "companyName" : {
             "type" : "string",

@@ -31,7 +31,8 @@ public class PaymentPositionModel implements Serializable, IPaymentPositionModel
 
   @Schema(
       description = "feature flag to enable a debt position in stand-in mode",
-      example = "true")
+      example = "true",
+      defaultValue = "true")
   private boolean payStandIn = true;
 
   @NotNull(message = "fiscal code is required")
@@ -63,7 +64,8 @@ public class PaymentPositionModel implements Serializable, IPaymentPositionModel
 
   @Schema(
       description = "feature flag to enable the debt position to expire after the due date",
-      example = "false")
+      example = "false",
+      defaultValue = "false")
   @NotNull(message = "switch to expired value is required")
   private Boolean switchToExpired;
 

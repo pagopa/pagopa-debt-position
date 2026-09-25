@@ -29,7 +29,8 @@ public class PaymentOptionModelV3 implements Serializable {
 
   @Schema(
       description = "feature flag to enable the payment option to expire after the due date",
-      example = "false")
+      example = "false",
+      defaultValue = "false")
   @NotNull(message = "switch to expired value is required")
   private Boolean switchToExpired;
 
