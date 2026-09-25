@@ -7,11 +7,21 @@
     "version" : "1.1.43"
   },
   "servers" : [ {
-    "url" : "https://api.uat.platform.pagopa.it/gpd/api/v2",
-    "description" : "GPD Test environment"
+    "url" : "http://localhost:8080"
   }, {
-    "url" : "https://api.platform.pagopa.it/gpd/api/v2",
-    "description" : "GPD Production Environment"
+    "url" : "https://{host}/{basePath}/{version}",
+    "variables" : {
+      "host" : {
+        "default" : "api.dev.platform.pagopa.it",
+        "enum" : [ "api.dev.platform.pagopa.it", "api.uat.platform.pagopa.it", "api.platform.pagopa.it" ]
+      },
+      "basePath" : {
+        "default" : "gpd/api"
+      },
+      "version" : {
+        "default" : "v2"
+      }
+    }
   } ],
   "paths" : {
     "/info" : {
