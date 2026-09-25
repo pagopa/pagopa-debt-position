@@ -2199,9 +2199,9 @@
           },
           "payStandIn" : {
             "type" : "boolean",
-            "default" : "false",
+            "default" : "true",
             "description" : "feature flag to enable a debt position in stand-in mode",
-            "example" : false
+            "example" : true
           },
           "companyName" : {
             "type" : "string",
