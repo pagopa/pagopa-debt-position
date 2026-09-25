@@ -25,6 +25,10 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Fix boolean defaults in OpenAPI schemas
+        shell: bash
+        run: python3 openapi/fix_boolean_defaults.py
+
       - name: Generate dashboard package
         run: |
           python -m venv venv
