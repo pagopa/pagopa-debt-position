@@ -27,7 +27,7 @@ microservice-chart:
       maxSurge: 1
   deployment:
     create: true
-    replicas: 1 # (default) same as HPA minReplica
+    replicas: 2 # (default) same as HPA minReplica
   service:
     create: true
     type: ClusterIP
@@ -57,8 +57,8 @@ microservice-chart:
       cpu: "0.75"
   autoscaling:
     enable: true
-    minReplica: 1
-    maxReplica: 1
+    minReplica: 2
+    maxReplica: 2
     pollingInterval: 1 # seconds
     cooldownPeriod: 50 # seconds
     triggers:
