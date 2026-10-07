@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        environment: [ prod ]
+        environment: [ prod, uat ]
         product: [ internal-v1, internal-v3, v1, v3 ]
       max-parallel: 1
     environment:
