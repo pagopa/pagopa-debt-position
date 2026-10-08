@@ -23,7 +23,7 @@ const params = {
 export default function() {
 
   // fixed value for the creditor_institution with multiple debt positions
-  const creditor_institution_code = '88888888888'
+  const creditor_institution_code = '77777777777'
   const iupd = makeidMix(35);
   const iuv = makeidMix(35);
   const due_date = new Date(Date.now() + 24*60*60*1000).toISOString();
@@ -91,7 +91,7 @@ export default function() {
   let due_date_from = new Date().subDays(5).toISOString().split('T')[0];
   let due_date_to = new Date().addDays(5).toISOString().split('T')[0];
   
-  url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions?limit=50&page=0&due_date_from=${due_date_from}&due_date_to=${due_date_to}&status=VALID&orderby=INSERTED_DATE&ordering=DESC`;
+  url = `${rootUrl}/organizations/88888888888/debtpositions?limit=50&page=0&due_date_from=${due_date_from}&due_date_to=${due_date_to}&status=VALID&orderby=INSERTED_DATE&ordering=DESC`;
   
   let attempts = 0;
   let list = null;
