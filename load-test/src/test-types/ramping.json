@@ -9,7 +9,7 @@
     "p(99.99)",
     "count"
   ],
-  "discardResponseBodies": true,
+  "discardResponseBodies": false,
   "scenarios": {
     "contacts": {
       "executor": "ramping-arrival-rate",

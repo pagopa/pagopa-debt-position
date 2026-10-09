@@ -1,5 +1,5 @@
 {
-  "discardResponseBodies": true,
+  "discardResponseBodies": false,
   "summaryTrendStats": [
     "avg",
     "min",
