@@ -91,8 +91,8 @@ export default function() {
   let due_date_from = new Date().subDays(5).toISOString().split('T')[0];
   let due_date_to = new Date().addDays(5).toISOString().split('T')[0];
   
-  url = `${rootUrl}/organizations/88888888888/debtpositions?limit=50&page=0&due_date_from=${due_date_from}&due_date_to=${due_date_to}&status=VALID&orderby=INSERTED_DATE&ordering=DESC`;
-  
+  url = `${rootUrl}/organizations/${creditor_institution_code}/debtpositions?limit=50&page=0&due_date_from=${due_date_from}&due_date_to=${due_date_to}&status=VALID&orderby=INSERTED_DATE&ordering=DESC`;
+
   let attempts = 0;
   let list = null;
 
