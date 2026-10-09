@@ -4,28 +4,28 @@
     "title": "PagoPA API Debt Position ${service}",
     "description": "Progetto Gestione Posizioni Debitorie",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.1.44-2-PIDM-2252-rate-limit-api"
+    "version": "1.1.45"
   },
   "servers": [
     {
       "url": "http://localhost:8080"
     },
     {
-      "url": "https://{host}/{basePath}/{version}",
+      "url": "{host}{basePath}{version}",
       "variables": {
         "host": {
-          "default": "api.dev.platform.pagopa.it",
+          "default": "https://api.platform.pagopa.it",
           "enum": [
-            "api.dev.platform.pagopa.it",
-            "api.uat.platform.pagopa.it",
-            "api.platform.pagopa.it"
+            "https://api.dev.platform.pagopa.it",
+            "https://api.uat.platform.pagopa.it",
+            "https://api.platform.pagopa.it"
           ]
         },
         "basePath": {
-          "default": "aca/debt-positions-service"
+          "default": "/aca/debt-positions-service"
         },
         "version": {
-          "default": "v1"
+          "default": "/v1"
         }
       }
     }

@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         environment: [ prod ]
-        product: [ internal-v1, internal-v3, v1, v3 ]
+        product: [ internal-v1, internal-v2, internal-v3, v1, v3 ]
       max-parallel: 1
     environment:
       name: ${{ matrix.environment }}

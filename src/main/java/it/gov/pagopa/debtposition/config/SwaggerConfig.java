@@ -39,7 +39,12 @@ public class SwaggerConfig {
   private static final String MULTIPLE_IUPD_MODEL = "MultipleIUPDModel";
   private static final String MULTIPLE_PAYMENT_POSITION_MODEL = "MultiplePaymentPositionModel";
   private static final String ALL_API_MATCH = "/**/**";
-  private static final String GPD_DEBT_POSITIONS_SERVICE = "gpd/debt-positions-service";
+  private static final String GPD_DEBT_POSITIONS_SERVICE = "/gpd/debt-positions-service";
+  private static final String V_3_API_MATCH = "/v3/**";
+  private static final String GPD_INTERNAL_BASE_PATH = "/gpd/api";
+  private static final String PUT_METHOD = "put";
+  private static final String DELETE_METHOD = "delete";
+  private static final String POST_METHOD = "post";
 
   @Bean
   OpenAPI customOpenAPI(
@@ -129,8 +134,8 @@ public class SwaggerConfig {
     // api to remove
     Map<String, Set<String>> removeFromInternalV1 =
         Map.of(
-            DEBT_POSITIONS_API, Set.of("put", "delete"),
-            DEBT_POSITIONS_BULK_API, Set.of("post"));
+            DEBT_POSITIONS_API, Set.of(PUT_METHOD, DELETE_METHOD),
+            DEBT_POSITIONS_BULK_API, Set.of(POST_METHOD));
 
     Set<String> schemasToRemove = Set.of(MULTIPLE_PAYMENT_POSITION_MODEL, MULTIPLE_IUPD_MODEL);
 
@@ -138,8 +143,8 @@ public class SwaggerConfig {
         .group("internal_v1")
         .displayName("GPD - Internal API - v1")
         .pathsToMatch(ALL_API_MATCH)
-        .pathsToExclude("/v3/**")
-        .addOpenApiCustomizer(customizeServer(createServers("gpd/api", "v1")))
+        .pathsToExclude(V_3_API_MATCH)
+        .addOpenApiCustomizer(customizeServer(createServers(GPD_INTERNAL_BASE_PATH, "/v1")))
         .addOpenApiCustomizer(customizeOpenApi(removeFromInternalV1))
         .addOpenApiCustomizer(removeSchema(schemasToRemove))
         .addOpenApiCustomizer(sortOpenApi())
@@ -150,14 +155,14 @@ public class SwaggerConfig {
   GroupedOpenApi internalV2Api() {
 
     // api to remove
-    Map<String, Set<String>> removeFromInternalV2 = Map.of(DEBT_POSITIONS_API, Set.of("post"));
+    Map<String, Set<String>> removeFromInternalV2 = Map.of(DEBT_POSITIONS_API, Set.of(POST_METHOD));
 
     return GroupedOpenApi.builder()
         .group("internal_v2")
         .displayName("GPD - Internal API - v2")
         .pathsToMatch(ALL_API_MATCH)
-        .pathsToExclude("/v3/**")
-        .addOpenApiCustomizer(customizeServer(createServers("gpd/api", "v2")))
+        .pathsToExclude(V_3_API_MATCH)
+        .addOpenApiCustomizer(customizeServer(createServers(GPD_INTERNAL_BASE_PATH, "/v2")))
         .addOpenApiCustomizer(customizeOpenApi(removeFromInternalV2))
         .addOpenApiCustomizer(renamePath(DEBT_POSITIONS_BULK_API, DEBT_POSITIONS_API))
         .addOpenApiCustomizer(sortOpenApi())
@@ -170,16 +175,16 @@ public class SwaggerConfig {
     Map<String, Set<String>> removeFromInternalV3 =
         Map.of(
             DEBT_POSITIONS_API,
-            Set.of("post"),
+            Set.of(POST_METHOD),
             DEBT_POSITIONS_API + "/{iupd}/invalidate",
-            Set.of("post"));
+            Set.of(POST_METHOD));
     Set<String> tagsToRemove = Set.of("Debt Positions API");
 
     return GroupedOpenApi.builder()
         .group("internal_v3")
         .displayName("GPD - Internal API - v3")
         .pathsToMatch(ALL_API_MATCH)
-        .addOpenApiCustomizer(customizeServer(createServers("gpd/api", "v3")))
+        .addOpenApiCustomizer(customizeServer(createServers(GPD_INTERNAL_BASE_PATH, "/v3")))
         .addOpenApiCustomizer(customizeOpenApi(removeFromInternalV3))
         .addOpenApiCustomizer(customizeOpenApi(tagsToRemove))
         .addOpenApiCustomizer(removePrefixFromPaths("/v3"))
@@ -190,7 +195,7 @@ public class SwaggerConfig {
   @Bean
   GroupedOpenApi externalV1Api() {
     Map<String, Set<String>> removeFromExternalV1 =
-        Map.of(DEBT_POSITIONS_API, Set.of("put", "delete"));
+        Map.of(DEBT_POSITIONS_API, Set.of(PUT_METHOD, DELETE_METHOD));
 
     Set<String> schemasToRemove = Set.of(MULTIPLE_PAYMENT_POSITION_MODEL, MULTIPLE_IUPD_MODEL);
 
@@ -199,7 +204,7 @@ public class SwaggerConfig {
         .displayName("GPD - External API - v1")
         .pathsToMatch(DEBT_POSITION_API_BLOCK, PAYMENTS_MARK_AS_PAID_API, INFO_API)
         .pathsToExclude(DEBT_POSITIONS_BULK_API)
-        .addOpenApiCustomizer(customizeServer(createServers(GPD_DEBT_POSITIONS_SERVICE, "v1")))
+        .addOpenApiCustomizer(customizeServer(createServers(GPD_DEBT_POSITIONS_SERVICE, "/v1")))
         .addOpenApiCustomizer(customizeOpenApi(removeFromExternalV1))
         .addOpenApiCustomizer(removeSchema(schemasToRemove))
         .addOpenApiCustomizer(sortOpenApi())
@@ -209,14 +214,14 @@ public class SwaggerConfig {
   @Bean
   GroupedOpenApi externalV2Api() {
     Map<String, Set<String>> removeFromExternalV2 =
-        Map.of(DEBT_POSITIONS_API, Set.of("get", "post"));
+        Map.of(DEBT_POSITIONS_API, Set.of("get", POST_METHOD));
 
     return GroupedOpenApi.builder()
         .group("external_v2")
         .displayName("GPD - External API - v2")
         .pathsToMatch(
             DEBT_POSITIONS_API, DEBT_POSITIONS_BULK_API, PAYMENTS_MARK_AS_PAID_API, INFO_API)
-        .addOpenApiCustomizer(customizeServer(createServers(GPD_DEBT_POSITIONS_SERVICE, "v2")))
+        .addOpenApiCustomizer(customizeServer(createServers(GPD_DEBT_POSITIONS_SERVICE, "/v2")))
         .addOpenApiCustomizer(customizeOpenApi(removeFromExternalV2))
         .addOpenApiCustomizer(renamePath(DEBT_POSITIONS_BULK_API, DEBT_POSITIONS_API))
         .addOpenApiCustomizer(sortOpenApi())
@@ -230,8 +235,8 @@ public class SwaggerConfig {
     return GroupedOpenApi.builder()
         .group("external_v3")
         .displayName("GPD - External API - v3")
-        .pathsToMatch("/v3/**")
-        .addOpenApiCustomizer(customizeServer(createServers(GPD_DEBT_POSITIONS_SERVICE, "v3")))
+        .pathsToMatch(V_3_API_MATCH)
+        .addOpenApiCustomizer(customizeServer(createServers(GPD_DEBT_POSITIONS_SERVICE, "/v3")))
         .addOpenApiCustomizer(customizeOpenApi(removeFromExternalV3))
         .addOpenApiCustomizer(removePrefixFromPaths("/v3"))
         .addOpenApiCustomizer(sortOpenApi())
@@ -243,7 +248,7 @@ public class SwaggerConfig {
     Map<String, Set<String>> removeFromAcaV1 =
         Map.of(
             DEBT_POSITIONS_API,
-            Set.of("put", "delete"),
+            Set.of(PUT_METHOD, DELETE_METHOD),
             "/organizations/{organizationfiscalcode}/debtpositions/transfers",
             Set.of("patch"));
 
@@ -259,7 +264,7 @@ public class SwaggerConfig {
         .displayName("GPD - ACA API - v1")
         .pathsToMatch(DEBT_POSITION_API_BLOCK, PAYMENTS_MARK_AS_PAID_API, INFO_API)
         .pathsToExclude(DEBT_POSITIONS_BULK_API)
-        .addOpenApiCustomizer(customizeServer(createServers("aca/debt-positions-service", "v1")))
+        .addOpenApiCustomizer(customizeServer(createServers("/aca/debt-positions-service", "/v1")))
         .addOpenApiCustomizer(customizeOpenApi(removeFromAcaV1))
         .addOpenApiCustomizer(removeSchema(schemasToRemove))
         .addOpenApiCustomizer(sortOpenApi())
@@ -277,7 +282,7 @@ public class SwaggerConfig {
             "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}/notificationfee",
             "/organizations/{organizationfiscalcode}/paymentoptions/{iuv}",
             INFO_API)
-        .addOpenApiCustomizer(customizeServer(createServers("pn-integration-gpd/api", "v1")))
+        .addOpenApiCustomizer(customizeServer(createServers("/pn-integration-gpd/api", "/v1")))
         .addOpenApiCustomizer(customizeOpenApi(removeFromSendV1))
         .addOpenApiCustomizer(sortOpenApi())
         .build();
@@ -288,7 +293,7 @@ public class SwaggerConfig {
     return List.of(
         new Server().url(localPath),
         new Server()
-            .url("https://{host}/{basePath}/{version}")
+            .url("{host}{basePath}{version}")
             .variables(
                 new ServerVariables()
                     .addServerVariable(
@@ -296,10 +301,10 @@ public class SwaggerConfig {
                         new ServerVariable()
                             ._enum(
                                 List.of(
-                                    "api.dev.platform.pagopa.it",
-                                    "api.uat.platform.pagopa.it",
-                                    "api.platform.pagopa.it"))
-                            ._default("api.dev.platform.pagopa.it"))
+                                    "https://api.dev.platform.pagopa.it",
+                                    "https://api.uat.platform.pagopa.it",
+                                    "https://api.platform.pagopa.it"))
+                            ._default("https://api.platform.pagopa.it"))
                     .addServerVariable("basePath", new ServerVariable()._default(service))
                     .addServerVariable("version", new ServerVariable()._default(version))));
   }
@@ -563,9 +568,9 @@ public class SwaggerConfig {
   private Map<String, BiConsumer<PathItem, Operation>> getMethodRemovers() {
     return Map.of(
         "get", PathItem::setGet,
-        "post", PathItem::setPost,
-        "put", PathItem::setPut,
-        "delete", PathItem::setDelete,
+            POST_METHOD, PathItem::setPost,
+            PUT_METHOD, PathItem::setPut,
+            DELETE_METHOD, PathItem::setDelete,
         "patch", PathItem::setPatch,
         "head", PathItem::setHead,
         "options", PathItem::setOptions,
