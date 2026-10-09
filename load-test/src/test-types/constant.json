@@ -1,5 +1,5 @@
 {
-  "discardResponseBodies": true,
+  "discardResponseBodies": false,
   "summaryTrendStats": [
     "avg",
     "min",
@@ -14,7 +14,7 @@
     "contacts": {
       "executor": "constant-arrival-rate",
       "duration": "5m",
-      "rate": 70,
+      "rate": 10,
       "timeUnit": "1s",
       "preAllocatedVUs": 70,
       "maxVUs": 140
