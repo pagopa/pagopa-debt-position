@@ -3,7 +3,6 @@ package it.gov.pagopa.debtposition.repository;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
 import it.gov.pagopa.debtposition.model.payments.OrganizationModelQueryBean;
-import jakarta.persistence.LockModeType;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -12,7 +11,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
@@ -104,23 +102,54 @@ public interface PaymentPositionRepository
   // Optional<PaymentPosition> findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionNav(String
   // organizationFiscalCode, String nav); // search only by nav
 
-  // TODO #naviuv: temporary regression management: search by nav or iuv
-  // see: https://www.baeldung.com/jpa-pessimistic-locking
-  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  // Lock only the payment position row; EXISTS filters avoid follow-on locking over joined entities.
+  @Query(
+      value =
+          """
+          SELECT pp.*
+          FROM apd.payment_position pp
+          WHERE EXISTS (
+              SELECT 1
+              FROM apd.payment_option po
+              WHERE po.payment_position_id = pp.id
+                AND (
+                    (po.organization_fiscal_code = :organizationFiscalCodeIuv AND po.iuv = :iuv)
+                    OR
+                    (po.organization_fiscal_code = :organizationFiscalCodeNav AND po.nav = :nav)
+                )
+          )
+          FOR UPDATE OF pp
+          """,
+      nativeQuery = true)
   Optional<PaymentPosition>
       findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvOrPaymentOptionOrganizationFiscalCodeAndPaymentOptionNav(
-          String organizationFiscalCodeIuv,
-          String iuv,
-          String organizationFiscalCodeNav,
-          String nav);
+          @Param("organizationFiscalCodeIuv") String organizationFiscalCodeIuv,
+          @Param("iuv") String iuv,
+          @Param("organizationFiscalCodeNav") String organizationFiscalCodeNav,
+          @Param("nav") String nav);
 
-  // Derived Query - using method naming convention - get parent PaymentPosition from child
-  // PaymentOption and Transfer properties
-  // see: https://www.baeldung.com/jpa-pessimistic-locking
-  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query(
+      value =
+          """
+          SELECT pp.*
+          FROM apd.payment_position pp
+          WHERE EXISTS (
+              SELECT 1
+              FROM apd.payment_option po
+              JOIN apd.transfer t ON t.payment_option_id = po.id
+              WHERE po.payment_position_id = pp.id
+                AND po.organization_fiscal_code = :organizationFiscalCode
+                AND po.iuv = :iuv
+                AND t.transfer_id = :idTransfer
+          )
+          FOR UPDATE OF pp
+          """,
+      nativeQuery = true)
   Optional<PaymentPosition>
       findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionTransferIdTransfer(
-          String organizationFiscalCode, String iuv, String idTransfer);
+          @Param("organizationFiscalCode") String organizationFiscalCode,
+          @Param("iuv") String iuv,
+          @Param("idTransfer") String idTransfer);
 
   @Query(
       "SELECT DISTINCT new"
@@ -136,8 +165,28 @@ public interface PaymentPositionRepository
   List<PaymentPosition> findByOrganizationFiscalCodeAndStatusIn(
       String organizationFiscalCode, List<DebtPositionStatus> statusList);
 
-  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query(
+      value =
+          """
+          SELECT pp.*
+          FROM apd.payment_position pp
+          WHERE EXISTS (
+              SELECT 1
+              FROM apd.payment_option po
+              JOIN apd.transfer t ON t.payment_option_id = po.id
+              WHERE po.payment_position_id = pp.id
+                AND po.organization_fiscal_code = :organizationFiscalCode
+                AND po.iuv = :iuv
+                AND po.receipt_id = :idReceipt
+                AND t.transfer_id = :idTransfer
+          )
+          FOR UPDATE OF pp
+          """,
+      nativeQuery = true)
   Optional<PaymentPosition>
       findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionIuvAndPaymentOptionIdReceiptAndPaymentOptionTransferIdTransfer(
-          String organizationFiscalCode, String iuv, String idReceipt, String idTransfer);
+          @Param("organizationFiscalCode") String organizationFiscalCode,
+          @Param("iuv") String iuv,
+          @Param("idReceipt") String idReceipt,
+          @Param("idTransfer") String idTransfer);
 }
