@@ -102,7 +102,8 @@ public interface PaymentPositionRepository
   // Optional<PaymentPosition> findByPaymentOptionOrganizationFiscalCodeAndPaymentOptionNav(String
   // organizationFiscalCode, String nav); // search only by nav
 
-  // Lock only the payment position row; EXISTS filters avoid follow-on locking over joined entities.
+  // Lock only the payment position row; EXISTS filters avoid follow-on locking over joined
+  // entities.
   @Query(
       value =
           """
