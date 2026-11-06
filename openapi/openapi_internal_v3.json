@@ -12,8 +12,8 @@
     "url" : "{host}{basePath}{version}",
     "variables" : {
       "host" : {
-        "default" : "https://api.platform.pagopa.it",
-        "enum" : [ "https://api.dev.platform.pagopa.it", "https://api.uat.platform.pagopa.it", "https://api.platform.pagopa.it" ]
+        "enum" : [ "https://api.dev.platform.pagopa.it", "https://api.uat.platform.pagopa.it", "https://api.platform.pagopa.it" ],
+        "default" : "https://api.platform.pagopa.it"
       },
       "basePath" : {
         "default" : "/gpd/api"
@@ -1021,6 +1021,35 @@
               }
             }
           },
+          "401" : {
+            "description" : "Wrong or missing function key.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden.",
+            "headers" : {
+              "X-Request-Id" : {
+                "description" : "This header identifies the call",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemJson"
+                }
+              }
+            }
+          },
           "404" : {
             "description" : "No debt position found.",
             "headers" : {
@@ -1075,7 +1104,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "ApiKey" : [ ]
+        } ]
       },
       "parameters" : [ {
         "name" : "X-Request-Id",
