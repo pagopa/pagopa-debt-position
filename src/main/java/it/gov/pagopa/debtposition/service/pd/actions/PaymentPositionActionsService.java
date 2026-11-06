@@ -7,6 +7,7 @@ import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.service.pd.crud.PaymentPositionCRUDService;
 import it.gov.pagopa.debtposition.util.CommonUtil;
@@ -54,14 +55,15 @@ public class PaymentPositionActionsService {
   public PaymentPosition invalidate(
       @NotBlank String organizationFiscalCode,
       @NotBlank String iupd,
-      List<String> segregationCodes) {
+      List<String> segregationCodes,
+      ServiceType serviceType) {
     PaymentPosition ppToInvalidate =
         paymentPositionCRUDService.getDebtPositionByIUPD(
-            organizationFiscalCode, iupd, segregationCodes);
+            organizationFiscalCode, iupd, segregationCodes, serviceType);
     handlePaymentPositionExpirationLogic(ppToInvalidate);
     if (DebtPositionStatus.getPaymentPosNotInvalidableStatus()
         .contains(ppToInvalidate.getStatus())) {
-      throw new AppException(AppError.DEBT_POSITION_NOT_INVALIDABLE, organizationFiscalCode, iupd);
+      throw new AppException(AppError.DEBT_POSITION_NOT_INVALIDABLE, organizationFiscalCode, iupd, serviceType);
     }
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
     ppToInvalidate.setStatus(DebtPositionStatus.INVALID);

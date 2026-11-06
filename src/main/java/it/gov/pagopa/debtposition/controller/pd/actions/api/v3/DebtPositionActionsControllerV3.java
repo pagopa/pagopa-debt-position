@@ -3,10 +3,15 @@ package it.gov.pagopa.debtposition.controller.pd.actions.api.v3;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
+import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
+import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import it.gov.pagopa.debtposition.service.pd.actions.PaymentPositionActionsService;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import it.gov.pagopa.debtposition.util.CommonUtil;
+import it.gov.pagopa.debtposition.util.ObjectMapperUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,4 +49,19 @@ public class DebtPositionActionsControllerV3 implements IDebtPositionActionsCont
 
     throw new AppException(AppError.DEBT_POSITION_PUBLISH_FAILED, organizationFiscalCode);
   }
+
+    @Override
+    public ResponseEntity<PaymentPositionModelV3> invalidateDebtPosition(String organizationFiscalCode, String iupd, ServiceType serviceType) {
+        PaymentPosition invalidatedDebtPos =
+                paymentPositionActionsService.invalidate(organizationFiscalCode, iupd, null, serviceType);
+
+        if (invalidatedDebtPos == null) {
+            throw new AppException(AppError.DEBT_POSITION_INVALIDATE_FAILED, organizationFiscalCode);
+        }
+
+        PaymentPositionModelV3 paymentPositionModel =
+                modelMapper.map(invalidatedDebtPos, PaymentPositionModelV3.class);
+        return new ResponseEntity<>(paymentPositionModel, HttpStatus.OK);
+    }
+
 }

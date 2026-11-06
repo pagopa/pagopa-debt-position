@@ -236,6 +236,7 @@ public class SwaggerConfig {
         .group("external_v3")
         .displayName("GPD - External API - v3")
         .pathsToMatch(V_3_API_MATCH)
+            .pathsToExclude("/v3/organizations/{organizationfiscalcode}/debtpositions/{iupd}/invalid")
         .addOpenApiCustomizer(customizeServer(createServers(GPD_DEBT_POSITIONS_SERVICE, "/v3")))
         .addOpenApiCustomizer(customizeOpenApi(removeFromExternalV3))
         .addOpenApiCustomizer(removePrefixFromPaths("/v3"))
@@ -287,6 +288,37 @@ public class SwaggerConfig {
         .addOpenApiCustomizer(sortOpenApi())
         .build();
   }
+
+    @Bean
+    GroupedOpenApi posV3Api() {
+        Map<String, Set<String>> removeFromPosV3 =
+                Map.of(
+                        DEBT_POSITIONS_API, Set.of("get", PUT_METHOD, DELETE_METHOD),
+                        "/v3" + DEBT_POSITIONS_API, Set.of("get", PUT_METHOD, DELETE_METHOD));
+
+        Set<String> schemasToRemove = Set.of(
+                "PaymentPositionsInfoV3",
+                "PageInfo",
+                "PaymentPositionModelResponseV3",
+                "PaymentOptionModelResponseV3",
+                "InstallmentModelResponse",
+                "TransferModelResponse",
+                "TransferMetadataModelResponse"
+        );
+
+        return GroupedOpenApi.builder()
+                .group("pos_v3")
+                .displayName("GPD - POS Integration API - v3")
+                .pathsToMatch(
+                        "/v3" + DEBT_POSITIONS_API,
+                        "/v3" + DEBT_POSITIONS_API + "/{iupd}/invalidate")
+                .addOpenApiCustomizer(customizeServer(createServers(GPD_INTERNAL_BASE_PATH, "/v3")))
+                .addOpenApiCustomizer(removePrefixFromPaths("/v3"))
+                .addOpenApiCustomizer(customizeOpenApi(removeFromPosV3))
+                .addOpenApiCustomizer(sortOpenApi())
+                .addOpenApiCustomizer(removeSchema(schemasToRemove))
+                .build();
+    }
 
   private @NonNull List<Server> createServers(String service, String version) {
     String localPath = String.format("%s://%s:%s", "http", "localhost", 8080);

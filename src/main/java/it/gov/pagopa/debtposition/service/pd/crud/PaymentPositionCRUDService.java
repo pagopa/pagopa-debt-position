@@ -110,7 +110,7 @@ public class PaymentPositionCRUDService {
   }
 
   public PaymentPosition getDebtPositionByIUPD(
-      String organizationFiscalCode, String iupd, List<String> segCodes) {
+      String organizationFiscalCode, String iupd, List<String> segCodes, ServiceType ... validationServiceType) {
 
     Specification<PaymentPosition> spec =
         allOf(
@@ -126,6 +126,13 @@ public class PaymentPositionCRUDService {
 
     if (segCodes != null && !isAuthorizedBySegregationCode(pp, segCodes)) {
       throw new AppException(AppError.DEBT_POSITION_FORBIDDEN, organizationFiscalCode, iupd);
+    }
+
+    if (validationServiceType != null && validationServiceType.length > 0 && validationServiceType[0] != null) {
+        ServiceType expectedServiceType = validationServiceType[0];
+        if (!expectedServiceType.name().equalsIgnoreCase(pp.getServiceType().name())) {
+            throw new AppException(AppError.DEBT_POSITION_NOT_FOUND, organizationFiscalCode, iupd, expectedServiceType);
+        }
     }
 
     return pp;
@@ -354,6 +361,7 @@ public class PaymentPositionCRUDService {
       throw new AppException(AppError.DEBT_POSITION_UPDATE_FAILED, organizationFiscalCode);
     }
   }
+
 
   /**
    * This method preserves the validity date if the validity date in input is null and if the

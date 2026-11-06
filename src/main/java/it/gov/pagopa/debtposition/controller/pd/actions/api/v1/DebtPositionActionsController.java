@@ -3,6 +3,7 @@ package it.gov.pagopa.debtposition.controller.pd.actions.api.v1;
 import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
+import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.service.pd.actions.PaymentPositionActionsService;
 import it.gov.pagopa.debtposition.util.CommonUtil;
@@ -63,7 +64,7 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
 
   @Override
   public ResponseEntity<PaymentPositionModel> invalidateDebtPosition(
-      String organizationFiscalCode, String iupd, String segregationCodes) {
+      String organizationFiscalCode, String iupd, String segregationCodes, ServiceType serviceType) {
     log.debug(
         String.format(
             LOG_BASE_HEADER_INFO,
@@ -79,7 +80,7 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
             ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
             : null;
     PaymentPosition invalidatedDebtPos =
-        paymentPositionActionsService.invalidate(organizationFiscalCode, iupd, segCodes);
+        paymentPositionActionsService.invalidate(organizationFiscalCode, iupd, segCodes, serviceType);
     if (null != invalidatedDebtPos) {
       PaymentPositionModel paymentPositionModel =
           ObjectMapperUtils.map(invalidatedDebtPos, PaymentPositionModel.class);
