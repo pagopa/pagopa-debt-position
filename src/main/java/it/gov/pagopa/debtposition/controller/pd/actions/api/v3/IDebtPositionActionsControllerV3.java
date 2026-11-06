@@ -10,15 +10,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.gov.pagopa.debtposition.model.ProblemJson;
+import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
+import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.model.v3.PaymentPositionModelV3;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Debt Position Actions API")
 @RequestMapping("/v3")
@@ -95,4 +94,65 @@ public interface IDebtPositionActionsControllerV3 {
           @Pattern(regexp = "\\d{2}(,\\d{2})*")
           @RequestParam(required = false)
           String segregationCodes);
+
+    @Operation(
+            summary = "The Organization invalidate a debt Position.",
+            operationId = "invalidatePosition")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Debt position successfully invalidated.",
+                            content =
+                            @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = PaymentPositionModelV3.class))),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "No debt position found.",
+                            content =
+                            @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ProblemJson.class))),
+                    @ApiResponse(
+                            responseCode = "409",
+                            description = "Conflict: debt position is not in invalidable state.",
+                            content =
+                            @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ProblemJson.class))),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "Service unavailable.",
+                            content =
+                            @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ProblemJson.class)))
+            })
+    @PatchMapping(
+            value = "/organizations/{organizationfiscalcode}/debtpositions/{iupd}/invalidate",
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    ResponseEntity<PaymentPositionModelV3> invalidateDebtPosition(
+            @Parameter(
+                    description = "Organization fiscal code, the fiscal code of the Organization.",
+                    required = true)
+            @PathVariable("organizationfiscalcode")
+            String organizationFiscalCode,
+            @Parameter(
+                    description =
+                            "IUPD (Unique identifier of the debt position). Format could be `<Organization"
+                                    + " fiscal code + UUID>` this would make it unique within the new PD"
+                                    + " management system. It's the responsibility of the EC to guarantee"
+                                    + " uniqueness. The pagoPa system shall verify that this is `true` and if"
+                                    + " not, notify the EC.",
+                    required = true)
+            @PathVariable("iupd")
+            String iupd,
+            @Parameter(
+                    hidden = true,
+                    description =
+                            "The field must not be considered as its value is set via the API Management"
+                                    + " (APIM) policy")
+            @RequestParam(required = false)
+            ServiceType serviceType);
 }

@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.gov.pagopa.debtposition.model.ProblemJson;
+import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
@@ -166,5 +167,13 @@ public interface IDebtPositionActionsController {
               hidden = true)
           @Pattern(regexp = "\\d{2}(,\\d{2})*")
           @RequestParam(required = false)
-          String segregationCodes);
+          String segregationCodes,
+      @Parameter(
+              hidden = true,
+              description =
+                      "The field must not be considered as its value is set via the API Management"
+                              + " (APIM) policy")
+      @RequestParam(required = false)
+      ServiceType serviceType);
+
 }

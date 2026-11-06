@@ -236,6 +236,7 @@ public class SwaggerConfig {
         .group("external_v3")
         .displayName("GPD - External API - v3")
         .pathsToMatch(V_3_API_MATCH)
+            .pathsToExclude("/v3/organizations/{organizationfiscalcode}/debtpositions/{iupd}/invalid")
         .addOpenApiCustomizer(customizeServer(createServers(GPD_DEBT_POSITIONS_SERVICE, "/v3")))
         .addOpenApiCustomizer(customizeOpenApi(removeFromExternalV3))
         .addOpenApiCustomizer(removePrefixFromPaths("/v3"))
