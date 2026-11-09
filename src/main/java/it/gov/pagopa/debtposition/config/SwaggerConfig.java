@@ -45,6 +45,7 @@ public class SwaggerConfig {
   private static final String PUT_METHOD = "put";
   private static final String DELETE_METHOD = "delete";
   private static final String POST_METHOD = "post";
+  private static final String POS_INTEGRATION_GPD_BASE_PATH = "/pos-integration-gpd/api";
 
   @Bean
   OpenAPI customOpenAPI(
@@ -312,7 +313,7 @@ public class SwaggerConfig {
                 .pathsToMatch(
                         "/v3" + DEBT_POSITIONS_API,
                         "/v3" + DEBT_POSITIONS_API + "/{iupd}/invalidate")
-                .addOpenApiCustomizer(customizeServer(createServers(GPD_INTERNAL_BASE_PATH, "/v3")))
+                .addOpenApiCustomizer(customizeServer(createServers(POS_INTEGRATION_GPD_BASE_PATH, "/v3")))
                 .addOpenApiCustomizer(removePrefixFromPaths("/v3"))
                 .addOpenApiCustomizer(customizeOpenApi(removeFromPosV3))
                 .addOpenApiCustomizer(sortOpenApi())

@@ -166,6 +166,13 @@ public interface IDebtPositionActionsControllerV3 {
                     required = true)
             @PathVariable("iupd")
             String iupd,
+            @Valid
+            @Parameter(
+                    description = "Segregation codes for which broker is authorized",
+                    hidden = true)
+            @Pattern(regexp = "\\d{2}(,\\d{2})*")
+            @RequestParam(required = false)
+            String segregationCodes,
             @Parameter(
                     hidden = true,
                     description =

@@ -12,8 +12,8 @@
     "url" : "{host}{basePath}{version}",
     "variables" : {
       "host" : {
-        "enum" : [ "https://api.dev.platform.pagopa.it", "https://api.uat.platform.pagopa.it", "https://api.platform.pagopa.it" ],
-        "default" : "https://api.platform.pagopa.it"
+        "default" : "https://api.platform.pagopa.it",
+        "enum" : [ "https://api.dev.platform.pagopa.it", "https://api.uat.platform.pagopa.it", "https://api.platform.pagopa.it" ]
       },
       "basePath" : {
         "default" : "/gpd/api"

@@ -51,9 +51,13 @@ public class DebtPositionActionsControllerV3 implements IDebtPositionActionsCont
   }
 
     @Override
-    public ResponseEntity<PaymentPositionModelV3> invalidateDebtPosition(String organizationFiscalCode, String iupd, ServiceType serviceType) {
-        PaymentPosition invalidatedDebtPos =
-                paymentPositionActionsService.invalidate(organizationFiscalCode, iupd, null, serviceType);
+    public ResponseEntity<PaymentPositionModelV3> invalidateDebtPosition(String organizationFiscalCode, String iupd, String segregationCodes, ServiceType serviceType) {
+        ArrayList<String> segCodes =
+                segregationCodes != null
+                        ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
+                        : null;
+       PaymentPosition invalidatedDebtPos =
+                paymentPositionActionsService.invalidate(organizationFiscalCode, iupd, segCodes, serviceType);
 
         if (invalidatedDebtPos == null) {
             throw new AppException(AppError.DEBT_POSITION_INVALIDATE_FAILED, organizationFiscalCode);
