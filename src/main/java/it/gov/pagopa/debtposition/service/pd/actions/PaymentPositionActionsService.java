@@ -63,7 +63,8 @@ public class PaymentPositionActionsService {
     handlePaymentPositionExpirationLogic(ppToInvalidate);
     if (DebtPositionStatus.getPaymentPosNotInvalidableStatus()
         .contains(ppToInvalidate.getStatus())) {
-      throw new AppException(AppError.DEBT_POSITION_NOT_INVALIDABLE, organizationFiscalCode, iupd, serviceType);
+      throw new AppException(
+          AppError.DEBT_POSITION_NOT_INVALIDABLE, organizationFiscalCode, iupd, serviceType);
     }
     LocalDateTime currentDate = LocalDateTime.now(ZoneOffset.UTC);
     ppToInvalidate.setStatus(DebtPositionStatus.INVALID);

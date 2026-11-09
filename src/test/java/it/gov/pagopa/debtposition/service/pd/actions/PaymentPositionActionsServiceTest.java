@@ -87,7 +87,9 @@ class PaymentPositionActionsServiceTest {
     AppException exception =
         assertThrows(
             AppException.class,
-            () -> paymentPositionActionsService.invalidate(organizationFiscalCode, iupd, null, serviceType));
+            () ->
+                paymentPositionActionsService.invalidate(
+                    organizationFiscalCode, iupd, null, serviceType));
 
     assertEquals(AppError.DEBT_POSITION_CONCURRENT_INVALIDATE_FAILURE, exception.getAppError());
 

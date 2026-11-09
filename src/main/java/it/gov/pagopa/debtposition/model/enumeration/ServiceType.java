@@ -4,5 +4,6 @@ public enum ServiceType {
   ACA,
   WISP,
   GPD,
-  EBOLLO
+  EBOLLO,
+  POS
 }

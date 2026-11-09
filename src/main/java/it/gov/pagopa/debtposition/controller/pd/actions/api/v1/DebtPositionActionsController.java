@@ -64,7 +64,10 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
 
   @Override
   public ResponseEntity<PaymentPositionModel> invalidateDebtPosition(
-      String organizationFiscalCode, String iupd, String segregationCodes, ServiceType serviceType) {
+      String organizationFiscalCode,
+      String iupd,
+      String segregationCodes,
+      ServiceType serviceType) {
     log.debug(
         String.format(
             LOG_BASE_HEADER_INFO,
@@ -80,7 +83,8 @@ public class DebtPositionActionsController implements IDebtPositionActionsContro
             ? new ArrayList<>(Arrays.asList(segregationCodes.split(",")))
             : null;
     PaymentPosition invalidatedDebtPos =
-        paymentPositionActionsService.invalidate(organizationFiscalCode, iupd, segCodes, serviceType);
+        paymentPositionActionsService.invalidate(
+            organizationFiscalCode, iupd, segCodes, serviceType);
     if (null != invalidatedDebtPos) {
       PaymentPositionModel paymentPositionModel =
           ObjectMapperUtils.map(invalidatedDebtPos, PaymentPositionModel.class);

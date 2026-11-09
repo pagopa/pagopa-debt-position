@@ -171,9 +171,8 @@ public interface IDebtPositionActionsController {
       @Parameter(
               hidden = true,
               description =
-                      "The field must not be considered as its value is set via the API Management"
-                              + " (APIM) policy")
-      @RequestParam(required = false)
-      ServiceType serviceType);
-
+                  "The field must not be considered as its value is set via the API Management"
+                      + " (APIM) policy")
+          @RequestParam(required = false)
+          ServiceType serviceType);
 }

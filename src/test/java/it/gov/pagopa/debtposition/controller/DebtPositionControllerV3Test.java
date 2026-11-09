@@ -1,13 +1,12 @@
 package it.gov.pagopa.debtposition.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -386,9 +385,7 @@ class DebtPositionControllerV3Test {
   }
 
   @Test
-  void publishDebtPosition_200_1() throws Exception {
-
-  }
+  void publishDebtPosition_200_1() throws Exception {}
 
   @Test
   void createDebtPosition_MixedValidity_toPublishTrue() throws Exception {
@@ -418,9 +415,7 @@ class DebtPositionControllerV3Test {
   }
 
   @Test
-  void createDebtPosition_MixedValidity_toPublishFalse() throws Exception {
-
-  }
+  void createDebtPosition_MixedValidity_toPublishFalse() throws Exception {}
 
   @Test
   void createAndGet_PaymentOptionDescription_and_InstallmentDescription() throws Exception {

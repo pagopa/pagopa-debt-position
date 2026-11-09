@@ -34,7 +34,7 @@ class OpenApiGenerationTest {
     saveOpenAPI("/v3/api-docs/external_v3", "openapi_external_v3.json");
     saveOpenAPI("/v3/api-docs/send_v1", "openapi_send_v1.json");
     saveOpenAPI("/v3/api-docs/aca_v1", "openapi_aca_v1.json");
-      saveOpenAPI("/v3/api-docs/pos_v3", "openapi_pos_v3.json");
+    saveOpenAPI("/v3/api-docs/pos_v3", "openapi_pos_v3.json");
   }
 
   private void saveOpenAPI(String fromUri, String toFile) throws Exception {
