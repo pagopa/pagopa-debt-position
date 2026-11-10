@@ -111,7 +111,7 @@ public interface IDebtPositionActionsControllerV3 {
         @ApiResponse(
             responseCode = "401",
             description = "Wrong or missing function key.",
-            content = @Content(schema = @Schema())),
+            content = @Content(schema = @Schema)),
         @ApiResponse(
             responseCode = "403",
             description = "Forbidden.",
