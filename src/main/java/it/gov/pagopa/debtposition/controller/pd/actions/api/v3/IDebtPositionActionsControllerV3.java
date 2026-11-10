@@ -175,7 +175,8 @@ public interface IDebtPositionActionsControllerV3 {
       @Parameter(
               hidden = true,
               description =
-                  "Internal-only parameter: not part of the public business contract; may be provided by internal clients, otherwise optional.")
+                  "Internal-only parameter: not part of the public business contract; may be"
+                      + " provided by internal clients, otherwise optional.")
           @RequestParam(required = false)
           ServiceType serviceType);
 }
