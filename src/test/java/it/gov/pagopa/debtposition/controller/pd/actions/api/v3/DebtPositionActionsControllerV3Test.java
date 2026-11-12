@@ -63,8 +63,7 @@ class DebtPositionActionsControllerV3Test {
 
     PaymentPosition paymentPosition = new PaymentPosition();
     paymentPosition.setIupd("IUPD-1");
-    when(service.invalidate("ORG", "IUPD-1", null, ServiceType.GPD))
-        .thenReturn(paymentPosition);
+    when(service.invalidate("ORG", "IUPD-1", null, ServiceType.GPD)).thenReturn(paymentPosition);
 
     ResponseEntity<PaymentPositionModelV3> response =
         controller.invalidateDebtPosition("ORG", "IUPD-1", null, ServiceType.GPD);
