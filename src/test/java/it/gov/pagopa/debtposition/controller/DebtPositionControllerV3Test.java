@@ -384,8 +384,6 @@ class DebtPositionControllerV3Test {
         .andExpect(jsonPath("$.status").value("UNPAYABLE"));
   }
 
-  @Test
-  void publishDebtPosition_200_1() throws Exception {}
 
   @Test
   void createDebtPosition_MixedValidity_toPublishTrue() throws Exception {
