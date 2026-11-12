@@ -49,8 +49,7 @@ class DebtPositionActionsControllerV3Test {
 
     AppException exception =
         assertThrows(
-            AppException.class,
-            () -> controller.publishDebtPosition("ORG", "IUPD-1", null));
+            AppException.class, () -> controller.publishDebtPosition("ORG", "IUPD-1", null));
 
     assertEquals(AppError.DEBT_POSITION_PUBLISH_FAILED, exception.getAppError());
   }
