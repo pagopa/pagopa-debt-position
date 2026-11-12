@@ -45,6 +45,7 @@ public class SwaggerConfig {
   private static final String PUT_METHOD = "put";
   private static final String DELETE_METHOD = "delete";
   private static final String POST_METHOD = "post";
+  private static final String POS_INTEGRATION_GPD_BASE_PATH = "/pos-integration-gpd/api";
 
   @Bean
   OpenAPI customOpenAPI(
@@ -236,6 +237,7 @@ public class SwaggerConfig {
         .group("external_v3")
         .displayName("GPD - External API - v3")
         .pathsToMatch(V_3_API_MATCH)
+        .pathsToExclude("/v3/organizations/{organizationfiscalcode}/debtpositions/{iupd}/invalid")
         .addOpenApiCustomizer(customizeServer(createServers(GPD_DEBT_POSITIONS_SERVICE, "/v3")))
         .addOpenApiCustomizer(customizeOpenApi(removeFromExternalV3))
         .addOpenApiCustomizer(removePrefixFromPaths("/v3"))
@@ -285,6 +287,37 @@ public class SwaggerConfig {
         .addOpenApiCustomizer(customizeServer(createServers("/pn-integration-gpd/api", "/v1")))
         .addOpenApiCustomizer(customizeOpenApi(removeFromSendV1))
         .addOpenApiCustomizer(sortOpenApi())
+        .build();
+  }
+
+  @Bean
+  GroupedOpenApi posV3Api() {
+    Map<String, Set<String>> removeFromPosV3 =
+        Map.of(
+            DEBT_POSITIONS_API,
+            Set.of("get", PUT_METHOD, DELETE_METHOD),
+            "/v3" + DEBT_POSITIONS_API,
+            Set.of("get", PUT_METHOD, DELETE_METHOD));
+
+    Set<String> schemasToRemove =
+        Set.of(
+            "PaymentPositionsInfoV3",
+            "PageInfo",
+            "PaymentPositionModelResponseV3",
+            "PaymentOptionModelResponseV3",
+            "InstallmentModelResponse",
+            "TransferModelResponse",
+            "TransferMetadataModelResponse");
+
+    return GroupedOpenApi.builder()
+        .group("pos_v3")
+        .displayName("GPD - POS Integration API - v3")
+        .pathsToMatch("/v3" + DEBT_POSITIONS_API, "/v3" + DEBT_POSITIONS_API + "/{iupd}/invalidate")
+        .addOpenApiCustomizer(customizeServer(createServers(POS_INTEGRATION_GPD_BASE_PATH, "/v3")))
+        .addOpenApiCustomizer(removePrefixFromPaths("/v3"))
+        .addOpenApiCustomizer(customizeOpenApi(removeFromPosV3))
+        .addOpenApiCustomizer(sortOpenApi())
+        .addOpenApiCustomizer(removeSchema(schemasToRemove))
         .build();
   }
 
@@ -567,13 +600,21 @@ public class SwaggerConfig {
 
   private Map<String, BiConsumer<PathItem, Operation>> getMethodRemovers() {
     return Map.of(
-        "get", PathItem::setGet,
-            POST_METHOD, PathItem::setPost,
-            PUT_METHOD, PathItem::setPut,
-            DELETE_METHOD, PathItem::setDelete,
-        "patch", PathItem::setPatch,
-        "head", PathItem::setHead,
-        "options", PathItem::setOptions,
-        "trace", PathItem::setTrace);
+        "get",
+        PathItem::setGet,
+        POST_METHOD,
+        PathItem::setPost,
+        PUT_METHOD,
+        PathItem::setPut,
+        DELETE_METHOD,
+        PathItem::setDelete,
+        "patch",
+        PathItem::setPatch,
+        "head",
+        PathItem::setHead,
+        "options",
+        PathItem::setOptions,
+        "trace",
+        PathItem::setTrace);
   }
 }

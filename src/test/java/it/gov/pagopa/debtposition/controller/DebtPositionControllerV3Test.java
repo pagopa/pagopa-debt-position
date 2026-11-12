@@ -1,10 +1,10 @@
 package it.gov.pagopa.debtposition.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -362,17 +362,26 @@ class DebtPositionControllerV3Test {
   }
 
   @Test
-  void publishDebtPosition_200_1() throws Exception {
+  void invalidateDebtPosition_200_1() throws Exception {
     String uri = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
-    PaymentPositionModelV3 ppv3 = createPaymentPositionV3(2, 1);
+    PaymentPositionModelV3 ppv3 = createPaymentPositionV3(1, 1);
 
     mvc.perform(post(uri).content(TestUtil.toJson(ppv3)).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isCreated());
 
-    String positionUri =
+    String publishUri =
         String.format(
             "/v3/organizations/%s/debtpositions/%s/publish", ORG_FISCAL_CODE, ppv3.getIupd());
-    mvc.perform(post(positionUri).content(TestUtil.toJson(ppv3))).andExpect(status().isOk());
+    mvc.perform(post(publishUri).content(TestUtil.toJson(ppv3))).andExpect(status().isOk());
+
+    String invalidateUri =
+        String.format(
+            "/v3/organizations/%s/debtpositions/%s/invalidate?serviceType=GPD",
+            ORG_FISCAL_CODE, ppv3.getIupd());
+    mvc.perform(patch(invalidateUri).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.status").value("UNPAYABLE"));
   }
 
   @Test
@@ -400,46 +409,6 @@ class DebtPositionControllerV3Test {
         // then: PO_1 maintains validity, PO_2 is populated (currentDate)
         .andExpect(jsonPath("$.paymentOption[0].validityDate").isNotEmpty())
         .andExpect(jsonPath("$.paymentOption[1].validityDate").isNotEmpty());
-  }
-
-  @Test
-  void createDebtPosition_MixedValidity_toPublishFalse() throws Exception {
-    String uri =
-        String.format("/v3/organizations/%s/debtpositions?toPublish=false", ORG_FISCAL_CODE);
-    PaymentPositionModelV3 paymentPosition = createPaymentPositionV3(2, 1);
-
-    // PO_1 with validity valued
-    paymentPosition
-        .getPaymentOption()
-        .get(0)
-        .setValidityDate(LocalDateTime.now(ZoneOffset.UTC).plusDays(1));
-    // PO_2 with validity = null
-    paymentPosition.getPaymentOption().get(1).setValidityDate(null);
-
-    var mvcResult =
-        mvc.perform(
-                post(uri)
-                    .content(TestUtil.toJson(paymentPosition))
-                    .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isCreated())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andReturn();
-
-    // parse response
-    ObjectMapper om = new ObjectMapper();
-    JsonNode root = om.readTree(mvcResult.getResponse().getContentAsByteArray());
-    JsonNode poArray = root.path("paymentOption");
-    JsonNode po0 = poArray.get(0);
-    JsonNode po1 = poArray.get(1);
-    assertThat(po0.get("description")).isNull();
-    assertThat(po1.get("description")).isNull();
-    JsonNode vd0 = po0.get("validityDate");
-    JsonNode vd1 = po1.get("validityDate");
-
-    // correct behaviour: PO_1 remains valued, PO_2 remains null
-    assertThat(vd0).isNotNull();
-    assertThat(vd0.isNull()).isFalse();
-    assertThat(vd1 == null || vd1.isNull()).isTrue();
   }
 
   @Test

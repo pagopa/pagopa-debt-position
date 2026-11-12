@@ -11,6 +11,7 @@ import it.gov.pagopa.debtposition.entity.PaymentPosition;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.service.pd.crud.PaymentPositionCRUDService;
 import java.util.List;
@@ -66,6 +67,7 @@ class PaymentPositionActionsServiceTest {
   void invalidate_ObjectOptimisticLockingFailureException_throwsConcurrentInvalidateFailure() {
     String organizationFiscalCode = "02406911202";
     String iupd = "IUPD-1";
+    ServiceType serviceType = ServiceType.GPD;
 
     PaymentPosition paymentPosition = new PaymentPosition();
     paymentPosition.setId(1L);
@@ -74,7 +76,8 @@ class PaymentPositionActionsServiceTest {
     paymentPosition.setStatus(DebtPositionStatus.VALID);
     paymentPosition.setPaymentOption(List.of());
 
-    when(paymentPositionCRUDService.getDebtPositionByIUPD(organizationFiscalCode, iupd, null))
+    when(paymentPositionCRUDService.getDebtPositionByIUPD(
+            organizationFiscalCode, iupd, null, serviceType))
         .thenReturn(paymentPosition);
 
     when(paymentPositionRepository.saveAndFlush(any(PaymentPosition.class)))
@@ -85,7 +88,9 @@ class PaymentPositionActionsServiceTest {
     AppException exception =
         assertThrows(
             AppException.class,
-            () -> paymentPositionActionsService.invalidate(organizationFiscalCode, iupd, null));
+            () ->
+                paymentPositionActionsService.invalidate(
+                    organizationFiscalCode, iupd, null, serviceType));
 
     assertEquals(AppError.DEBT_POSITION_CONCURRENT_INVALIDATE_FAILURE, exception.getAppError());
 
