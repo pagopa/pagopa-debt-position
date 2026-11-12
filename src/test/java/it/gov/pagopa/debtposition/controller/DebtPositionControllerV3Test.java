@@ -413,9 +413,6 @@ class DebtPositionControllerV3Test {
   }
 
   @Test
-  void createDebtPosition_MixedValidity_toPublishFalse() throws Exception {}
-
-  @Test
   void createAndGet_PaymentOptionDescription_and_InstallmentDescription() throws Exception {
     String uri = String.format("/v3/organizations/%s/debtpositions", ORG_FISCAL_CODE);
 
