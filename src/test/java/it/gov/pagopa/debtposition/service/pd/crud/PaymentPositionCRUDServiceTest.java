@@ -562,8 +562,7 @@ class PaymentPositionCRUDServiceTest {
         .thenReturn(Optional.of(paymentPosition));
 
     PaymentPosition result =
-        paymentsService.getDebtPositionByIUPD(
-            organizationFiscalCode, iupd, null, ServiceType.GPD);
+        paymentsService.getDebtPositionByIUPD(organizationFiscalCode, iupd, null, ServiceType.GPD);
 
     assertSame(paymentPosition, result);
   }
