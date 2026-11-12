@@ -384,7 +384,6 @@ class DebtPositionControllerV3Test {
         .andExpect(jsonPath("$.status").value("UNPAYABLE"));
   }
 
-
   @Test
   void createDebtPosition_MixedValidity_toPublishTrue() throws Exception {
     String uri =
