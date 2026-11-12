@@ -11,6 +11,7 @@ import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.IPaymentPositionModel;
 import it.gov.pagopa.debtposition.model.enumeration.DebtPositionStatus;
+import it.gov.pagopa.debtposition.model.enumeration.ServiceType;
 import it.gov.pagopa.debtposition.model.pd.PaymentPositionModel;
 import it.gov.pagopa.debtposition.repository.PaymentPositionRepository;
 import it.gov.pagopa.debtposition.repository.TransferRepository;
@@ -521,5 +522,49 @@ class PaymentPositionCRUDServiceTest {
 
   private OptimisticLockingFailureException optimisticLockingFailureException() {
     return new OptimisticLockingFailureException("OptimisticLockingFailureException");
+  }
+
+  @Test
+  void getDebtPositionByIUPD_serviceTypeMismatch_throwsAppException() {
+    String organizationFiscalCode = "02406911202";
+    String iupd = "IUPD-1";
+
+    PaymentPosition paymentPosition = new PaymentPosition();
+    paymentPosition.setOrganizationFiscalCode(organizationFiscalCode);
+    paymentPosition.setIupd(iupd);
+    paymentPosition.setServiceType(ServiceType.POS);
+
+    when(paymentPositionRepository.findOne(any(Specification.class)))
+        .thenReturn(Optional.of(paymentPosition));
+
+    AppException exception =
+        assertThrows(
+            AppException.class,
+            () ->
+                paymentsService.getDebtPositionByIUPD(
+                    organizationFiscalCode, iupd, null, ServiceType.GPD));
+
+    assertEquals(AppError.DEBT_POSITION_NOT_FOUND, exception.getAppError());
+    assertTrue(exception.getMessage().contains("GPD"));
+  }
+
+  @Test
+  void getDebtPositionByIUPD_serviceTypeMatches_returnsPosition() {
+    String organizationFiscalCode = "02406911202";
+    String iupd = "IUPD-1";
+
+    PaymentPosition paymentPosition = new PaymentPosition();
+    paymentPosition.setOrganizationFiscalCode(organizationFiscalCode);
+    paymentPosition.setIupd(iupd);
+    paymentPosition.setServiceType(ServiceType.GPD);
+
+    when(paymentPositionRepository.findOne(any(Specification.class)))
+        .thenReturn(Optional.of(paymentPosition));
+
+    PaymentPosition result =
+        paymentsService.getDebtPositionByIUPD(
+            organizationFiscalCode, iupd, null, ServiceType.GPD);
+
+    assertSame(paymentPosition, result);
   }
 }
