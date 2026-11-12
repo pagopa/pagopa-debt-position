@@ -111,7 +111,7 @@ public interface IDebtPositionActionsControllerV3 {
         @ApiResponse(
             responseCode = "401",
             description = "Wrong or missing function key.",
-            content = @Content(schema = @Schema())),
+            content = @Content(schema = @Schema)),
         @ApiResponse(
             responseCode = "403",
             description = "Forbidden.",
@@ -175,7 +175,8 @@ public interface IDebtPositionActionsControllerV3 {
       @Parameter(
               hidden = true,
               description =
-                  "Internal-only parameter: not part of the public business contract; may be provided by internal clients, otherwise optional.")
+                  "Internal-only parameter: not part of the public business contract; may be"
+                      + " provided by internal clients, otherwise optional.")
           @RequestParam(required = false)
           ServiceType serviceType);
 }
