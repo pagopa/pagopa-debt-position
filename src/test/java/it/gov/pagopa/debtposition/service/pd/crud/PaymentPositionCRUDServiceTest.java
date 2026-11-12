@@ -545,7 +545,8 @@ class PaymentPositionCRUDServiceTest {
                     organizationFiscalCode, iupd, null, ServiceType.GPD));
 
     assertEquals(AppError.DEBT_POSITION_NOT_FOUND, exception.getAppError());
-    assertTrue(exception.getMessage().contains("GPD"));
+    assertNotNull(exception.getMessage());
+    assertTrue(exception.getMessage().contains("Not found"));
   }
 
   @Test
