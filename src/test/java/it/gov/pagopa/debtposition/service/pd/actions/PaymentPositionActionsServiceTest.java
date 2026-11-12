@@ -76,7 +76,8 @@ class PaymentPositionActionsServiceTest {
     paymentPosition.setStatus(DebtPositionStatus.VALID);
     paymentPosition.setPaymentOption(List.of());
 
-    when(paymentPositionCRUDService.getDebtPositionByIUPD(organizationFiscalCode, iupd, null, serviceType))
+    when(paymentPositionCRUDService.getDebtPositionByIUPD(
+            organizationFiscalCode, iupd, null, serviceType))
         .thenReturn(paymentPosition);
 
     when(paymentPositionRepository.saveAndFlush(any(PaymentPosition.class)))
