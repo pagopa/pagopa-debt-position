@@ -90,4 +90,3 @@ class DebtPositionActionsControllerV3Test {
     assertEquals(AppError.DEBT_POSITION_INVALIDATE_FAILED, exception.getAppError());
   }
 }
-
