@@ -130,7 +130,7 @@ microservice-chart:
     SERVICE_NAME: "pagopa-gpd-core"
     OTEL_SERVICE_NAME: "pagopa-gpd-core"
     OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=dev"
-    OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
+    OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-scalable-lb-collector.otel.svc.cluster.local:4317"
     OTEL_TRACES_SAMPLER: "traceidratio"
     OTEL_TRACES_SAMPLER_ARG: "1"
     OTEL_TRACES_EXPORTER: otlp
