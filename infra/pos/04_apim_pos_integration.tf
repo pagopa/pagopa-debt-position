@@ -46,7 +46,7 @@ resource "azurerm_api_management_api_version_set" "api_pos_integration" {
 resource "azurerm_api_management_api" "apim_pos_integration_api_v3" {
   name                  = format("%s-gpd-pos-integration-api-v3", var.env_short)
   api_management_name   = local.apim.name
-  resource_group_name = local.apim.rg
+  resource_group_name   = local.apim.rg
   subscription_required = local.apim_pos_integration_api.subscription_required
   version_set_id        = azurerm_api_management_api_version_set.api_pos_integration.id
   version               = "v3"
