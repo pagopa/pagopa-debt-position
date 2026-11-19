@@ -10,11 +10,12 @@ import it.gov.pagopa.debtposition.util.CommonUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -61,7 +62,17 @@ public class LoggingAspect {
           "email",
           "phone");
 
-  private static final String ARGUMENT_PREFIX = "arguments.";
+  /** Business identifiers searched at any depth of the inputs and of the response. */
+  private static final Map<String, String> CTX_NESTED_FIELDS =
+      Map.of("nav", "ctx_nav", "iupd", "ctx_iupd");
+
+  /** Business identifiers taken only from the API parameters or the top level of a request body. */
+  private static final Map<String, String> CTX_TOP_LEVEL_FIELDS =
+      Map.of(
+          "organizationFiscalCode", "ctx_organization_fiscal_code",
+          "serviceType", "ctx_service_type");
+
+  private static final int MAX_LOGGED_VALUES = 100;
 
   private static final ObjectMapper ARGS_MAPPER =
       new ObjectMapper()
@@ -116,39 +127,59 @@ public class LoggingAspect {
     return params;
   }
 
-  /**
-   * Puts the scalar call arguments in the MDC as {@code arguments.name} fields, so they are
-   * searchable. Request bodies contribute their top-level scalar properties; nested objects, lists
-   * and the excluded fields are skipped.
-   */
-  private static List<String> putArgumentsInMdc(ProceedingJoinPoint joinPoint) {
-    List<String> keys = new ArrayList<>();
+  /** Collects the business identifiers (ctx_*) from the API parameters. */
+  private static void collectContextFromArguments(
+      ProceedingJoinPoint joinPoint, Map<String, Set<String>> context) {
     String[] names = ((CodeSignature) joinPoint.getSignature()).getParameterNames();
     Object[] values = joinPoint.getArgs();
     for (int i = 0; i < names.length; i++) {
       try {
         JsonNode node = ARGS_MAPPER.valueToTree(values[i]);
+        collectNested(node, context);
         if (node.isObject()) {
-          node.fields().forEachRemaining(e -> putArgument(keys, e.getKey(), e.getValue()));
+          CTX_TOP_LEVEL_FIELDS.forEach((field, key) -> addValue(context, key, node.get(field)));
         } else {
-          putArgument(keys, names[i], node);
+          addValue(context, CTX_TOP_LEVEL_FIELDS.get(names[i]), node);
+          addValue(context, CTX_NESTED_FIELDS.get(names[i]), node);
         }
       } catch (IllegalArgumentException e) {
         // argument not serializable: skipped
       }
     }
-    return keys;
   }
 
-  private static void putArgument(List<String> keys, String name, JsonNode value) {
-    if (!value.isValueNode() || value.isNull() || value.asText().isEmpty()) {
+  private static void collectContextFromResult(Object result, Map<String, Set<String>> context) {
+    Object body = result instanceof ResponseEntity<?> entity ? entity.getBody() : result;
+    if (body == null) {
       return;
     }
-    if (EXCLUDED_ARGS.contains(name) || MDC.get(ARGUMENT_PREFIX + name) != null) {
-      return;
+    try {
+      collectNested(ARGS_MAPPER.valueToTree(body), context);
+    } catch (IllegalArgumentException e) {
+      // result not serializable: skipped
     }
-    MDC.put(ARGUMENT_PREFIX + name, value.asText());
-    keys.add(ARGUMENT_PREFIX + name);
+  }
+
+  private static void collectNested(JsonNode node, Map<String, Set<String>> context) {
+    if (node.isObject()) {
+      CTX_NESTED_FIELDS.forEach((field, key) -> addValue(context, key, node.get(field)));
+    }
+    node.forEach(child -> collectNested(child, context));
+  }
+
+  private static void addValue(Map<String, Set<String>> context, String key, JsonNode value) {
+    if (key != null && value != null
+        && value.isValueNode()
+        && !value.isNull()
+        && !value.asText().isEmpty()) {
+      context.computeIfAbsent(key, k -> new LinkedHashSet<>()).add(value.asText());
+    }
+  }
+
+  private static void putContextInMdc(Map<String, Set<String>> context) {
+    context.forEach(
+        (key, values) ->
+            MDC.put(key, values.stream().limit(MAX_LOGGED_VALUES).collect(Collectors.joining(","))));
   }
 
   @Pointcut("execution(* *..controller..api..*(..))")
@@ -183,15 +214,20 @@ public class LoggingAspect {
       var requestId = UUID.randomUUID().toString();
       MDC.put(REQUEST_ID, requestId);
     }
-    List<String> argumentKeys = putArgumentsInMdc(joinPoint);
+    Map<String, Set<String>> context = new LinkedHashMap<>();
+    collectContextFromArguments(joinPoint, context);
+    putContextInMdc(context);
 
     Object result = joinPoint.proceed();
+
+    collectContextFromResult(result, context);
+    putContextInMdc(context);
 
     MDC.put(STATUS, "OK");
     MDC.put(CODE, String.valueOf(httpResponse.getStatus()));
     MDC.put(RESPONSE_TIME, getExecutionTime());
     log.info("Completed API operation");
-    argumentKeys.forEach(MDC::remove);
+    context.keySet().forEach(MDC::remove);
     MDC.remove(STATUS);
     MDC.remove(CODE);
     MDC.remove(RESPONSE_TIME);
