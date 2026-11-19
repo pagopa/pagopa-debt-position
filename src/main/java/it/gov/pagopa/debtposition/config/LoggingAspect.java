@@ -1,9 +1,5 @@
 package it.gov.pagopa.debtposition.config;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import it.gov.pagopa.debtposition.config.logging.FailureLogger;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.model.ProblemJson;
@@ -60,11 +56,6 @@ public class LoggingAspect {
           "email",
           "phone");
 
-  private static final ObjectMapper ARGS_MAPPER =
-      new ObjectMapper()
-          .findAndRegisterModules()
-          .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
   @Autowired HttpServletRequest httRequest;
 
   @Autowired HttpServletResponse httpResponse;
@@ -113,34 +104,6 @@ public class LoggingAspect {
     return params;
   }
 
-  /** Serializes the call arguments as a JSON string, removing the excluded fields at any depth. */
-  private static String getArgsAsJson(ProceedingJoinPoint joinPoint) {
-    CodeSignature codeSignature = (CodeSignature) joinPoint.getSignature();
-    ObjectNode node = ARGS_MAPPER.createObjectNode();
-    String[] names = codeSignature.getParameterNames();
-    Object[] values = joinPoint.getArgs();
-    for (int i = 0; i < names.length; i++) {
-      if (EXCLUDED_ARGS.contains(names[i])) {
-        continue;
-      }
-      try {
-        JsonNode value = ARGS_MAPPER.valueToTree(values[i]);
-        removeExcluded(value);
-        node.set(names[i], value);
-      } catch (IllegalArgumentException e) {
-        node.put(names[i], CommonUtil.deNull(values[i]));
-      }
-    }
-    return node.toString();
-  }
-
-  private static void removeExcluded(JsonNode node) {
-    if (node.isObject()) {
-      ((ObjectNode) node).remove(EXCLUDED_ARGS);
-    }
-    node.forEach(LoggingAspect::removeExcluded);
-  }
-
   @Pointcut("execution(* *..controller..api..*(..))")
   public void restController() {
     // all rest controllers
@@ -173,11 +136,6 @@ public class LoggingAspect {
       var requestId = UUID.randomUUID().toString();
       MDC.put(REQUEST_ID, requestId);
     }
-    Map<String, String> params = getParams(joinPoint);
-    MDC.put(ARGS, getArgsAsJson(joinPoint));
-
-    log.debug("Invoking API operation {} - args: {}", joinPoint.getSignature().getName(), params);
-
     Object result = joinPoint.proceed();
 
     MDC.put(STATUS, "OK");
