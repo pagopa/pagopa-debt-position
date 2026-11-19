@@ -1,6 +1,8 @@
 package it.gov.pagopa.debtposition.config.feign;
 
+import feign.Capability;
 import feign.RequestInterceptor;
+import it.gov.pagopa.debtposition.config.logging.FeignFailureLoggingCapability;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +19,11 @@ public class SendFeignConfig {
   @Autowired
   public SendFeignConfig(@Value(SEND_SUBKEY_PLACEHOLDER) String subscriptionKey) {
     this.subscriptionKey = subscriptionKey;
+  }
+
+  @Bean
+  public Capability sendFailureLoggingCapability() {
+    return new FeignFailureLoggingCapability("send");
   }
 
   @Bean

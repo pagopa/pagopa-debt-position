@@ -36,24 +36,25 @@ public class PaymentPositionModel implements Serializable, IPaymentPositionModel
   private boolean payStandIn = true;
 
   @NotNull(message = "fiscal code is required")
+  @ToString.Exclude
   private String fiscalCode;
 
   @NotNull(message = "full name is required")
   @ToString.Exclude
   private String fullName;
 
-  private String streetName;
-  private String civicNumber;
-  private String postalCode;
-  private String city;
-  private String province;
-  private String region;
+  @ToString.Exclude private String streetName;
+  @ToString.Exclude private String civicNumber;
+  @ToString.Exclude private String postalCode;
+  @ToString.Exclude private String city;
+  @ToString.Exclude private String province;
+  @ToString.Exclude private String region;
 
   @Schema(example = "IT")
   @Pattern(
       regexp = "[A-Z]{2}",
       message = "The country must be reported with two capital letters (example: IT)")
-  private String country;
+  @ToString.Exclude private String country;
 
   @Schema(example = "email@domain.com")
   @Email(message = "Please provide a valid email address")

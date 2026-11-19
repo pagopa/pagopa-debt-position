@@ -44,8 +44,10 @@ public class RequestFilter implements Filter {
         requestId = UUID.randomUUID().toString();
       }
 
-      // set requestId in MDC
+      // set requestId in MDC, together with the OER correlation keys
       MDC.put("requestId", requestId);
+      MDC.put("trace.id", requestId);
+      MDC.put("correlation_id", requestId);
       log.debug("{} {}", httRequest.getMethod(), httRequest.getRequestURI());
 
       // set requestId in the response header
