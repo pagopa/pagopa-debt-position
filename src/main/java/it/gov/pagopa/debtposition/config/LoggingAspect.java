@@ -1,5 +1,8 @@
 package it.gov.pagopa.debtposition.config;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import it.gov.pagopa.debtposition.config.logging.FailureLogger;
 import it.gov.pagopa.debtposition.exception.AppError;
 import it.gov.pagopa.debtposition.model.ProblemJson;
@@ -7,7 +10,9 @@ import it.gov.pagopa.debtposition.util.CommonUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -55,6 +60,13 @@ public class LoggingAspect {
           "fullName",
           "email",
           "phone");
+
+  private static final String ARGUMENT_PREFIX = "arguments.";
+
+  private static final ObjectMapper ARGS_MAPPER =
+      new ObjectMapper()
+          .findAndRegisterModules()
+          .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
   @Autowired HttpServletRequest httRequest;
 
@@ -104,6 +116,41 @@ public class LoggingAspect {
     return params;
   }
 
+  /**
+   * Puts the scalar call arguments in the MDC as {@code arguments.name} fields, so they are
+   * searchable. Request bodies contribute their top-level scalar properties; nested objects, lists
+   * and the excluded fields are skipped.
+   */
+  private static List<String> putArgumentsInMdc(ProceedingJoinPoint joinPoint) {
+    List<String> keys = new ArrayList<>();
+    String[] names = ((CodeSignature) joinPoint.getSignature()).getParameterNames();
+    Object[] values = joinPoint.getArgs();
+    for (int i = 0; i < names.length; i++) {
+      try {
+        JsonNode node = ARGS_MAPPER.valueToTree(values[i]);
+        if (node.isObject()) {
+          node.fields().forEachRemaining(e -> putArgument(keys, e.getKey(), e.getValue()));
+        } else {
+          putArgument(keys, names[i], node);
+        }
+      } catch (IllegalArgumentException e) {
+        // argument not serializable: skipped
+      }
+    }
+    return keys;
+  }
+
+  private static void putArgument(List<String> keys, String name, JsonNode value) {
+    if (!value.isValueNode() || value.isNull() || value.asText().isEmpty()) {
+      return;
+    }
+    if (EXCLUDED_ARGS.contains(name) || MDC.get(ARGUMENT_PREFIX + name) != null) {
+      return;
+    }
+    MDC.put(ARGUMENT_PREFIX + name, value.asText());
+    keys.add(ARGUMENT_PREFIX + name);
+  }
+
   @Pointcut("execution(* *..controller..api..*(..))")
   public void restController() {
     // all rest controllers
@@ -136,12 +183,15 @@ public class LoggingAspect {
       var requestId = UUID.randomUUID().toString();
       MDC.put(REQUEST_ID, requestId);
     }
+    List<String> argumentKeys = putArgumentsInMdc(joinPoint);
+
     Object result = joinPoint.proceed();
 
     MDC.put(STATUS, "OK");
     MDC.put(CODE, String.valueOf(httpResponse.getStatus()));
     MDC.put(RESPONSE_TIME, getExecutionTime());
     log.info("Completed API operation");
+    argumentKeys.forEach(MDC::remove);
     MDC.remove(STATUS);
     MDC.remove(CODE);
     MDC.remove(RESPONSE_TIME);
