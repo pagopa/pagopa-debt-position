@@ -30,4 +30,4 @@ COPY --chown=spring:spring --from=buildtime /build/target/*.jar /app/app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java","-javaagent:/app/opentelemetry-javaagent.jar","-jar","/app/app.jar"]
+ENTRYPOINT ["java","-javaagent:/app/opentelemetry-javaagent.jar","-XX:-UseBASE64Intrinsics","-jar","/app/app.jar"]

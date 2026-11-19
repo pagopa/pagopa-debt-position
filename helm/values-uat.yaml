@@ -83,6 +83,7 @@ microservice-chart:
                 value: 2
                 periodSeconds: 20
   envConfig:
+    JAVA_OPTS: "-XX:-UseBASE64Intrinsics"
     WEBSITE_SITE_NAME: 'pagopa-u-gpd-core-service'
     ENV: 'uat'
     SPRING_DATASOURCE_URL: "jdbc:postgresql://gpd-db.u.internal.postgresql.pagopa.it:5432/apd?sslmode=require&prepareThreshold=0&tcpKeepAlive=true"
@@ -172,5 +173,5 @@ microservice-chart:
       repository: ghcr.io/pagopa/pagopa-debt-position
       tag: "1.0.0"
       pullPolicy: Always
-    envConfig: {}
+    envConfig: {JAVA_OPTS: "-XX:-UseBASE64Intrinsics"}
     envSecret: {}
