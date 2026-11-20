@@ -128,11 +128,11 @@ public class DebtPositionStatusScheduler {
 
     this.threadOfExecution = Thread.currentThread();
 
-    log.info(
-        "{} completed. batchIndex={}, totalAffectedRows={}",
-        operationName,
-        batchIndex,
-        totalAffectedRows);
+    // reported by the single "Scheduled job finished successfully" log
+    MDC.put("batch.operationName", operationName);
+    MDC.put("batch.index", String.valueOf(batchIndex));
+    MDC.put("batch.size", String.valueOf(batchSize));
+    MDC.put("batch.totalAffectedRows", String.valueOf(totalAffectedRows));
   }
 
   private void updateMDCWithBatchContext(BatchJobException e) {
