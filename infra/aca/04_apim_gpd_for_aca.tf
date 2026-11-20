@@ -8,7 +8,7 @@ resource "azurerm_api_management_api_version_set" "api_debt_positions_for_aca_ap
 }
 
 module "apim_api_debt_positions_for_aca_api_v1" {
-  source = "git::https://github.com/pagopa/terraform-azurerm-v3.git//api_management_api?ref=v8.62.1"
+  source = "git::https://github.com/pagopa/terraform-azurerm-v4.git//api_management_api?ref=v10.53.0"
 
   name                = format("%s-debt-positions-for-aca-service-api", local.product)
   api_management_name = local.apim.name

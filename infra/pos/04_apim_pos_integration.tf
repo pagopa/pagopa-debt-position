@@ -11,7 +11,7 @@ resource "azurerm_api_management_product" "apim_pos_integration_product" {
   published             = false
   subscription_required = true
   approval_required     = true
-  subscriptions_limit   = 1000
+  subscriptions_limit   = 100
 }
 
 ####################
