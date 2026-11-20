@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import it.gov.pagopa.debtposition.config.logging.FailureLogger;
 import it.gov.pagopa.debtposition.exception.AppError;
+import it.gov.pagopa.debtposition.exception.AppException;
 import it.gov.pagopa.debtposition.model.ProblemJson;
 import it.gov.pagopa.debtposition.util.CommonUtil;
 import jakarta.annotation.PostConstruct;
@@ -64,13 +65,19 @@ public class LoggingAspect {
 
   /** Business identifiers searched at any depth of the inputs and of the response. */
   private static final Map<String, String> CTX_NESTED_FIELDS =
-      Map.of("nav", "ctx_nav", "iupd", "ctx_iupd");
+      Map.of(
+          "nav", "ctx_nav",
+          "iupd", "ctx_iupd",
+          "iuv", "ctx_iuv",
+          "paymentPositionIUPDs", "ctx_iupd");
 
   /** Business identifiers taken only from the API parameters or the top level of a request body. */
   private static final Map<String, String> CTX_TOP_LEVEL_FIELDS =
       Map.of(
           "organizationFiscalCode", "ctx_organization_fiscal_code",
-          "serviceType", "ctx_service_type");
+          "serviceType", "ctx_service_type",
+          "oldIban", "ctx_old_iban",
+          "newIban", "ctx_new_iban");
 
   private static final int MAX_LOGGED_VALUES = 100;
 
@@ -168,10 +175,12 @@ public class LoggingAspect {
   }
 
   private static void addValue(Map<String, Set<String>> context, String key, JsonNode value) {
-    if (key != null && value != null
-        && value.isValueNode()
-        && !value.isNull()
-        && !value.asText().isEmpty()) {
+    if (key == null || value == null) {
+      return;
+    }
+    if (value.isArray()) {
+      value.forEach(item -> addValue(context, key, item));
+    } else if (value.isValueNode() && !value.isNull() && !value.asText().isEmpty()) {
       context.computeIfAbsent(key, k -> new LinkedHashSet<>()).add(value.asText());
     }
   }
@@ -218,7 +227,21 @@ public class LoggingAspect {
     collectContextFromArguments(joinPoint, context);
     putContextInMdc(context);
 
-    Object result = joinPoint.proceed();
+    Object result;
+    try {
+      result = joinPoint.proceed();
+    } catch (Throwable t) {
+      // left in the MDC so the log written by the ErrorHandler reports the failed call
+      MDC.put(STATUS, "KO");
+      MDC.put(RESPONSE_TIME, getExecutionTime());
+      if (t instanceof AppException appException) {
+        // title and message are the ones already returned to the client
+        MDC.put(CODE, String.valueOf(appException.getHttpStatus().value()));
+        MDC.put(FAULT_CODE, appException.getTitle());
+        MDC.put(FAULT_DETAIL, appException.getMessage());
+      }
+      throw t;
+    }
 
     collectContextFromResult(result, context);
     putContextInMdc(context);
