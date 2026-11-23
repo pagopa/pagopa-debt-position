@@ -9,6 +9,7 @@
                 <serviceName>${SERVICE_NAME:-pagopa-debt-position}</serviceName>
                 <serviceVersion>${ECS_SERVICE_VERSION}</serviceVersion>
                 <serviceEnvironment>${ENV:-loc}</serviceEnvironment>
+                <throwableConverter class="it.gov.pagopa.debtposition.config.logging.TrimmedThrowableConverter"/>
             </encoder>
             <filter class="it.gov.pagopa.debtposition.config.SamplingFilter">
                 <rate>${SAMPLING_RATE}</rate>
@@ -26,6 +27,7 @@
                 <serviceName>${SERVICE_NAME:-pagopa-debt-position}</serviceName>
                 <serviceVersion>${ECS_SERVICE_VERSION}</serviceVersion>
                 <serviceEnvironment>${ENV:-loc}</serviceEnvironment>
+                <throwableConverter class="it.gov.pagopa.debtposition.config.logging.TrimmedThrowableConverter"/>
             </encoder>
             <filter class="ch.qos.logback.classic.filter.LevelFilter">
                 <level>ERROR</level>
