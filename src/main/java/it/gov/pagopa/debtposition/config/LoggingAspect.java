@@ -92,11 +92,15 @@ public class LoggingAspect {
   private static final Pattern VERSION_PREFIX = Pattern.compile("^/(v\\d+)(/|$)");
   private static final String DEFAULT_API_VERSION = "v1";
 
-  /** Request body properties logged as arguments.* only for the listed API methods. */
+  /**
+   * Parameters and request body properties logged as arguments.* only for the listed API methods.
+   */
   private static final Map<String, Map<String, String>> ARGUMENTS_BY_METHOD =
       Map.of(
           "payPaymentOption", Map.of("paymentDate", "arguments.paymentDate"),
-          "setPaymentOptionAsAlreadyPaid", Map.of("paymentDate", "arguments.paymentDate"));
+          "setPaymentOptionAsAlreadyPaid", Map.of("paymentDate", "arguments.paymentDate"),
+          "reportTransfer",
+              Map.of("transferId", "arguments.transferId", "iur", "arguments.iur"));
 
   private static final int MAX_LOGGED_VALUES = 100;
 
@@ -170,6 +174,7 @@ public class LoggingAspect {
         } else {
           addValue(context, CTX_TOP_LEVEL_FIELDS.get(names[i]), node);
           addValue(context, CTX_NESTED_FIELDS.get(names[i]), node);
+          addValue(context, methodArguments.get(names[i]), node);
         }
       } catch (IllegalArgumentException e) {
         // argument not serializable: skipped
