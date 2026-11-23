@@ -11,6 +11,7 @@ import it.gov.pagopa.debtposition.util.CommonUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -101,9 +102,26 @@ public class LoggingAspect {
           "payPaymentOption", Map.of("paymentDate", "arguments.paymentDate"),
           "setPaymentOptionAsAlreadyPaid", Map.of("paymentDate", "arguments.paymentDate"),
           "reportTransfer",
-              Map.of("transferId", "arguments.transferId", "iur", "arguments.iur"));
+              Map.of("transferId", "arguments.transferId", "iur", "arguments.iur"),
+          "getOrganizationDebtPositions",
+              argumentFields(
+                  "limit",
+                  "page",
+                  "dueDateFrom",
+                  "dueDateTo",
+                  "paymentDateFrom",
+                  "paymentDateTo",
+                  "paymentDateTimeFrom",
+                  "paymentDateTimeTo",
+                  "status",
+                  "orderBy",
+                  "ordering"));
 
   private static final int MAX_LOGGED_VALUES = 100;
+
+  private static Map<String, String> argumentFields(String... names) {
+    return Arrays.stream(names).collect(Collectors.toMap(n -> n, n -> "arguments." + n));
+  }
 
   private static final ObjectMapper ARGS_MAPPER =
       new ObjectMapper()
