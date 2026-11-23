@@ -18,4 +18,3 @@ tags = {
 apim_dns_zone_prefix = "dev.platform"
 external_domain      = "pagopa.it"
 hostname             = "weudev.pos.internal.dev.platform.pagopa.it"
-aca_hostname = ""
