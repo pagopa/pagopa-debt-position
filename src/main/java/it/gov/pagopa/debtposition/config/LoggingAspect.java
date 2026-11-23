@@ -16,6 +16,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -71,13 +73,24 @@ public class LoggingAspect {
           "iuv", "ctx_iuv",
           "paymentPositionIUPDs", "ctx_iupd");
 
-  /** Business identifiers taken only from the API parameters or the top level of a request body. */
+  /**
+   * Business identifiers (ctx_*) and call arguments (arguments.*) taken only from the API
+   * parameters or the top level of a request body.
+   */
   private static final Map<String, String> CTX_TOP_LEVEL_FIELDS =
       Map.of(
           "organizationFiscalCode", "ctx_organization_fiscal_code",
           "serviceType", "ctx_service_type",
           "oldIban", "ctx_old_iban",
-          "newIban", "ctx_new_iban");
+          "newIban", "ctx_new_iban",
+          "toPublish", "arguments.toPublish");
+
+  private static final String NAV_FIELD = "nav";
+  private static final String VALIDITY_DATE_FIELD = "validityDate";
+  private static final String NAV_VALIDITY_KEY = "ctx_nav_validity_date";
+  private static final String API_VERSION_KEY = "ctx_api_version";
+  private static final Pattern VERSION_PREFIX = Pattern.compile("^/(v\\d+)(/|$)");
+  private static final String DEFAULT_API_VERSION = "v1";
 
   private static final int MAX_LOGGED_VALUES = 100;
 
@@ -168,10 +181,47 @@ public class LoggingAspect {
   }
 
   private static void collectNested(JsonNode node, Map<String, Set<String>> context) {
+    collectNested(node, context, null);
+  }
+
+  /**
+   * @param validityDate the validity date of the closest enclosing (or same) node that has one, so
+   *     that each nav is paired with the validity date that applies to it: on the payment position
+   *     in V1, on the payment option in V3
+   */
+  private static void collectNested(
+      JsonNode node, Map<String, Set<String>> context, String validityDate) {
+    String currentValidity = validityDate;
     if (node.isObject()) {
       CTX_NESTED_FIELDS.forEach((field, key) -> addValue(context, key, node.get(field)));
+      JsonNode validity = node.get(VALIDITY_DATE_FIELD);
+      if (validity != null && validity.isTextual() && !validity.asText().isEmpty()) {
+        currentValidity = validity.asText();
+      }
+      JsonNode nav = node.get(NAV_FIELD);
+      if (currentValidity != null && nav != null && nav.isTextual() && !nav.asText().isEmpty()) {
+        addNavValidity(context, nav.asText(), currentValidity);
+      }
     }
-    node.forEach(child -> collectNested(child, context));
+    String validityForChildren = currentValidity;
+    node.forEach(child -> collectNested(child, context, validityForChildren));
+  }
+
+  /** Keeps a single "nav=validityDate" entry per nav, the last collected one (the response). */
+  private static void addNavValidity(
+      Map<String, Set<String>> context, String nav, String validityDate) {
+    Set<String> entries = context.computeIfAbsent(NAV_VALIDITY_KEY, k -> new LinkedHashSet<>());
+    entries.removeIf(entry -> entry.startsWith(nav + "="));
+    entries.add(nav + "=" + validityDate);
+  }
+
+  private String getApiVersion() {
+    try {
+      Matcher matcher = VERSION_PREFIX.matcher(httRequest.getRequestURI());
+      return matcher.find() ? matcher.group(1) : DEFAULT_API_VERSION;
+    } catch (IllegalStateException e) {
+      return DEFAULT_API_VERSION;
+    }
   }
 
   private static void addValue(Map<String, Set<String>> context, String key, JsonNode value) {
@@ -224,6 +274,7 @@ public class LoggingAspect {
       MDC.put(REQUEST_ID, requestId);
     }
     Map<String, Set<String>> context = new LinkedHashMap<>();
+    context.put(API_VERSION_KEY, new LinkedHashSet<>(Set.of(getApiVersion())));
     collectContextFromArguments(joinPoint, context);
     putContextInMdc(context);
 
