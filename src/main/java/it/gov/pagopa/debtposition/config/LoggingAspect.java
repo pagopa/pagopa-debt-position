@@ -92,6 +92,12 @@ public class LoggingAspect {
   private static final Pattern VERSION_PREFIX = Pattern.compile("^/(v\\d+)(/|$)");
   private static final String DEFAULT_API_VERSION = "v1";
 
+  /** Request body properties logged as arguments.* only for the listed API methods. */
+  private static final Map<String, Map<String, String>> ARGUMENTS_BY_METHOD =
+      Map.of(
+          "payPaymentOption", Map.of("paymentDate", "arguments.paymentDate"),
+          "setPaymentOptionAsAlreadyPaid", Map.of("paymentDate", "arguments.paymentDate"));
+
   private static final int MAX_LOGGED_VALUES = 100;
 
   private static final ObjectMapper ARGS_MAPPER =
@@ -152,12 +158,15 @@ public class LoggingAspect {
       ProceedingJoinPoint joinPoint, Map<String, Set<String>> context) {
     String[] names = ((CodeSignature) joinPoint.getSignature()).getParameterNames();
     Object[] values = joinPoint.getArgs();
+    Map<String, String> methodArguments =
+        ARGUMENTS_BY_METHOD.getOrDefault(joinPoint.getSignature().getName(), Map.of());
     for (int i = 0; i < names.length; i++) {
       try {
         JsonNode node = ARGS_MAPPER.valueToTree(values[i]);
         collectNested(node, context);
         if (node.isObject()) {
           CTX_TOP_LEVEL_FIELDS.forEach((field, key) -> addValue(context, key, node.get(field)));
+          methodArguments.forEach((field, key) -> addValue(context, key, node.get(field)));
         } else {
           addValue(context, CTX_TOP_LEVEL_FIELDS.get(names[i]), node);
           addValue(context, CTX_NESTED_FIELDS.get(names[i]), node);
