@@ -83,7 +83,8 @@ public class LoggingAspect {
           "serviceType", "ctx_service_type",
           "oldIban", "ctx_old_iban",
           "newIban", "ctx_new_iban",
-          "toPublish", "arguments.toPublish");
+          "toPublish", "arguments.toPublish",
+          "segregationCodes", "ctx_segregation_code");
 
   private static final String NAV_FIELD = "nav";
   private static final String VALIDITY_DATE_FIELD = "validityDate";
