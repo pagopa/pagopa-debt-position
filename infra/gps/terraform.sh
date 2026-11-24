@@ -152,7 +152,7 @@ function help_usage() {
 
 function init_terraform() {
   if [ -n "$env" ]; then
-    terraform init -reconfigure -backend-config="./env/$env/backend.tfvars"
+    terraform init -reconfigure -backend-config="./env/$env/backend.tfvars" || exit $?
   else
     echo "ERROR: no env configured!"
     exit 1
