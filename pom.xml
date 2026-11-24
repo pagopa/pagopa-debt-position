@@ -22,6 +22,7 @@
 		<azure.core.version>1.45.1</azure.core.version>
 		<shedlock.version>5.10.2</shedlock.version>
 		<logback.ecs.version>1.6.0</logback.ecs.version>
+		<testcontainers.version>1.21.4</testcontainers.version>
 	</properties>
 
 	<dependencyManagement>
