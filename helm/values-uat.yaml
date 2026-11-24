@@ -5,6 +5,7 @@ microservice-chart:
   image:
     repository: ghcr.io/pagopa/pagopa-debt-position
     tag: "1.3.1-1-feature-PAGOPA-3804-pos-integration-apim"
+
     pullPolicy: Always
   livenessProbe:
     httpGet:
