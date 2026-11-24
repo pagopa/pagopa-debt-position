@@ -72,37 +72,37 @@ public class LoggingAspect {
           "nav", "ctx_nav",
           "iupd", "ctx_iupd",
           "iuv", "ctx_iuv",
-          "paymentPositionIUPDs", "ctx_iupd");
+          "paymentPositionIUPDs", "args.paymentPositionIUPDs");
 
   /**
-   * Business identifiers (ctx_*) and call arguments (arguments.*) taken only from the API
+   * Business identifiers (ctx_*) and call arguments (args.*) taken only from the API
    * parameters or the top level of a request body.
    */
   private static final Map<String, String> CTX_TOP_LEVEL_FIELDS =
       Map.of(
           "organizationFiscalCode", "ctx_organization_fiscal_code",
           "serviceType", "ctx_service_type",
-          "oldIban", "ctx_old_iban",
-          "newIban", "ctx_new_iban",
-          "toPublish", "arguments.toPublish",
+          "oldIban", "args.oldIban",
+          "newIban", "args.newIban",
+          "toPublish", "args.toPublish",
           "segregationCodes", "ctx_segregation_code");
 
   private static final String NAV_FIELD = "nav";
   private static final String VALIDITY_DATE_FIELD = "validityDate";
-  private static final String NAV_VALIDITY_KEY = "ctx_nav_validity_date";
+  private static final String NAV_VALIDITY_KEY = "args.navValidityDate";
   private static final String API_VERSION_KEY = "ctx_api_version";
   private static final Pattern VERSION_PREFIX = Pattern.compile("^/(v\\d+)(/|$)");
   private static final String DEFAULT_API_VERSION = "v1";
 
   /**
-   * Parameters and request body properties logged as arguments.* only for the listed API methods.
+   * Parameters and request body properties logged as args.* only for the listed API methods.
    */
   private static final Map<String, Map<String, String>> ARGUMENTS_BY_METHOD =
       Map.of(
-          "payPaymentOption", Map.of("paymentDate", "arguments.paymentDate"),
-          "setPaymentOptionAsAlreadyPaid", Map.of("paymentDate", "arguments.paymentDate"),
+          "payPaymentOption", Map.of("paymentDate", "args.paymentDate"),
+          "setPaymentOptionAsAlreadyPaid", Map.of("paymentDate", "args.paymentDate"),
           "reportTransfer",
-              Map.of("transferId", "arguments.transferId", "iur", "arguments.iur"),
+              Map.of("transferId", "args.transferId", "iur", "args.iur"),
           "getOrganizationDebtPositions",
               argumentFields(
                   "limit",
@@ -120,7 +120,7 @@ public class LoggingAspect {
   private static final int MAX_LOGGED_VALUES = 100;
 
   private static Map<String, String> argumentFields(String... names) {
-    return Arrays.stream(names).collect(Collectors.toMap(n -> n, n -> "arguments." + n));
+    return Arrays.stream(names).collect(Collectors.toMap(n -> n, n -> "args." + n));
   }
 
   private static final ObjectMapper ARGS_MAPPER =
