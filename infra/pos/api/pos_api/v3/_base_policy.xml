@@ -16,7 +16,7 @@
     <set-variable name="metadata" value="no-metadata" />
     <choose>
       <!-- Making sure that will excludes all APIs that does not includes CI fiscal code -->
-      <when condition="@(context.Request.MatchedParameters.ContainsKey(&quot;organizationfiscalcode&quot;) &amp;&amp; !context.Request.Headers.GetValueOrDefault(&quot;Ocp-Apim-Subscription-Key&quot;, &quot;&quot;).Equals(&quot;&quot;))">
+      <when condition="@(context.Request.MatchedParameters.ContainsKey(&quot;organizationfiscalcode&quot;))">
         <set-variable name="authorization_entity" value="@(context.Request.MatchedParameters[&quot;organizationfiscalcode&quot;])" />
         <include-fragment fragment-id="authorizer" />
         <include-fragment fragment-id="segregation-codes-gpd" />
