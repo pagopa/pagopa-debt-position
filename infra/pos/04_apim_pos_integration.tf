@@ -100,23 +100,7 @@ resource "azurerm_api_management_subscription" "pos_integration_subscription" {
   api_management_name = local.apim.name
   resource_group_name = local.apim.rg
   product_id          = azurerm_api_management_product.apim_pos_integration_product.id
-  display_name        = format("%s - Subscription for POS Integration", upper(var.env_short))
+  display_name        = format("Touchpoint - Subscription for POS Integration")
   allow_tracing       = false
   state               = "active"
-}
-
-####################################
-## Key Valut for POS Integration
-####################################
-
-data "azurerm_key_vault" "kv" {
-  name                = local.kv.name
-  resource_group_name = local.kv.rg
-}
-
-
-resource "azurerm_key_vault_secret" "pos_integration_subscription_key" {
-  name         = "pos-integration-gpd-subscription-key"
-  value        = azurerm_api_management_subscription.pos_integration_subscription.primary_key
-  key_vault_id = data.azurerm_key_vault.kv.id
 }
