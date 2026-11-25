@@ -32,7 +32,7 @@ resource "azurerm_api_management_api_version_set" "api_pn_integration_api" {
 }
 
 module "apim_api_pn_integration_gpd_api_v1" {
-  source = "git::https://github.com/pagopa/terraform-azurerm-v3.git//api_management_api?ref=v8.62.1"
+  source = "git::https://github.com/pagopa/terraform-azurerm-v4.git//api_management_api?ref=v10.53.0"
 
   name                  = format("%s-pn-integration-gpd-api-aks", var.env_short)
   api_management_name = local.apim.name

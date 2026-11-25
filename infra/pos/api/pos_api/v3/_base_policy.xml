@@ -1,0 +1,35 @@
+<policies>
+  <inbound>
+    <set-variable name="requestPath" value="@(context.Request.Url.Path)" />
+    <set-variable name="sub" value="@(context.Subscription.Name)" />
+    <set-variable name="subid" value="@(context.Subscription.Id)" />
+    <set-variable name="subkey" value="@(context.Subscription.Key)" />
+    <base />
+    <!-- rate limit by subscription key -->
+    <rate-limit-by-key calls="100" renewal-period="1" counter-key="@(context.Subscription.Id)" />
+    <!-- Set serviceType=POS -->
+    <set-query-parameter name="serviceType" exists-action="override">
+      <value>POS</value>
+    </set-query-parameter>
+    <!-- Calling Authorizer's fragment -->
+    <set-variable name="application_domain" value="gpd" />
+    <set-variable name="metadata" value="no-metadata" />
+    <choose>
+      <!-- Making sure that will excludes all APIs that does not includes CI fiscal code -->
+      <when condition="@(context.Request.MatchedParameters.ContainsKey(&quot;organizationfiscalcode&quot;))">
+        <set-variable name="authorization_entity" value="@(context.Request.MatchedParameters[&quot;organizationfiscalcode&quot;])" />
+        <include-fragment fragment-id="authorizer" />
+        <include-fragment fragment-id="segregation-codes-gpd" />
+      </when>
+    </choose>
+  </inbound>
+  <outbound>
+    <base />
+  </outbound>
+  <backend>
+    <base />
+  </backend>
+  <on-error>
+    <base />
+  </on-error>
+</policies>

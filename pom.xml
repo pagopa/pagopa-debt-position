@@ -12,6 +12,7 @@
 	<groupId>it.gov.pagopa.debtposition</groupId>
 	<artifactId>gpd</artifactId>
 	<version>1.3.2</version>
+
 	<name>Gestione Posizioni Debitorie</name>
 	<description>Progetto Gestione Posizioni Debitorie</description>
 	<properties>
@@ -22,6 +23,7 @@
 		<azure.core.version>1.45.1</azure.core.version>
 		<shedlock.version>5.10.2</shedlock.version>
 		<logback.ecs.version>1.6.0</logback.ecs.version>
+        <testcontainers.version>1.21.4</testcontainers.version>
 	</properties>
 
 	<dependencyManagement>
@@ -222,6 +224,15 @@
 					</dependency>
 				</dependencies>
 			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <environmentVariables>
+                        <DOCKER_API_VERSION>1.44</DOCKER_API_VERSION>
+                    </environmentVariables>
+                </configuration>
+            </plugin>
 		</plugins>
 	</build>
 </project>

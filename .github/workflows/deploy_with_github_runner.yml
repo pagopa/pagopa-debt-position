@@ -118,3 +118,8 @@ jobs:
 
           bash ./terraform.sh init weu-${{ inputs.environment }}
           bash ./terraform.sh apply weu-${{ inputs.environment }} -auto-approve
+
+          cd ../pos
+
+          bash ./terraform.sh init weu-${{ inputs.environment }}
+          bash ./terraform.sh apply weu-${{ inputs.environment }} -auto-approve
