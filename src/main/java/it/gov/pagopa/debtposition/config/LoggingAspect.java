@@ -240,12 +240,14 @@ public class LoggingAspect {
     node.forEach(child -> collectNested(child, context, validityForChildren));
   }
 
-  /** Keeps a single "nav=validityDate" entry per nav, the last collected one (the response). */
+  /** Keeps a single "nav=validityDate" entry per nav, the last collected one (the response), and caps the number of elements at 100. */
   private static void addNavValidity(
       Map<String, Set<String>> context, String nav, String validityDate) {
     Set<String> entries = context.computeIfAbsent(NAV_VALIDITY_KEY, k -> new LinkedHashSet<>());
-    entries.removeIf(entry -> entry.startsWith(nav + "="));
-    entries.add(nav + "=" + validityDate);
+    boolean replaced = entries.removeIf(entry -> entry.startsWith(nav + "="));
+    if (replaced || entries.size() < MAX_LOGGED_VALUES) {
+      entries.add(nav + "=" + validityDate);
+    }
   }
 
   private String getApiVersion() {
