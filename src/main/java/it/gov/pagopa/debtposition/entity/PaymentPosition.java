@@ -64,6 +64,7 @@ public class PaymentPosition implements Serializable {
 
   @NotNull
   @Column(name = "fiscal_code")
+  @ToString.Exclude
   private String fiscalCode;
 
   @NotNull
@@ -72,18 +73,21 @@ public class PaymentPosition implements Serializable {
   private String fullName;
 
   @Column(name = "street_name")
+  @ToString.Exclude
   private String streetName;
 
   @Column(name = "civic_number")
+  @ToString.Exclude
   private String civicNumber;
 
   @Column(name = "postal_code")
+  @ToString.Exclude
   private String postalCode;
 
-  private String city;
-  private String province;
-  private String region;
-  private String country;
+  @ToString.Exclude private String city;
+  @ToString.Exclude private String province;
+  @ToString.Exclude private String region;
+  @ToString.Exclude private String country;
   @ToString.Exclude private String email;
   @ToString.Exclude private String phone;
 

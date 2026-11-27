@@ -48,15 +48,15 @@ public class PaymentOptionWithDebtorInfoModelResponse implements Serializable {
   // PaymentPosition entity fields
   private String iupd;
   private Type type;
-  private String fiscalCode;
+  @ToString.Exclude private String fiscalCode;
   @ToString.Exclude private String fullName;
   private String streetName;
-  private String civicNumber;
-  private String postalCode;
-  private String city;
-  private String province;
-  private String region;
-  private String country;
+  @ToString.Exclude private String civicNumber;
+  @ToString.Exclude private String postalCode;
+  @ToString.Exclude private String city;
+  @ToString.Exclude private String province;
+  @ToString.Exclude private String region;
+  @ToString.Exclude private String country;
   @ToString.Exclude private String email;
   @ToString.Exclude private String phone;
   private String companyName;
