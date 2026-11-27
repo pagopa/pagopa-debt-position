@@ -113,7 +113,7 @@ public class LoggingAspect {
                   "paymentDateTo",
                   "paymentDateTimeFrom",
                   "paymentDateTimeTo",
-                  "status",
+                  STATUS,
                   "orderBy",
                   "ordering"));
 
