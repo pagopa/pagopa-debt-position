@@ -1,7 +1,7 @@
 package it.gov.pagopa.debtposition.config.feign;
 
 import feign.Capability;
-import it.gov.pagopa.debtposition.config.logging.FeignFailureLoggingCapability;
+import it.gov.pagopa.debtposition.config.logging.FeignLoggingCapability;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +19,6 @@ public class NodeFeignConfig extends AuthFeignConfig {
 
   @Bean
   public Capability nodeFailureLoggingCapability() {
-    return new FeignFailureLoggingCapability("node");
+    return new FeignLoggingCapability("node");
   }
 }

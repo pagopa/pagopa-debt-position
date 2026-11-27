@@ -10,13 +10,13 @@ import java.io.IOException;
  * Logs outbound Feign calls only when they fail: HTTP error statuses (4xx/5xx) and I/O errors
  * such as connection refused or timeouts. Successful calls are not logged.
  */
-public class FeignFailureLoggingCapability implements Capability {
+public class FeignLoggingCapability implements Capability {
 
   static final String MESSAGE = "Outbound HTTP call failed";
 
   private final String dependency;
 
-  public FeignFailureLoggingCapability(String dependency) {
+  public FeignLoggingCapability(String dependency) {
     this.dependency = dependency;
   }
 

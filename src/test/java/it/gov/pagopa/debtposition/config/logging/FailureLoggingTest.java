@@ -67,7 +67,7 @@ class FailureLoggingTest {
   void successfulFeignCallIsNotLogged() throws IOException {
     Request request = request();
     Client delegate = (req, options) -> response(200, req);
-    Client client = new FeignFailureLoggingCapability("node").enrich(delegate);
+    Client client = new FeignLoggingCapability("node").enrich(delegate);
 
     Response result = client.execute(request, new Request.Options());
 
@@ -79,7 +79,7 @@ class FailureLoggingTest {
   void feignHttpErrorIsLoggedAtErrorWithStatus() throws IOException {
     Request request = request();
     Client delegate = (req, options) -> response(503, req);
-    Client client = new FeignFailureLoggingCapability("node").enrich(delegate);
+    Client client = new FeignLoggingCapability("node").enrich(delegate);
 
     Response result = client.execute(request, new Request.Options());
 
@@ -87,7 +87,7 @@ class FailureLoggingTest {
     assertThat(appender.list).hasSize(1);
     ILoggingEvent event = appender.list.get(0);
     assertThat(event.getLevel()).isEqualTo(Level.ERROR);
-    assertThat(event.getMessage()).isEqualTo(FeignFailureLoggingCapability.MESSAGE);
+    assertThat(event.getMessage()).isEqualTo(FeignLoggingCapability.MESSAGE);
     assertThat(event.getMDCPropertyMap())
         .containsEntry(FailureLogger.EVENT_ACTION, "HTTP-node-POST")
         .containsEntry(FailureLogger.EVENT_OUTCOME, FailureLogger.OUTCOME_FAILURE)
@@ -103,7 +103,7 @@ class FailureLoggingTest {
         (req, options) -> {
           throw ioException;
         };
-    Client client = new FeignFailureLoggingCapability("send").enrich(delegate);
+    Client client = new FeignLoggingCapability("send").enrich(delegate);
 
     assertThatThrownBy(() -> client.execute(request, new Request.Options()))
         .isSameAs(ioException);
@@ -126,7 +126,7 @@ class FailureLoggingTest {
         (req, options) -> {
           throw new SocketTimeoutException("read timed out");
         };
-    Client client = new FeignFailureLoggingCapability("node").enrich(delegate);
+    Client client = new FeignLoggingCapability("node").enrich(delegate);
 
     assertThatThrownBy(() -> client.execute(request, new Request.Options()))
         .isInstanceOf(SocketTimeoutException.class);

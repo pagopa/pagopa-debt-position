@@ -2,7 +2,7 @@ package it.gov.pagopa.debtposition.config.feign;
 
 import feign.Capability;
 import feign.RequestInterceptor;
-import it.gov.pagopa.debtposition.config.logging.FeignFailureLoggingCapability;
+import it.gov.pagopa.debtposition.config.logging.FeignLoggingCapability;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +23,7 @@ public class SendFeignConfig {
 
   @Bean
   public Capability sendFailureLoggingCapability() {
-    return new FeignFailureLoggingCapability("send");
+    return new FeignLoggingCapability("send");
   }
 
   @Bean
